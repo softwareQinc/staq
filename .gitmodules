@@ -1,0 +1,4 @@
+[submodule "libs/tweedledee"]
+	path = libs/tweedledee
+	url = git@github.com:meamy/tweedledee
+	branch = headerlib
