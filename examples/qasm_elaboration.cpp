@@ -19,7 +19,9 @@ int main(int argc, char** argv)
 	}
 	auto program = tweedledee::qasm::read_from_file(argv[1]);
 	if (program) {
-      synthewareQ::logic_elaborator elaborator(0);
+      synthewareQ::logic_elaborator elaborator(program.get());
+      tweedledee::qasm::ast_printer printer(std::cout);
 	  elaborator.visit(*program);
+      printer.visit(*program);
 	}
 }

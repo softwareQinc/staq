@@ -5,8 +5,10 @@
 *------------------------------------------------------------------------------------------------*/
 
 #include <tweedledee/qasm/qasm.hpp>
+#include <tweedledee/qasm/ast/ast.hpp>
 #include <tweedledee/qasm/ast/visitor.hpp>
 
+#include "../synthesis/logic_synthesis.hpp"
 
 namespace synthewareQ {
 
@@ -14,25 +16,31 @@ namespace synthewareQ {
 
   class logic_elaborator : public qasm::visitor_base<logic_elaborator> {
   public:
-    logic_elaborator(int placeholder)
+    logic_elaborator(qasm::ast_context* ctx)
       : visitor_base<logic_elaborator>()
-      , param_(placeholder)
+      , ctx_(ctx)
     {}
 
 	void visit_decl_gate(qasm::decl_gate* node)
 	{
       if (node->is_classical()) {
+        // TODO: fix this bad hack
         visit(&node->file());
+        auto l_net = read_from_file(current_filename_);
+        auto q_net = lhrs(l_net);
+        auto body = to_qasm(ctx_, node->location(), q_net);
+        node->set_body(body);
       }
-	}
+    }
 
     void visit_logic_file(qasm::logic_file* node)
     {
-      std::cout << "Visiting file name: " << node->filename() << std::endl;
+      current_filename_ = node->filename();
     }
 
   private:
-    int param_;
+    qasm::ast_context* ctx_;
+    std::string current_filename_;
   };
     
 }
