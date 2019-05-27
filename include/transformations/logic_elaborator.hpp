@@ -27,8 +27,7 @@ namespace synthewareQ {
         // TODO: fix this bad hack
         visit(&node->file());
         auto l_net = read_from_file(current_filename_);
-        auto q_net = lhrs(l_net);
-        auto body = to_qasm(ctx_, node->location(), q_net);
+        auto body = synthesize(ctx_, node->location(), l_net, static_cast<qasm::list_ids*>(&node->arguments()));
         node->set_body(body);
       }
     }

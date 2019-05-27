@@ -3,4 +3,4 @@ include "qelib1.inc";
 
 qreg q[4];
 
-oracle adder u,v { "adder.v" }
+oracle adder a1,a2,b1,b2,c { "tmp.v" }
