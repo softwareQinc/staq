@@ -113,29 +113,28 @@ namespace synthewareQ {
       std::cerr << "WARNING: local register anc_ shadows previous declaration" << std::endl;
     }
     auto anc_decl = qasm::decl_ancilla::build(ctx_, location, "anc_", num_qubits - num_inputs, false);
-    auto anc_ref = qasm::expr_decl_ref::build(ctx_, location, anc_decl);
     builder.add_child(anc_decl);
 
-    // Create a mapping from qubits to parameters & ancillas
+    // Create a mapping from qubits to functions generating declaration references
     auto inputs = stats.i_indexes;
     inputs.insert(inputs.end(), stats.o_indexes.begin(), stats.o_indexes.end());
     assert(params->num_children() == inputs.size()); //sanity check, should be checked in semantic analysis phase
 
     auto i = 0;
-    std::vector<qasm::ast_node*> id_refs(num_qubits, nullptr);
+    std::vector<std::function<qasm::ast_node*()> > id_refs(num_qubits);
     for (auto& param : *params) {
-      auto param_ref = qasm::expr_decl_ref::build(ctx_, location, &param);
-      id_refs[inputs[i++]] = param_ref;
+      id_refs[inputs[i++]] = [&]() { return qasm::expr_decl_ref::build(ctx_, location, &param); };
     }
 
     i = 0;
     for (auto j = 0; j < num_qubits; j++) {
-      if (id_refs[j] == nullptr) {
-        auto indexed_reference = qasm::expr_reg_idx_ref::builder(ctx_, location);
-        auto index = qasm::expr_integer::create(ctx_, location, i++);
-        indexed_reference.add_child(anc_ref);
-        indexed_reference.add_child(index);
-        id_refs[j] = indexed_reference.finish();
+      if (!id_refs[j]) {
+        id_refs[j] = [&]() {
+          auto indexed_reference = qasm::expr_reg_idx_ref::builder(ctx_, location);
+          indexed_reference.add_child(qasm::expr_decl_ref::build(ctx_, location, anc_decl));
+          indexed_reference.add_child(qasm::expr_integer::create(ctx_, location, i++));
+          return indexed_reference.finish();
+        };
       }
     }
     
@@ -143,35 +142,69 @@ namespace synthewareQ {
     q_net.foreach_gate([&](auto const& node) {
         auto const& gate = node.gate;
         switch (gate.operation()) {
+        case tweedledum::gate_set::u3:
+          std::cerr << "WARNING: u3 gate not currently supported" << std::endl;
+          break;
+          
         case tweedledum::gate_set::hadamard:
           {
             // If there exists a declaration for the Hadamard gate, use that
             auto declaration = ctx_->find_declaration("h");
             if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
               auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              gate.foreach_target([&](auto target) {
-                  auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
-                  stmt_builder.add_child(decl_ref);
-                  stmt_builder.add_child(id_refs[target]);
-                  builder.add_child(stmt_builder.finish());
-                });
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
             } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
               auto theta = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
               theta.add_child(qasm::expr_pi::create(ctx_, location));
               theta.add_child(qasm::expr_integer::create(ctx_, location, 2));
               auto phi = qasm::expr_integer::create(ctx_, location, 0);
               auto lambda = qasm::expr_pi::create(ctx_, location);
-              gate.foreach_target([&](auto target) {
-                  auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
-                  stmt_builder.add_child(theta.finish());
-                  stmt_builder.add_child(phi);
-                  stmt_builder.add_child(lambda);
-                  stmt_builder.add_child(id_refs[target]);
-                  builder.add_child(stmt_builder.finish());
-                });
+
+              stmt_builder.add_child(theta.finish());
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
             }
           }
           break;
+        case tweedledum::gate_set::rotation_x:
+        case tweedledum::gate_set::rotation_y:
+        case tweedledum::gate_set::rotation_z:
+
+        case tweedledum::gate_set::pauli_x:
+        case tweedledum::gate_set::pauli_y:
+
+        case tweedledum::gate_set::t:
+        case tweedledum::gate_set::phase:
+        case tweedledum::gate_set::pauli_z:
+        case tweedledum::gate_set::phase_dagger:
+        case tweedledum::gate_set::t_dagger:
+          break;
+
+        case tweedledum::gate_set::cx:
+          {
+            auto stmt_builder = qasm::stmt_cnot::builder(ctx_, location);
+
+            stmt_builder.add_child(id_refs[gate.control()]());
+            stmt_builder.add_child(id_refs[gate.target()]());
+
+            builder.add_child(stmt_builder.finish());
+          }
+          break;
+        case tweedledum::gate_set::cz:
+        case tweedledum::gate_set::swap:
+
+        case tweedledum::gate_set::mcx:
+        case tweedledum::gate_set::mcz:
 
         default:
           std::cerr << "Error: lhrs returned unsupported gate type" << std::endl;
