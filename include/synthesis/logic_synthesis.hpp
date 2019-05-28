@@ -129,12 +129,13 @@ namespace synthewareQ {
     i = 0;
     for (auto j = 0; j < num_qubits; j++) {
       if (!id_refs[j]) {
-        id_refs[j] = [&]() {
+        id_refs[j] = [&, i]() {
           auto indexed_reference = qasm::expr_reg_idx_ref::builder(ctx_, location);
           indexed_reference.add_child(qasm::expr_decl_ref::build(ctx_, location, anc_decl));
-          indexed_reference.add_child(qasm::expr_integer::create(ctx_, location, i++));
+          indexed_reference.add_child(qasm::expr_integer::create(ctx_, location, i));
           return indexed_reference.finish();
         };
+        i++;
       }
     }
     
