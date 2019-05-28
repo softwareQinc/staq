@@ -17,6 +17,7 @@
 namespace synthewareQ {
 
   namespace qasm = tweedledee::qasm;
+  namespace angles = tweedledum::angles;
 
   enum class format { 
     binary_aiger, 
@@ -65,6 +66,49 @@ namespace synthewareQ {
     }
 
     return mig;
+  }
+
+  /*! \brief Returns a qasm expr node with the value of the given angle */
+  qasm::ast_node* angle_to_expr(qasm::ast_context* ctx_, uint32_t location, tweedledum::angle theta) {
+    auto sval = theta.symbolic_value();
+    if (sval == std::nullopt) {
+      // Angle is real-valued
+      return qasm::expr_real::create(ctx_, location, theta.numeric_value());
+    } else {
+      // Angle is of the form pi*(a/b) for a & b integers
+      // NOTE: tweedledum::gate base and tweedledum::angle contradict -- the former defines t as
+      //       an angle of 1/4, while the latter gives it as an angle of 1/8.
+      auto [a, b] = sval.value();
+
+      if (a == 0) {
+        return qasm::expr_integer::create(ctx_, location, 0);
+      } else if (a == 1) {
+        auto total = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+        total.add_child(qasm::expr_pi::create(ctx_, location));
+        total.add_child(qasm::expr_integer::create(ctx_, location, b));
+
+        return total.finish();
+      } else if (a == -1) {
+        auto numerator = qasm::expr_unary_op::builder(ctx_, location, qasm::unary_ops::minus);
+        numerator.add_child(qasm::expr_pi::create(ctx_, location));
+
+        auto total = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+        total.add_child(numerator.finish());
+        total.add_child(qasm::expr_integer::create(ctx_, location, b));
+
+        return total.finish();
+      } else {
+        auto numerator = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::multiplication);
+        numerator.add_child(qasm::expr_integer::create(ctx_, location, a));
+        numerator.add_child(qasm::expr_pi::create(ctx_, location));
+
+        auto total = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+        total.add_child(numerator.finish());
+        total.add_child(qasm::expr_integer::create(ctx_, location, b));
+
+        return total.finish();
+      }
+    }
   }
 
   /*! \brief LUT-based hierarchical logic synthesis (arXiv:1706.02721) of classical logic
@@ -139,7 +183,6 @@ namespace synthewareQ {
       }
     }
     
-    //
     q_net.foreach_gate([&](auto const& node) {
         auto const& gate = node.gate;
         switch (gate.operation()) {
@@ -178,17 +221,245 @@ namespace synthewareQ {
           }
           break;
         case tweedledum::gate_set::rotation_x:
+          std::cerr << "WARNING: X-rotation gate not currently supported" << std::endl;
+          break;
         case tweedledum::gate_set::rotation_y:
+          std::cerr << "WARNING: Y-rotation gate not currently supported" << std::endl;
+          break;
         case tweedledum::gate_set::rotation_z:
+          {
+            auto expr_angle = angle_to_expr(ctx_, location, gate.rotation_angle());
+            auto declaration = ctx_->find_declaration("rz");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(expr_angle);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_integer::create(ctx_, location, 0);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(expr_angle);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
 
         case tweedledum::gate_set::pauli_x:
+          {
+            auto declaration = ctx_->find_declaration("x");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_pi::create(ctx_, location);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+              auto lambda = qasm::expr_pi::create(ctx_, location);
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
         case tweedledum::gate_set::pauli_y:
+          {
+            auto declaration = ctx_->find_declaration("y");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_pi::create(ctx_, location);
+              auto phi = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+              phi.add_child(qasm::expr_pi::create(ctx_, location));
+              phi.add_child(qasm::expr_integer::create(ctx_, location, 2));
+              auto lambda = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+              lambda.add_child(qasm::expr_pi::create(ctx_, location));
+              lambda.add_child(qasm::expr_integer::create(ctx_, location, 2));
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi.finish());
+              stmt_builder.add_child(lambda.finish());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
 
         case tweedledum::gate_set::t:
+          {
+            auto declaration = ctx_->find_declaration("t");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_integer::create(ctx_, location, 0);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+              auto lambda = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+              lambda.add_child(qasm::expr_pi::create(ctx_, location));
+              lambda.add_child(qasm::expr_integer::create(ctx_, location, 4));
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda.finish());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
         case tweedledum::gate_set::phase:
+          {
+            auto declaration = ctx_->find_declaration("s");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_integer::create(ctx_, location, 0);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+              auto lambda = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+              lambda.add_child(qasm::expr_pi::create(ctx_, location));
+              lambda.add_child(qasm::expr_integer::create(ctx_, location, 2));
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda.finish());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
         case tweedledum::gate_set::pauli_z:
+          {
+            auto declaration = ctx_->find_declaration("z");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_integer::create(ctx_, location, 0);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+              auto lambda = qasm::expr_pi::create(ctx_, location);
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
         case tweedledum::gate_set::phase_dagger:
+          {
+            auto declaration = ctx_->find_declaration("sdg");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_integer::create(ctx_, location, 0);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+              auto lambda = qasm::expr_unary_op::builder(ctx_, location, qasm::unary_ops::minus);
+              auto tmp = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+              tmp.add_child(qasm::expr_pi::create(ctx_, location));
+              tmp.add_child(qasm::expr_integer::create(ctx_, location, 2));
+              lambda.add_child(tmp.finish());
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda.finish());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
+          break;
         case tweedledum::gate_set::t_dagger:
+          {
+            auto declaration = ctx_->find_declaration("tdg");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_unitary::builder(ctx_, location);
+
+              auto theta = qasm::expr_integer::create(ctx_, location, 0);
+              auto phi = qasm::expr_integer::create(ctx_, location, 0);
+              auto lambda = qasm::expr_unary_op::builder(ctx_, location, qasm::unary_ops::minus);
+              auto tmp = qasm::expr_binary_op::builder(ctx_, location, qasm::binary_ops::division);
+              tmp.add_child(qasm::expr_pi::create(ctx_, location));
+              tmp.add_child(qasm::expr_integer::create(ctx_, location, 4));
+              lambda.add_child(tmp.finish());
+
+              stmt_builder.add_child(theta);
+              stmt_builder.add_child(phi);
+              stmt_builder.add_child(lambda.finish());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
+          }
           break;
 
         case tweedledum::gate_set::cx:
@@ -202,13 +473,30 @@ namespace synthewareQ {
           }
           break;
         case tweedledum::gate_set::cz:
+          {
+            // If there exists a declaration for the Hadamard gate, use that
+            auto declaration = ctx_->find_declaration("cz");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.control()]());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              std::cerr << "Error: cz requires previous definition" << std::endl;
+            }
+          }
+          break;
         case tweedledum::gate_set::swap:
 
         case tweedledum::gate_set::mcx:
         case tweedledum::gate_set::mcz:
 
         default:
-          std::cerr << "Error: lhrs returned unsupported gate type" << std::endl;
+          std::cerr << "Error: unsupported gate" << std::endl;
           break;
 
         }
