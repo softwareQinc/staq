@@ -128,7 +128,7 @@ namespace synthewareQ {
     // Collapse network into a klut network
     auto lutn = mockturtle::collapse_mapped_network<mockturtle::klut_network>(mapped_network);
 
-    tweedledum::gg_network<tweedledum::io3_gate> q_net;
+    tweedledum::gg_network<tweedledum::mcmt_gate> q_net;
     if (!lutn) {
       std::cerr << "Could not map network into klut network" << std::endl;
       return builder.finish();
@@ -141,10 +141,12 @@ namespace synthewareQ {
     auto strategy = caterpillar::eager_mapping_strategy<mockturtle::klut_network>();
     caterpillar::logic_network_synthesis_params p;
     caterpillar::logic_network_synthesis_stats stats;
-    caterpillar::logic_network_synthesis(q_net, *lutn, strategy, tweedledum::stg_from_spectrum(), p, &stats);
+    caterpillar::logic_network_synthesis(q_net, *lutn, strategy, tweedledum::stg_from_pkrm(), p, &stats);
 
-    // Decompose Toffolis in terms of Clifford + T
-    tweedledum::dt_decomposition(q_net);
+    // Decompose Toffolis in terms of at most 3-control Toffolis
+    q_net = tweedledum::barenco_decomposition(q_net, { 3 });
+    // Decompose further into Clifford + T
+    q_net = tweedledum::dt_decomposition(q_net);
 
 
     /* QASM building */
@@ -474,7 +476,6 @@ namespace synthewareQ {
           break;
         case tweedledum::gate_set::cz:
           {
-            // If there exists a declaration for the Hadamard gate, use that
             auto declaration = ctx_->find_declaration("cz");
             if (declaration) {
               auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
@@ -490,11 +491,33 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::swap:
-
         case tweedledum::gate_set::mcx:
-        case tweedledum::gate_set::mcz:
+          // Must have at most 2 controls (i.e. Toffoli gate)
+          {
+            if (gate.num_controls() > 2) {
+              std::cerr << "Error: too many controls (" << gate.num_controls() << ")" << std::endl;
+              break;
+            }
+            auto declaration = ctx_->find_declaration("ccx");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
 
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              gate.foreach_control([&](auto const& qubit) {
+                  stmt_builder.add_child(id_refs[qubit]());
+              });
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            } else {
+              std::cerr << "Error: ccx requires previous definition" << std::endl;
+            }
+          }
+          break;
+
+        case tweedledum::gate_set::mcz:
+        case tweedledum::gate_set::swap:
         default:
           std::cerr << "Error: unsupported gate" << std::endl;
           break;
