@@ -155,10 +155,10 @@ namespace synthewareQ {
     uint32_t num_qubits = q_net.num_qubits();
     uint32_t num_inputs = stats.i_indexes.size() + stats.o_indexes.size();
 
-    if (ctx_->find_declaration("anc_")) {
+    if (ctx_->find_declaration("anc")) {
       std::cerr << "WARNING: local register anc_ shadows previous declaration" << std::endl;
     }
-    auto anc_decl = qasm::decl_ancilla::build(ctx_, location, "anc_", num_qubits - num_inputs, false);
+    auto anc_decl = qasm::decl_ancilla::build(ctx_, location, "anc", num_qubits - num_inputs, false);
     builder.add_child(anc_decl);
 
     // Create a mapping from qubits to functions generating declaration references
@@ -466,12 +466,25 @@ namespace synthewareQ {
 
         case tweedledum::gate_set::cx:
           {
-            auto stmt_builder = qasm::stmt_cnot::builder(ctx_, location);
+            // Use the qelib declaration for informity
+            auto declaration = ctx_->find_declaration("cx");
+            if (declaration) {
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
 
-            stmt_builder.add_child(id_refs[gate.control()]());
-            stmt_builder.add_child(id_refs[gate.target()]());
+              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
+              stmt_builder.add_child(decl_ref);
+              stmt_builder.add_child(id_refs[gate.control()]());
+              stmt_builder.add_child(id_refs[gate.target()]());
 
-            builder.add_child(stmt_builder.finish());
+              builder.add_child(stmt_builder.finish());
+            } else {
+              auto stmt_builder = qasm::stmt_cnot::builder(ctx_, location);
+
+              stmt_builder.add_child(id_refs[gate.control()]());
+              stmt_builder.add_child(id_refs[gate.target()]());
+
+              builder.add_child(stmt_builder.finish());
+            }
           }
           break;
         case tweedledum::gate_set::cz:
