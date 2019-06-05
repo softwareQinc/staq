@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../gates/gate_base.hpp"
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 
 #include <string>
 #include <vector>

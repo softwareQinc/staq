@@ -45,7 +45,7 @@ public:
   }
 
   stg_gate( kitty::dynamic_truth_table const& function, std::vector<td::io_id> const& controls, td::io_id target )
-      : gate_base( td::gate_set::num_defined_ops ),
+      : gate_base( td::gate_lib::num_defined_ops ),
         _function( function ),
         _controls( controls )
   {
@@ -54,7 +54,7 @@ public:
 
   bool is_unitary_gate() const
   {
-    return td::gate_base::is_gate() || operation() == td::gate_set::num_defined_ops;
+    return td::gate_base::is_gate() || operation() == td::gate_lib::num_defined_ops;
   }
 
   uint32_t num_controls() const

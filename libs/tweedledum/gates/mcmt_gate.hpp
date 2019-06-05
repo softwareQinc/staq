@@ -7,7 +7,7 @@
 
 #include "../networks/io_id.hpp"
 #include "gate_base.hpp"
-#include "gate_set.hpp"
+#include "gate_lib.hpp"
 
 #include <algorithm>
 #include <array>
@@ -60,7 +60,7 @@ public:
 		is_qubit_ |= (control.is_qubit() << control);
 		is_qubit_ |= (target.is_qubit() << target);
 		targets_ |= (1 << target);
-		if (is(gate_set::swap)) {
+		if (is(gate_lib::swap)) {
 			targets_ |= (1 << control);
 			assert(num_targets() == 2 && "Swap gates can only have two targets.");
 		} else {
@@ -116,7 +116,7 @@ public:
 
 	io_id control() const
 	{
-		if (!is_one_of(gate_set::cx, gate_set::cz)) {
+		if (!is_one_of(gate_lib::cx, gate_lib::cz)) {
 			return io_invalid;
 		}
 		const uint32_t idx = __builtin_ctz(controls_);
@@ -131,6 +131,23 @@ public:
 	uint32_t qubit_slot(io_id qid) const
 	{
 		return qid.index();
+	}
+
+	bool is_adjoint(mcmt_gate const& other) const
+	{
+		if (this->adjoint() != other.operation()) {
+			return false;
+		}
+		if (controls_ != other.controls_ || polarity_ != other.polarity_
+		    || targets_ != other.targets_) {
+			return false;
+		}
+		if (this->is_one_of(gate_lib::rotation_x, gate_lib::rotation_y, gate_lib::rotation_z)) {
+			if (this->rotation_angle() + other.rotation_angle() != 0.0) {
+				return false;
+			}
+		}
+		return true;
 	}
 #pragma endregion
 

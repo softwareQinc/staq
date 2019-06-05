@@ -7,7 +7,7 @@
 
 #include "../networks/io_id.hpp"
 #include "gate_base.hpp"
-#include "gate_set.hpp"
+#include "gate_lib.hpp"
 
 #include <algorithm>
 #include <array>
@@ -72,26 +72,26 @@ public:
 			if (targets.size() == 1) {
 				init_one_io(targets[0]);
 			} else if (targets.size() == 2) {
-				assert(is_one_of(gate_set::swap, gate_set::measurement));
+				assert(is_one_of(gate_lib::swap, gate_lib::measurement));
 				init_two_io(targets[0], targets[1]);
 			}
 			break;
 
 		case 1u:
 			assert(targets.size() == 1 && "This gate operation cannot have morew than one target");
-			std::cout << symbol() << std::endl;
-			assert(is_one_of(gate_set::cx, gate_set::cz));
+			assert(is_one_of(gate_lib::cx, gate_lib::cz));
 			init_two_io(controls[0], targets[0]);
 			break;
 
 		case 2u:
 			assert(targets.size() == 1 && "This gate operation cannot have morew than one target");
-			assert(is_one_of(gate_set::mcx, gate_set::mcz));
+			assert(is_one_of(gate_lib::mcx, gate_lib::mcz));
 			num_controls_ = 2;
 			num_targets_ = 1;
 			target1_ = invalid_value;
 			ids_ = {controls[0], controls[1], targets[0]};
 			std::sort(ids_.begin(), ids_.end());
+			assert(ids_[0] != ids_[1] && ids_[1] != ids_[2] && "The I/Os must be different");
 			target0_ = std::distance(ids_.begin(), std::find(ids_.begin(), ids_.end(), targets[0]));
 			switch (target0_) {
 			case 0u:
@@ -160,6 +160,28 @@ public:
 		assert(0);
 		std::abort();
 	}
+
+	// TODO: double check
+	bool is_adjoint(io3_gate const& other) const
+	{
+		if (this->adjoint() != other.operation()) {
+			return false;
+		}
+		if (data_ != other.data_) {
+			return false;
+		}
+		for (uint32_t i = 0; i < max_num_io; ++i) {
+			if (ids_[i] != other.ids_[i]) {
+				return false;
+			}
+		}
+		if (this->is_one_of(gate_lib::rotation_x, gate_lib::rotation_y, gate_lib::rotation_z)) {
+			if (this->rotation_angle() + other.rotation_angle() != angles::zero) {
+				return false;
+			}
+		}
+		return true;
+	}
 #pragma endregion
 
 #pragma region Const iterators
@@ -213,26 +235,32 @@ private:
 			control0_ = 1;
 			target0_ = 0;
 		}
-		if (is_one_of(gate_set::swap, gate_set::measurement)) {
+		if (is_one_of(gate_lib::swap, gate_lib::measurement)) {
 			target1_ = control0_;
 			control0_ = invalid_value;
 			num_controls_ = 0;
 			num_targets_ = 2;
-			if (is(gate_set::measurement)) {
+			if (is(gate_lib::measurement)) {
 				assert(!id1.is_qubit() && "In a measurement gate the second I/O must be a cbit");
 			}
 		}
 	}
 
 private:
-	uint32_t unused_ : 20;
-	/*! \brief indicates the slot which holds the qid of the target. */
-	uint32_t num_controls_ : 2;
-	uint32_t num_targets_  : 2;
-	uint32_t control0_ : 2;
-	uint32_t control1_ : 2;
-	uint32_t target0_  : 2;
-	uint32_t target1_  : 2;
+	union {
+		uint32_t data_;
+		struct {
+			uint32_t unused_ : 20;
+			/*! \brief indicates the slot which holds the qid of the target. */
+			uint32_t num_controls_ : 2;
+			uint32_t num_targets_ : 2;
+			uint32_t control0_ : 2;
+			uint32_t control1_ : 2;
+			uint32_t target0_ : 2;
+			uint32_t target1_ : 2;
+		};
+	};
+
 	/*! \brief an array which hold the qids' of the qubits this gate is acting upon */
 	std::array<io_id, max_num_io> ids_;
 };

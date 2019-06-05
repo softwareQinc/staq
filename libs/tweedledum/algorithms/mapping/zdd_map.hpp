@@ -127,12 +127,12 @@ public:
         	network_.foreach_gate([&](auto const& node) {
 			auto const& gate = node.gate;
 			if (!gate.is_double_qubit()) {
-				mapped_ntk.add_gate(gate, id_virtual_map_.at(gate.target()));
+				mapped_ntk.add_gate(gate, gate.target());
 				return;
 			}
 			if (index_of_swap.empty()) {
 				// No swaps needed for circuit b/c zero items in index_of_swap
-				mapped_ntk.add_gate(gate, id_virtual_map_.at(gate.control()), id_virtual_map_.at(gate.target()));
+				mapped_ntk.add_gate(gate, gate.control(), gate.target());
 				return;
 			}
 			// If 2q gate is one that needs swap, and its in the correct partition range, add it!
@@ -141,15 +141,13 @@ public:
 				while (count_2q == index_of_swap[index_counter]) {
 					// Insert as many swaps that are needed in a particular spot
 					mapped_ntk.add_swap(swaps_[index_counter].first, swaps_[index_counter].second);
-					// mapped_ntk.add_swap(phy_id_map_.at(swaps_[index_counter].first), phy_id_map_.at(swaps_[index_counter].second));
 					index_counter++;
 				}
 				// Insert gate
-				mapped_ntk.add_gate(gate, id_virtual_map_.at(gate.control()), id_virtual_map_.at(gate.target()));
+				mapped_ntk.add_gate(gate, gate.control(), gate.target());
 			} else {
 				// Insert gate with fixed qubits
-				mapped_ntk.add_gate(gate, id_virtual_map_.at(gate.control()), id_virtual_map_.at(gate.target()));
-				// mapped_ntk.add_gate(gate, gate.control(), gate.target());
+				mapped_ntk.add_gate(gate, gate.control(), gate.target());
 			}
 			count_2q++;
         	});

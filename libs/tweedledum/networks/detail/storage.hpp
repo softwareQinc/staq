@@ -75,6 +75,11 @@ struct node_pointer<0> {
 	{
 		return data == other.data;
 	}
+
+	bool operator!=(node_pointer const& other) const
+	{
+		return data != other.data;
+	}
 };
 
 } // namespace detail
@@ -152,24 +157,21 @@ struct uniform_node {
  */
 template<typename NodeType>
 struct storage {
-	storage()
-	    : num_qubits(0)
+	storage(std::string_view name_ = {})
+	    : name(name_)
+	    , num_qubits(0)
+	    , gate_set(0)
 	{
 		nodes.reserve(1024u);
 	}
 
-	storage(uint32_t size)
-	    : num_qubits(0)
-	{
-		nodes.reserve(size);
-	}
-
+	std::string name;
 	uint32_t num_qubits;
+	uint32_t gate_set;
 	std::vector<uint32_t> inputs;
 	std::vector<NodeType> nodes;
 	std::vector<NodeType> outputs;
 	std::vector<io_id> rewiring_map;
-	// std::vector<uint32_t> rewiring_map;
 };
 
 /*! \brief 

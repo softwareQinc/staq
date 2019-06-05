@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../gates/gate_base.hpp"
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 #include "../networks/io_id.hpp"
 
 #include <algorithm>
@@ -150,35 +150,35 @@ void write_quirk(Network const& network, std::ostream& os = std::cout)
 			std::cerr << "[w] unsupported gate type\n";
 			return true;
 
-		case gate_set::hadamard:
+		case gate_lib::hadamard:
 			gate.foreach_target([&](auto qid) { builder.add_gate("H", qid); });
 			break;
 
-		case gate_set::pauli_x:
+		case gate_lib::pauli_x:
 			gate.foreach_target([&](auto qid) { builder.add_gate("X", qid); });
 			break;
 
-		case gate_set::pauli_z:
+		case gate_lib::pauli_z:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Z", qid); });
 			break;
 
-		case gate_set::phase:
+		case gate_lib::phase:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Z^%C2%BD", qid); });
 			break;
 
-		case gate_set::phase_dagger:
+		case gate_lib::phase_dagger:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Z^-%C2%BD", qid); });
 			break;
 
-		case gate_set::t:
+		case gate_lib::t:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Z^%C2%BC", qid); });
 			break;
 
-		case gate_set::t_dagger:
+		case gate_lib::t_dagger:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Z^-%C2%BC", qid); });
 			break;
 
-		case gate_set::cx:
+		case gate_lib::cx:
 			gate.foreach_control([&](auto qid_control) {
 				gate.foreach_target([&](auto qid_target) {
 					builder.add_gate("X", qid_control, qid_target);
@@ -186,7 +186,7 @@ void write_quirk(Network const& network, std::ostream& os = std::cout)
 			});
 			break;
 
-		case gate_set::mcx: {
+		case gate_lib::mcx: {
 			std::vector<io_id> controls;
 			std::vector<io_id> targets;
 			gate.foreach_control([&](auto control) { controls.push_back(control); });
@@ -194,7 +194,7 @@ void write_quirk(Network const& network, std::ostream& os = std::cout)
 			builder.add_gate("X", controls, targets);
 		} break;
 
-		case gate_set::cz:
+		case gate_lib::cz:
 			gate.foreach_control([&](auto qid_control) {
 				gate.foreach_target([&](auto qid_target) {
 					builder.add_gate("Z", qid_control, qid_target);
@@ -202,7 +202,7 @@ void write_quirk(Network const& network, std::ostream& os = std::cout)
 			});
 			break;
 
-		case gate_set::mcz: {
+		case gate_lib::mcz: {
 			std::vector<io_id> controls;
 			std::vector<io_id> targets;
 			gate.foreach_control([&](auto control) { controls.push_back(control); });
@@ -210,7 +210,7 @@ void write_quirk(Network const& network, std::ostream& os = std::cout)
 			builder.add_gate("Z", controls, targets);
 		} break;
 
-		case gate_set::swap: {
+		case gate_lib::swap: {
 			std::vector<io_id> targets;
 			gate.foreach_target([&](auto target) { targets.push_back(target); });
 			builder.add_swap(targets.at(0), targets.at(1));

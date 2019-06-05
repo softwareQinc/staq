@@ -72,6 +72,17 @@ public:
 	io_id add_cbit();
 #pragma endregion
 
+#pragma region Properties
+	/*! \brief Returns the network name. */
+	std::string_view name() const;
+
+	/*! \brief Returns the gate set bitset.
+	 *
+	 *  This is a bitset which identify which gates are present in the network.
+	 */
+	uint32_t gate_set() const;
+#pragma endregion
+
 #pragma region Structural properties
 	/*! \brief Returns the number of nodes. */
 	uint32_t size() const;

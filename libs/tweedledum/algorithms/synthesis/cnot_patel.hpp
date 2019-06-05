@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../../gates/gate_set.hpp"
+#include "../../gates/gate_lib.hpp"
 #include "../../gates/gate_base.hpp"
 #include "../../networks/io_id.hpp"
 #include "../../utils/bit_matrix_rm.hpp"

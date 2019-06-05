@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace tweedledum {
@@ -45,6 +46,11 @@ public:
 	    : storage_(std::make_shared<storage_type>())
 	    , labels_(std::make_shared<labels_map>())
 	{}
+
+	explicit gg_network(std::string_view name)
+	    : storage_(std::make_shared<storage_type>(name))
+	    , labels_(std::make_shared<labels_map>())
+	{}
 #pragma endregion
 
 #pragma region I / O and ancillae qubits
@@ -53,8 +59,8 @@ private:
 	{
 		io_id id(storage_->inputs.size(), is_qubit);
 		uint32_t index = storage_->nodes.size();
-		gate_type input(gate_base(gate_set::input), id);
-		gate_type output(gate_base(gate_set::output), id);
+		gate_type input(gate_base(gate_lib::input), id);
+		gate_type output(gate_base(gate_lib::output), id);
 
 		storage_->nodes.emplace_back(input);
 		storage_->inputs.emplace_back(index);
@@ -100,6 +106,18 @@ public:
 	}
 #pragma endregion
 
+#pragma region Properties
+	std::string_view name() const
+	{
+		return storage_->name;
+	}
+
+	uint32_t gate_set() const 
+	{
+		return storage_->gate_set;
+	}
+#pragma endregion
+
 #pragma region Structural properties
 	uint32_t size() const
 	{
@@ -128,14 +146,14 @@ public:
 #pragma endregion
 
 #pragma region Nodes
-	auto& get_node(node_ptr_type node_ptr) const
+	node_type& get_node(node_ptr_type node_ptr) const
 	{
 		return storage_->nodes[node_ptr.index];
 	}
 
 	auto node_to_index(node_type const& node) const
 	{
-		if (node.gate.is(gate_set::output)) {
+		if (node.gate.is(gate_lib::output)) {
 			auto index = &node - storage_->outputs.data();
 			return static_cast<uint32_t>(index + storage_->nodes.size());
 		}
@@ -163,10 +181,11 @@ public:
 	template<typename... Args>
 	node_type& emplace_gate(Args&&... args)
 	{
-		auto node_index = storage_->nodes.size();
-		auto& node = storage_->nodes.emplace_back(std::forward<Args>(args)...);
-		node.gate.foreach_control([&](auto qid) { connect_node(qid, node_index); });
-		node.gate.foreach_target([&](auto qid) { connect_node(qid, node_index); });
+		uint32_t node_index = storage_->nodes.size();
+		node_type& node = storage_->nodes.emplace_back(std::forward<Args>(args)...);
+		storage_->gate_set |= (1 << static_cast<uint32_t>(node.gate.operation()));
+		node.gate.foreach_control([&](io_id id) { connect_node(id, node_index); });
+		node.gate.foreach_target([&](io_id id) { connect_node(id, node_index); });
 		return node;
 	}
 
@@ -424,7 +443,7 @@ public:
 #pragma endregion
 
 #pragma region Visited flags
-	void clear_visited()
+	void clear_visited() const
 	{
 		std::for_each(storage_->nodes.begin(), storage_->nodes.end(),
 		              [](auto& node) { node.data[0].w = 0; });
@@ -437,7 +456,7 @@ public:
 		return node.data[0].w;
 	}
 
-	void set_visited(node_type const& node, uint32_t value)
+	void set_visited(node_type const& node, uint32_t value) const
 	{
 		node.data[0].w = value;
 	}

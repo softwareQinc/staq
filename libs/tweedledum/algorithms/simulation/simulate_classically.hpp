@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../../gates/gate_set.hpp"
+#include "../../gates/gate_lib.hpp"
 #include "../../networks/io_id.hpp"
 
 #include <cstdint>
@@ -39,13 +39,13 @@ uint64_t simulate_classically(Network const& network, uint64_t pattern)
 			pattern = 0ull;
 			return false;
 
-		case gate_set::pauli_x:
+		case gate_lib::pauli_x:
 			gate.foreach_target([&](io_id id) {
 				pattern ^= (1ull << id);
 			});
 			break;
 
-		case gate_set::cx:
+		case gate_lib::cx:
 			gate.foreach_control([&](io_id control_id) {
 				uint64_t temp_pattern = pattern;
 				if (control_id.is_complemented()) {
@@ -59,7 +59,7 @@ uint64_t simulate_classically(Network const& network, uint64_t pattern)
 			});
 			break;
 
-		case gate_set::mcx: {
+		case gate_lib::mcx: {
 			uint64_t control_mask = 0;
 			uint64_t target_mask = 0;
 			uint64_t temp_pattern = pattern;

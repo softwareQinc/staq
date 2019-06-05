@@ -60,7 +60,7 @@ void diagonal_synth(Circuit& circ, std::vector<io_id> const& qubits,
 	detail::fast_hadamard_transform(s);
 
 	const double factor = 1 << (qubits.size() - 1);
-	parity_terms parities;
+	parity_terms<uint32_t> parities;
 	for (uint32_t i = 1u; i < s.size(); ++i) {
 		if (s[i] == 0.0)
 			continue;

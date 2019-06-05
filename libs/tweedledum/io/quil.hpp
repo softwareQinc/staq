@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 #include "../networks/io_id.hpp"
 
 #include <cassert>
@@ -43,36 +43,36 @@ void write_quil(Network const& network, std::ostream& os)
 			assert(0);
 			return true;
 
-		case gate_set::hadamard:
+		case gate_lib::hadamard:
 			gate.foreach_target([&](auto target) { os << fmt::format("H {}\n", target); });
 			break;
 
-		case gate_set::pauli_x:
+		case gate_lib::pauli_x:
 			gate.foreach_target([&](auto target) { os << fmt::format("X {}\n", target); });
 			break;
 
-                case gate_set::pauli_z:
+                case gate_lib::pauli_z:
 			gate.foreach_target([&](auto target) { os << fmt::format("Z {}\n", target); });
                         break;
 
-		case gate_set::t:
+		case gate_lib::t:
 			gate.foreach_target([&](auto target) { os << fmt::format("T {}\n", target); });
 			break;
 
-                case gate_set::phase:
+                case gate_lib::phase:
 			gate.foreach_target([&](auto target) { os << fmt::format("S {}\n", target); });
 			break;
 
-		case gate_set::t_dagger:
-		case gate_set::phase_dagger:
-		case gate_set::rotation_z:
+		case gate_lib::t_dagger:
+		case gate_lib::phase_dagger:
+		case gate_lib::rotation_z:
 			gate.foreach_target([&](auto target) {
 				angle const& angle = gate.rotation_angle();
 				os << fmt::format("RZ({}) {}\n", angle, target);
 			});
 			break;
 
-		case gate_set::cx:
+		case gate_lib::cx:
 			gate.foreach_control([&](auto control) {
 				if (control.is_complemented()) {
 					os << fmt::format("X {}\n", control.index());
@@ -86,7 +86,7 @@ void write_quil(Network const& network, std::ostream& os)
 			});
 			break;
                 
-                case gate_set::cz:
+                case gate_lib::cz:
 			gate.foreach_control([&](auto control) {
 				if (control.is_complemented()) {
 					os << fmt::format("X {}\n", control.index());
@@ -100,7 +100,7 @@ void write_quil(Network const& network, std::ostream& os)
 			});
                         break;
 		
-		case gate_set::swap: {
+		case gate_lib::swap: {
 			std::vector<io_id> targets;
 			gate.foreach_target([&](auto target) {
 				targets.push_back(target);
@@ -110,7 +110,7 @@ void write_quil(Network const& network, std::ostream& os)
 			os << fmt::format("CNOT {} {}\n", targets[0], targets[1]);
 		} break;
 
-		case gate_set::mcx: {
+		case gate_lib::mcx: {
 			std::vector<io_id> controls;
 			std::vector<io_id> targets;
 			gate.foreach_control([&](auto control) {

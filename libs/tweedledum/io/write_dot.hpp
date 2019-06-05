@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 #include "../views/depth_view.hpp"
 
 #include <algorithm>
@@ -84,7 +84,7 @@ void write_dot(Network const& dag_network, std::ostream& os = std::cout)
 			}
 			os << fmt::format(
 			    "\t\tNode{} [label = \"{}\", xlabel = \"{}\", shape = {}];\n", index,
-			    node.gate.symbol(), index, node.gate.is(gate_set::cx) ? "doublecircle" : "circle");
+			    node.gate.symbol(), index, node.gate.is(gate_lib::cx) ? "doublecircle" : "circle");
 		});
 		os << "\t}\n";
 	}

@@ -72,6 +72,14 @@ public:
 	 * a unique qubit identifier within the circuit.
 	 */
 	uint32_t qubit_slot(io_id qid) const;
+
+	/*! \brief Check whether the this gate is adjoint of ``other`` gate.
+	 *
+	 * The conecept of _gate_ adjointness requires that gate operations to be
+	 * adjoint, and that both gates act on the same qubits in the same way, i.e.,
+	 * same controls and/or same targets.
+	 */
+	bool is_adjoint(gate const& other) const;
 #pragma endregion
 
 #pragma region Iterators

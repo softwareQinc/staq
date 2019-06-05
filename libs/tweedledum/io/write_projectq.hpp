@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 
 #include <fmt/format.h>
 #include <fstream>
@@ -69,67 +69,67 @@ void write_projectq(Network const& network, std::ostream& os = std::cout)
 			assert(false);
 			break;
 
-		case gate_set::hadamard:
+		case gate_lib::hadamard:
 			os << fmt::format("H | {}\n", targets);
 			break;
 
-		case gate_set::pauli_x:
+		case gate_lib::pauli_x:
 			os << fmt::format("X | {}\n", targets);
 			break;
 
-		case gate_set::pauli_y:
+		case gate_lib::pauli_y:
 			os << fmt::format("Y | {}\n", targets);
 			break;
 
-		case gate_set::pauli_z:
+		case gate_lib::pauli_z:
 			os << fmt::format("Z | {}\n", targets);
 			break;
 
-		case gate_set::phase:
+		case gate_lib::phase:
 			os << fmt::format("S | {}\n", targets);
 			break;
 
-		case gate_set::phase_dagger:
+		case gate_lib::phase_dagger:
 			os << fmt::format("Sdag | {}\n", targets);
 			break;
 
-		case gate_set::t:
+		case gate_lib::t:
 			os << fmt::format("T | {}\n", targets);
 			break;
 
-		case gate_set::t_dagger:
+		case gate_lib::t_dagger:
 			os << fmt::format("Tdag | {}\n", targets);
 			break;
 
-		case gate_set::rotation_x:
+		case gate_lib::rotation_x:
 			os << fmt::format("Rx({}) | {}\n", gate.rotation_angle().numeric_value(),
 			                  targets);
 			break;
 
-		case gate_set::rotation_z:
+		case gate_lib::rotation_z:
 			os << fmt::format("Rz({}) | {}\n", gate.rotation_angle().numeric_value(),
 			                  targets);
 			break;
 
-		case gate_set::cx:
+		case gate_lib::cx:
 			os << fmt::format("CNOT | ({}, {})\n", controls, targets);
 			break;
 
-		case gate_set::cz:
+		case gate_lib::cz:
 			os << fmt::format("CZ | ({}, {})\n", controls, targets);
 			break;
 
-		case gate_set::mcx:
+		case gate_lib::mcx:
 			os << fmt::format("C(All(X), {}) | ([{}], [{}])\n", gate.num_controls(),
 			                  controls, targets);
 			break;
 
-		case gate_set::mcz:
+		case gate_lib::mcz:
 			os << fmt::format("C(All(Z), {}) | ([{}], [{}])\n", gate.num_controls(),
 			                  controls, targets);
 			break;
 
-		case gate_set::swap:
+		case gate_lib::swap:
 			os << fmt::format("Swap | ({})\n", targets);
 			break;
 		}

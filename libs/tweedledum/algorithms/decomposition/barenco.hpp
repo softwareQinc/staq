@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../../gates/gate_set.hpp"
+#include "../../gates/gate_lib.hpp"
 #include "../../gates/gate_base.hpp"
 #include "../../networks/io_id.hpp"
 #include "../generic/rewrite.hpp"
@@ -130,10 +130,10 @@ struct barenco_params {
  * \algreturns A network
  */
 template<typename Network>
-Network barenco_decomposition(Network const& src, barenco_params params = {})
+Network barenco_decomposition(Network const& network, barenco_params params = {})
 {
 	auto gate_rewriter = [&](auto& dest, auto const& gate) {
-		if (gate.is(gate_set::mcx)) {
+		if (gate.is(gate_lib::mcx)) {
 			switch (gate.num_controls()) {
 			case 0:
 				gate.foreach_target([&](auto target) {
@@ -170,18 +170,15 @@ Network barenco_decomposition(Network const& src, barenco_params params = {})
 	};
 
 	auto num_ancillae = 0u;
-	src.foreach_gate([&](auto const& node) {
-		if (node.gate.is(gate_set::mcx) && node.gate.num_controls() > 2
-		    && node.gate.num_controls() + 1 == src.num_qubits()) {
+	network.foreach_gate([&](auto const& node) {
+		if (node.gate.is(gate_lib::mcx) && node.gate.num_controls() > 2
+		    && node.gate.num_controls() + 1 == network.num_qubits()) {
 			num_ancillae = 1u;
 			return false;
 		}
 		return true;
 	});
-
-	Network dest;
-	rewrite_network(dest, src, gate_rewriter, num_ancillae);
-	return dest;
+	return rewrite_network(network, gate_rewriter, num_ancillae);
 }
 
 } // namespace tweedledum

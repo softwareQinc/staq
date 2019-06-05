@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 
 #include <fmt/format.h>
 #include <fstream>
@@ -47,59 +47,59 @@ void write_qpic(Network const& network, std::ostream& os, bool color_marked_gate
 
 	network.foreach_gate([&](auto& node) {
 		auto prefix = "";
-		if (node.gate.is(gate_set::mcx)) {
+		if (node.gate.is(gate_lib::mcx)) {
 			prefix = "+";
 		}
 		node.gate.foreach_target([&](auto qubit) {
 			os << fmt::format("{}id{} ", prefix, qubit);
 		});
 		switch (node.gate.operation()) {
-		case gate_set::pauli_x:
+		case gate_lib::pauli_x:
 			os << 'N';
 			break;
 
-		case gate_set::cx:
+		case gate_lib::cx:
 			os << 'C';
 			break;
 
-		case gate_set::mcx:
+		case gate_lib::mcx:
 			break;
 
-		case gate_set::pauli_z:
-		case gate_set::cz:
-		case gate_set::mcz:
+		case gate_lib::pauli_z:
+		case gate_lib::cz:
+		case gate_lib::mcz:
 			os << 'Z';
 			break;
 
-		case gate_set::hadamard:
+		case gate_lib::hadamard:
 			os << 'H';
 			break;
 
-		case gate_set::phase:
+		case gate_lib::phase:
 			os << "G $P$";
 			break;
 
-		case gate_set::phase_dagger:
+		case gate_lib::phase_dagger:
 			os << "G $P^{\\dagger}$";
 			break;
 
-		case gate_set::t:
+		case gate_lib::t:
 			os << "G $T$";
 			break;
 
-		case gate_set::t_dagger:
+		case gate_lib::t_dagger:
 			os << "G $T^{\\dagger}$";
 			break;
 
-		case gate_set::rotation_x:
+		case gate_lib::rotation_x:
 			os << "G $R_{x}$";
 			break;
 
-		case gate_set::rotation_z:
+		case gate_lib::rotation_z:
 			os << "G $R_{z}$";
 			break;
 
-		case gate_set::swap:
+		case gate_lib::swap:
 			os << "SWAP";
 			break;
 

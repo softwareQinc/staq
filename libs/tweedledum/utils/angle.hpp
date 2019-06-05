@@ -198,21 +198,14 @@ private:
 };
 
 namespace angles {
-constexpr angle one(1, 1);
 /*! \brief identity */
 constexpr angle zero(0, 1);
 /*! \brief rotation angle of a T gate */
-constexpr angle one_eighth(1, 8);
+constexpr angle pi_quarter(1, 4);
 /*! \brief rotation angle of a S gate (phase gate) */
-constexpr angle one_quarter(1, 4);
+constexpr angle pi_half(1, 2);
 /*! \brief rotation angle of a Pauli-Z gate, Pauli-X (NOT) */
-constexpr angle one_half(1, 2);
-/*! \brief T gate + Pauli-Z gate */
-constexpr angle five_eighth(5, 8);
-/*! \brief rotation angle of S† (Conjugate transpose) */
-constexpr angle three_fourth(3, 4);
-/*! \brief rotation angle of T† (Conjugate transpose) */
-constexpr angle seven_eighth(7, 8);
+constexpr angle pi(1, 1);
 } // namespace angles
 
 } // namespace tweedledum

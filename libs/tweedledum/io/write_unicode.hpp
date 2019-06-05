@@ -5,7 +5,7 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "../gates/gate_set.hpp"
+#include "../gates/gate_lib.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -291,51 +291,51 @@ auto to_unicode_str(Network const& network, Builder builder)
 			std::cerr << "[w] unsupported gate type\n";
 			return true;
 
-		case gate_set::hadamard:
+		case gate_lib::hadamard:
 			gate.foreach_target([&](auto qid) { builder.add_gate("H", qid); });
 			break;
 
-		case gate_set::pauli_x:
+		case gate_lib::pauli_x:
 			gate.foreach_target([&](auto qid) { builder.add_gate("X", qid); });
 			break;
 
-		case gate_set::pauli_y:
+		case gate_lib::pauli_y:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Y", qid); });
 			break;
 
-		case gate_set::pauli_z:
+		case gate_lib::pauli_z:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Z", qid); });
 			break;
 
-		case gate_set::rotation_x:
+		case gate_lib::rotation_x:
 			gate.foreach_target([&](auto qid) { builder.add_gate("x", qid); });
 			break;
 
-		case gate_set::rotation_y:
+		case gate_lib::rotation_y:
 			gate.foreach_target([&](auto qid) { builder.add_gate("y", qid); });
 			break;
 
-		case gate_set::rotation_z:
+		case gate_lib::rotation_z:
 			gate.foreach_target([&](auto qid) { builder.add_gate("z", qid); });
 			break;
 
-		case gate_set::phase:
+		case gate_lib::phase:
 			gate.foreach_target([&](auto qid) { builder.add_gate("S", qid); });
 			break;
 
-		case gate_set::phase_dagger:
+		case gate_lib::phase_dagger:
 			gate.foreach_target([&](auto qid) { builder.add_gate("Ƨ", qid); });
 			break;
 
-		case gate_set::t:
+		case gate_lib::t:
 			gate.foreach_target([&](auto qid) { builder.add_gate("T", qid); });
 			break;
 
-		case gate_set::t_dagger:
-			gate.foreach_target([&](auto qid) { builder.add_gate("⊥", qid); });
+		case gate_lib::t_dagger:
+			gate.foreach_target([&](auto qid) { builder.add_gate("┴", qid); });
 			break;
 
-		case gate_set::swap: {
+		case gate_lib::swap: {
 			std::vector<io_id> qids;
 			gate.foreach_target([&](auto qid) {
 				qids.push_back(qid);
@@ -344,7 +344,7 @@ auto to_unicode_str(Network const& network, Builder builder)
 			
 		} break;
 
-		case gate_set::cx:
+		case gate_lib::cx:
 			gate.foreach_control([&](auto qid_control) {
 				gate.foreach_target([&](auto qid_target) {
 					builder.add_gate("X", qid_control, qid_target);
@@ -352,7 +352,7 @@ auto to_unicode_str(Network const& network, Builder builder)
 			});
 			break;
 
-		case gate_set::mcx: {
+		case gate_lib::mcx: {
 			std::vector<io_id> controls;
 			std::vector<io_id> targets;
 			gate.foreach_control([&](auto control) { controls.push_back(control); });
@@ -360,7 +360,7 @@ auto to_unicode_str(Network const& network, Builder builder)
 			builder.add_gate("X", controls, targets);
 		} break;
 
-		case gate_set::cz:
+		case gate_lib::cz:
 			gate.foreach_control([&](auto qid_control) {
 				gate.foreach_target([&](auto qid_target) {
 					builder.add_gate("Z", qid_control, qid_target);
@@ -368,7 +368,7 @@ auto to_unicode_str(Network const& network, Builder builder)
 			});
 			break;
 
-		case gate_set::mcz: {
+		case gate_lib::mcz: {
 			std::vector<io_id> controls;
 			std::vector<io_id> targets;
 			gate.foreach_control([&](auto control) { controls.push_back(control); });
@@ -376,7 +376,7 @@ auto to_unicode_str(Network const& network, Builder builder)
 			builder.add_gate("Z", controls, targets);
 		} break;
 
-		case gate_set::measurement: {
+		case gate_lib::measurement: {
 			std::vector<io_id> qids;
 			gate.foreach_target([&](auto qid) {
 				qids.push_back(qid);

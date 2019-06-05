@@ -147,6 +147,8 @@ namespace synthewareQ {
     q_net = tweedledum::barenco_decomposition(q_net, { 3 });
     // Decompose further into Clifford + T
     q_net = tweedledum::dt_decomposition(q_net);
+    // Optimize
+    q_net = tweedledum::phase_folding(q_net);
 
 
     /* QASM building */
@@ -188,11 +190,11 @@ namespace synthewareQ {
     q_net.foreach_gate([&](auto const& node) {
         auto const& gate = node.gate;
         switch (gate.operation()) {
-        case tweedledum::gate_set::u3:
+        case tweedledum::gate_lib::u3:
           std::cerr << "WARNING: u3 gate not currently supported" << std::endl;
           break;
           
-        case tweedledum::gate_set::hadamard:
+        case tweedledum::gate_lib::hadamard:
           {
             // If there exists a declaration for the Hadamard gate, use that
             auto declaration = ctx_->find_declaration("h");
@@ -222,13 +224,13 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::rotation_x:
+        case tweedledum::gate_lib::rotation_x:
           std::cerr << "WARNING: X-rotation gate not currently supported" << std::endl;
           break;
-        case tweedledum::gate_set::rotation_y:
+        case tweedledum::gate_lib::rotation_y:
           std::cerr << "WARNING: Y-rotation gate not currently supported" << std::endl;
           break;
-        case tweedledum::gate_set::rotation_z:
+        case tweedledum::gate_lib::rotation_z:
           {
             auto expr_angle = angle_to_expr(ctx_, location, gate.rotation_angle());
             auto declaration = ctx_->find_declaration("rz");
@@ -257,7 +259,7 @@ namespace synthewareQ {
           }
           break;
 
-        case tweedledum::gate_set::pauli_x:
+        case tweedledum::gate_lib::pauli_x:
           {
             auto declaration = ctx_->find_declaration("x");
             if (declaration) {
@@ -284,7 +286,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::pauli_y:
+        case tweedledum::gate_lib::pauli_y:
           {
             auto declaration = ctx_->find_declaration("y");
             if (declaration) {
@@ -316,7 +318,7 @@ namespace synthewareQ {
           }
           break;
 
-        case tweedledum::gate_set::t:
+        case tweedledum::gate_lib::t:
           {
             auto declaration = ctx_->find_declaration("t");
             if (declaration) {
@@ -345,7 +347,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::phase:
+        case tweedledum::gate_lib::phase:
           {
             auto declaration = ctx_->find_declaration("s");
             if (declaration) {
@@ -374,7 +376,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::pauli_z:
+        case tweedledum::gate_lib::pauli_z:
           {
             auto declaration = ctx_->find_declaration("z");
             if (declaration) {
@@ -401,7 +403,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::phase_dagger:
+        case tweedledum::gate_lib::phase_dagger:
           {
             auto declaration = ctx_->find_declaration("sdg");
             if (declaration) {
@@ -432,7 +434,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::t_dagger:
+        case tweedledum::gate_lib::t_dagger:
           {
             auto declaration = ctx_->find_declaration("tdg");
             if (declaration) {
@@ -464,7 +466,7 @@ namespace synthewareQ {
           }
           break;
 
-        case tweedledum::gate_set::cx:
+        case tweedledum::gate_lib::cx:
           {
             // Use the qelib declaration for informity
             auto declaration = ctx_->find_declaration("cx");
@@ -487,7 +489,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::cz:
+        case tweedledum::gate_lib::cz:
           {
             auto declaration = ctx_->find_declaration("cz");
             if (declaration) {
@@ -504,7 +506,7 @@ namespace synthewareQ {
             }
           }
           break;
-        case tweedledum::gate_set::mcx:
+        case tweedledum::gate_lib::mcx:
           // Must have at most 2 controls (i.e. Toffoli gate)
           {
             if (gate.num_controls() > 2) {
@@ -529,8 +531,8 @@ namespace synthewareQ {
           }
           break;
 
-        case tweedledum::gate_set::mcz:
-        case tweedledum::gate_set::swap:
+        case tweedledum::gate_lib::mcz:
+        case tweedledum::gate_lib::swap:
         default:
           std::cerr << "Error: unsupported gate" << std::endl;
           break;
