@@ -1,15 +1,30 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/replacer.hpp"
-#include "qasm/visitors/source_printer.hpp"   // For qelib identifiers
-
+#include "ast/replacer.hpp"
 #include "substitution.hpp"
 
 #include <unordered_map>
@@ -18,141 +33,122 @@
 namespace synthewareQ {
 namespace transformations {
 
-  using namespace qasm;
-
-  /* \brief! Inlines gate calls
+  /**
+   * \brief Inlines gate calls
    *
    * Traverses an AST and inlines all gate calls. By default qelib calls are NOT
    * inlined, but optionally can be. Local ancillas are hoisted to the global
    * level and reused
    */
-  void inline_ast(ast_context*);
 
-  /* \brief! Default override */
+  /* \brief Default overrides */
   static const std::set<std::string_view> default_overrides {
     "x", "y", "z", "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
-      "cz", "cy", "swap", "cx"
-      };
+    "cz", "cy", "swap", "cx"
+  };
 
   /* Implementation */
-  class inliner final : public replacer<inliner> {
+  class Inliner final : public ast::Replacer {
   public:
-    using replacer<inliner>::visit;
-
     struct config {
       bool keep_declarations = true;
       std::set<std::string_view> overrides = default_overrides;
       std::string ancilla_name = "auto_anc";
     };
 
-    inliner(ast_context* ctx) : ctx_(ctx), var_subst_(ctx) {}
-    inliner(ast_context* ctx, const config& params)
-      : ctx_(ctx)
-      , var_subst_(ctx)
-      , config_(params)
-    {}
+    Inliner() = default;
+    Inliner(const config& params) : config_(params) {}
+    ~Inliner() = default;
 
-    std::optional<ast_node_list> replace(decl_program* node) override {
-      // Replacement is post-order, so we know the max ancillas needed now
+    void visit(ast::Program& prog) override {
+      ast::Replacer::visit(prog);
 
-      if (max_ancilla != 0) {
-        auto anc_decl = decl_register::build(ctx_, node->location(), register_type::quantum,
-                                             config_.ancilla_name, max_ancilla);
-        node->insert_child(node->begin(), anc_decl);
+      // Max ancillas needed are now known
+      if (max_ancilla > 0) {
+        auto decl = std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
+          prog.pos(), config_.ancilla_name, true, max_ancilla));
+        prog.body().emplace_front(std::move(decl));
       }
-
-      return std::nullopt;
     }
 
+    std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::GateDecl& decl) override {
+      // Replacement is post-order, so body should already be inlined
 
-    std::optional<ast_node_list> replace(decl_gate* node) override {
-      // Replacement is post-order, so body should be inlined now
-
-      if (node->has_body()) {
-        auto& tmp = gate_decls_[node->identifier()];
-        tmp.c_params = node->has_parameters() ? static_cast<list_ids*>(&node->parameters()) : nullptr;
-        tmp.q_params = static_cast<list_ids*>(&node->arguments());
-        tmp.body     = &node->body();
+      if (decl.is_opaque()) {
+        // Opaque decl, don't inline
+        return std::nullopt;
+      } else {
+        // Record the gate declaration
+        auto& tmp = gate_decls_[decl.id()];
+        tmp.c_params = decl.c_params();
+        tmp.q_params = decl.q_params();
+        decl.foreach_stmt([this, &tmp](auto& gate){ tmp.body.push_back(&gate); });
         tmp.ancillas.swap(current_ancillas);
+
+        // Retrieve and reset the local ancilla counter
         if (num_ancilla > max_ancilla) {
           max_ancilla = num_ancilla;
         }
         num_ancilla = 0;
 
-
+        // Keep or delete the declaration
         if (config_.keep_declarations) {
           return std::nullopt;
         } else {
-          return ast_node_list({});
+          return std::list<ast::ptr<ast::Stmt> >();
         }
-      } else {
-        // Opaque decl, don't inline
-        return std::nullopt;
       }
     }
 
-    std::optional<ast_node_list> replace(decl_ancilla* node) override {
-      if (!node->is_dirty()) {
-        current_ancillas.push_back(std::make_pair(node->identifier(), node->size()));
-        num_ancilla += node->size();
-      } else {
+    std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::AncillaDecl& decl) override {
+      if (decl.is_dirty()) {
         std::cerr << "Error: dirty ancillas not currently supported by inliner\n";
+      } else {
+        current_ancillas.push_back(std::make_pair(decl.id(), decl.size()));
+        num_ancilla += decl.size();
       }
       return std::nullopt;
     }
 
-    std::optional<ast_node_list> replace(stmt_gate* node) override {
-      if (config_.overrides.find(node->gate()) != config_.overrides.end()) {
+    std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::DeclaredGate& gate) override {
+      if (config_.overrides.find(gate.name()) != config_.overrides.end()) {
         return std::nullopt;
       }
       
-      if (auto it = gate_decls_.find(node->gate()); it != gate_decls_.end()) {
-        ast_node_list ret;
-        ast_node* body = it->second.body->copy(ctx_);
-
-        // Generating the substitution
-        std::unordered_map<std::string_view, ast_node*> substitution;
-        if (node->has_cargs()) {
-          auto c_args = static_cast<list_exprs*>(&node->c_args());
-          auto p_it = it->second.c_params->begin();
-          auto a_it = c_args->begin();
-          for (; (p_it != it->second.c_params->end()) && (a_it != c_args->end()); p_it++, a_it++) {
-            substitution[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
-          }
+      if (auto it = gate_decls_.find(gate.name()); it != gate_decls_.end()) {
+        // Substitute classical arguments
+        std::unordered_map<std::string_view, ast::Expr*> c_subst;
+        for (auto i = 0; i < gate.num_cargs(); i++) {
+          c_subst[it->second.c_params[i]] = &gate.carg(i);
         }
+        SubstVar var_subst(c_subst);
 
-        auto q_args = static_cast<list_aps*>(&node->q_args());
-        auto p_it = it->second.q_params->begin();
-        auto a_it = q_args->begin();
-        for (; (p_it != it->second.q_params->end()) && (a_it != q_args->end()); p_it++, a_it++) {
-          substitution[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
+        // Substitute quantum arguments
+        std::unordered_map<ast::VarAccess, ast::VarAccess> q_subst;
+        for (auto i = 0; i < gate.num_qargs(); i++) {
+          q_subst.insert({ast::VarAccess(gate.pos(), it->second.q_params[i]), gate.qarg(i)});
         }
-
         // For local ancillas
-        auto current_offset = 0;
+        auto offset = 0;
         for (auto& [id, num] : it->second.ancillas) {
-          substitution[id] = expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name,
-                                              expr_integer::create(ctx_, node->location(), current_offset));
-          current_offset += num;
+          q_subst.insert({ast::VarAccess(gate.pos(), id),
+                          ast::VarAccess(gate.pos(), config_.ancilla_name, offset)});
+          offset += num;
+        }
+        SubstAP ap_subst(q_subst);
+
+        // Clone & substitute the gate body
+        std::list<ast::ptr<ast::Gate> > body;
+
+        for (auto gate : it->second.body) {
+          auto new_gate = gate->clone();
+          new_gate->accept(var_subst);
+          new_gate->accept(ap_subst);
+          new_gate->accept(cleaner_);
+          body.emplace_back(ast::ptr<ast::Gate>(new_gate));
         }
 
-        // Perform the substitution
-        var_subst_.subst(substitution, body);
-
-        // Strip ancilla declarations
-        cleaner_.visit(body);
-
-        // Reset ancillas
-        auto tmp = static_cast<list_gops*>(body);
-        for (auto i = 0; i < it->second.ancillas.size(); i++) {
-          auto reset_builder = stmt_reset::builder(ctx_, node->location());
-          auto expr_i = expr_integer::create(ctx_, node->location(), i);
-          reset_builder.add_child(expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name, expr_i));
-          tmp->add_child(reset_builder.finish());
-        }
-        
-        ret.push_back(&node->parent(), body);
-        return ret;
+        return std::move(body);
       } else {
         return std::nullopt;
       }
@@ -160,41 +156,38 @@ namespace transformations {
 
   private:
     /* Helper class */
-    class cleaner final : public replacer<cleaner> {
+    class Cleaner final : public Replacer {
     public:
-      using replacer<cleaner>::visit;
-      std::optional<ast_node_list> replace(decl_ancilla* node) override {
-        return std::make_optional(ast_node_list());
+      std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::AncillaDecl&) override {
+        return std::list<ast::ptr<ast::Gate> >();
       }
     };
 
     struct gate_info {
-      list_ids* c_params;
-      list_ids* q_params;
-      ast_node* body;
-      std::list<std::pair<std::string_view, uint32_t> > ancillas;
+      std::vector<ast::symbol> c_params;
+      std::vector<ast::symbol> q_params;
+      std::list<ast::Gate*> body;
+      std::list<std::pair<ast::symbol, int> > ancillas;
     };
     
-    ast_context* ctx_;
     config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
-    variable_substitutor var_subst_;
-    cleaner cleaner_;
-    uint32_t max_ancilla = 0;
+    Cleaner cleaner_;
+    int max_ancilla = 0;
 
     // Gate-local accumulating values
-    std::list<std::pair<std::string_view, uint32_t> > current_ancillas;
-    uint32_t num_ancilla = 0;
+    std::list<std::pair<ast::symbol, int> > current_ancillas;
+    int num_ancilla = 0;
   };
 
-  void inline_ast(ast_context* ctx) {
-    auto tmp = inliner(ctx);
-    tmp.visit(*ctx);
+  void inline_ast(ast::ASTNode& node) {
+    Inliner alg;
+    node.accept(alg);
   }
 
-  void inline_ast(ast_context* ctx, const inliner::config& params) {
-    auto tmp = inliner(ctx, params);
-    tmp.visit(*ctx);
+  void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
+    Inliner alg(params);
+    node.accept(alg);
   }
 
 }

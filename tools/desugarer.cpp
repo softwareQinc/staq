@@ -1,23 +1,38 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#define FMT_HEADER_ONLY = true
-
-#include "qasm/qasm.hpp"
-#include "qasm/visitors/source_printer.hpp"
-#include "transformations/desugarer.hpp"
+#include "parser/parser.hpp"
+#include "transformations/desugar.hpp"
 
 using namespace synthewareQ;
 
-int main(int argc, char** argv) {
+int main() {
 
-  auto program = qasm::read_from_stdin();
+  auto program = parser::parse_stdin();
   if (program) {
-    transformations::desugar(program.get());
-    qasm::print_source(program.get());
+    transformations::desugar(*program);
+    std::cout << *program;
   } else {
     std::cerr << "Parsing failed\n";
   }

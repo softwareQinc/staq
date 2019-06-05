@@ -1,14 +1,30 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/concrete.hpp"
-
+#include "ast/traversal.hpp"
 #include "mapping/device.hpp"
 
 #include <map>
@@ -18,33 +34,26 @@
 namespace synthewareQ {
 namespace mapping {
 
-  using namespace qasm;
-  using namespace transformations;
-
-  using ap = std::pair<std::string_view, uint32_t>;
-
-  /* \brief! Allocates qubits on demand prioritizing coupling fidelity */
-  class eager_layout final : public visitor<eager_layout> {
+  /** \brief Allocates qubits on demand prioritizing coupling fidelity */
+  class EagerLayout final : public ast::PostVisitor {
   public:
-    using visitor<eager_layout>::visit;
-
-    eager_layout(ast_context* ctx, device& d) : ctx_(ctx), device_(d) {
+    EagerLayout(Device& device) : PostVisitor(), device_(device) {
       couplings_ = device_.couplings();
     }
 
-    layout generate() {
+    layout generate(ast::Program& prog) {
       layout_ = layout();
       allocated_ = std::vector<bool>(device_.qubits_, false);
       access_paths_.clear();
 
-      visit(*ctx_);
+      prog.accept(*this);
 
       for (auto ap : access_paths_) {
         auto i = 0;
         bool cont = layout_.find(ap) == layout_.end();
         while (cont) {
           if (i >= device_.qubits_) {
-            std::cerr << "Error: ran out of physical qubits to allocate";
+            std::cerr << "Error: can't fit program onto device " << device_.name_ << "\n";
             return layout_;
           } else if (!allocated_[i]) {
               layout_[ap] = i;
@@ -60,20 +69,19 @@ namespace mapping {
     }
 
     // Ignore gate declarations
-    void visit(decl_gate* node) override { }
+    void visit(ast::GateDecl&) override { }
 
-    void visit(decl_register* node) override {
-      if (node->is_quantum()) {
-        for (auto i = 0; i < node->size(); i++) {
-          access_paths_.insert(std::make_pair(node->identifier(), i));
-        }
+    void visit(ast::RegisterDecl& decl) override {
+      if (decl.is_quantum()) {
+        for (int i = 0; i < decl.size(); i++)
+          access_paths_.insert(ast::VarAccess(decl.pos(), decl.id(), i));
       }
     }
 
     // Try to assign a coupling to the cnot
-    void visit_pre(stmt_cnot* node) override {
-      auto ctrl = get_access_path(&node->control());
-      auto tgt = get_access_path(&node->target());
+    void visit(ast::CNOTGate& gate) override {
+      auto ctrl = gate.ctrl();
+      auto tgt = gate.tgt();
 
       size_t ctrl_bit;
       size_t tgt_bit;
@@ -107,30 +115,16 @@ namespace mapping {
     }
 
   private:
-    ast_context* ctx_;
-    
-    device device_;
+    Device device_;
     layout layout_;
     std::vector<bool> allocated_;
-    std::set<ap> access_paths_;
+    std::set<ast::VarAccess> access_paths_;
     std::set<std::pair<coupling, double> > couplings_;
-
-    std::pair<std::string_view, uint32_t> get_access_path(ast_node* node) {
-      expr_reg_offset* arg = nullptr;
-      switch(node->kind()) {
-      case ast_node_kinds::expr_reg_offset:
-        arg = static_cast<expr_reg_offset*>(node);
-        return std::make_pair(arg->id(), arg->index_numeric());
-      default:
-        throw std::logic_error("Can't complete mapping -- argument invalid");
-      }
-    }
-
   };
 
-  layout compute_layout_eager(ast_context* ctx, device& d) {
-    eager_layout generator(ctx, d);
-    return generator.generate();
+  layout compute_eager_layout(Device& device, ast::Program& prog) {
+    EagerLayout gen(device);
+    return gen.generate(prog);
   }
 
 }

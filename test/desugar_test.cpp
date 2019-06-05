@@ -1,10 +1,5 @@
-#define FMT_HEADER_ONLY = true
-
-#include "qasm/qasm.hpp"
-#include "qasm/visitors/source_printer.hpp"
-#include "transformations/desugarer.hpp"
-
-#include <unordered_map>
+#include "parser/parser.hpp"
+#include "transformations/desugar.hpp"
 
 using namespace synthewareQ;
 
@@ -14,15 +9,12 @@ int main(int argc, char** argv) {
     std::cerr << "Input file not specified.\n";
   }
 
-  auto program = qasm::read_from_file(argv[1]);
+  auto program = parser::parse_file(argv[1]);
   if (program) {
-    std::cout << "\nSugared source:\n";
-    qasm::source_printer src(std::cout);
-    src.visit(*program);
+    std::cout << "\nSugared source:\n" << *program << "\n";
 
-    std::cout << "\nDesugared source:\n";
-    transformations::desugar(program.get());
-    src.visit(*program);
+    transformations::desugar(*program);
+    std::cout << "\nDesugared source:\n" << *program << "\n";
   } else {
     std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";
   }

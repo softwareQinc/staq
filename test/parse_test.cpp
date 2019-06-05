@@ -1,38 +1,38 @@
-#define FMT_HEADER_ONLY = true
+#include "parser/position.hpp"
+#include "ast/ast.hpp"
+#include "parser/parser.hpp"
+#include "tools/ast_printer.hpp"
+#include "tools/resource_estimator.hpp"
 
-#include "qasm/qasm.hpp"
-#include "qasm/visitors/ast_printer.hpp"
-#include "qasm/visitors/source_printer.hpp"
-#include "qasm/visitors/resource_estimator.hpp"
+#include <iostream>
+#include <string>
+#include <memory>
+#include <optional>
 
-#include <unordered_map>
-
-using namespace synthewareQ::qasm;
+using namespace synthewareQ;
 
 int main(int argc, char** argv) {
 
   if (argc < 2) {
     std::cerr << "Input file not specified.\n";
+    return -1;
   }
 
-  auto program = synthewareQ::qasm::read_from_file(argv[1]);
+  auto program = parser::parse_file(argv[1]);
   if (program) {
-    std::cout << "Success!\nAST:\n";
-    ast_printer printer(std::cout);
-    printer.visit(*program);
+    std::cout << "Source:\n" << *program << "\n";
 
-    std::cout << "\nUntransformed source:\n";
-    source_printer src(std::cout);
-    src.visit(*program);
+    std::cout << "AST:\n";
+    tools::print_tree(*program);
+    std::cout << "\n";
 
-    std::cout << "\nResource estimates:\n";
-    resource_estimator res;
-    auto count = res.estimate(*program);
+    std::cout << "Resource estimates:\n";
+    auto count = tools::estimate_resources(*program);
     for (auto& [name, num] : count) {
       std::cout << "  " << name << ": " << num << "\n";
     }
   } else {
-    std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";
+    std::cout << "Parsing failed\n";
   }
 
   return 1;

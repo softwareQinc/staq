@@ -1,5 +1,3 @@
-#define FMT_HEADER_ONLY = true
-
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
 
@@ -10,8 +8,8 @@
 using namespace synthewareQ::synthesis;
 using namespace synthewareQ::mapping;
 
-std::list<std::pair<size_t, size_t> > map(const std::list<std::pair<size_t, size_t> >& circuit, device& d) {
-  std::list<std::pair<size_t, size_t> > ret;
+std::list<std::pair<int, int> > map(const std::list<std::pair<int, int> >& circuit, Device& d) {
+  std::list<std::pair<int, int> > ret;
   
   for (auto [ctrl, tgt] : circuit) {
     path cnot_chain = d.shortest_path(ctrl, tgt);

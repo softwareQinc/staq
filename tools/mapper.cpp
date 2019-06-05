@@ -1,14 +1,28 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#define FMT_HEADER_ONLY = true
-
-#include "qasm/qasm.hpp"
-#include "qasm/visitors/source_printer.hpp"
-
+#include "parser/parser.hpp"
 #include "transformations/inline.hpp"
 
 #include "mapping/device.hpp"
@@ -38,15 +52,14 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
-  auto program = qasm::read_from_stdin();
+  auto program = parser::parse_stdin();
   if (program) {
 
     // Inline fully first
-    auto preprocessor = transformations::inliner(program.get(), { false, {}, "anc" });
-    preprocessor.visit(*program);
+    transformations::inline_ast(*program, { false, {}, "anc" });
 
     // Physical device
-    mapping::device dev;
+    mapping::Device dev;
     if (device_name == "rigetti8") {
       dev = mapping::rigetti_8q;
     } else if (device_name == "square9") {
@@ -61,29 +74,29 @@ int main(int argc, char** argv) {
     // Initial layout
     mapping::layout physical_layout;
     if (layout == "linear") {
-      physical_layout = mapping::compute_layout(program.get(), dev);
+      physical_layout = mapping::compute_basic_layout(dev, *program);
     } else if (layout == "eager") {
-      physical_layout = mapping::compute_layout_eager(program.get(), dev);
+      physical_layout = mapping::compute_eager_layout(dev, *program);
     } else if (layout == "bestfit") {
-      physical_layout = mapping::compute_layout_bestfit(program.get(), dev);
+      physical_layout = mapping::compute_bestfit_layout(dev, *program);
     } else {
       std::cerr << "Error: invalid layout algorithm\n";
       return 0;
     }
-    mapping::apply_layout(program.get(), physical_layout);
+    mapping::apply_layout(physical_layout, *program);
 
     // Mapping
     if (mapper == "swap") {
-      mapping::map_onto_device(program.get(), dev);
+      mapping::map_onto_device(dev, *program);
     } else if (mapper == "steiner") {
-      mapping::steiner_mapping(program.get(), dev);
+      mapping::steiner_mapping(dev, *program);
     } else {
       std::cerr << "Error: invalid mapping algorithm\n";
       return 0;
     }
 
     // Print result
-    qasm::print_source(program.get());
+    std::cout << *program;
   } else {
     std::cerr << "Parsing failed\n";
   }

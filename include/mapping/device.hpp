@@ -1,13 +1,33 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
+#include "ast/var.hpp"
+
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <list>
 #include <set>
 
@@ -19,16 +39,16 @@
 namespace synthewareQ {
 namespace mapping {
 
-  using layout       = std::map<std::pair<std::string_view, size_t>, size_t>;
-  using path         = std::list<size_t>;
-  using coupling     = std::pair<size_t, size_t>;
-  using spanning_tree = std::list<std::pair<size_t, size_t> >;
+  using layout        = std::unordered_map<ast::VarAccess, int>;
+  using path          = std::list<int>;
+  using coupling      = std::pair<int, int>;
+  using spanning_tree = std::list<std::pair<int, int> >;
 
-  /* \brief! Definition of physical devices for efficient mapping */
-  class device {
+  /** \brief Definition of physical devices for efficient mapping */
+  class Device {
   public:
-    device() {}
-    device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag)
+    Device() {}
+    Device(std::string name, int n, const std::vector<std::vector<bool> >& dag)
       : name_(name)
       , qubits_(n)
       , couplings_(dag)
@@ -43,7 +63,7 @@ namespace mapping {
         }
       }
     }
-    device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag,
+    Device(std::string name, int n, const std::vector<std::vector<bool> >& dag,
            const std::vector<double>& sq_fi, const std::vector<std::vector<double> >& tq_fi)
       : name_(name)
       , qubits_(n)
@@ -53,23 +73,23 @@ namespace mapping {
     { }
 
     std::string name_;
-    size_t qubits_;
+    int qubits_;
 
-    bool coupled(size_t i, size_t j) {
+    bool coupled(int i, int j) {
       if (0 <= i && i < qubits_ && 0 <= j && j < qubits_) return couplings_[i][j];
       else throw std::out_of_range("Qubit(s) not in range");
     }
 
-    double sq_fidelity(size_t i) {
+    double sq_fidelity(int i) {
       if (0 <= i && i < qubits_) return single_qubit_fidelities_[i];
       else throw std::out_of_range("Qubit not in range");
     }
-    double tq_fidelity(size_t i, size_t j) {
+    double tq_fidelity(int i, int j) {
       if (coupled(i, j)) return coupling_fidelities_[i][j];
       else throw std::logic_error("Qubit not coupled");
     }
 
-    path shortest_path(size_t i, size_t j) {
+    path shortest_path(int i, int j) {
       compute_shortest_paths();
       path ret { i };
       
@@ -85,14 +105,14 @@ namespace mapping {
       return ret;
     }
 
-    size_t distance(size_t i, size_t j) {
+    int distance(int i, int j) {
       compute_shortest_paths();
 
       if (shortest_paths[i][j] == qubits_) {
         return -1;
       }
 
-      size_t ret = 0;
+      int ret = 0;
       while(i != j) {
         i = shortest_paths[i][j];
         ++ret;
@@ -121,16 +141,15 @@ namespace mapping {
     }
 
     // Returns an approximation to the minimal rooted steiner tree
-    spanning_tree steiner(std::list<size_t> terminals, size_t root)
-    {
+    spanning_tree steiner(std::list<int> terminals, int root) {
       compute_shortest_paths();
 
       spanning_tree ret;
 
       // Internal data structures
       std::vector<double> vertex_cost(qubits_);
-      std::vector<size_t> edge_in(qubits_);
-      std::set<size_t> in_tree{root};
+      std::vector<int> edge_in(qubits_);
+      std::set<int> in_tree{root};
 
       auto min_node = terminals.end();
       for (auto it = terminals.begin(); it != terminals.end(); it++) {
@@ -174,14 +193,14 @@ namespace mapping {
     // Utilities computed by all-pairs-shortest-paths, for use getting shortest paths
     // and Steiner trees
     std::vector<std::vector<double> > dist;
-    std::vector<std::vector<size_t> > shortest_paths;
+    std::vector<std::vector<int> > shortest_paths;
 
     // Floyd-Warshall, since it's simple to implement and devices are not currently that big
     void compute_shortest_paths() {
       if (dist.empty() || shortest_paths.empty()) {
         // Initialize
         dist           = std::vector<std::vector<double> >(qubits_, std::vector<double>(qubits_));
-        shortest_paths = std::vector<std::vector<size_t> >(qubits_, std::vector<size_t>(qubits_));
+        shortest_paths = std::vector<std::vector<int> >(qubits_, std::vector<int>(qubits_));
 
         // All-pairs shortest paths
         for (auto i = 0; i < qubits_; i++) {
@@ -219,10 +238,10 @@ namespace mapping {
     // the topological order on s_tree
     //
     // Additionally returns the nodes added to the tree
-    std::set<size_t> add_to_tree(spanning_tree& s_tree, const path& p, const std::set<size_t>& in_tree) {
-      std::set<size_t> ret;
+    std::set<int> add_to_tree(spanning_tree& s_tree, const path& p, const std::set<int>& in_tree) {
+      std::set<int> ret;
 
-      size_t next = -1;
+      int next = -1;
       auto insert_iter = s_tree.end();
       for (auto it = p.rbegin(); it != p.rend(); it++) {
         // If we're not at the endpoint, insert the edge
@@ -242,7 +261,7 @@ namespace mapping {
 
   };
 
-  device rigetti_8q(
+  Device rigetti_8q(
     "Rigetti 8Q",
     8,
     { {0, 1, 0, 0, 0, 0, 0, 1},
@@ -264,7 +283,7 @@ namespace mapping {
       {0.91, 0, 0, 0, 0, 0, 0.91, 0},}
   );
     
-  device square_9q(
+  Device square_9q(
     "9 qubit square lattice",
     9,
     { {0, 1, 0, 0, 0, 1, 0, 0, 0},

@@ -1,8 +1,26 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
@@ -26,13 +44,13 @@ namespace synthesis {
     return A;
   }
 
-  std::list<std::pair<size_t, size_t> > gauss_jordan(linear_op<bool> mat) {
-    std::list<std::pair<size_t, size_t> > ret;
+  std::list<std::pair<int, int> > gauss_jordan(linear_op<bool> mat) {
+    std::list<std::pair<int, int> > ret;
 
     for (auto i = 0; i < mat[0].size(); i++) {
 
       // Find pivot
-      size_t pivot = -1;
+      int pivot = -1;
       for (auto j = i; j < mat.size(); j++) {
         if (mat[j][i] == true) {
           pivot = j;
@@ -65,13 +83,13 @@ namespace synthesis {
     return ret;
   }
 
-  std::list<std::pair<size_t, size_t> > gaussian_elim(linear_op<bool> mat) {
-    std::list<std::pair<size_t, size_t> > ret;
+  std::list<std::pair<int, int> > gaussian_elim(linear_op<bool> mat) {
+    std::list<std::pair<int, int> > ret;
 
     for (auto i = 0; i < mat[0].size(); i++) {
 
       // Find pivot
-      size_t pivot = -1;
+      int pivot = -1;
       for (auto j = i; j < mat.size(); j++) {
         if (mat[j][i] == true) {
           pivot = j;
@@ -141,8 +159,8 @@ namespace synthesis {
    * 00010            00010             00010             00010
    *
    */
-  std::list<std::pair<size_t, size_t> > steiner_gauss(linear_op<bool> mat, mapping::device& d) {
-    std::list<std::pair<size_t, size_t> > ret;
+  std::list<std::pair<int, int> > steiner_gauss(linear_op<bool> mat, mapping::Device& d) {
+    std::list<std::pair<int, int> > ret;
 
     // Whether or not a row has a dependence on a row above the diagonal
     std::vector<bool> above_diagonal_dep(mat.size(), false);
@@ -151,9 +169,9 @@ namespace synthesis {
       std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
       // Phase 0: Find pivot & swap
-      size_t pivot = -1;
-      size_t dist;
-      std::list<std::pair<size_t, size_t> > swap;
+      int pivot = -1;
+      int dist;
+      std::list<std::pair<int, int> > swap;
       for (auto j = i; j < mat.size(); j++) {
         if (mat[j][i] == true) {
           if (pivot == -1 || d.distance(j, i) < dist) {
@@ -183,13 +201,13 @@ namespace synthesis {
       }
 
       // Phase 1: Compute steiner tree covering the 1's in column i
-      std::list<size_t> pivots;
+      std::list<int> pivots;
       for (auto j = 0; j < mat.size(); j++) {
         if (j != i && mat[j][i] == true) pivots.push_back(j);
       }
       auto s_tree = d.steiner(pivots, pivot);
 
-      std::list<std::pair<size_t, size_t> > compute;
+      std::list<std::pair<int, int> > compute;
       // Phase 2: Propagate 1's to column i for each Steiner point
       for (auto& [ctrl, tgt] : s_tree) {
         if (mat[tgt][i] == false) {
@@ -213,7 +231,7 @@ namespace synthesis {
 
       // Phase 4: For each node that has an above diagonal dependency,
       // reverse the previous steps to undo the additions
-      std::list<std::pair<size_t, size_t> > uncompute;
+      std::list<std::pair<int, int> > uncompute;
       for (auto it = compute.rbegin(); it != compute.rend(); it++) {
         auto ctrl = it->first;
         auto tgt = it->second;

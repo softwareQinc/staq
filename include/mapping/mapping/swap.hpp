@@ -1,16 +1,31 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/replacer.hpp"
-#include "qasm/visitors/generic/concrete.hpp"
+#include "ast/replacer.hpp"
 #include "transformations/substitution.hpp"
-
 #include "mapping/device.hpp"
 
 #include <map>
@@ -20,67 +35,54 @@
 namespace synthewareQ {
 namespace mapping {
 
-  /*! \brief Simple swap-inserting mapping algorithm 
+  /** 
+   * \brief Simple swap-inserting mapping algorithm 
    *
    * Assumes the circuit has already been laid out onto a single register 
    * with name given in the configuration
    */
-  void map_onto_device(ast_context* ctx, device d);
+  void map_onto_device(Device&, ast::Program&);
 
   /* Implementation */
-  class swap_mapper final : public replacer<swap_mapper> {
+  class SwapMapper final : public ast::Replacer {
   public:
-    using replacer<swap_mapper>::visit;
-
     struct config {
       std::string register_name = "q";
     };
 
-    swap_mapper(ast_context* ctx, device& d) : ctx_(ctx), device_(d) {
-      for (auto i = 0; i < d.qubits_; i++) {
+    SwapMapper(Device& device) : Replacer(), device_(device) {
+      for (auto i = 0; i < device.qubits_; i++) {
         permutation_[i] = i;
       }
     }
 
-
-    std::optional<ast_node_list> replace(expr_reg_offset* node) override {
-      if (node->id() == config_.register_name) {
-        ast_node_list ret;
-
-        auto tmp = node->index_numeric();
-        auto new_offset = expr_integer::create(ctx_, node->location(), permutation_[tmp]);
-        ret.push_back(&node->parent(), expr_reg_offset::build(ctx_, node->location(), node->id(), new_offset));
-
-        return ret;
-      }
-
-      return std::nullopt;
+    std::optional<ast::VarAccess> replace(ast::VarAccess& va) override {
+      if (va.var() == config_.register_name)
+        return ast::VarAccess(va.pos(), va.var(), permutation_[*va.offset()]);
+      else
+        return std::nullopt;
     }
 
     // Where the magic happens
-    std::optional<ast_node_list> replace(stmt_cnot* node) override {
-      assert(node->control().kind() == ast_node_kinds::expr_reg_offset);
-      assert(node->target().kind() == ast_node_kinds::expr_reg_offset);
-      // Unsafe
-      auto ctrl = static_cast<expr_reg_offset*>(&node->control());
-      auto trgt = static_cast<expr_reg_offset*>(&node->target());
+    std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::CNOTGate& gate) override {
+      // Post order, so the permutation is already applied
+      auto ctrl = *(gate.ctrl().offset());
+      auto tgt = *(gate.tgt().offset());
 
-      // Post-order replacement, so the indices should already refer to the current permutation
-      assert(ctrl->index().kind() == ast_node_kinds::expr_integer);
-      assert(trgt->index().kind() == ast_node_kinds::expr_integer);
-      auto ctl = ctrl->index_numeric();
-      auto tgt = trgt->index_numeric();
-      path cnot_chain = device_.shortest_path(ctl, tgt);
+      // Compute shortest path
+      path cnot_chain = device_.shortest_path(ctrl, tgt);
+
       if (cnot_chain.empty()) {
-        std::cerr << "Error: could not find path between qubits " << ctl << " and " << tgt << "\n";
+        std::cerr << "Error: could not find a connection between qubits " << ctrl << " and " << tgt << "\n";
         return std::nullopt;
       } else {
-        ast_node_list ret;
+        std::list<ast::ptr<ast::Gate> > ret;
+
         // Create a swap chain & update the current permutation
-        auto i = ctl;
+        auto i = ctrl;
         for (auto j : cnot_chain) {
           if (j == tgt) {
-            ret.push_back(&node->parent(), generate_cnot(i, j, node->location()));
+            ret.emplace_back(generate_cnot(i, j, gate.pos()));
             break;
           } else if (j != i) {
             // Swap i and j
@@ -92,21 +94,21 @@ namespace mapping {
             }
             
             // CNOT 1
-            ret.push_back(&node->parent(), generate_cnot(swap_i, swap_j, node->location()));
+            ret.emplace_back(generate_cnot(swap_i, swap_j, gate.pos()));
 
             // CNOT 2
             if (device_.coupled(swap_j, swap_i)) {
-              ret.push_back(&node->parent(), generate_cnot(swap_j, swap_i, node->location()));
+              ret.emplace_back(generate_cnot(swap_j, swap_i, gate.pos()));
             } else {
-              ret.push_back(&node->parent(), generate_hadamard(swap_i, node->location()));
-              ret.push_back(&node->parent(), generate_hadamard(swap_j, node->location()));
-              ret.push_back(&node->parent(), generate_cnot(swap_i, swap_j, node->location()));
-              ret.push_back(&node->parent(), generate_hadamard(swap_i, node->location()));
-              ret.push_back(&node->parent(), generate_hadamard(swap_j, node->location()));
+              ret.emplace_back(generate_hadamard(swap_i, gate.pos()));
+              ret.emplace_back(generate_hadamard(swap_j, gate.pos()));
+              ret.emplace_back(generate_cnot(swap_i, swap_j, gate.pos()));
+              ret.emplace_back(generate_hadamard(swap_i, gate.pos()));
+              ret.emplace_back(generate_hadamard(swap_j, gate.pos()));
             }
 
             // CNOT 3
-            ret.push_back(&node->parent(), generate_cnot(swap_i, swap_j, node->location()));
+            ret.emplace_back(generate_cnot(swap_i, swap_j, gate.pos()));
 
             // Adjust permutation
             for (auto& [q_init, q] : permutation_) {
@@ -116,51 +118,39 @@ namespace mapping {
           }
           i = j;
         }
-        return ret;
+        return std::move(ret);
       }
     }
 
   private:
-    ast_context* ctx_;
-
-    device device_;
-    std::map<size_t, size_t> permutation_;
+    Device device_;
+    std::map<int, int> permutation_;
     config config_;
 
-    ast_node* generate_cnot(size_t i, size_t j, uint32_t loc = 0) {
-      auto builder = stmt_cnot::builder(ctx_, loc);
-      auto ctrl_offset = expr_integer::create(ctx_, loc, i);
-      auto trgt_offset = expr_integer::create(ctx_, loc, j);
-
-      builder.add_child(expr_reg_offset::build(ctx_, loc, config_.register_name, ctrl_offset));
-      builder.add_child(expr_reg_offset::build(ctx_, loc, config_.register_name, trgt_offset));
-
-      return static_cast<ast_node*>(builder.finish());
+    ast::ptr<ast::CNOTGate> generate_cnot(int i, int j, parser::Position pos) {
+      auto ctrl = ast::VarAccess(pos, config_.register_name, i);
+      auto tgt = ast::VarAccess(pos, config_.register_name, j);
+      return std::make_unique<ast::CNOTGate>(ast::CNOTGate(pos, std::move(ctrl), std::move(tgt)));
     }
       
-    ast_node* generate_hadamard(size_t i, uint32_t loc = 0) {
-      auto builder = stmt_unitary::builder(ctx_, loc);
+    ast::ptr<ast::UGate> generate_hadamard(int i, parser::Position pos) {
+      auto tgt = ast::VarAccess(pos, config_.register_name, i);
 
-      auto theta = expr_binary_op::builder(ctx_, loc, binary_ops::division);
-      theta.add_child(expr_pi::create(ctx_, loc));
-      theta.add_child(expr_integer::create(ctx_, loc, 2));
-      auto phi = expr_integer::create(ctx_, loc, 0);
-      auto lambda = expr_pi::create(ctx_, loc);
+      auto tmp1  = std::make_unique<ast::PiExpr>(ast::PiExpr(pos));
+      auto tmp2  = std::make_unique<ast::IntExpr>(ast::IntExpr(pos, 2));
+      auto theta = std::make_unique<ast::BExpr>(ast::BExpr(
+        pos, std::move(tmp1), ast::BinaryOp::Divide, std::move(tmp2)));
+      auto phi = std::make_unique<ast::IntExpr>(ast::IntExpr(pos, 0));
+      auto lambda = std::make_unique<ast::PiExpr>(ast::PiExpr(pos));
 
-      builder.add_child(theta.finish());
-      builder.add_child(phi);
-      builder.add_child(lambda);
-
-      auto offset = expr_integer::create(ctx_, loc, i);
-      builder.add_child(expr_reg_offset::build(ctx_, loc, config_.register_name, offset));
-
-      return static_cast<ast_node*>(builder.finish());
+      return std::make_unique<ast::UGate>(ast::UGate(
+        pos, std::move(theta), std::move(phi), std::move(lambda), std::move(tgt)));
     }
   };
 
-  void map_onto_device(ast_context* ctx, device d) {
-    swap_mapper mapper(ctx, d);
-    mapper.visit(*ctx);
+  void map_onto_device(Device& device, ast::Program& prog) {
+    SwapMapper mapper(device);
+    prog.accept(mapper);
   }
 
 }

@@ -1,15 +1,32 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
-
-#include <tweedledum/utils/angle.hpp>
+#include "utils/angle.hpp"
 
 #include <vector>
 #include <list>
@@ -18,14 +35,13 @@
 namespace synthewareQ {
 namespace synthesis {
 
-  namespace td = tweedledum;
   using namespace mapping;
-  using phase_term = std::pair<std::vector<bool>, td::angle>;
-  using cx_dihedral = std::variant<std::pair<size_t, size_t>, std::pair<td::angle, size_t> >;
+  using phase_term = std::pair<std::vector<bool>, utils::Angle>;
+  using cx_dihedral = std::variant<std::pair<int, int>, std::pair<utils::Angle, int> >;
 
   struct partition {
-    std::optional<size_t> target;
-    std::set<size_t>      remaining_indices;
+    std::optional<int> target;
+    std::set<int>      remaining_indices;
     std::list<phase_term> terms;
   };
 
@@ -44,7 +60,7 @@ namespace synthesis {
     std::cout << "}}\n";
   }
 
-  void adjust_vectors(size_t ctrl, size_t tgt, std::list<partition>& stack) {
+  void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
     for (auto& part : stack) {
       for (auto& [vec, angle] : part.terms) {
         vec[ctrl] = vec[ctrl] ^ vec[tgt];
@@ -52,9 +68,9 @@ namespace synthesis {
     }
   }
 
-  size_t find_best_split(const std::list<phase_term>& terms, const std::set<size_t>& indices) {
-    size_t max = -1;
-    size_t max_i = -1;
+  int find_best_split(const std::list<phase_term>& terms, const std::set<int>& indices) {
+    int max = -1;
+    int max_i = -1;
     for (auto i : indices) {
       auto num_zeros = 0;
       auto num_ones = 0;
@@ -73,7 +89,7 @@ namespace synthesis {
     return max_i;
   }
 
-  std::pair<std::list<phase_term>, std::list<phase_term> > split(std::list<phase_term>& terms, size_t i) {
+  std::pair<std::list<phase_term>, std::list<phase_term> > split(std::list<phase_term>& terms, int i) {
     std::list<phase_term> zeros;
     std::list<phase_term> ones;
 
@@ -90,7 +106,7 @@ namespace synthesis {
     std::list<cx_dihedral> ret;
     std::list<partition> stack;
 
-    std::set<size_t> indices;
+    std::set<int> indices;
     for (auto i = 0; i < A.size(); i++) indices.insert(i);
 
     stack.push_front({std::nullopt, indices, f});
@@ -114,7 +130,7 @@ namespace synthesis {
 
         for (auto ctrl = 0; ctrl < vec.size(); ctrl++) {
           if (ctrl != tgt && vec[ctrl]) {
-            ret.push_back(std::make_pair((size_t)ctrl, (size_t)tgt));
+            ret.push_back(std::make_pair((int)ctrl, (int)tgt));
 
             // Adjust remaining vectors & output function
             adjust_vectors(ctrl, tgt, stack);
@@ -153,12 +169,12 @@ namespace synthesis {
     return ret;
   }
 
-  std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f, linear_op<bool> A, device& d) {
+  std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f, linear_op<bool> A, Device& d) {
     // Initialize
     std::list<cx_dihedral> ret;
     std::list<partition> stack;
 
-    std::set<size_t> indices;
+    std::set<int> indices;
     for (auto i = 0; i < A.size(); i++) indices.insert(i);
 
     stack.push_front({std::nullopt, indices, f});
@@ -180,7 +196,7 @@ namespace synthesis {
         auto tgt = *(part.target);
         auto& [vec, angle] = part.terms.front();
 
-        std::list<size_t> terminals;
+        std::list<int> terminals;
         for (auto ctrl = 0; ctrl < vec.size(); ctrl++) {
           if (ctrl != tgt && vec[ctrl]) terminals.push_back(ctrl);
         }
@@ -190,7 +206,7 @@ namespace synthesis {
         // Fill each steiner point with a one
         for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
           if (vec[it->second] == 0) {
-            ret.push_back(std::make_pair((size_t)(it->second), (size_t)(it->first)));
+            ret.push_back(std::make_pair((int)(it->second), (int)(it->first)));
             adjust_vectors(it->second, it->first, stack);
             for (auto i = 0; i < A.size(); i++) {
               A[i][it->second] = A[i][it->second] ^ A[i][it->first];
@@ -200,7 +216,7 @@ namespace synthesis {
         
         // Zero out each row except for the root
         for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
-          ret.push_back(std::make_pair((size_t)(it->second), (size_t)(it->first)));
+          ret.push_back(std::make_pair((int)(it->second), (int)(it->first)));
           adjust_vectors(it->second, it->first, stack);
           for (auto i = 0; i < A.size(); i++) {
               A[i][it->second] = A[i][it->second] ^ A[i][it->first];

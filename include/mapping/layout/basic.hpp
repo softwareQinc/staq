@@ -1,116 +1,118 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/replacer.hpp"
-#include "qasm/visitors/generic/concrete.hpp"
+#include "ast/replacer.hpp"
+#include "ast/traversal.hpp"
 #include "transformations/substitution.hpp"
-
 #include "mapping/device.hpp"
 
-#include <map>
+#include <unordered_map>
 
 namespace synthewareQ {
 namespace mapping {
 
-  using namespace qasm;
-  using namespace transformations;
-
-  /* \brief! Applies a layout to a circuit */
-  class layout_transformer final : public replacer<layout_transformer> {
+  /** \brief Applies a layout to a circuit */
+  class LayoutTransformer final : public ast::Replacer {
   public:
-    using replacer<layout_transformer>::visit;
-
     struct config {
       std::string register_name = "q";
     };
 
-    layout_transformer(ast_context* ctx, layout& l) : ctx_(ctx), layout_(l), subst_(ctx) {}
+    LayoutTransformer() = default;
+    LayoutTransformer(const config& params) : Replacer(), config_(params) {}
+    ~LayoutTransformer() = default;
 
-    std::optional<ast_node_list> replace(decl_program* node) override {
+    void run(ast::Program& prog, const layout& l) {
       // Visit entire program, removing register declarations, then
       // add the physical register & apply substitutions
+      prog.accept(*this);
 
       // Physical register declaration
-      auto reg = decl_register::build(ctx_, node->location(), register_type::quantum,
-                                      config_.register_name, layout_.size());
-      node->insert_child(node->begin(), reg);
+      prog.body().emplace_front(std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
+        prog.pos(), config_.register_name, true, l.size())));
 
       // Substitution
-      std::map<ap, ap> substitution;
-      for (auto& [access, offset] : layout_) {
-        substitution[access] = ap(std::make_pair(config_.register_name, offset));
+      std::unordered_map<ast::VarAccess, ast::VarAccess> subst;
+      for (auto const& [access, idx] : l) {
+        subst.insert({access, ast::VarAccess(parser::Position(), config_.register_name, idx)});
       }
-      subst_.subst(substitution, node);
-
-      return std::nullopt;
+      transformations::subst_ap_ap(subst, prog);
     }
 
-    std::optional<ast_node_list> replace(decl_register* node) override {
-      if (node->is_quantum()) return ast_node_list();
+    std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::RegisterDecl& decl) override {
+      if (decl.is_quantum()) return std::list<ast::ptr<ast::Stmt> >();
       else return std::nullopt;
     }
 
   private:
-    ast_context* ctx_;
-
-    layout layout_;
-    ap_substitutor subst_;
     config config_;
-
   };
 
-  /* \brief! A basic qubit layout algorithm */
-  class basic_layout final : public visitor<basic_layout> {
+  /** \brief A basic qubit layout algorithm */
+  class BasicLayout final : public ast::PostVisitor {
   public:
-    using visitor<basic_layout>::visit;
+    BasicLayout(Device& device) : PostVisitor(), device_(device) {}
+    ~BasicLayout() = default;
 
-    basic_layout(ast_context* ctx, device& d) : ctx_(ctx), device_(d) {}
-
-    layout generate() {
+    layout generate(ast::Program& prog) {
       current_ = layout();
       n_ = 0;
 
-      visit(*ctx_);
+      prog.accept(*this);
 
       return current_;
     }
 
-    void visit(decl_register* node) override {
-      if (node->is_quantum()) {
-        if (n_ + node->size() <= device_.qubits_) {
-          for (auto i = 0; i < node->size(); i++) {
-            current_[std::make_pair(node->identifier(), i)] = n_ + i;
+    void visit(ast::RegisterDecl& decl) override {
+      if (decl.is_quantum()) {
+        if (n_ + decl.size() <= device_.qubits_) {
+          for (auto i = 0; i < decl.size(); i++) {
+            current_[ast::VarAccess(parser::Position(), decl.id(), i)] = n_ + i;
           }
-          n_ += node->size();
+          n_ += decl.size();
         } else {
-          std::cerr << "Error: program can't fit on device \"" << device_.name_ << "\"\n";
+          std::cerr << "Error: can't fit program onto device " << device_.name_ << "\n";
         }
       }
     }
 
   private:
-    ast_context* ctx_;
-    
-    device device_;
+    Device device_;
     layout current_;
     size_t n_;
-
   };
 
-  void apply_layout(ast_context* ctx, layout& l) {
-    layout_transformer trans(ctx, l);
-    trans.visit(*ctx);
+  void apply_layout(const layout& l, ast::Program& prog) {
+    LayoutTransformer alg;
+    alg.run(prog, l);
   }
 
-  layout compute_layout(ast_context* ctx, device& d) {
-    basic_layout layout_generator(ctx, d);
-    return layout_generator.generate();
+  layout compute_basic_layout(Device& device, ast::Program& prog) {
+    BasicLayout gen(device);
+    return gen.generate(prog);
   }
 
 }

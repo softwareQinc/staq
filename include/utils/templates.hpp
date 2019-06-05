@@ -22,20 +22,19 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
-#include "transformations/inline.hpp"
+/**
+ * \file ast/templates.hpp
+ * \brief Helper templates
+ */
+#pragma once
 
-using namespace synthewareQ;
+namespace synthewareQ {
+namespace utils {
+  /**
+   * \brief Convenience template for variant visitors
+   */
+  template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+  template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-int main() {
-
-  auto program = parser::parse_stdin();
-  if (program) {
-    transformations::inline_ast(*program);
-    std::cout << *program;
-  } else {
-    std::cerr << "Parsing failed\n";
-  }
-
-  return 1;
+}
 }

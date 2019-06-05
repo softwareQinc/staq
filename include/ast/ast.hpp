@@ -21,21 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#pragma once
 
-#include "parser/parser.hpp"
-#include "transformations/inline.hpp"
-
-using namespace synthewareQ;
-
-int main() {
-
-  auto program = parser::parse_stdin();
-  if (program) {
-    transformations::inline_ast(*program);
-    std::cout << *program;
-  } else {
-    std::cerr << "Parsing failed\n";
-  }
-
-  return 1;
-}
+#include "ast/visitor.hpp"
+#include "ast/base.hpp"
+#include "ast/expr.hpp"
+#include "ast/stmt.hpp"
+#include "ast/decl.hpp"
+#include "ast/program.hpp"

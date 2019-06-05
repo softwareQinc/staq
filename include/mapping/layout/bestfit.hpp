@@ -1,14 +1,30 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/concrete.hpp"
-
+#include "ast/traversal.hpp"
 #include "mapping/device.hpp"
 
 #include <map>
@@ -16,63 +32,52 @@
 namespace synthewareQ {
 namespace mapping {
 
-  using namespace qasm;
-  using namespace transformations;
-
-  using ap = std::pair<std::string_view, uint32_t>;
-
-  /* \brief! An initial layout based on the distribution of connections in the circuit
+  /**
+   * \brief An initial layout based on the distribution of connections in the circuit
    *
    * Chooses a layout where the most coupled virtual qubits are assigned to the highest
    * fidelity couplings. Should perform well for devices with a high degree of connectivity
    */
-  class best_fit final : public visitor<best_fit> {
+  class BestFit final : public ast::PostVisitor {
   public:
-    using visitor<best_fit>::visit;
+    BestFit(Device& device) : PostVisitor(), device_(device) {}
+    ~BestFit() = default;
 
-    best_fit(ast_context* ctx, device& d) : ctx_(ctx), device_(d) {}
-
-    layout generate() {
+    layout generate(ast::Program& prog) {
       allocated_ = std::vector<bool>(device_.qubits_, false);
       access_paths_.clear();
       histogram_.clear();  
 
-      visit(*ctx_);
+      prog.accept(*this);
 
       return fit_histogram();
     }
 
     // Ignore gate declarations
-    void visit(decl_gate* node) override { }
+    void visit(ast::GateDecl&) override { }
 
-    void visit(decl_register* node) override {
-      if (node->is_quantum()) {
-        for (auto i = 0; i < node->size(); i++) {
-          access_paths_.insert(std::make_pair(node->identifier(), i));
-        }
+    void visit(ast::RegisterDecl& decl) override {
+      if (decl.is_quantum()) {
+        for (int i = 0; i < decl.size(); i++)
+          access_paths_.insert(ast::VarAccess(decl.pos(), decl.id(), i));
       }
     }
 
-    void visit_pre(stmt_cnot* node) override {
-      auto ctrl = get_access_path(&node->control());
-      auto tgt = get_access_path(&node->target());
-
-      histogram_[std::make_pair(ctrl, tgt)] += 1;
+    void visit(ast::CNOTGate& gate) override {
+      histogram_[std::make_pair(gate.ctrl(), gate.tgt())] += 1;
     }
 
   private:
-    ast_context* ctx_;
-    
-    device device_;
+    Device device_;
     std::vector<bool> allocated_;
-    std::set<ap> access_paths_;
-    std::map<std::pair<ap, ap>, uint32_t> histogram_;
+    std::set<ast::VarAccess> access_paths_;
+    std::map<std::pair<ast::VarAccess, ast::VarAccess>, int> histogram_;
 
     layout fit_histogram() {
       layout ret;
 
       // Sort in order of decreasing number of two-qubit gates
-      using mapping = std::pair<std::pair<ap, ap>, uint32_t>;
+      using mapping = std::pair<std::pair<ast::VarAccess, ast::VarAccess>, int>;
       using comparator = std::function<bool(mapping, mapping)>;
       comparator cmp = [](mapping a, mapping b) { return a.second > b.second; };
       std::set<mapping,comparator> sorted_pairs(histogram_.begin(), histogram_.end(), cmp);
@@ -80,8 +85,8 @@ namespace mapping {
       // For each pair with CNOT gates between them, try to assign a coupling
       auto couplings = device_.couplings();
       for (auto& [args, val] : sorted_pairs) {
-        size_t ctrl_bit;
-        size_t tgt_bit;
+        int ctrl_bit;
+        int tgt_bit;
         for (auto& [coupling, f] : couplings) {
           if (auto it = ret.find(args.first); it != ret.end()) {
             if (it->second != coupling.first) continue;
@@ -116,7 +121,7 @@ namespace mapping {
         bool cont = ret.find(ap) == ret.end();
         while (cont) {
           if (i >= device_.qubits_) {
-            std::cerr << "Error: ran out of physical qubits to allocate";
+            std::cerr << "Error: can't fit program onto device " << device_.name_ << "\n";
             return ret;
           } else if (!allocated_[i]) {
               ret[ap] = i;
@@ -130,24 +135,11 @@ namespace mapping {
 
       return ret;
     }
-        
-
-    std::pair<std::string_view, uint32_t> get_access_path(ast_node* node) {
-      expr_reg_offset* arg = nullptr;
-      switch(node->kind()) {
-      case ast_node_kinds::expr_reg_offset:
-        arg = static_cast<expr_reg_offset*>(node);
-        return std::make_pair(arg->id(), arg->index_numeric());
-      default:
-        throw std::logic_error("Can't complete mapping -- argument invalid");
-      }
-    }
-
   };
 
-  layout compute_layout_bestfit(ast_context* ctx, device& d) {
-    best_fit generator(ctx, d);
-    return generator.generate();
+  layout compute_bestfit_layout(Device& device, ast::Program& prog) {
+    BestFit gen(device);
+    return gen.generate(prog);
   }
 
 }

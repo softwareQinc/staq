@@ -1,14 +1,10 @@
-#define FMT_HEADER_ONLY = true
-
-#include "qasm/qasm.hpp"
+#include "parser/parser.hpp"
 #include "optimization/rotation_folding.hpp"
-#include "qasm/visitors/source_printer.hpp"
-#include "qasm/visitors/resource_estimator.hpp"
+#include "tools/resource_estimator.hpp"
 
 #include <unordered_map>
 
 using namespace synthewareQ;
-using namespace synthewareQ::qasm;
 
 int main(int argc, char** argv) {
 
@@ -16,34 +12,30 @@ int main(int argc, char** argv) {
     std::cerr << "Input file not specified.\n";
   }
 
-  auto program = synthewareQ::qasm::read_from_file(argv[1]);
+  auto program = parser::parse_file(argv[1]);
   if (program) {
-    resource_estimator res;
-    source_printer printer(std::cout);
+    std::cout << "Unoptimized source:\n" << *program << "\n";
 
-    std::cout << "Unoptimized source:\n";
-    printer.visit(*program);
-
-    std::cout << "\nCircuit statistics:\n";
-    auto count = res.estimate(*program);
+    std::cout << "Circuit statistics:\n";
+    auto count = tools::estimate_resources(*program);
     for (auto& [name, num] : count) {
       std::cout << "  " << name << ": " << num << "\n";
     }
+    std::cout << "\n";
 
     // Do optimization
-    rotation_fold(*program);
+    optimization::fold_rotations(*program);
 
-    std::cout << "\n\nOptimized source:\n";
-    printer.visit(*program);
+    std::cout << "Optimized source:\n" << *program << "\n";
 
-    std::cout << "\nCircuit statistics:\n";
-    count = res.estimate(*program);
+    std::cout << "Circuit statistics:\n";
+    count = tools::estimate_resources(*program);
     for (auto& [name, num] : count) {
       std::cout << "  " << name << ": " << num << "\n";
     }
 
   } else {
-    std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";
+    std::cout << "Parsing failed\n";
   }
 
   return 1;

@@ -1,13 +1,31 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/replacer.hpp"
+#include "ast/replacer.hpp"
+#include "utils/templates.hpp"
 
 #include <list>
 #include <unordered_map>
@@ -18,45 +36,40 @@
 namespace synthewareQ {
 namespace transformations {
 
-  using namespace qasm;
-
-  using ap = std::variant<std::string_view, std::pair<std::string_view, uint32_t> >;
-
-  /* Helper for variant visitors */
-  template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-  template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-  /* \brief! Virtual base class for performing replacements with scope information */
-  template<typename Derived>
-  class scoped_replacer : public replacer<Derived> {
+  /** 
+   * \brief Node replacement visitor with symbol tracking
+   *
+   * Provides a replacement interface together with information about
+   * the bound identifiers. Used to substitute only free variables
+   * and for capture-avoiding substitution
+   *  
+   */
+  class ScopedReplacer : public ast::Replacer {
   public:
-    using replacer<Derived>::visit;
-    using replacer<Derived>::visit_children;
+    ScopedReplacer() = default;
+    ~ScopedReplacer() = default;
 
-    scoped_replacer(ast_context* ctx) : ctx_(ctx) {}
-    ~scoped_replacer() {};
-
-    void visit(decl_program* node) override {
+    void visit(ast::Program& prog) override {
       push_scope();
-      visit_children(node);
+      ast::Replacer::visit(prog);
       pop_scope();
     }
-    void visit(decl_gate* node) override {
+    void visit(ast::GateDecl& decl) override {
       push_scope();
-      visit_children(node);
-      pop_scope();
 
-      add_to_scope(node->identifier());
+      for (auto& param : decl.c_params()) add_to_scope(param);
+      for (auto& param : decl.q_params()) add_to_scope(param);
+      ast::Replacer::visit(decl);
+
+      pop_scope();
+      add_to_scope(decl.id());
     }
 
-    void visit(decl_oracle* node) override   { add_to_scope(node->identifier()); }
-    void visit(decl_register* node) override { add_to_scope(node->identifier()); }
-    void visit(decl_param* node) override    { add_to_scope(node->identifier()); }
-    void visit(decl_ancilla* node) override  { add_to_scope(node->identifier()); }
+    void visit(ast::OracleDecl& decl) override   { add_to_scope(decl.id()); }
+    void visit(ast::RegisterDecl& decl) override { add_to_scope(decl.id()); }
+    void visit(ast::AncillaDecl& decl) override  { add_to_scope(decl.id()); }
 
   protected:
-    ast_context* ctx_;
-
     std::list<std::set<std::string_view> > bound_ = { { } };  // The declared identifiers in scope
 
     // Scoping
@@ -76,84 +89,41 @@ namespace transformations {
     }
   };
 
-  /* \brief! Applies a variable->node substitution to an AST
-   *
-   * Given a partial map from identifiers to ast nodes,
-   * replaces each identifier in the outer-most scope
-   * with its mapping, if it exists. Used to implement
-   * substitution & mapping to physical qubits
-   *
-   * Generally doesn't do sanity checks to ensure the
-   * substituted node is in fact an access path
+  /** 
+   * \brief Substitutes variables within expressions
    */
-  class variable_substitutor final : public scoped_replacer<variable_substitutor> {
+  class SubstVar final : public ScopedReplacer {
   public:
-    using scoped_replacer<variable_substitutor>::visit;
 
-    variable_substitutor(ast_context* ctx) : scoped_replacer(ctx) {}
-    ~variable_substitutor() {}
+    SubstVar(std::unordered_map<std::string_view, ast::Expr*>& subst) : subst_(subst) {}
+    ~SubstVar() = default;
 
-    void subst(std::unordered_map<std::string_view, ast_node*> &substs, ast_node* node) {
-      subst_ = substs;
-      visit(node);
-    }
-
-    std::optional<ast_node_list> replace(expr_var* node) override {
-      auto v = node->id();
+    std::optional<ast::ptr<ast::Expr> > replace(ast::VarExpr& expr) override {
+      auto v = expr.var();
       if (free(v) && subst_.find(v) != subst_.end()) {
-        auto ret = ast_node_list();
-        ret.push_back(&node->parent(), subst_[v]->copy(ctx_));
-        return ret;
+        return ast::ptr<ast::Expr>(subst_[v]->clone());
       }
 
       return std::nullopt;
     }
 
-    std::optional<ast_node_list> replace(expr_reg_offset* node) override {
-      auto v = node->id();
-      if (free(v) && subst_.find(v) != subst_.end()) {
-        auto sub = subst_[v];
-        auto ret = ast_node_list();
-        // to avoid cross initialization in switch
-        expr_integer* offset = nullptr;
-        expr_reg_offset* deref = nullptr;
-        std::string_view new_v;
-        uint32_t new_index;
-
-        switch(sub->kind()) {
-        case ast_node_kinds::expr_var:
-          // Replace the root variable
-          new_v = (static_cast<expr_var*>(sub))->id();
-          offset = static_cast<expr_integer*>(node->index().copy(ctx_));
-          deref = expr_reg_offset::build(ctx_, node->location(), new_v, offset);
-          ret.push_back(&node->parent(), deref);
-          return ret;
-        case ast_node_kinds::expr_reg_offset:
-          // Replace the root variable and add the offsets
-          new_v = (static_cast<expr_reg_offset*>(sub))->id();
-          offset = expr_integer::create(ctx_, node->location(), node->index_numeric() +
-                                        (static_cast<expr_reg_offset*>(sub))->index_numeric());
-          deref = expr_reg_offset::build(ctx_, node->location(), new_v, offset);
-          ret.push_back(&node->parent(), deref);
-          return ret;
-        default:
-          std::cerr << "Error: Invalid substitution\n";
-          return std::nullopt;
-        }
-      }
-    }
-
   private:
-    std::unordered_map<std::string_view, ast_node*> subst_; // The substitution
+    std::unordered_map<std::string_view, ast::Expr*> subst_; // The substitution
   };
 
+  void subst_var_expr(std::unordered_map<std::string_view, ast::Expr*>& subst, ast::ASTNode& node) {
+    SubstVar alg(subst);
+    node.accept(alg);
+  }
 
-  /* \brief! Applies an access path substitution to an AST
+
+  /** 
+   * \brief Substitutes variables accesses
    *
    * Can be used to substitute a variable or register access
    * with either a variable or register access.
    *
-   * Rules: {y <- x} means x maps to y
+   * Rules: z {y <- x} means x maps to y in z
    *    x    {y <- x} = y
    *    x[i] {y <- x} = y[i]
    *    x    {y[i] <- x} = y[i]
@@ -163,56 +133,29 @@ namespace transformations {
    *    x    {y[j] <- x[i]} = x
    *    x[i] {y[j] <- x[i]} = y[j]
    */
-  class ap_substitutor final : public scoped_replacer<ap_substitutor> {
+  class SubstAP final : public ScopedReplacer {
   public:
-    using scoped_replacer<ap_substitutor>::visit;
 
-    ap_substitutor(ast_context* ctx) : scoped_replacer(ctx) {}
-    ~ap_substitutor() {}
+    SubstAP(std::unordered_map<ast::VarAccess, ast::VarAccess>& subst) : subst_(subst) {}
+    ~SubstAP() = default;
 
-    void subst(std::map<ap, ap> &substitution, ast_node* node) {
-      subst_ = substitution;
-      visit(node);
-    }
-
-    std::optional<ast_node_list> replace(expr_var* node) override {
-      auto v = node->id();
-
-      if (free(v) && subst_.find(ap(v)) != subst_.end()) {
-        auto ret = ast_node_list();
-        ret.push_back(&node->parent(), generate_node(subst_[ap(v)]));
-        return ret;
-      }
-
-      return std::nullopt;
-    }
-
-    std::optional<ast_node_list> replace(expr_reg_offset* node) override {
-      auto v = node->id();
-      auto offset = (static_cast<expr_integer&>(node->index())).evaluate();
+    std::optional<ast::VarAccess> replace(ast::VarAccess& va) override {
+      auto v = va.var();
+      auto offset = va.offset();
 
       if (free(v)) {
         // Check for a substitution of v[offset] first
-        if (auto it = subst_.find(ap(std::make_pair(v, offset))); it != subst_.end()) {
-          auto ret = ast_node_list();
-          ret.push_back(&node->parent(), generate_node(it->second));
-          return ret;
+        if (auto it = subst_.find(va); it != subst_.end()) {
+          return ast::VarAccess(va.pos(), it->second.var(), it->second.offset());
+        } else if (auto it = subst_.find(ast::VarAccess(va.pos(), v)); it != subst_.end()) {
+          auto vp = it->second;
 
-        } else if (auto it = subst_.find(ap(v)); it != subst_.end()) {
-          auto ret = ast_node_list();
-          ast_node* tmp;
-          std::pair<std::string_view, uint32_t> deref; // To avoid cross initialization
-
-          switch(it->second.index()) {
-          case 0: // x[i] {y <- x}
-            tmp = generate_node(ap(std::make_pair(std::get<std::string_view>(it->second), offset)));
-          case 1: // x[i] {y[j] <- x}
-            deref = std::get<std::pair<std::string_view, uint32_t> >(it->second);
-            tmp = generate_node(ap(std::make_pair(deref.first, offset + deref.second)));
-          }
-            
-          ret.push_back(&node->parent(), tmp);
-          return ret;
+          if (offset && vp.offset())
+            return ast::VarAccess(va.pos(), vp.var(), *offset + *(vp.offset()));
+          else if (vp.offset())
+            return ast::VarAccess(va.pos(), vp.var(), *(vp.offset()));
+          else
+            return ast::VarAccess(va.pos(), vp.var(), *offset);
         }
       }
 
@@ -220,19 +163,13 @@ namespace transformations {
     }
 
   private:
-    std::map<ap, ap> subst_; // The substitution
-
-    ast_node* generate_node(ap access_path) {
-      auto visitor = overloaded {
-        [this](std::string_view v) { return static_cast<ast_node*>(expr_var::build(ctx_, 0, v)); },
-        [this](std::pair<std::string_view, uint32_t> v_off) {
-          auto tmp = expr_reg_offset::build(ctx_, 0, v_off.first, expr_integer::create(ctx_, 0, v_off.second));
-          return static_cast<ast_node*>(tmp);
-        }};
-      return std::visit(visitor, access_path);
-    }
-
+    std::unordered_map<ast::VarAccess, ast::VarAccess> subst_; // The substitution
   };
+
+  void subst_ap_ap(std::unordered_map<ast::VarAccess, ast::VarAccess>& subst, ast::ASTNode& node) {
+    SubstAP alg(subst);
+    node.accept(alg);
+  }
 
 }
 }

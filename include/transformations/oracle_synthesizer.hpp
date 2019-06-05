@@ -1,58 +1,64 @@
-/*-------------------------------------------------------------------------------------------------
-| This file is distributed under the MIT License.
-| See accompanying file /LICENSE for details.
-| Author(s): Matthew Amy
-*------------------------------------------------------------------------------------------------*/
+/*
+ * This file is part of synthewareQ.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
-#include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/replacer.hpp"
-
+#include "ast/replacer.hpp"
 #include "synthesis/logic_synthesis.hpp"
 
 namespace synthewareQ {
 namespace transformations {
 
-  using namespace qasm;
-
-  /* \brief! Synthesizes all declared oracles over standard library gates
+  /** 
+   * \brief Synthesizes all declared oracles over standard library gates
    *
    * Visits an AST and synthesizes any declared oracles,
    * replacing them with regular gate declarations which may
    * optionally declare local ancillas 
    */
-  void expand_oracles(ast_context*);
 
   /* Implementation */
-  class oracle_synthesizer final : public replacer<oracle_synthesizer> {
+  class OracleSynthesizer final : public ast::Replacer {
   public:
-    using replacer<oracle_synthesizer>::visit;
     
-    oracle_synthesizer(ast_context* ctx) : ctx_(ctx) {}
-    ~oracle_synthesizer() {}
+    OracleSynthesizer() = default;
+    ~OracleSynthesizer() = default;
 
-    std::optional<ast_node_list> replace(decl_oracle* node) {
-      auto decl_builder = decl_gate::builder(ctx_, node->location(), node->identifier());
-      decl_builder.add_arguments(&node->arguments());
+    std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::OracleDecl& decl) {
+      auto l_net = synthesis::read_network(decl.fname());
+      auto body = synthesis::synthesize_net(decl.pos(), l_net, decl.params());
 
-      auto l_net = read_from_file(node->target());
-      auto body = synthesize(ctx_, node->location(), l_net, static_cast<list_ids*>(&node->arguments()));
-      decl_builder.add_body(body);
-
-      ast_node_list ret;
-      ret.push_back(&node->parent(), decl_builder.finish());
-
-      return ret;
+      std::list<ast::ptr<ast::Stmt> > ret;
+      ret.emplace_back(std::make_unique<ast::GateDecl>(ast::GateDecl(
+        decl.pos(), decl.id(), false, {}, decl.params(), std::move(body))));
+      return std::move(ret);
     }
-
-  private:
-    ast_context* ctx_;
   };
 
-  void expand_oracles(ast_context* ctx) {
-    auto expander = oracle_synthesizer(ctx);
-    expander.visit(*ctx);
+  void synthesize_oracles(ast::ASTNode& node) {
+    OracleSynthesizer alg;
+    node.accept(alg);
   }
     
 }

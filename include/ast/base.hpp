@@ -22,20 +22,53 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
-#include "transformations/inline.hpp"
+/**
+ * \file ast/ast.hpp
+ * \brief openQASM syntax trees
+ */
+#pragma once
 
-using namespace synthewareQ;
+#include "parser/position.hpp"
+#include "visitor.hpp"
 
-int main() {
+#include <set>
+#include <memory>
 
-  auto program = parser::parse_stdin();
-  if (program) {
-    transformations::inline_ast(*program);
-    std::cout << *program;
-  } else {
-    std::cerr << "Parsing failed\n";
+namespace synthewareQ {
+namespace ast {
+
+  template <typename T>
+  using ptr = std::unique_ptr<T>;
+
+  using symbol = std::string;
+
+  /**
+   * \class synthewareQ::ast::ASTNode
+   * \brief Base class for AST nodes
+   */
+  class ASTNode {
+    static int max_uid_;
+
+  protected:
+    const int uid_;
+    const parser::Position pos_;
+
+  public:
+    ASTNode(parser::Position pos) : uid_(++max_uid_), pos_(pos) { }
+    virtual ~ASTNode() = default;
+
+    int uid() const { return uid_; }
+    parser::Position pos() const { return pos_; }
+
+    virtual void accept(Visitor& visitor) = 0;
+    virtual std::ostream& pretty_print(std::ostream& os) const = 0;
+    virtual ASTNode* clone() const = 0;
+  };
+  int ASTNode::max_uid_ = 0;
+
+  std::ostream& operator<<(std::ostream& os, const ASTNode& node) {
+    return node.pretty_print(os);
   }
 
-  return 1;
+}
 }

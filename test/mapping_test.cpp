@@ -1,8 +1,4 @@
-#define FMT_HEADER_ONLY = true
-
-#include "qasm/qasm.hpp"
-#include "qasm/visitors/source_printer.hpp"
-#include "qasm/visitors/ast_printer.hpp"
+#include "parser/parser.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
@@ -19,20 +15,16 @@ int main(int argc, char** argv) {
     std::cerr << "Input file not specified.\n";
   }
 
-  auto program = qasm::read_from_file(argv[1]);
+  auto program = parser::parse_file(argv[1]);
   if (program) {
-    std::cout << "\nOriginal source:\n";
-    qasm::source_printer src(std::cout);
-    src.visit(*program);
+    std::cout << "Unmapped source:\n" << *program << "\n";
 
-    auto physical_layout = mapping::compute_layout_bestfit(program.get(), mapping::rigetti_8q);
-    mapping::apply_layout(program.get(), physical_layout);
-    std::cout << "\nPhysical layout:\n";
-    src.visit(*program);
+    auto physical_layout = mapping::compute_bestfit_layout(mapping::rigetti_8q, *program);
+    mapping::apply_layout(physical_layout, *program);
+    std::cout << "\nPhysical layout:\n" << *program << "\n";
 
-    std::cout << "\nCNOT mapped layout:\n";
-    mapping::steiner_mapping(program.get(), mapping::rigetti_8q);
-    src.visit(*program);
+    mapping::steiner_mapping(mapping::rigetti_8q, *program);
+    std::cout << "\nCNOT mapped layout:\n" << *program << "\n";
   } else {
     std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";
   }
