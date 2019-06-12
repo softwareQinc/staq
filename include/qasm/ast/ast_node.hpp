@@ -38,11 +38,6 @@ public:
 		return location_;
 	}
 
-    bool has_children() const
-    {
-        return true;
-    }
-
 protected:
 	ast_node(uint32_t location)
 	    : location_(location)
@@ -95,30 +90,25 @@ public:
 		return children_.end();
 	}
 
-	size_t num_children() const
-	{
-		return children_.size();
-	}
-
-    // DANGER: since ast_node is not actually a base class for ast_node_container, both have definitions
-    // of has_children. This is an experiment to see if multiple inheritance can be hacked in such a way to
-    // do what we need, or if the classes need to be redesigned
-    /*
-    bool has_children() const
-    {
-        return children_.size() != 0;
-    }
-    */
-
 protected:
 	void add_child(T* ptr)
 	{
 		children_.push_back(static_cast<Derived*>(this), ptr);
 	}
 
-    void insert_child(iterator it, T* ptr)
+    iterator insert_child(iterator it, T* ptr)
 	{
-        children_.insert(it, static_cast<Derived*>(this), ptr);
+        return children_.insert(it, static_cast<Derived*>(this), ptr);
+	}
+
+    iterator set_child(iterator it, T* ptr)
+	{
+        return children_.assign(it, static_cast<Derived*>(this), ptr);
+	}
+
+    iterator delete_child(iterator it)
+	{
+        return children_.remove(it);
 	}
 
 	~ast_node_container() = default;
