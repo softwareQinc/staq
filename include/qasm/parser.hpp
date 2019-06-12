@@ -290,14 +290,14 @@ private:
     {
 		consume_token();
 		auto identifier = expect_and_consume_token(token_kinds::identifier);
-		auto decl = decl_gate::builder(context_.get(), identifier.location, identifier, gate_type::oracle);
+		auto decl = decl_oracle::builder(context_.get(), identifier.location, identifier);
 
 		decl.add_arguments(parse_idlist());
 
         expect_and_consume_token(token_kinds::l_brace);
         auto token = expect_and_consume_token(token_kinds::string);
         std::string_view fname = token;
-        decl.add_file(logic_file::build(context_.get(), token.location, fname.substr(1, fname.length() - 2)));
+        decl.add_target(fname.substr(1, fname.length() - 2));
 		expect_and_consume_token(token_kinds::r_brace);
 
 

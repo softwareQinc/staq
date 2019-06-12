@@ -37,7 +37,7 @@ AST_NODE(expr_binary_op)
 AST_NODE(expr_unary_op)
 
 // Extensions
-AST_NODE(logic_file)
+AST_NODE(decl_oracle)
 AST_NODE(decl_ancilla)
 
 #undef AST_NODE

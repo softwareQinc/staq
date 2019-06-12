@@ -14,6 +14,7 @@
 #include "nodes/expr_decl_ref.hpp"
 #include "nodes/expr_reg_idx_ref.hpp"
 #include "nodes/decl_gate.hpp"
+#include "nodes/decl_oracle.hpp"
 #include "nodes/decl_param.hpp"
 #include "nodes/decl_register.hpp"
 #include "nodes/decl_program.hpp"
@@ -35,5 +36,5 @@
 #include "nodes/expr_unary_op.hpp"
 
 // Extensions
-#include "nodes/logic_file.hpp"
+#include "nodes/decl_oracle.hpp"
 #include "nodes/decl_ancilla.hpp"

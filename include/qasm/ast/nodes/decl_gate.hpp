@@ -19,10 +19,9 @@ namespace qasm {
 enum class gate_type : unsigned short {
 	defined = 0,
 	opaque = 1,
-    oracle = 2,
 };
 
-// A `decl_gate` node has four children, three of which optional.
+// A `decl_gate` node has three children, two of which optional.
 // The children objects are in order:
 //
 // * A `list_ids *` for the parameter list.
@@ -33,9 +32,6 @@ enum class gate_type : unsigned short {
 //
 // * A "list_gops *" for the body.
 //    Present if and only if has_body().
-//
-// * A "file" for the classical logic file defining the gate.
-//    Present it and only if is_classical().
 class decl_gate
     : public ast_node
     , public ast_node_container<decl_gate, ast_node> {
@@ -44,7 +40,6 @@ private:
 	enum {
         has_params_ = 0,
         has_body_  = 1,
-        is_classical_ = 2,
 	};
 
 public:
@@ -71,12 +66,6 @@ public:
             statement_->config_bits_ |= (1 << has_body_);
 			statement_->add_child(ops);
 		}
-
-        void add_file(ast_node* file)
-        {
-            statement_->config_bits_ |= (1 << is_classical_);
-            statement_->add_child(file);
-        }
 
 		decl_gate* finish()
 		{
@@ -121,33 +110,6 @@ public:
 	{
 		auto iter = this->begin();
 		if (has_parameters()) {
-			++iter;
-		}
-		return *(++iter);
-	}
-
-	void set_body(ast_node *ops)
-	{
-        this->config_bits_ |= (1 << has_body_);
-		auto iter = this->begin();
-		if (has_parameters()) {
-			++iter;
-		}
-		this->insert_child(iter, ops);
-	}
-
-    bool is_classical() const
-    {
-        return ((this->config_bits_ >> is_classical_) & 1) == 1;
-    }
-
-	ast_node& file()
-	{
-		auto iter = this->begin();
-		if (has_parameters()) {
-			++iter;
-		}
-		if (has_body()) {
 			++iter;
 		}
 		return *(++iter);
