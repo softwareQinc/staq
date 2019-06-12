@@ -4,15 +4,13 @@
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
 
-#include <tweedledee/qasm/qasm.hpp>
-#include <tweedledee/qasm/ast/ast.hpp>
-#include <tweedledee/qasm/ast/visitor.hpp>
+#include "qasm/qasm.hpp"
+#include "qasm/ast/ast.hpp"
+#include "qasm/ast/visitor.hpp"
 
-#include "../synthesis/logic_synthesis.hpp"
+#include "synthesis/logic_synthesis.hpp"
 
 namespace synthewareQ {
-
-  namespace qasm = tweedledee::qasm;
 
   class logic_elaborator : public qasm::visitor_base<logic_elaborator> {
   public:

@@ -14,21 +14,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <tweedledee/qasm/qasm.hpp>
-#include <tweedledee/qasm/ast/visitor.hpp>
 
 namespace tweedledum {
-
-/*! \brief Reads OPENQASM 2.0 format
- */
-void read_qasm_from_file(std::string const& path)
-{
-	auto program_ast = tweedledee::qasm::read_from_file(path);
-	if (program_ast) {
-		tweedledee::qasm::ast_printer printer;
-		printer.visit(*program_ast);
-	}
-}
 
 /*! \brief Writes network in OPENQASM 2.0 format into output stream
  *

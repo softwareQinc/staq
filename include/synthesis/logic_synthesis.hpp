@@ -12,11 +12,10 @@
 #include <caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
 #include <unordered_map>
 
-#include <tweedledee/qasm/ast/ast.hpp>
+#include "qasm/ast/ast.hpp"
 
 namespace synthewareQ {
 
-  namespace qasm = tweedledee::qasm;
   namespace angles = tweedledum::angles;
 
   enum class format { 
