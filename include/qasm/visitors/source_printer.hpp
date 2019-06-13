@@ -5,45 +5,47 @@
 *------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include "ast_context.hpp"
-#include "ast_node.hpp"
-#include "ast_node_kinds.hpp"
-#include "visitor.hpp"
+#include "generic/base.hpp"
+#include <fmt/format.h>
 
 #include <set>
+
+#ifndef FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY = true
+#endif
 
 namespace synthewareQ {
 namespace qasm {
 
-static const std::set<std::string_view> qelib_defs {
-  "u3", "u2", "u1", "cx", "id", "u0", "x", "y", "z",
-  "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
-  "cz", "cy", "swap", "ch", "ccx", "crz", "cu1",
-  "cu3"
-};
+  static const std::set<std::string_view> qelib_defs {
+    "u3", "u2", "u1", "cx", "id", "u0", "x", "y", "z",
+      "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
+      "cz", "cy", "swap", "ch", "ccx", "crz", "cu1",
+      "cu3"
+      };
 
-class pretty_printer : public visitor_base<pretty_printer> {
-public:
-	pretty_printer(std::ostream& os = std::cout)
-	: os_(os)
-	{}
+  class source_printer : public visitor_base<source_printer> {
+  public:
+    using visitor_base<source_printer>::visit;
+    
+    source_printer(std::ostream& os = std::cout)
+      : os_(os)
+    {}
 
-	/* Declarations */
-	void visit_decl_program(decl_program* node)
-	{
+    /* Declarations */
+    void visit(decl_program* node)
+    {
       os_ << prefix_ << "OPENQASM 2.0;" << std::endl;
       os_ << prefix_ << "include \"qelib1.inc\";" << std::endl;
       for (auto& child : *node) {
         visit(const_cast<ast_node*>(&child));
       }
-	}
+    }
 
-	void visit_decl_gate(decl_gate* node)
+    void visit(decl_gate* node)
     {
       // If it's part of the standard header, don't output
-      // TODO: a more sensible solution would be to have
-      // the included modules as part of the AST, then only
-      // output declarations not declared in an included module.
+      // TODO: split AST into modules and output only marked modules
       if (qelib_defs.find(node->identifier()) != qelib_defs.end()) {
         return;
       }
@@ -51,12 +53,9 @@ public:
       os_ << prefix_;
 
       std::string gate_type;
-      if (!(node->is_classical() || node->has_body())) {
+      if (!node->has_body()) {
         // Declaration is opaque
         gate_type = "opaque";
-      } else if (node->is_classical() && !(node->has_body())) {
-        // Declaration is an oracle
-        gate_type = "oracle";
       } else {
         // Declaration is normal
         gate_type = "gate";
@@ -86,62 +85,72 @@ public:
         prefix_.pop_back();
 
         os_ << prefix_ << "}";
-      } else if (node->is_classical()) {
-        os_ << " { \"";
-
-        visit(const_cast<ast_node*>(&node->file()));
-
-        os_ << "\" }";
       } else {
         os_ << ";";
       }
       os_ << std::endl << std::endl;
-	}
+    }
 
-	void visit_decl_register(decl_register* node)
-	{
+    void visit(decl_oracle* node)
+    {
+      os_ << prefix_;
+
+      // Declaration
+      os_ << "oracle " << node->identifier();
+
+      // Arguments
+      os_ << " ";
+      visit(const_cast<ast_node*>(&node->arguments()));
+
+      // Logic file
+      os_ << " { \"" << node->target() << "\" }";
+      os_ << std::endl << std::endl;
+    }
+
+    void visit(decl_register* node)
+    {
       os_ << prefix_;
       os_ << (node->is_quantum() ? "qreg" : "creg");
       os_ << fmt::format(" {}[{}];", node->identifier(), node->size()) << std::endl;
-	}
+    }
 
-	void visit_decl_param(decl_param* node)
-	{
-		os_ << node->identifier();
-	}
+    void visit(decl_param* node)
+    {
+      os_ << node->identifier();
+    }
 
-	void visit_decl_ancilla(decl_ancilla* node)
-	{
+    void visit(decl_ancilla* node)
+    {
       os_ << prefix_;
       os_ << (node->is_dirty() ? "dirty " : "");
       os_ << "ancilla";
       os_ << fmt::format(" {}[{}];", node->identifier(), node->size()) << std::endl;
-	}
+    }
 
     /* Lists */
-	void visit_list_gops(list_gops* node)
-	{
+    void visit(list_gops* node)
+    {
       for (auto& child : *node) {
         visit(const_cast<ast_node*>(&child));
       }
-	}
+    }
 
-	void visit_list_ids(list_ids* node)
-	{
+    void visit(list_ids* node)
+    {
       visit_children(node);
-	}
+    }
 
     /* Statements */
-	void visit_stmt_barrier(stmt_barrier* node)
-	{
+    void visit(stmt_barrier* node)
+    {
       os_ << prefix_;
       os_ << "barrier ";
       visit_children(node);
       os_ << ";" << std::endl;
-	}
+    }
 
-	void visit_stmt_unitary(stmt_unitary* node)
-	{
+    void visit(stmt_unitary* node)
+    {
       os_ << prefix_;
       os_ << "U(";
       visit(const_cast<ast_node*>(&node->theta()));
@@ -152,23 +161,23 @@ public:
       os_ << ") ";
       visit(const_cast<ast_node*>(&node->arg()));
       os_ << ";" << std::endl;
-	}
+    }
 
-	void visit_stmt_cnot(stmt_cnot* node)
-	{
+    void visit(stmt_cnot* node)
+    {
       os_ << prefix_;
       os_ << "CX ";
       visit(const_cast<ast_node*>(&node->control()));
       os_ << ",";
       visit(const_cast<ast_node*>(&node->target()));
       os_ << ";" << std::endl;
-	}
+    }
 
-	void visit_stmt_gate(stmt_gate* node)
+    void visit(stmt_gate* node)
     { // Again very nasty
       os_ << prefix_;
 
-      auto decl_ref = static_cast<expr_decl_ref*>(node->begin().operator->());
+      auto decl_ref = static_cast<expr_decl_ref*>(&node->gate());
       auto decl = static_cast<decl_gate*>(decl_ref->declaration());
       visit(const_cast<ast_node*>(node->begin().operator->()));
 
@@ -193,46 +202,47 @@ public:
         visit(const_cast<ast_node*>(it.operator->()));
       }
       os_ << ";" << std::endl;
-	}
+    }
 
-	void visit_stmt_if(stmt_if* node)
-	{
+    void visit(stmt_if* node)
+    {
       os_ << prefix_;
       os_ << "if (";
       visit(const_cast<ast_node*>(&node->expression()));
       os_ << ") ";
       visit(const_cast<ast_node*>(&node->quantum_op()));
       os_ << ";" << std::endl;
-	}
+    }
 
-	void visit_stmt_measure(stmt_measure* node)
-	{
+    void visit(stmt_measure* node)
+    {
       os_ << prefix_;
       os_ << "measure ";
       visit(const_cast<ast_node*>(&node->quantum_arg()));
       os_ << " -> ";
       visit(const_cast<ast_node*>(&node->classical_arg()));
       os_ << ";" << std::endl;
-	}
+    }
 
-	void visit_stmt_reset(stmt_reset* node)
-	{
+    void visit(stmt_reset* node)
+    {
       os_ << prefix_;
       os_ << "reset ";
       visit(const_cast<ast_node*>(&node->arg()));
       os_ << ";" << std::endl;
-	}
+    }
 
     /* Expressions */
-	void visit_expr_binary_op(expr_binary_op* node)
-	{
-      if (node->left().has_children()) {
+    void visit(expr_binary_op* node)
+    {
+      auto prev_ctx = ambiguous_;
+      ambiguous_ = true;
+
+      if (prev_ctx) {
         os_ << "(";
-        visit(const_cast<ast_node*>(&node->left()));
-        os_ << ")";
-      } else {
-        visit(const_cast<ast_node*>(&node->left()));
       }
+
+      visit(const_cast<ast_node*>(&node->left()));
 
       // Print operator
       switch (node->op()) {
@@ -265,26 +275,25 @@ public:
         break;
       }
       
-      if (node->right().has_children()) {
-        os_ << "(";
-        visit(const_cast<ast_node*>(&node->right()));
+      visit(const_cast<ast_node*>(&node->right()));
+
+      if (prev_ctx) {
         os_ << ")";
-      } else {
-        visit(const_cast<ast_node*>(&node->left()));
       }
-	}
 
-	void visit_expr_reg_idx_ref(expr_reg_idx_ref* node)
-	{
-      auto it = node->begin();
-      visit(const_cast<ast_node*>(it.operator->()));
+      ambiguous_ = prev_ctx;
+    }
+
+    void visit(expr_reg_idx_ref* node)
+    {
+      visit(const_cast<ast_node*>(&node->var()));
       os_ << "[";
-      visit(const_cast<ast_node*>((++it).operator->()));
+      visit(const_cast<ast_node*>(&node->index()));
       os_ << "]";
-	}
+    }
 
-	void visit_expr_unary_op(expr_unary_op* node)
-	{
+    void visit(expr_unary_op* node)
+    {
       switch (node->op()) {
       case unary_ops::sin:
         os_ << "sin";
@@ -322,17 +331,14 @@ public:
         break;
       }
 
-      if (node->begin()->has_children()) {
-        os_ << "(";
-        visit(const_cast<ast_node*>(node->begin().operator->()));
-        os_ << ")";
-      } else {
-        visit(const_cast<ast_node*>(node->begin().operator->()));
-      }
-	}
+      auto prev_ctx = ambiguous_;
+      ambiguous_ = true;
+      visit(const_cast<ast_node*>(&node->subexpr()));
+      ambiguous_ = prev_ctx;
+    }
 
-	void visit_expr_decl_ref(expr_decl_ref* node)
-	{
+    void visit(expr_decl_ref* node)
+    {
       auto decl = node->declaration();
       switch (decl->kind()) {
       case ast_node_kinds::decl_register:
@@ -351,44 +357,40 @@ public:
         std::cerr << "Error: could not find declared identifier" << std::endl;
         break;
       }
-	}
+    }
 
-	void visit_expr_integer(expr_integer* node)
-	{
-		os_ << node->evaluate();
-	}
-
-	void visit_expr_pi(expr_pi* node)
-	{
-		os_ << "pi";
-	}
-
-	void visit_expr_real(expr_real* node)
-	{
-		os_ << node->value();
-	}
-
-    /* Misc */
-    void visit_logic_file(logic_file* node)
+    void visit(expr_integer* node)
     {
-        os_ << node->filename();
+      os_ << node->evaluate();
+    }
+
+    void visit(expr_pi* node)
+    {
+      os_ << "pi";
+    }
+
+    void visit(expr_real* node)
+    {
+      os_ << node->value();
     }
 
 
-private:
-	template<typename NodeT>
-	void visit_children(NodeT* node)
-	{
+
+  private:
+    template<typename NodeT>
+    void visit_children(NodeT* node)
+    {
       for (auto it = node->begin(); it != node->end(); it++) {
         if (it != node->begin()) os_ << ",";
         visit(const_cast<ast_node*>(it.operator->()));
       }
-	}
+    }
 
-private:
+  private:
 	std::string prefix_;
 	std::ostream& os_;
-};
+    bool ambiguous_ = false;
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

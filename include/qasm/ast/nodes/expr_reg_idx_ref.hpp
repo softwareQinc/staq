@@ -16,41 +16,51 @@
 namespace synthewareQ {
 namespace qasm {
 
-//
-class expr_reg_idx_ref
+  class expr_reg_idx_ref
     : public ast_node
     , public ast_node_container<expr_reg_idx_ref, ast_node> {
-public:
-	class builder {
-	public:
-		explicit builder(ast_context* ctx, uint32_t location)
-		    : statement_(new (*ctx) expr_reg_idx_ref(location))
-		{}
+  public:
+    class builder {
+    public:
+      explicit builder(ast_context* ctx, uint32_t location)
+        : statement_(new (*ctx) expr_reg_idx_ref(location))
+      {}
 
-		void add_child(ast_node* child)
-		{
-			statement_->add_child(child);
-		}
+      void add_child(ast_node* child)
+      {
+        statement_->add_child(child);
+      }
 
-		expr_reg_idx_ref* finish()
-		{
-			return statement_;
-		}
+      expr_reg_idx_ref* finish()
+      {
+        return statement_;
+      }
 
-	private:
-		expr_reg_idx_ref* statement_;
-	};
+    private:
+      expr_reg_idx_ref* statement_;
+    };
 
-private:
-	expr_reg_idx_ref(uint32_t location)
-	    : ast_node(location)
-	{}
+    ast_node& var()
+    {
+      return *(this->begin());
+    }
 
-	ast_node_kinds do_get_kind() const override
+    ast_node& index()
+    {
+      return *(++(this->begin()));
+    }
+
+
+  private:
+    expr_reg_idx_ref(uint32_t location)
+      : ast_node(location)
+    {}
+
+    ast_node_kinds do_get_kind() const override
 	{
-		return ast_node_kinds::expr_reg_idx_ref;
+      return ast_node_kinds::expr_reg_idx_ref;
 	}
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

@@ -16,40 +16,46 @@
 namespace synthewareQ {
 namespace qasm {
 
-class stmt_gate
+  // TODO: separate classical and quantum arguments
+  class stmt_gate
     : public ast_node
     , public ast_node_container<stmt_gate, ast_node> {
-public:
-	class builder {
-	public:
-		explicit builder(ast_context* ctx, uint32_t location)
-		    : statement_(new (*ctx) stmt_gate(location))
-		{}
+  public:
+    class builder {
+    public:
+      explicit builder(ast_context* ctx, uint32_t location)
+        : statement_(new (*ctx) stmt_gate(location))
+      {}
 
-		void add_child(ast_node* child)
-		{
-			statement_->add_child(child);
-		}
+      void add_child(ast_node* child)
+      {
+        statement_->add_child(child);
+      }
 
-		stmt_gate* finish()
-		{
-			return statement_;
-		}
+      stmt_gate* finish()
+      {
+        return statement_;
+      }
 
-	private:
-		stmt_gate* statement_;
-	};
+    private:
+      stmt_gate* statement_;
+    };
 
-private:
-	stmt_gate(uint32_t location)
-	    : ast_node(location)
-	{}
+    ast_node& gate()
+    {
+      return *(this->begin());
+    }
 
-	ast_node_kinds do_get_kind() const override
+  private:
+    stmt_gate(uint32_t location)
+      : ast_node(location)
+    {}
+
+    ast_node_kinds do_get_kind() const override
 	{
-		return ast_node_kinds::stmt_gate;
+      return ast_node_kinds::stmt_gate;
 	}
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ
