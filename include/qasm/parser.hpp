@@ -286,7 +286,7 @@ private:
 	/*! \brief Parse an oracle declaration */
 	// <oracledecl> = oracle <id> <idlist> { <string> };
 	//
-	decl_gate* parse_oracledecl()
+	decl_oracle* parse_oracledecl()
     {
 		consume_token();
 		auto identifier = expect_and_consume_token(token_kinds::identifier);
