@@ -24,7 +24,7 @@ namespace qasm {
       "cu3"
       };
 
-  class source_printer : public visitor_base<source_printer> {
+  class source_printer final : public visitor_base<source_printer> {
   public:
     using visitor_base<source_printer>::visit;
     

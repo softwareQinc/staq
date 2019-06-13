@@ -11,7 +11,7 @@
 
 namespace synthewareQ {
 
-  class logic_elaborator : public qasm::replacer<logic_elaborator> {
+  class logic_elaborator final : public qasm::replacer<logic_elaborator> {
   public:
     using replacer<logic_elaborator>::visit;
     

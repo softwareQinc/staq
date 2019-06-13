@@ -16,7 +16,7 @@
 namespace synthewareQ {
 namespace qasm {
 
-  class ast_printer : public visitor_base<ast_printer> {
+  class ast_printer final : public visitor_base<ast_printer> {
   public:
     using visitor_base<ast_printer>::visit;
     

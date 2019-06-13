@@ -38,6 +38,17 @@ namespace qasm {
       return location_;
     }
 
+    // Sideways movement
+    ast_node* next_sibling() const
+    {
+      return detail::intrusive_list_access<ast_node>::get_next(*this);
+    }
+
+    ast_node* prev_sibling() const
+    {
+      return detail::intrusive_list_access<ast_node>::get_prev(*this);
+    }
+
   protected:
     ast_node(uint32_t location)
       : location_(location)
