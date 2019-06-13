@@ -10,6 +10,7 @@
 #include <caterpillar/synthesis/lhrs.hpp>
 #include <caterpillar/synthesis/strategies/bennett_mapping_strategy.hpp>
 #include <caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
+
 #include <unordered_map>
 
 #include "qasm/ast/ast.hpp"
@@ -36,7 +37,8 @@ namespace synthewareQ {
       {"v", format::verilog}, 
   } );
 
-  mockturtle::mig_network read_from_file(std::string fname) {
+  mockturtle::mig_network read_from_file(std::string_view fname_tmp) {
+    auto fname = std::string(fname_tmp);
 
     const auto i = fname.find_last_of(".");
     if (i == std::string::npos) {

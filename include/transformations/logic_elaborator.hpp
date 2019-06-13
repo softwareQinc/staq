@@ -4,40 +4,37 @@
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
 
-#include "qasm/qasm.hpp"
 #include "qasm/ast/ast.hpp"
-#include "qasm/ast/visitor.hpp"
+#include "qasm/visitors/generic/replacer.hpp"
 
 #include "synthesis/logic_synthesis.hpp"
 
 namespace synthewareQ {
 
-  class logic_elaborator : public qasm::visitor_base<logic_elaborator> {
+  class logic_elaborator : public qasm::replacer<logic_elaborator> {
   public:
+    using replacer<logic_elaborator>::visit;
+    
     logic_elaborator(qasm::ast_context* ctx)
-      : visitor_base<logic_elaborator>()
+      : replacer<logic_elaborator>()
       , ctx_(ctx)
     {}
+    ~logic_elaborator() {}
 
-	void visit_decl_gate(qasm::decl_gate* node)
+    qasm::ast_node* replace(qasm::decl_oracle* node)
 	{
-      if (node->is_classical()) {
-        // TODO: fix this bad hack
-        visit(&node->file());
-        auto l_net = read_from_file(current_filename_);
-        auto body = synthesize(ctx_, node->location(), l_net, static_cast<qasm::list_ids*>(&node->arguments()));
-        node->set_body(body);
-      }
-    }
+      auto decl_builder = qasm::decl_gate::builder(ctx_, node->location(), node->target());
+      decl_builder.add_arguments(&node->arguments());
 
-    void visit_logic_file(qasm::logic_file* node)
-    {
-      current_filename_ = node->filename();
+      auto l_net = read_from_file(node->target());
+      auto body = synthesize(ctx_, node->location(), l_net, static_cast<qasm::list_ids*>(&node->arguments()));
+      decl_builder.add_body(body);
+
+      return decl_builder.finish();
     }
 
   private:
     qasm::ast_context* ctx_;
-    std::string current_filename_;
   };
     
 }

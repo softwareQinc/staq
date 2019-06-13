@@ -20,7 +20,7 @@
 
 namespace synthewareQ::qasm {
 
-inline std::unique_ptr<ast_context> read_from_file(std::string const& path)
+inline std::unique_ptr<ast_context> read_from_file(std::string path)
 {
 	source_manager source_manager;
 	error_diagnostic_engine diagnostic;
@@ -32,7 +32,7 @@ inline std::unique_ptr<ast_context> read_from_file(std::string const& path)
 	return success;
 }
 
-inline std::unique_ptr<ast_context> read_from_buffer(std::string const& buffer)
+inline std::unique_ptr<ast_context> read_from_buffer(std::string buffer)
 {
 	source_manager source_manager;
 	error_diagnostic_engine diagnostic;

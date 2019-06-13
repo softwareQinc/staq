@@ -95,7 +95,6 @@ namespace qasm {
       return children_.size();
     }
 
-  protected:
     void add_child(T* ptr)
     {
       children_.push_back(static_cast<Derived*>(this), ptr);
@@ -116,6 +115,7 @@ namespace qasm {
       return children_.remove(it);
     }
 
+  protected:
     ~ast_node_container() = default;
 
   private:

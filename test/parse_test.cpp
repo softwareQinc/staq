@@ -14,10 +14,10 @@ int main(int argc, char** argv) {
 
   auto program = synthewareQ::qasm::read_from_file(argv[1]);
   if (program) {
-    std::cout << "Success!\n AST:\n";
+    std::cout << "Success!\nAST:\n";
     ast_printer printer(std::cout);
     printer.visit(*program);
-    std::cout << "\n Untransformed source:\n";
+    std::cout << "\nUntransformed source:\n";
     source_printer src(std::cout);
     src.visit(*program);
   } else {
