@@ -3,3 +3,6 @@ intrusive_list_test: intrusive_list_test.cpp
 	
 parse_test: parse_test.cpp
 	g++ --std=c++17 -I ../include/ -I ../libs/ -o parse_test parse_test.cpp
+
+channel_test: channel_test.cpp
+	g++ --std=c++17 -I ../include/ -I ../libs/ -o channel_test channel_test.cpp
