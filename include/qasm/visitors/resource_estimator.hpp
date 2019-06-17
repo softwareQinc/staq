@@ -29,12 +29,15 @@ namespace qasm {
     using visitor_base<resource_estimator>::visit;
 
     struct config {
+      config() : unbox(true), merge_dagger(true), overrides(qelib_defs) {}
       config(bool u, const std::set<std::string_view>& o) : unbox(u), overrides(o) {}
+
       bool unbox;
+      bool merge_dagger;
       std::set<std::string_view> overrides;
     };
 
-    resource_estimator() : visitor_base<resource_estimator>() , config_(true, qelib_defs) {}
+    resource_estimator() : visitor_base<resource_estimator>() {}
     resource_estimator(const config& params) : visitor_base<resource_estimator>() , config_(params) {}
     ~resource_estimator() {}
 
@@ -111,6 +114,8 @@ namespace qasm {
       auto name = stream_.str();
       clear();
 
+      if (config_.merge_dagger) strip_dagger(name);
+
       if (config_.unbox && (config_.overrides.find(name) == config_.overrides.end())) {
         add_counts(counts, resource_map_[name].first);
       } else {
@@ -167,6 +172,14 @@ namespace qasm {
     source_printer printer_ = source_printer(stream_);
 
     void clear() { stream_.str(std::string()); }
+
+    void strip_dagger(std::string& str) {
+      auto len = str.size();
+      
+      if (len > 2 && str[len - 2] == 'd' && str[len - 1] == 'g') {
+        str.resize(len-2);
+      }
+    }
   };
 }
 }
