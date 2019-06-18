@@ -23,17 +23,21 @@ int main() {
   auto cliff3 = clifford_op::cnot_gate("x1", "x2");
 
   std::cout << "H: " << cliff1 << "\n"; 
+  std::cout << "HH: " << cliff1 * cliff1 << "\n"; 
   std::cout << "S: " << cliff2 << "\n";
+  std::cout << "SS: " << cliff2 * cliff2 << "\n";
+  std::cout << "SS*: " << cliff2 * clifford_op::sdg_gate("x1") << "\n";
   std::cout << "CNOT: " << cliff3 << "\n";
+  std::cout << "CNOTCNOT: " << cliff3 * cliff3 << "\n";
   std::cout << "HSH: " << cliff1 * cliff2 * cliff1 << "\n";
   std::cout << "(I H)CNOT(I H): " << clifford_op::h_gate("x2") * cliff3 * clifford_op::h_gate("x2") << "\n";
   std::cout << "\n";
 
-  std::cout << "HXH: " << cliff1.conjugate(b) << "\n";
-  std::cout << "HZH: " << cliff1.conjugate(c) << "\n";
-  std::cout << "HYH: " << cliff1.conjugate(d) << "\n";
-  std::cout << "CNOT(X I)CNOT" << cliff3.conjugate(b) << "\n";
-  std::cout << "CNOT(I X)CNOT" << cliff3.conjugate(pauli_op::x_gate("x2")) << "\n";
+  std::cout << "H X(x1) H = " << cliff1.conjugate(b) << "\n";
+  std::cout << "H Z(x1) H = " << cliff1.conjugate(c) << "\n";
+  std::cout << "H Y(x1) H = " << cliff1.conjugate(d) << "\n";
+  std::cout << "CNOT X(x1) CNOT = " << cliff3.conjugate(b) << "\n";
+  std::cout << "CNOT X(x2) CNOT = " << cliff3.conjugate(pauli_op::x_gate("x2")) << "\n";
 
   return 1;
 }

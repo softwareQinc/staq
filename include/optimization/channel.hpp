@@ -119,6 +119,9 @@ namespace channel {
       tmp_ *= P;
       return tmp_;
     }
+    pauli_op operator-() {
+      return (*this) * pauli_phase::two;
+    }
 
 
     std::ostream& print(std::ostream& os) const {
@@ -158,16 +161,16 @@ namespace channel {
       return clifford_op(
         { { std::make_pair(q, pauli_gate::x), pauli_op::z_gate(q) },
           { std::make_pair(q, pauli_gate::z), pauli_op::x_gate(q) },
-          { std::make_pair(q, pauli_gate::y), pauli_op::y_gate(q)*pauli_phase::two } });
+          { std::make_pair(q, pauli_gate::y), -(pauli_op::y_gate(q)) } });
     }
     static clifford_op s_gate(id q) {
       return clifford_op(
         { { std::make_pair(q, pauli_gate::x), pauli_op::y_gate(q) },
-          { std::make_pair(q, pauli_gate::y), pauli_op::x_gate(q)*pauli_phase::two } });
+          { std::make_pair(q, pauli_gate::y), -(pauli_op::x_gate(q)) } });
     }
     static clifford_op sdg_gate(id q) {
       return clifford_op(
-        { { std::make_pair(q, pauli_gate::x), pauli_op::y_gate(q)*pauli_phase::two },
+        { { std::make_pair(q, pauli_gate::x), -(pauli_op::y_gate(q)) },
           { std::make_pair(q, pauli_gate::y), pauli_op::x_gate(q) } });
     }
     static clifford_op cnot_gate(id q1, id q2) {
@@ -180,18 +183,18 @@ namespace channel {
     // Paulis
     static clifford_op x_gate(id q) {
       return clifford_op(
-        { { std::make_pair(q, pauli_gate::z), pauli_op::z_gate(q)*pauli_phase::two },
-          { std::make_pair(q, pauli_gate::y), pauli_op::y_gate(q)*pauli_phase::two } });
+        { { std::make_pair(q, pauli_gate::z), -(pauli_op::z_gate(q)) },
+          { std::make_pair(q, pauli_gate::y), -(pauli_op::y_gate(q)) } });
     }
     static clifford_op z_gate(id q) {
       return clifford_op(
-        { { std::make_pair(q, pauli_gate::x), pauli_op::x_gate(q)*pauli_phase::two },
-          { std::make_pair(q, pauli_gate::y), pauli_op::y_gate(q)*pauli_phase::two } });
+        { { std::make_pair(q, pauli_gate::x), -(pauli_op::x_gate(q)) },
+          { std::make_pair(q, pauli_gate::y), -(pauli_op::y_gate(q)) } });
     }
     static clifford_op y_gate(id q) {
       return clifford_op(
-        { { std::make_pair(q, pauli_gate::x), pauli_op::x_gate(q)*pauli_phase::two },
-          { std::make_pair(q, pauli_gate::z), pauli_op::z_gate(q)*pauli_phase::two } });
+        { { std::make_pair(q, pauli_gate::x), -(pauli_op::x_gate(q)) },
+          { std::make_pair(q, pauli_gate::z), -(pauli_op::z_gate(q)) } });
     }
 
     pauli_op conjugate(const pauli_op& P) {
@@ -226,7 +229,7 @@ namespace channel {
       for (auto& [pauli_in, pauli_out] : perm_) {
         os << pauli_op(pauli_in) << " --> " << pauli_out << ", ";
       }
-      os << "}\n";
+      os << "}";
 
       return os;
     }
