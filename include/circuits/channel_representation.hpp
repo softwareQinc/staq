@@ -1,25 +1,30 @@
 /*-------------------------------------------------------------------------------------------------
-  | This file is distributed under the MIT License.
-  | See accompanying file /LICENSE for details.
-  | Author(s): Matthew Amy
-  *------------------------------------------------------------------------------------------------*/
+| This file is distributed under the MIT License.
+| See accompanying file /LICENSE for details.
+| Author(s): Matthew Amy
+*------------------------------------------------------------------------------------------------*/
 
 #include <unordered_map>
 #include <map>
-#include <set>
+#include <list>
 #include <variant>
 #include <iostream>
 
 #include <tweedledum/utils/angle.hpp>
 
 namespace synthewareQ {
-namespace channel {
+namespace channel_representation {
+  /*! \brief Utilities for the channel representation of Clifford + single qubit gates */
 
   namespace td = tweedledum;
-
-  /*! \brief Optimizations based on the channel representation of Clifford + single qubit gates */
-
   using id = std::string;
+
+  
+  /* Main declarations */
+  class rotation_op;
+  class clifford_op;
+  class uninterp_op;
+  typedef std::variant<rotation_op, clifford_op, uninterp_op> channel_op;
 
 
   /* The single qubit Pauli group and operations on it */
@@ -318,7 +323,7 @@ namespace channel {
   /*! \brief Class storing an uninterpreted operation on some set of qubits */
   class uninterp_op {
   public:
-    uninterp_op(std::set<id> qubits) : qubits_(qubits) {}
+    uninterp_op(std::list<id> qubits) : qubits_(qubits) {}
 
     template<typename Fn>
     void for_each_qubit(Fn&& fn) const {
@@ -336,7 +341,7 @@ namespace channel {
     }
 
   private:
-    std::set<id> qubits_;
+    std::list<id> qubits_;
   };
     
   std::ostream& operator<<(std::ostream& os, const uninterp_op& P) { return P.print(os); }
@@ -410,8 +415,6 @@ namespace channel {
   };
 
   std::ostream& operator<<(std::ostream& os, const rotation_op& P) { return P.print(os); }
-
-  typedef std::variant<rotation_op, clifford_op, uninterp_op> op;
 
 }
 }

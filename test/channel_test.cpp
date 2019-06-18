@@ -1,11 +1,11 @@
 #define FMT_HEADER_ONLY = true
 
-#include "optimization/channel.hpp"
+#include "circuits/channel_representation.hpp"
 #include <unordered_map>
 #include <set>
 #include <iostream>
 
-using namespace synthewareQ::channel;
+using namespace synthewareQ::channel_representation;
 
 void print_merge(rotation_op R1, rotation_op R2) {
   auto merged = R1.try_merge(R2);

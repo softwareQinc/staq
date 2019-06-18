@@ -6,3 +6,6 @@ parse_test: parse_test.cpp
 
 channel_test: channel_test.cpp
 	g++ --std=c++17 -I ../include/ -I ../libs/ -o channel_test channel_test.cpp
+
+optimization_test: optimization_test.cpp
+	g++ --std=c++17 -I ../include/ -I ../libs/ -o optimization_test optimization_test.cpp

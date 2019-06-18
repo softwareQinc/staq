@@ -27,6 +27,7 @@ namespace qasm {
   class resource_estimator final : public visitor_base<resource_estimator> {
   public:
     using visitor_base<resource_estimator>::visit;
+    friend visitor_base<resource_estimator>;
 
     struct config {
       config() : unbox(true), merge_dagger(true), overrides(qelib_defs) {}
@@ -42,6 +43,8 @@ namespace qasm {
     ~resource_estimator() {}
 
     resource_count estimate(ast_context& ctx) {
+      reset();
+
       visit(ctx);
 
       // Unboxing the running estimate
@@ -58,6 +61,7 @@ namespace qasm {
       return counts;
     }
 
+  protected:
     /* Resoure counting for specific nodes */
     void visit(decl_program* node) {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
@@ -165,6 +169,12 @@ namespace qasm {
     std::unordered_map<std::string_view, resource_state> resource_map_;
 
     resource_state running_estimate_;
+
+    void reset() {
+      resource_map_.clear();
+      running_estimate_.first.clear();
+      running_estimate_.second.clear();
+    }
 
     // String stream and source printer for getting string representations of arguments
     // The use of the source printer is overkill, but it's the easiest and safest way
