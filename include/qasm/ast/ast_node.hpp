@@ -15,6 +15,9 @@
 namespace synthewareQ {
 namespace qasm {
 
+  template<typename Derived, typename T>
+  class ast_node_container;
+
   // Base class for all QASM AST nodes
   class ast_node : detail::intrusive_list_node<ast_node> {
   public:

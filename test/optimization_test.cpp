@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     auto count_before = res.estimate(*program);
 
     rotation_folder opt;
-    opt.run(*program);
+    auto replacement_list = opt.run(*program);
 
     auto count_after = res.estimate(*program);
 

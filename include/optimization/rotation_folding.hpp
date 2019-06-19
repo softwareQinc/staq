@@ -3,19 +3,28 @@
 | See accompanying file /LICENSE for details.
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
+#pragma once
 
 #include "qasm/visitors/generic/base.hpp"
 #include "qasm/visitors/source_printer.hpp"
 #include "circuits/channel_representation.hpp"
 
 #include <list>
+#include <unordered_map>
 #include <sstream>
 
 namespace synthewareQ {
   using namespace qasm;
   using namespace channel_representation;
 
-  /* Rotation gate merging algorithm based on arXiv:1903.12456 */
+  /* Helper for variant visitor */
+  template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+  template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
+  /*! \brief Rotation gate merging algorithm based on arXiv:1903.12456 
+   *
+   *  Returns a replacement list giving the nodes to the be replaced (or erased)
+   */
 
   class rotation_folder final : public visitor_base<rotation_folder> {
   public:
@@ -25,7 +34,11 @@ namespace synthewareQ {
     rotation_folder() : visitor_base<rotation_folder>() {}
     ~rotation_folder() {}
 
-    void run(ast_context& ctx) { visit(ctx); }
+    std::unordered_map<ast_node*, ast_node*> run(ast_context& ctx) {
+      ctx_ = &ctx;
+      visit(ctx);
+      return replacement_list_;
+    }
 
   protected:
     void visit(decl_program* node) {
@@ -80,7 +93,7 @@ namespace synthewareQ {
 
       if (mergeable_) {
         auto it = args.begin();
-        if (name == "cx") current_clifford_ *= clifford_op::cnot_gate(*it, *(++it));
+        if (name == "cx") current_clifford_ *= clifford_op::cnot_gate(*it, *(std::next(it)));
         else if (name == "h") current_clifford_ *= clifford_op::h_gate(*it);
         else if (name == "x") current_clifford_ *= clifford_op::x_gate(*it);
         else if (name == "y") current_clifford_ *= clifford_op::y_gate(*it);
@@ -136,9 +149,13 @@ namespace synthewareQ {
   private:
     using circuit_callback = std::list<std::pair<ast_node*, channel_op> >;
 
-    // Algorithm state 
-    circuit_callback accum_;
-    bool mergeable_ = true;
+    ast_context* ctx_;
+    std::unordered_map<ast_node*, ast_node*> replacement_list_;
+
+    /* Algorithm state */
+    circuit_callback accum_;       // The currently accumulating circuit (in channel repr.)
+    bool mergeable_ = true;        // Whether we're in a context where a gate can be merged
+    clifford_op current_clifford_; // The current clifford operator
     // Note: current clifford is stored as the dagger of the actual Clifford gate
     // this is so that left commutation (i.e. conjugation) actually right-commutes
     // the rotation gate, allowing us to walk the circuit forwards rather than backwards
@@ -147,7 +164,85 @@ namespace synthewareQ {
     // rather than the form
     //   R_n...R_3R_2R_1C_0
     // as in the paper
-    clifford_op current_clifford_;
+
+    /* Phase two of the algorithm */
+    td::angle fold(circuit_callback& circuit) {
+      // Temporary for debugging
+      for (auto& [node, op] : circuit) {
+        std::visit([](auto& op) { std::cout << op << "."; }, op);
+      }
+      std::cout << "\n";
+
+      auto phase = td::angles::zero;
+      for (auto it = circuit.rbegin(); it != circuit.rend(); it++) {
+        auto &[node, op] = *it;
+        if (auto R = std::get_if<rotation_op>(&op)) {
+          auto [new_phase, new_R] = fold_forward(circuit, std::next(it), node, *R);
+
+          phase += new_phase;
+          if (!(new_R == *R)) {
+            std::cout << "    -->Replacing " << *R << " with " << new_R << "\n";
+            // TODO: add a proper replacement
+            replacement_list_[node] = nullptr;
+          }
+        }
+      }
+
+      return phase;
+    }
+
+    std::pair<td::angle, rotation_op>
+    fold_forward(circuit_callback& circuit,
+                 circuit_callback::reverse_iterator it,
+                 ast_node* node,
+                 rotation_op op)
+    {
+      // Tries to commute op backward as much as possible, merging with applicable
+      // gates and deleting them as it goes
+      // Note: We go backwards so that we only commute **left** past C^*/**right** past C
+
+      auto phase = td::angles::zero;
+      bool cont = true;
+
+      for (; cont && it != circuit.rend(); it++) {
+        auto visitor = overloaded {
+          [this, it, &op, &phase, &circuit](rotation_op& R) {
+              auto res = op.try_merge(R);
+              if (res.has_value()) {
+                auto &[new_phase, new_op] = res.value();
+                phase += new_phase;
+                op = new_op;
+
+                // Delete R in circuit & the node
+                std::cout << "    -->Removing " << R << "\n";
+                replacement_list_[it->first] = nullptr;
+                circuit.erase(std::next(it).base());
+
+                return false;
+              } else if (op.commutes_with(R)) {
+                return true;
+              } else {
+                return false;
+              }
+            },
+            [&op](clifford_op& C) {
+              op = op.commute_left(C); return true;
+            },
+            [&op](uninterp_op& U) {
+              if (!op.commutes_with(U)) return false;
+              else return true;
+            }
+        };
+
+        cont = std::visit(visitor, it->second);
+      }
+
+      return std::make_pair(phase, op);
+    }
+
+    /* Utilities */
+    std::stringstream stream_;
+    source_printer printer_ = source_printer(stream_);
 
     void push_uninterp(uninterp_op op) {
       accum_.push_back(std::make_pair(nullptr, current_clifford_));
@@ -155,19 +250,6 @@ namespace synthewareQ {
       // Clear the current clifford
       current_clifford_ = clifford_op();
     }
-
-    void fold(circuit_callback& circuit) {
-      // Temporary for debugging
-      for (auto& [node, op] : circuit) {
-        std::visit([](auto& op) { std::cout << op << "."; }, op);
-      }
-      std::cout << "\n";
-    }
-
-    // String stream and source printer for getting string representations of arguments
-    // The use of the source printer is overkill, but it's the easiest and safest way
-    std::stringstream stream_;
-    source_printer printer_ = source_printer(stream_);
 
     void clear() { stream_.str(std::string()); }
 

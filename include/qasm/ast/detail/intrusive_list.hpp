@@ -113,7 +113,7 @@ namespace detail {
 
     intrusive_list_iterator& operator--()
     {
-      current_ = intrusive_list_access<T>::prev(*current_);
+      current_ = intrusive_list_access<T>::get_prev(*current_);
       return *this;
     }
 

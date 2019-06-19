@@ -3,6 +3,7 @@
 | See accompanying file /LICENSE for details.
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
+#pragma once
 
 #include <unordered_map>
 #include <map>
@@ -368,11 +369,14 @@ namespace channel_representation {
     /* Operators */
 
     // CR(theta, P) == R(theta, P')C
-
     rotation_op commute_left(const clifford_op& C) const {
       auto tmp = rotation_op(*this);
       tmp.pauli_ = C.conjugate(tmp.pauli_);
       return tmp;
+    }
+
+    bool operator==(const rotation_op& R) const {
+      return (theta_ == R.theta_) && (pauli_ == R.pauli_);
     }
 
     bool commutes_with(const rotation_op& R) const {
