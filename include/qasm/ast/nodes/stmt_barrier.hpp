@@ -45,6 +45,11 @@ public:
 		stmt_barrier* statement_;
 	};
 
+    ast_node& first_arg()
+    {
+        return *(this->begin());
+    }
+
 private:
 	stmt_barrier(uint32_t location)
 	    : ast_node(location)

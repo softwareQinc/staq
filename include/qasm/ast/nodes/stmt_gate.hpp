@@ -32,6 +32,11 @@ namespace qasm {
         statement_->add_child(child);
       }
 
+      void set_c_args(uint32_t num)
+      {
+        statement_->num_c_args_ = num;
+      }
+
       stmt_gate* finish()
       {
         return statement_;
@@ -46,6 +51,22 @@ namespace qasm {
       return *(this->begin());
     }
 
+    ast_node& first_c_param()
+    {
+      auto iter = this->begin();
+      return *(++iter);
+    }
+
+    ast_node& first_q_param()
+    {
+      auto iter = this->begin();
+
+      iter++;
+      for (auto i = 0; i < num_c_args_; i++) iter++;
+
+      return *iter;
+    }
+
   private:
     stmt_gate(uint32_t location)
       : ast_node(location)
@@ -55,6 +76,8 @@ namespace qasm {
 	{
       return ast_node_kinds::stmt_gate;
 	}
+  private:
+    uint32_t num_c_args_;
   };
 
 } // namespace qasm

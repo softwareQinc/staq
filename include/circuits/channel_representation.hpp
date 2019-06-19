@@ -231,6 +231,9 @@ namespace channel_representation {
    *  Note: no mapping means the operator acts trivially on that generator */
   class clifford_op {
   public:
+    clifford_op() {}
+    clifford_op(std::map<std::pair<id, pauli_gate>, pauli_op> perm) : perm_(perm) {}
+
     /* Gate constructors */
     static clifford_op h_gate(id q) {
       return clifford_op(
@@ -312,9 +315,8 @@ namespace channel_representation {
     }
 
   private:
-    clifford_op(std::map<std::pair<id, pauli_gate>, pauli_op> perm) : perm_(perm) {}
-
     std::map<std::pair<id, pauli_gate>, pauli_op> perm_;
+
   };
 
   std::ostream& operator<<(std::ostream& os, const clifford_op& P) { return P.print(os); }

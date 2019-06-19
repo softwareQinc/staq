@@ -461,16 +461,18 @@ private:
 	/*! \brief Parse expression list (<explist>) */
 	// <explist> = <exp> 
 	//           | <explist> , <exp>
-	void parse_explist(stmt_gate::builder& builder)
+	uint32_t parse_explist(stmt_gate::builder& builder)
 	{
+        uint32_t total = 0;
 		do {
 			auto expr = parse_exp();
 			builder.add_child(expr);
+            total++;
 			if (not try_and_consume_token(token_kinds::comma)) {
 			break;
 		}
 		} while (1);
-		return;
+		return total;
 	}
 
 	/*! \brief Parse an expression (<exp>) */
@@ -665,12 +667,17 @@ private:
 		auto gate_reference = create_decl_reference(identifier.location, identifier);
 
 		stmt_builder.add_child(gate_reference);
+
+        // Parse classical params
+        uint32_t num_c_args = 0;
 		if (try_and_consume_token(token_kinds::l_paren)) {
 			if (not try_and_consume_token(token_kinds::r_paren)) {
-				parse_explist(stmt_builder);
+				num_c_args = parse_explist(stmt_builder);
 				expect_and_consume_token(token_kinds::r_paren);
 			}
 		}
+        stmt_builder.set_c_args(num_c_args);
+
 		if (!parse_anylist(stmt_builder)) {
 			return nullptr;
 		}
