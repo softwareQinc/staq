@@ -366,6 +366,9 @@ namespace channel_representation {
     static rotation_op rx_gate(td::angle theta, id q) { return rotation_op(theta, pauli_op::x_gate(q)); }
     static rotation_op ry_gate(td::angle theta, id q) { return rotation_op(theta, pauli_op::y_gate(q)); }
 
+    /* Accessors */
+    td::angle rotation_angle() { return theta_; }
+
     /* Operators */
 
     // CR(theta, P) == R(theta, P')C

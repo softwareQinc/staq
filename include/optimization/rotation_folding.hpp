@@ -44,7 +44,7 @@ namespace synthewareQ {
   protected:
     void visit(decl_program* node) {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
-      accum_.push_back(std::make_pair(nullptr, current_clifford_));
+      accum_.push_back(current_clifford_);
 
       fold(accum_);
     }
@@ -59,7 +59,7 @@ namespace synthewareQ {
       std::swap(current_clifford_, local_clifford);
 
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
-      accum_.push_back(std::make_pair(nullptr, current_clifford_));
+      accum_.push_back(current_clifford_);
 
       // temporary
       std::cout << node->identifier() << ":\n  ";
@@ -103,10 +103,14 @@ namespace synthewareQ {
         else if (name == "sdg") current_clifford_ *= clifford_op::s_gate(*it);
         else if (name == "t") {
           auto gate = rotation_op::t_gate(*it);
-          accum_.push_back(std::make_pair(node, gate.commute_left(current_clifford_)));
+          rotation_info info = { node, rotation_info::axis::z, &node->first_q_param() };
+          
+          accum_.push_back(std::make_pair(info, gate.commute_left(current_clifford_)));
         } else if (name == "tdg") {
           auto gate = rotation_op::tdg_gate(*it);
-          accum_.push_back(std::make_pair(node, gate.commute_left(current_clifford_)));
+          rotation_info info = { node, rotation_info::axis::z, &node->first_q_param() };
+
+          accum_.push_back(std::make_pair(info, gate.commute_left(current_clifford_)));
         } else push_uninterp(uninterp_op(args));
       } else {
         push_uninterp(uninterp_op(args));
@@ -148,7 +152,18 @@ namespace synthewareQ {
     }
 
   private:
-    using circuit_callback = std::list<std::pair<ast_node*, channel_op> >;
+    // Store information necessary for generating a replacement of <node> with a
+    // different angle
+    struct rotation_info {
+      enum class axis { x, y, z};
+      
+      ast_node* node;
+      axis rotation_axis;
+      ast_node* arg;
+    };
+
+    using circuit_callback =
+      std::list<std::variant<uninterp_op, clifford_op, std::pair<rotation_info, rotation_op> > >;
 
     ast_context* ctx_;
     std::unordered_map<ast_node*, ast_node*> replacement_list_;
@@ -168,23 +183,17 @@ namespace synthewareQ {
 
     /* Phase two of the algorithm */
     td::angle fold(circuit_callback& circuit) {
-      // Temporary for debugging
-      for (auto& [node, op] : circuit) {
-        std::visit([](auto& op) { std::cout << op << "."; }, op);
-      }
-      std::cout << "\n";
-
       auto phase = td::angles::zero;
+
       for (auto it = circuit.rbegin(); it != circuit.rend(); it++) {
-        auto &[node, op] = *it;
-        if (auto R = std::get_if<rotation_op>(&op)) {
-          auto [new_phase, new_R] = fold_forward(circuit, std::next(it), node, *R);
+        auto& op = *it;
+        if (auto tmp = std::get_if<std::pair<rotation_info, rotation_op> >(&op)) {
+          auto [new_phase, new_R] = fold_forward(circuit, std::next(it), tmp->second);
 
           phase += new_phase;
-          if (!(new_R == *R)) {
-            std::cout << "    -->Replacing " << *R << " with " << new_R << "\n";
-            // TODO: add a proper replacement
-            replacement_list_[node] = nullptr;
+          if (!(new_R == tmp->second)) {
+            std::cout << "    -->Replacing " << tmp->second << " with " << new_R << "\n";
+            replacement_list_[tmp->first.node] = nullptr; //new_rotation(info, new_R.rotation_angle());
           }
         }
       }
@@ -193,10 +202,7 @@ namespace synthewareQ {
     }
 
     std::pair<td::angle, rotation_op>
-    fold_forward(circuit_callback& circuit,
-                 circuit_callback::reverse_iterator it,
-                 ast_node* node,
-                 rotation_op op)
+    fold_forward(circuit_callback& circuit, circuit_callback::reverse_iterator it, rotation_op R)
     {
       // Tries to commute op backward as much as possible, merging with applicable
       // gates and deleting them as it goes
@@ -207,38 +213,38 @@ namespace synthewareQ {
 
       for (; cont && it != circuit.rend(); it++) {
         auto visitor = overloaded {
-          [this, it, &op, &phase, &circuit](rotation_op& R) {
-              auto res = op.try_merge(R);
+          [this, it, &R, &phase, &circuit](std::pair<rotation_info, rotation_op>& Rop) {
+              auto res = R.try_merge(Rop.second);
               if (res.has_value()) {
-                auto &[new_phase, new_op] = res.value();
+                auto &[new_phase, new_R] = res.value();
                 phase += new_phase;
-                op = new_op;
+                R = new_R;
 
                 // Delete R in circuit & the node
-                std::cout << "    -->Removing " << R << "\n";
-                replacement_list_[it->first] = nullptr;
+                std::cout << "    -->Removing " << Rop.second << "\n";
+                replacement_list_[Rop.first.node] = nullptr;
                 circuit.erase(std::next(it).base());
 
                 return false;
-              } else if (op.commutes_with(R)) {
+              } else if (R.commutes_with(Rop.second)) {
                 return true;
               } else {
                 return false;
               }
             },
-            [&op](clifford_op& C) {
-              op = op.commute_left(C); return true;
+            [&R](clifford_op& C) {
+              R = R.commute_left(C); return true;
             },
-            [&op](uninterp_op& U) {
-              if (!op.commutes_with(U)) return false;
+            [&R](uninterp_op& U) {
+              if (!R.commutes_with(U)) return false;
               else return true;
             }
         };
 
-        cont = std::visit(visitor, it->second);
+        cont = std::visit(visitor, *it);
       }
 
-      return std::make_pair(phase, op);
+      return std::make_pair(phase, R);
     }
 
     /* Utilities */
@@ -246,8 +252,8 @@ namespace synthewareQ {
     source_printer printer_ = source_printer(stream_);
 
     void push_uninterp(uninterp_op op) {
-      accum_.push_back(std::make_pair(nullptr, current_clifford_));
-      accum_.push_back(std::make_pair(nullptr, op));
+      accum_.push_back(current_clifford_);
+      accum_.push_back(op);
       // Clear the current clifford
       current_clifford_ = clifford_op();
     }
