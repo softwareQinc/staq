@@ -44,7 +44,7 @@ int main() {
 
   show_list(children);
 
-  for (it = children.begin(); it != children.end(); it++) {
+  for (it = children.begin(); it != children.end(); it) {
     it = children.remove(it);
   }
 

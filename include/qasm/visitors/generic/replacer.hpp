@@ -7,6 +7,8 @@
 
 #include "base.hpp"
 
+#include <unordered_map>
+
 namespace synthewareQ {
 namespace qasm {
 
@@ -157,6 +159,76 @@ namespace qasm {
 	}
     
   };
+
+
+  /*! \brief Utility for bulk node replacement
+  *
+  * Given a hash map consisting of nodes to be replaced with their
+  * replacement, perform all replacements
+  */
+  class bulk_replacer final : public visitor_base<bulk_replacer> {
+  public:
+    using visitor_base<bulk_replacer>::visit;
+    friend visitor_base<bulk_replacer>;
+    friend void bulk_replace(ast_context&, std::unordered_map<ast_node*, ast_node*>);
+
+    bulk_replacer(std::unordered_map<ast_node*, ast_node*> replacements)
+      : replacements_(replacements)
+    {}
+
+  protected:
+    void visit(decl_program* node) { visit_children(node); }
+    void visit(decl_register* node) { }
+    void visit(decl_param* node) { }
+    void visit(decl_gate* node) { visit_children(node); }
+    void visit(stmt_barrier* node) { visit_children(node); }
+    void visit(stmt_cnot* node) { visit_children(node); }
+    void visit(stmt_unitary* node) { visit_children(node); }
+    void visit(stmt_gate* node) { visit_children(node); }
+    void visit(stmt_reset* node) { visit_children(node); }
+    void visit(stmt_measure* node) { visit_children(node); }
+    void visit(stmt_if* node) { visit_children(node); }
+    void visit(expr_decl_ref* node) { }
+    void visit(expr_reg_idx_ref* node) { visit_children(node); }
+    void visit(expr_integer* node) { }
+    void visit(expr_pi* node) { }
+    void visit(expr_real* node) { }
+    void visit(expr_binary_op* node) { visit_children(node); }
+    void visit(expr_unary_op* node) { visit_children(node); }
+    void visit(decl_oracle* node) { visit_children(node); }
+    void visit(decl_ancilla* node) { }
+    void visit(list_gops* node) { visit_children(node); }
+    void visit(list_ids* node) { visit_children(node); }
+
+  private:
+    std::unordered_map<ast_node*, ast_node*> replacements_;
+
+	template<typename NodeT>
+	void visit_children(NodeT* node)
+	{
+      for (auto it = node->begin(); it != node->end(); it) {
+        auto child = &(*it);
+
+        visit(child);
+        if (replacements_.find(child) != replacements_.end()) {
+          if (replacements_[child] == nullptr) {
+            it = node->delete_child(it);
+          } else {
+            it = node->set_child(it, replacements_[child]);
+            it++;
+          }
+        } else {
+          it++;
+        }
+      }
+	}
+    
+  };
+
+  void bulk_replace(ast_context& ctx, std::unordered_map<ast_node*, ast_node*> replacements) {
+    auto replacer = bulk_replacer(replacements);
+    replacer.visit(ctx);
+  }
 
 }
 }

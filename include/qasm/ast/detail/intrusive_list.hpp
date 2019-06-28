@@ -269,7 +269,7 @@ namespace detail {
 
         if (next_ != nullptr) { // Back pointer for next_
          intrusive_list_access<T>::set_prev(*next_, obj);
-        } else { // Inserting at end of list
+        } else { // Inserting at beginning of list
           last_ = obj;
         }
 
@@ -302,7 +302,7 @@ namespace detail {
 
         if (prev_ != nullptr) { // Back forward for prev_
          intrusive_list_access<T>::set_next(*prev_, obj);
-        } else { // Inserting at end of list
+        } else { // Inserting at beginning of list
           first_ = obj;
         }
       }
@@ -319,13 +319,13 @@ namespace detail {
 
         if (next_ != nullptr) { // Back pointer for next_
          intrusive_list_access<T>::set_prev(*next_, prev_);
-        } else { // Inserting at end of list
+        } else {
           last_ = prev_;
         }
 
         if (prev_ != nullptr) { // Back forward for prev_
          intrusive_list_access<T>::set_next(*prev_, next_);
-        } else { // Inserting at end of list
+        } else {
          first_ = next_;
         }
 

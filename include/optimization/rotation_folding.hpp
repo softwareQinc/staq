@@ -6,6 +6,7 @@
 #pragma once
 
 #include "qasm/visitors/generic/base.hpp"
+#include "qasm/visitors/generic/replacer.hpp"
 #include "qasm/visitors/source_printer.hpp"
 #include "circuits/channel_representation.hpp"
 
@@ -275,5 +276,12 @@ namespace synthewareQ {
       return tmp;
     }
   };
+
+  void rotation_fold(ast_context& ctx) {
+    rotation_folder alg;
+
+    auto res = alg.run(ctx);
+    bulk_replace(ctx, res);
+  }
 
 }
