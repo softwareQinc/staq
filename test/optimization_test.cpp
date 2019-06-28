@@ -20,26 +20,27 @@ int main(int argc, char** argv) {
   if (program) {
     resource_estimator res;
     source_printer printer(std::cout);
-    auto count_before = res.estimate(*program);
 
-    //rotation_folder opt;
-    //auto replacement_list = opt.run(*program);
+    std::cout << "Unoptimized source:\n";
+    printer.visit(*program);
+
+    std::cout << "\nCircuit statistics:\n";
+    auto count = res.estimate(*program);
+    for (auto& [name, num] : count) {
+      std::cout << "  " << name << ": " << num << "\n";
+    }
+
+    // Do optimization
     rotation_fold(*program);
 
-    auto count_after = res.estimate(*program);
-
-    std::cout << "\nBefore optimization:\n";
-    for (auto& [name, num] : count_before) {
-      std::cout << "  " << name << ": " << num << "\n";
-    }
-
-    std::cout << "\nAfter optimization:\n";
-    for (auto& [name, num] : count_after) {
-      std::cout << "  " << name << ": " << num << "\n";
-    }
-
-    std::cout << "\nSource:\n";
+    std::cout << "\n\nOptimized source:\n";
     printer.visit(*program);
+
+    std::cout << "\nCircuit statistics:\n";
+    count = res.estimate(*program);
+    for (auto& [name, num] : count) {
+      std::cout << "  " << name << ": " << num << "\n";
+    }
 
   } else {
     std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";

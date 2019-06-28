@@ -61,8 +61,6 @@ namespace synthewareQ {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
       accum_.push_back(current_clifford_);
 
-      // temporary
-      std::cout << node->identifier() << ":\n  ";
       fold(accum_);
       
       std::swap(accum_, local_state);
@@ -192,8 +190,7 @@ namespace synthewareQ {
 
           phase += new_phase;
           if (!(new_R == tmp->second)) {
-            std::cout << "    -->Replacing " << tmp->second << " with " << new_R << "\n";
-            replacement_list_[tmp->first.node] = nullptr; //new_rotation(info, new_R.rotation_angle());
+            replacement_list_[tmp->first.node] = new_rotation(tmp->first, new_R.rotation_angle());
           }
         }
       }
@@ -221,7 +218,6 @@ namespace synthewareQ {
                 R = new_R;
 
                 // Delete R in circuit & the node
-                std::cout << "    -->Removing " << Rop.second << "\n";
                 replacement_list_[Rop.first.node] = nullptr;
                 circuit.erase(std::next(it).base());
 
@@ -256,6 +252,186 @@ namespace synthewareQ {
       accum_.push_back(op);
       // Clear the current clifford
       current_clifford_ = clifford_op();
+    }
+
+    /*! \brief Returns a qasm expr node with the value of the given angle */
+    // TODO: Find a better home for this, it's duplicated in logic synthesis
+    ast_node* angle_to_expr(ast_context* ctx_, uint32_t location, tweedledum::angle theta) {
+      auto sval = theta.symbolic_value();
+      if (sval == std::nullopt) {
+        // Angle is real-valued
+        return expr_real::create(ctx_, location, theta.numeric_value());
+      } else {
+        // Angle is of the form pi*(a/b) for a & b integers
+        // NOTE: tweedledum::gate base and tweedledum::angle contradict -- the former defines t as
+        //       an angle of 1/4, while the latter gives it as an angle of 1/8.
+        auto [a, b] = sval.value();
+
+        if (a == 0) {
+          return expr_integer::create(ctx_, location, 0);
+        } else if (a == 1) {
+          auto total = expr_binary_op::builder(ctx_, location, binary_ops::division);
+          total.add_child(expr_pi::create(ctx_, location));
+          total.add_child(expr_integer::create(ctx_, location, b));
+
+          return total.finish();
+        } else if (a == -1) {
+          auto numerator = expr_unary_op::builder(ctx_, location, unary_ops::minus);
+          numerator.add_child(expr_pi::create(ctx_, location));
+
+          auto total = expr_binary_op::builder(ctx_, location, binary_ops::division);
+          total.add_child(numerator.finish());
+          total.add_child(expr_integer::create(ctx_, location, b));
+
+          return total.finish();
+        } else {
+          auto numerator = expr_binary_op::builder(ctx_, location, binary_ops::multiplication);
+          numerator.add_child(expr_integer::create(ctx_, location, a));
+          numerator.add_child(expr_pi::create(ctx_, location));
+
+          auto total = expr_binary_op::builder(ctx_, location, binary_ops::division);
+          total.add_child(numerator.finish());
+          total.add_child(expr_integer::create(ctx_, location, b));
+
+          return total.finish();
+        }
+      }
+    }
+
+    // Assumes basic gates (x, y, z, s, sdg, t, tdg, rx, ry, rz) are defined
+    ast_node* new_rotation(const rotation_info& rinfo, const td::angle& theta) {
+      auto location = rinfo.node->location();
+      auto stmt_builder = stmt_gate::builder(ctx_, location);
+
+      // Determine the gate
+      uint32_t num_c_args = 0;
+      auto sval = theta.symbolic_value();
+      if (sval == std::nullopt) {
+        // Angle is real-valued
+        auto val = theta.numeric_value();
+
+        if (val == 0) return nullptr;
+
+        ast_node* decl_ref;
+        switch (rinfo.rotation_axis) {
+        case rotation_info::axis::x:
+          decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rx"));
+          break;
+        case rotation_info::axis::y:
+          decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("ry"));
+          break;
+        case rotation_info::axis::z:
+          decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rz"));
+          break;
+        }
+        stmt_builder.add_child(decl_ref);
+
+        auto expr_angle = angle_to_expr(ctx_, location, theta);
+        stmt_builder.add_child(expr_angle);
+        num_c_args++;
+      } else {
+        // Angle is of the form pi*(a/b) for a & b integers
+        auto [num, denom] = sval.value();
+
+        if (num == 0) return nullptr;
+        switch (rinfo.rotation_axis) {
+        case rotation_info::axis::x:
+          if ((num == 1) && (denom == 1)) {
+            // X gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("x"));
+            stmt_builder.add_child(decl_ref);
+          } else {
+            // Rx gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rx"));
+            stmt_builder.add_child(decl_ref);
+
+            auto expr_angle = angle_to_expr(ctx_, location, theta);
+            stmt_builder.add_child(expr_angle);
+            num_c_args++;
+          }
+          break;
+        case rotation_info::axis::y:
+          if ((num == 1) && (denom == 1)) {
+            // Y gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("y"));
+            stmt_builder.add_child(decl_ref);
+          } else {
+            // Ry gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("ry"));
+            stmt_builder.add_child(decl_ref);
+
+            auto expr_angle = angle_to_expr(ctx_, location, theta);
+            stmt_builder.add_child(expr_angle);
+            num_c_args++;
+          }
+          break;
+        case rotation_info::axis::z:
+          if ((num == 1) && (denom == 1)) {
+            // Z gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("z"));
+            stmt_builder.add_child(decl_ref);
+          } else if (((num == 1) || (num == -3)) && (denom == 2)) {
+            // S gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("s"));
+            stmt_builder.add_child(decl_ref);
+          } else if (((num == -1) || (num == 3)) && (denom == 2)) {
+            // Sdg gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("sdg"));
+            stmt_builder.add_child(decl_ref);
+          } else if (((num == 1) || (num == -7)) && (denom == 4)) {
+            // T gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("t"));
+            stmt_builder.add_child(decl_ref);
+          } else if (((num == -1) || (num == 7)) && (denom == 4)) {
+            // Tdg gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("tdg"));
+            stmt_builder.add_child(decl_ref);
+          } else {
+            // Rz gate
+            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rz"));
+            stmt_builder.add_child(decl_ref);
+
+            auto expr_angle = angle_to_expr(ctx_, location, theta);
+            stmt_builder.add_child(expr_angle);
+            num_c_args++;
+          }
+          break;
+        }
+      }
+      stmt_builder.set_c_args(num_c_args);
+
+      // Create a new decl ref for the argument
+      ast_node* arg_copy;
+      expr_decl_ref* decl;
+      switch(rinfo.arg->kind()) {
+      case ast_node_kinds::expr_decl_ref:
+        decl = static_cast<expr_decl_ref*>(rinfo.arg);
+        
+        arg_copy = expr_decl_ref::build(ctx_, location, decl->declaration());
+        break;
+      case ast_node_kinds::expr_reg_idx_ref:
+        auto expr = static_cast<expr_reg_idx_ref*>(rinfo.arg);
+
+        auto arg_builder = expr_reg_idx_ref::builder(ctx_, location);
+
+        if (expr->var().kind() != ast_node_kinds::expr_decl_ref) {
+          throw std::logic_error("AST invalid -- deference of non declared variable");
+        }
+        decl = static_cast<expr_decl_ref*>(&expr->var());
+        arg_builder.add_child(expr_decl_ref::build(ctx_, location, decl->declaration()));
+
+        if (expr->index().kind() != ast_node_kinds::expr_integer) {
+          throw std::logic_error("AST invalid -- deference offset not an integer");
+        }
+        auto index = static_cast<expr_integer*>(&expr->index());
+        arg_builder.add_child(expr_integer::create(ctx_, location, index->evaluate()));
+        
+        arg_copy = arg_builder.finish();
+        break;
+      }
+      stmt_builder.add_child(arg_copy);
+
+      return stmt_builder.finish();
     }
 
     void clear() { stream_.str(std::string()); }
