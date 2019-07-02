@@ -27,6 +27,7 @@ namespace synthewareQ {
    *  Returns a replacement list giving the nodes to the be replaced (or erased)
    */
 
+  // TODO: Add possibility for global phase correction
   class rotation_folder final : public visitor_base<rotation_folder> {
   public:
     using visitor_base<rotation_folder>::visit;
