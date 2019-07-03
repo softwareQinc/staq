@@ -10,6 +10,8 @@
 // Nodes
 AST_NODE(list_gops)
 AST_NODE(list_ids)
+AST_NODE(list_aps)
+AST_NODE(list_exprs)
 
 // Declarations
 AST_NODE(decl_program)
@@ -28,8 +30,8 @@ AST_NODE(stmt_measure)
 AST_NODE(stmt_if)
 
 // Expressions
-AST_NODE(expr_decl_ref)
-AST_NODE(expr_reg_idx_ref)
+AST_NODE(expr_var)
+AST_NODE(expr_reg_offset)
 AST_NODE(expr_integer)
 AST_NODE(expr_pi)
 AST_NODE(expr_real)

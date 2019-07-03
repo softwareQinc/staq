@@ -112,15 +112,22 @@ namespace qasm {
       counts[name] += 1;
     }
     void visit(stmt_gate* node) {
-      // TODO: absorb parameters into gate name
       auto& [counts, depths] = running_estimate_;
-      printer_.visit(&node->gate());
+
+      // Gate name
+      std::string tmp(node->gate());
+      if (config_.merge_dagger) strip_dagger(tmp);
+      stream_ << tmp;
+      if (node->has_cargs()) {
+        stream_ << "(";
+        printer_.visit(&node->c_args());
+        stream_ << ")";
+      }
       auto name = stream_.str();
       clear();
 
-      if (config_.merge_dagger) strip_dagger(name);
 
-      if (config_.unbox && (config_.overrides.find(name) == config_.overrides.end())) {
+      if (config_.unbox && (config_.overrides.find(name) == config_.overrides.end()) && (!node->has_cargs())) {
         add_counts(counts, resource_map_[name].first);
       } else {
         counts[name] += 1;
@@ -140,8 +147,8 @@ namespace qasm {
     }
 
     /* Expressions */
-    void visit(expr_decl_ref* node) {}
-    void visit(expr_reg_idx_ref* node) {}
+    void visit(expr_var* node) {}
+    void visit(expr_reg_offset* node) {}
     void visit(expr_integer* node) {}
     void visit(expr_pi* node) {}
     void visit(expr_real* node) {}
@@ -157,6 +164,12 @@ namespace qasm {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
     }
     void visit(list_ids* node) {
+      for (auto& child : *node) visit(const_cast<ast_node*>(&child));
+    }
+    void visit(list_aps* node) {
+      for (auto& child : *node) visit(const_cast<ast_node*>(&child));
+    }
+    void visit(list_exprs* node) {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
     }
       

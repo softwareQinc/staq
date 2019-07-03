@@ -137,7 +137,17 @@ namespace qasm {
 
     void visit(list_ids* node)
     {
-      visit_children(node);
+      visit_list(node);
+    }
+
+    void visit(list_aps* node)
+    {
+      visit_list(node);
+    }
+
+    void visit(list_exprs* node)
+    {
+      visit_list(node);
     }
 
     /* Statements */
@@ -145,7 +155,7 @@ namespace qasm {
     {
       os_ << prefix_;
       os_ << "barrier ";
-      visit_children(node);
+      visit_list(node);
       os_ << ";" << std::endl;
     }
 
@@ -174,33 +184,22 @@ namespace qasm {
     }
 
     void visit(stmt_gate* node)
-    { // Again very nasty
+    {
       os_ << prefix_;
 
-      auto decl_ref = static_cast<expr_decl_ref*>(&node->gate());
-      auto decl = static_cast<decl_gate*>(decl_ref->declaration());
-      visit(const_cast<ast_node*>(node->begin().operator->()));
+      // Gate name
+      os_ << node->gate();
 
-      // Parameters
-      auto it = node->begin();
-      it++;
-
-      if (decl->has_parameters()) {
-        auto params = static_cast<list_ids*>(&decl->parameters());
+      // Classical arguments
+      if (node->has_cargs()) {
         os_ << "(";
-        for (auto i = 0; i < params->num_children(); i++) {
-          if (i != 0) os_ << ",";
-          visit(const_cast<ast_node*>(it++.operator->()));
-        }
+        visit(const_cast<ast_node*>(&node->c_args()));
         os_ << ")";
       }
 
-      // Arguments
+      // Quantum arguments
       os_ << " ";
-      for (auto i = 0; it != node->end(); it++, i++) {
-        if (i != 0) os_ << ",";
-        visit(const_cast<ast_node*>(it.operator->()));
-      }
+      visit(const_cast<ast_node*>(&node->q_args()));
       os_ << ";" << std::endl;
     }
 
@@ -284,9 +283,9 @@ namespace qasm {
       ambiguous_ = prev_ctx;
     }
 
-    void visit(expr_reg_idx_ref* node)
+    void visit(expr_reg_offset* node)
     {
-      visit(const_cast<ast_node*>(&node->var()));
+      os_ << node->id();
       os_ << "[";
       visit(const_cast<ast_node*>(&node->index()));
       os_ << "]";
@@ -337,26 +336,9 @@ namespace qasm {
       ambiguous_ = prev_ctx;
     }
 
-    void visit(expr_decl_ref* node)
+    void visit(expr_var* node)
     {
-      auto decl = node->declaration();
-      switch (decl->kind()) {
-      case ast_node_kinds::decl_register:
-        os_ << static_cast<decl_register*>(decl)->identifier();
-        break;
-      case ast_node_kinds::decl_param:
-        os_ << static_cast<decl_param*>(decl)->identifier();
-        break;
-      case ast_node_kinds::decl_gate:
-        os_ << static_cast<decl_gate*>(decl)->identifier();
-        break;
-      case ast_node_kinds::decl_ancilla:
-        os_ << static_cast<decl_ancilla*>(decl)->identifier();
-        break;
-      default:
-        std::cerr << "Error: could not find declared identifier" << std::endl;
-        break;
-      }
+      os_ << node->id();
     }
 
     void visit(expr_integer* node)
@@ -378,7 +360,7 @@ namespace qasm {
 
   private:
     template<typename NodeT>
-    void visit_children(NodeT* node)
+    void visit_list(NodeT* node)
     {
       for (auto it = node->begin(); it != node->end(); it++) {
         if (it != node->begin()) os_ << ",";

@@ -23,18 +23,19 @@ namespace qasm {
   public:
     class builder {
     public:
-      explicit builder(ast_context* ctx, uint32_t location)
-        : statement_(new (*ctx) stmt_gate(location))
+      explicit builder(ast_context* ctx, uint32_t location, std::string_view gate)
+        : statement_(new (*ctx) stmt_gate(location, gate))
       {}
 
-      void add_child(ast_node* child)
+      void add_cargs(ast_node* cargs)
       {
-        statement_->add_child(child);
+        statement_->add_child(cargs);
+        statement_->has_cargs_ = true;
       }
 
-      void set_c_args(uint32_t num)
+      void add_qargs(ast_node* qargs)
       {
-        statement_->num_c_args_ = num;
+        statement_->add_child(qargs);
       }
 
       stmt_gate* finish()
@@ -46,30 +47,34 @@ namespace qasm {
       stmt_gate* statement_;
     };
 
-    ast_node& gate()
+    std::string_view gate() const {
+      return name_;
+    }
+
+    bool has_cargs() const
     {
+      return has_cargs_;
+    }
+
+    ast_node& c_args()
+    {
+      assert(has_cargs_);
       return *(this->begin());
     }
 
-    ast_node& first_c_param()
+    ast_node& q_args()
     {
-      auto iter = this->begin();
-      return *(++iter);
-    }
-
-    ast_node& first_q_param()
-    {
-      auto iter = this->begin();
-
-      iter++;
-      for (auto i = 0; i < num_c_args_; i++) iter++;
-
-      return *iter;
+      if (has_cargs_) {
+        return *(std::next(this->begin()));
+      } else {
+        return *(this->begin());
+      }
     }
 
   private:
-    stmt_gate(uint32_t location)
+    stmt_gate(uint32_t location, std::string_view gate)
       : ast_node(location)
+      , name_(gate)
     {}
 
     ast_node_kinds do_get_kind() const override
@@ -77,7 +82,8 @@ namespace qasm {
       return ast_node_kinds::stmt_gate;
 	}
   private:
-    uint32_t num_c_args_;
+    std::string name_;
+    bool has_cargs_ = false;
   };
 
 } // namespace qasm

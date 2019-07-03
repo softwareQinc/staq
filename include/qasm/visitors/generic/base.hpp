@@ -33,8 +33,8 @@ namespace qasm {
     virtual void visit(stmt_measure*) = 0;
     virtual void visit(stmt_if*) = 0;
     /* Expressions */
-    virtual void visit(expr_decl_ref*) = 0;
-    virtual void visit(expr_reg_idx_ref*) = 0;
+    virtual void visit(expr_var*) = 0;
+    virtual void visit(expr_reg_offset*) = 0;
     virtual void visit(expr_integer*) = 0;
     virtual void visit(expr_pi*) = 0;
     virtual void visit(expr_real*) = 0;
@@ -46,6 +46,8 @@ namespace qasm {
     /* Lists */
     virtual void visit(list_gops*) = 0;
     virtual void visit(list_ids*) = 0;
+    virtual void visit(list_aps*) = 0;
+    virtual void visit(list_exprs*) = 0;
 
   private:
     // Implements first leg of double dispatch
@@ -71,8 +73,8 @@ namespace qasm {
         derived().visit(static_cast<expr_binary_op*>(node));
         break;
 
-      case ast_node_kinds::expr_reg_idx_ref:
-        derived().visit(static_cast<expr_reg_idx_ref*>(node));
+      case ast_node_kinds::expr_reg_offset:
+        derived().visit(static_cast<expr_reg_offset*>(node));
         break;
 
       case ast_node_kinds::expr_unary_op:
@@ -85,6 +87,14 @@ namespace qasm {
 
       case ast_node_kinds::list_ids:
         derived().visit(static_cast<list_ids*>(node));
+        break;
+
+      case ast_node_kinds::list_aps:
+        derived().visit(static_cast<list_aps*>(node));
+        break;
+
+      case ast_node_kinds::list_exprs:
+        derived().visit(static_cast<list_exprs*>(node));
         break;
 
       case ast_node_kinds::stmt_barrier:
@@ -124,8 +134,8 @@ namespace qasm {
         derived().visit(static_cast<decl_register*>(node));
         break;
 
-      case ast_node_kinds::expr_decl_ref:
-        derived().visit(static_cast<expr_decl_ref*>(node));
+      case ast_node_kinds::expr_var:
+        derived().visit(static_cast<expr_var*>(node));
         break;
 
       case ast_node_kinds::expr_integer:

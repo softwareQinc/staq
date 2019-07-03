@@ -40,8 +40,8 @@ namespace qasm {
     virtual ast_node* replace(stmt_measure* node) { return node; };
     virtual ast_node* replace(stmt_if* node) { return node; };
     /* Expressions */
-    virtual ast_node* replace(expr_decl_ref* node) { return node; };
-    virtual ast_node* replace(expr_reg_idx_ref* node) { return node; };
+    virtual ast_node* replace(expr_var* node) { return node; };
+    virtual ast_node* replace(expr_reg_offset* node) { return node; };
     virtual ast_node* replace(expr_integer* node) { return node; };
     virtual ast_node* replace(expr_pi* node) { return node; };
     virtual ast_node* replace(expr_real* node) { return node; };
@@ -53,6 +53,8 @@ namespace qasm {
     /* Lists */
     virtual ast_node* replace(list_gops* node) { return node; };
     virtual ast_node* replace(list_ids* node) { return node; };
+    virtual ast_node* replace(list_aps* node) { return node; };
+    virtual ast_node* replace(list_exprs* node) { return node; };
 
     void visit(decl_program* node)
     {
@@ -105,8 +107,8 @@ namespace qasm {
       replacement_ = replace(node);
     }
 
-    void visit(expr_decl_ref* node) { replacement_ = replace(node); }
-    void visit(expr_reg_idx_ref* node)
+    void visit(expr_var* node) { replacement_ = replace(node); }
+    void visit(expr_reg_offset* node)
     {
       visit_children(node);
       replacement_ = replace(node);
@@ -137,6 +139,16 @@ namespace qasm {
       replacement_ = replace(node);
     }
     void visit(list_ids* node)
+    {
+      visit_children(node);
+      replacement_ = replace(node);
+    }
+    void visit(list_aps* node)
+    {
+      visit_children(node);
+      replacement_ = replace(node);
+    }
+    void visit(list_exprs* node)
     {
       visit_children(node);
       replacement_ = replace(node);
@@ -188,8 +200,8 @@ namespace qasm {
     void visit(stmt_reset* node) { visit_children(node); }
     void visit(stmt_measure* node) { visit_children(node); }
     void visit(stmt_if* node) { visit_children(node); }
-    void visit(expr_decl_ref* node) { }
-    void visit(expr_reg_idx_ref* node) { visit_children(node); }
+    void visit(expr_var* node) { }
+    void visit(expr_reg_offset* node) { visit_children(node); }
     void visit(expr_integer* node) { }
     void visit(expr_pi* node) { }
     void visit(expr_real* node) { }
@@ -199,6 +211,8 @@ namespace qasm {
     void visit(decl_ancilla* node) { }
     void visit(list_gops* node) { visit_children(node); }
     void visit(list_ids* node) { visit_children(node); }
+    void visit(list_aps* node) { visit_children(node); }
+    void visit(list_exprs* node) { visit_children(node); }
 
   private:
     std::unordered_map<ast_node*, ast_node*> replacements_;

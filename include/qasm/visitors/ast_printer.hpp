@@ -71,9 +71,9 @@ namespace qasm {
       visit_children(node);
     }
 
-    void visit(expr_reg_idx_ref* node)
+    void visit(expr_reg_offset* node)
     {
-      os_ << fmt::format("{}|- expr_reg_idx_ref\n", prefix_);
+      os_ << fmt::format("{}|- expr_reg_offset\n", prefix_);
       visit_children(node);
     }
 
@@ -132,6 +132,18 @@ namespace qasm {
       visit_children(node);
     }
 
+    void visit(list_aps* node)
+    {
+      os_ << fmt::format("{}|- list_aps ({})\n", prefix_, node->num_children());
+      visit_children(node);
+    }
+
+    void visit(list_exprs* node)
+    {
+      os_ << fmt::format("{}|- list_exprs ({})\n", prefix_, node->num_children());
+      visit_children(node);
+    }
+
     void visit(stmt_barrier* node)
     {
       os_ << fmt::format("{}|- stmt_barrier\n", prefix_);
@@ -187,10 +199,10 @@ namespace qasm {
                          node->size());
     }
 
-    void visit(expr_decl_ref* node)
+    void visit(expr_var* node)
     {
       (void) node;
-      os_ << fmt::format("{}|- expr_decl_ref\n", prefix_);
+      os_ << fmt::format("{}|- expr_var\n", prefix_);
     }
 
     void visit(expr_integer* node)

@@ -172,17 +172,18 @@ namespace synthewareQ {
     auto i = 0;
     std::vector<std::function<qasm::ast_node*()> > id_refs(num_qubits);
     for (auto& param : *params) {
-      id_refs[inputs[i++]] = [&]() { return qasm::expr_decl_ref::build(ctx_, location, &param); };
+      id_refs[inputs[i++]] = [&]() {
+        auto tmp = static_cast<qasm::decl_param*>(&param);
+        return qasm::expr_var::build(ctx_, location, tmp->identifier());
+      };
     }
 
     i = 0;
     for (auto j = 0; j < num_qubits; j++) {
       if (!id_refs[j]) {
         id_refs[j] = [&, i]() {
-          auto indexed_reference = qasm::expr_reg_idx_ref::builder(ctx_, location);
-          indexed_reference.add_child(qasm::expr_decl_ref::build(ctx_, location, anc_decl));
-          indexed_reference.add_child(qasm::expr_integer::create(ctx_, location, i));
-          return indexed_reference.finish();
+          auto offset = qasm::expr_integer::create(ctx_, location, i);
+          return qasm::expr_reg_offset::build(ctx_, location, "anc", offset);
         };
         i++;
       }
@@ -200,11 +201,11 @@ namespace synthewareQ {
             // If there exists a declaration for the Hadamard gate, use that
             auto declaration = ctx_->find_declaration("h");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "h");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -236,12 +237,15 @@ namespace synthewareQ {
             auto expr_angle = angle_to_expr(ctx_, location, gate.rotation_angle());
             auto declaration = ctx_->find_declaration("rz");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "rz");
+              auto carg_builder = qasm::list_exprs::builder(ctx_, location);
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(expr_angle);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              carg_builder.add_child(expr_angle);
+              stmt_builder.add_cargs(carg_builder.finish());
+
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -264,11 +268,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("x");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "x");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -291,11 +295,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("y");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "y");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -323,11 +327,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("t");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "t");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -352,11 +356,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("s");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "s");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -381,11 +385,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("z");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "z");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -408,11 +412,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("sdg");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "sdg");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -439,11 +443,11 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("tdg");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "tdg");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -472,12 +476,12 @@ namespace synthewareQ {
             // Use the qelib declaration for informity
             auto declaration = ctx_->find_declaration("cx");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "cx");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.control()]());
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.control()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -494,12 +498,12 @@ namespace synthewareQ {
           {
             auto declaration = ctx_->find_declaration("cz");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "cx");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
-              stmt_builder.add_child(id_refs[gate.control()]());
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.control()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {
@@ -516,14 +520,14 @@ namespace synthewareQ {
             }
             auto declaration = ctx_->find_declaration("ccx");
             if (declaration) {
-              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location);
+              auto stmt_builder = qasm::stmt_gate::builder(ctx_, location, "ccx");
+              auto qarg_builder = qasm::list_aps::builder(ctx_, location);
 
-              auto decl_ref = qasm::expr_decl_ref::build(ctx_, location, declaration);
-              stmt_builder.add_child(decl_ref);
               gate.foreach_control([&](auto const& qubit) {
-                  stmt_builder.add_child(id_refs[qubit]());
+                  qarg_builder.add_child(id_refs[qubit]());
               });
-              stmt_builder.add_child(id_refs[gate.target()]());
+              qarg_builder.add_child(id_refs[gate.target()]());
+              stmt_builder.add_qargs(qarg_builder.finish());
 
               builder.add_child(stmt_builder.finish());
             } else {

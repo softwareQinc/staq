@@ -70,7 +70,7 @@ namespace synthewareQ {
 
     /* Statements */
     void visit(stmt_barrier* node) {
-      auto args = stringify_list(&node->first_arg());
+      auto args = stringify_list(static_cast<list_aps*>(&node->first_arg()));
       push_uninterp(uninterp_op(args));
     }
     void visit(stmt_cnot* node) {
@@ -88,8 +88,9 @@ namespace synthewareQ {
     }
     void visit(stmt_gate* node) {
       // TODO: deal with other standard library operations
-      auto name = stringify(&node->gate());
-      auto args = stringify_list(&node->first_q_param());
+      std::string name(node->gate());
+      auto arg_list = static_cast<list_aps*>(&node->q_args());
+      auto args = stringify_list(arg_list);
 
       if (mergeable_) {
         auto it = args.begin();
@@ -102,12 +103,12 @@ namespace synthewareQ {
         else if (name == "sdg") current_clifford_ *= clifford_op::s_gate(*it);
         else if (name == "t") {
           auto gate = rotation_op::t_gate(*it);
-          rotation_info info = { node, rotation_info::axis::z, &node->first_q_param() };
+          rotation_info info = { node, rotation_info::axis::z, &(*arg_list->begin()) };
           
           accum_.push_back(std::make_pair(info, gate.commute_left(current_clifford_)));
         } else if (name == "tdg") {
           auto gate = rotation_op::tdg_gate(*it);
-          rotation_info info = { node, rotation_info::axis::z, &node->first_q_param() };
+          rotation_info info = { node, rotation_info::axis::z, &(*arg_list->begin()) };
 
           accum_.push_back(std::make_pair(info, gate.commute_left(current_clifford_)));
         } else push_uninterp(uninterp_op(args));
@@ -130,8 +131,8 @@ namespace synthewareQ {
     }
 
     /* Expressions */
-    void visit(expr_decl_ref* node) {}
-    void visit(expr_reg_idx_ref* node) {}
+    void visit(expr_var* node) {}
+    void visit(expr_reg_offset* node) {}
     void visit(expr_integer* node) {}
     void visit(expr_pi* node) {}
     void visit(expr_real* node) {}
@@ -147,6 +148,12 @@ namespace synthewareQ {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
     }
     void visit(list_ids* node) {
+      for (auto& child : *node) visit(const_cast<ast_node*>(&child));
+    }
+    void visit(list_aps* node) {
+      for (auto& child : *node) visit(const_cast<ast_node*>(&child));
+    }
+    void visit(list_exprs* node) {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
     }
 
@@ -302,10 +309,11 @@ namespace synthewareQ {
     // Assumes basic gates (x, y, z, s, sdg, t, tdg, rx, ry, rz) are defined
     ast_node* new_rotation(const rotation_info& rinfo, const td::angle& theta) {
       auto location = rinfo.node->location();
-      auto stmt_builder = stmt_gate::builder(ctx_, location);
 
       // Determine the gate
-      uint32_t num_c_args = 0;
+      std::string name;
+      list_exprs* cargs = nullptr;
+      
       auto sval = theta.symbolic_value();
       if (sval == std::nullopt) {
         // Angle is real-valued
@@ -313,23 +321,21 @@ namespace synthewareQ {
 
         if (val == 0) return nullptr;
 
-        ast_node* decl_ref;
         switch (rinfo.rotation_axis) {
         case rotation_info::axis::x:
-          decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rx"));
+          name = "rx";
           break;
         case rotation_info::axis::y:
-          decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("ry"));
+          name = "ry";
           break;
         case rotation_info::axis::z:
-          decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rz"));
+          name = "rz";
           break;
         }
-        stmt_builder.add_child(decl_ref);
 
-        auto expr_angle = angle_to_expr(ctx_, location, theta);
-        stmt_builder.add_child(expr_angle);
-        num_c_args++;
+        auto carg_builder = list_exprs::builder(ctx_, location);
+        carg_builder.add_child(angle_to_expr(ctx_, location, theta));
+        cargs = carg_builder.finish();
       } else {
         // Angle is of the form pi*(a/b) for a & b integers
         auto [num, denom] = sval.value();
@@ -339,98 +345,78 @@ namespace synthewareQ {
         case rotation_info::axis::x:
           if ((num == 1) && (denom == 1)) {
             // X gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("x"));
-            stmt_builder.add_child(decl_ref);
+            name = "x";
           } else {
             // Rx gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rx"));
-            stmt_builder.add_child(decl_ref);
+            name = "rx";
 
-            auto expr_angle = angle_to_expr(ctx_, location, theta);
-            stmt_builder.add_child(expr_angle);
-            num_c_args++;
+            auto carg_builder = list_exprs::builder(ctx_, location);
+            carg_builder.add_child(angle_to_expr(ctx_, location, theta));
+            cargs = carg_builder.finish();
           }
           break;
         case rotation_info::axis::y:
           if ((num == 1) && (denom == 1)) {
             // Y gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("y"));
-            stmt_builder.add_child(decl_ref);
+            name = "y";
           } else {
             // Ry gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("ry"));
-            stmt_builder.add_child(decl_ref);
+            name = "ry";
 
-            auto expr_angle = angle_to_expr(ctx_, location, theta);
-            stmt_builder.add_child(expr_angle);
-            num_c_args++;
+            auto carg_builder = list_exprs::builder(ctx_, location);
+            carg_builder.add_child(angle_to_expr(ctx_, location, theta));
+            cargs = carg_builder.finish();
           }
           break;
         case rotation_info::axis::z:
           if ((num == 1) && (denom == 1)) {
             // Z gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("z"));
-            stmt_builder.add_child(decl_ref);
+            name = "z";
           } else if (((num == 1) || (num == -3)) && (denom == 2)) {
             // S gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("s"));
-            stmt_builder.add_child(decl_ref);
+            name = "s";
           } else if (((num == -1) || (num == 3)) && (denom == 2)) {
             // Sdg gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("sdg"));
-            stmt_builder.add_child(decl_ref);
+            name = "sdg";
           } else if (((num == 1) || (num == -7)) && (denom == 4)) {
             // T gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("t"));
-            stmt_builder.add_child(decl_ref);
+            name = "t";
           } else if (((num == -1) || (num == 7)) && (denom == 4)) {
             // Tdg gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("tdg"));
-            stmt_builder.add_child(decl_ref);
+            name = "tdg";
           } else {
             // Rz gate
-            auto decl_ref = expr_decl_ref::build(ctx_, location, ctx_->find_declaration("rz"));
-            stmt_builder.add_child(decl_ref);
+            name = "rz";
 
-            auto expr_angle = angle_to_expr(ctx_, location, theta);
-            stmt_builder.add_child(expr_angle);
-            num_c_args++;
+            auto carg_builder = list_exprs::builder(ctx_, location);
+            carg_builder.add_child(angle_to_expr(ctx_, location, theta));
+            cargs = carg_builder.finish();
           }
           break;
         }
       }
-      stmt_builder.set_c_args(num_c_args);
+      auto stmt_builder = stmt_gate::builder(ctx_, location, name);
+      if (cargs != nullptr) stmt_builder.add_cargs(cargs);
 
-      // Create a new decl ref for the argument
-      ast_node* arg_copy;
-      expr_decl_ref* decl;
-      switch(rinfo.arg->kind()) {
-      case ast_node_kinds::expr_decl_ref:
-        decl = static_cast<expr_decl_ref*>(rinfo.arg);
+      // Quantum argument
+      auto qarg_builder = list_aps::builder(ctx_, location);
+      if (rinfo.arg->kind() == ast_node_kinds::expr_var) {
+        auto var = static_cast<expr_var*>(rinfo.arg);
         
-        arg_copy = expr_decl_ref::build(ctx_, location, decl->declaration());
-        break;
-      case ast_node_kinds::expr_reg_idx_ref:
-        auto expr = static_cast<expr_reg_idx_ref*>(rinfo.arg);
+        qarg_builder.add_child(expr_var::build(ctx_, var->location(), var->id()));
+      } else if (rinfo.arg->kind() == ast_node_kinds::expr_reg_offset) {
+        auto expr = static_cast<expr_reg_offset*>(rinfo.arg);
 
-        auto arg_builder = expr_reg_idx_ref::builder(ctx_, location);
-
-        if (expr->var().kind() != ast_node_kinds::expr_decl_ref) {
-          throw std::logic_error("AST invalid -- deference of non declared variable");
-        }
-        decl = static_cast<expr_decl_ref*>(&expr->var());
-        arg_builder.add_child(expr_decl_ref::build(ctx_, location, decl->declaration()));
-
+        // Get numeric value of index
         if (expr->index().kind() != ast_node_kinds::expr_integer) {
           throw std::logic_error("AST invalid -- deference offset not an integer");
         }
         auto index = static_cast<expr_integer*>(&expr->index());
-        arg_builder.add_child(expr_integer::create(ctx_, location, index->evaluate()));
+        auto index_copy = expr_integer::create(ctx_, index->location(), index->evaluate());
         
-        arg_copy = arg_builder.finish();
-        break;
+        qarg_builder.add_child(expr_reg_offset::build(ctx_, expr->location(), expr->id(), index_copy));
       }
-      stmt_builder.add_child(arg_copy);
+      stmt_builder.add_qargs(qarg_builder.finish());
 
       return stmt_builder.finish();
     }
@@ -445,15 +431,13 @@ namespace synthewareQ {
       return tmp;
     }
 
-    std::list<std::string> stringify_list(ast_node* node) {
+    std::list<std::string> stringify_list(list_aps* node) {
       std::list<std::string> tmp;
 
-      while (node != nullptr) {
-        printer_.visit(node);
+      for (auto& child : *node) {
+        printer_.visit(const_cast<ast_node*>(&child));
         tmp.push_back(stream_.str());
         clear();
-
-        node = node->next_sibling();
       }
 
       return tmp;
