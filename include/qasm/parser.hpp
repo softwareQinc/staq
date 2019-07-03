@@ -220,7 +220,9 @@ namespace qasm {
       expect_and_consume_token(token_kinds::semicolon);
 
       if (!error_) {
-        return decl_ancilla::build(context_.get(), location, identifier, size, dirty);
+        auto node = decl_ancilla::build(context_.get(), location, identifier, size, dirty);
+        context_->add_decl_parameter(identifier, node);
+        return node;
       }
       return nullptr;
     }

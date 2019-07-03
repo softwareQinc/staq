@@ -23,7 +23,7 @@ namespace synthewareQ {
 
     qasm::ast_node* replace(qasm::decl_oracle* node)
 	{
-      auto decl_builder = qasm::decl_gate::builder(ctx_, node->location(), node->target());
+      auto decl_builder = qasm::decl_gate::builder(ctx_, node->location(), node->identifier());
       decl_builder.add_arguments(&node->arguments());
 
       auto l_net = read_from_file(node->target());
