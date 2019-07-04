@@ -154,20 +154,6 @@ namespace detail {
       , last_(nullptr)
     {}
 
-    template<typename Dummy = T,
-             typename = typename std::enable_if<std::is_same<Dummy, decl_program>::value>::type>
-    void push_back(T* obj)
-    {
-      push_back_impl(obj);
-    }
-
-    template<typename U, typename = typename std::enable_if<!std::is_same<T, decl_program>::value, U>::type>
-    void push_back(const U* parent, T* obj)
-    {
-      push_back_impl(obj);
-      intrusive_list_access<T>::on_insert(*last_, parent);
-    }
-
     bool empty() const
     {
       return first_ == nullptr;
@@ -202,11 +188,24 @@ namespace detail {
       return const_iterator(nullptr);
     }
 
-    // Modifiers -- invalidate all iterators
-    // Return iterator positions:
-    //   insert: the node that was inserted
-    //   assign: the node that was assigned
-    //   remove: the node directly after the deleted node
+    // Modifiers -- follows <list> conventions mostly
+    template<typename Dummy = T,
+             typename = typename std::enable_if<std::is_same<Dummy, decl_program>::value>::type>
+    void push_back(T* obj)
+    {
+      push_back_impl(obj);
+    }
+
+    template<typename U, typename = typename std::enable_if<!std::is_same<T, decl_program>::value, U>::type>
+    void push_back(const U* parent, T* obj)
+    {
+      push_back_impl(obj);
+      intrusive_list_access<T>::on_insert(*last_, parent);
+    }
+
+    // Inserts directly before
+    // It is unchanged
+    // Return iterator points to inserted element
     template<typename Dummy = T,
              typename = typename std::enable_if<std::is_same<Dummy, decl_program>::value>::type>
     iterator insert(iterator it, T* obj)
@@ -222,6 +221,26 @@ namespace detail {
       return it;
     }
 
+    // Inserts entire list directly before
+    // It is unchanged
+    // Return iterator points to beginning of inserted list
+    template<typename Dummy = T,
+             typename = typename std::enable_if<std::is_same<Dummy, decl_program>::value>::type>
+    iterator splice(iterator it, intrusive_list<T>& xs)
+    {
+      return splice_impl(it, xs);
+    }
+
+    template<typename U, typename = typename std::enable_if<!std::is_same<T, decl_program>::value, U>::type>
+    iterator splice(iterator it, const U* parent, intrusive_list<T>& xs)
+    {
+      for (auto& obj : xs) intrusive_list_access<T>::on_insert(obj, parent);
+      return splice_impl(it, xs);
+    }
+
+    // Replaces an item
+    // It is invalidated
+    // Return iterator points to new element
     template<typename Dummy = T,
              typename = typename std::enable_if<std::is_same<Dummy, decl_program>::value>::type>
     iterator assign(iterator it, T* obj)
@@ -237,55 +256,126 @@ namespace detail {
       return it;
     }
 
-    iterator remove(iterator it)
+    // Replaces an item
+    // It is invalidated
+    // Return iterator points to element directly after removed item
+    iterator erase(iterator it)
     {
-      return remove_impl(it);
+      return erase_impl(it);
     }
 
   private:
     void push_back_impl(T* obj)
     {
-      if (last_ != nullptr) {
-        intrusive_list_access<T>::set_prev(*obj, last_);
-        intrusive_list_access<T>::set_next(*last_, obj);
-        last_ = obj;
-      } else {
+
+      if (empty()) {
+        intrusive_list_access<T>::set_next(*obj, nullptr);
+        intrusive_list_access<T>::set_prev(*obj, nullptr);
+
         first_ = obj;
-        last_ = first_;
+      } else {
+        intrusive_list_access<T>::set_next(*last_, obj);
+
+        intrusive_list_access<T>::set_next(*obj, nullptr);
+        intrusive_list_access<T>::set_prev(*obj, last_);
       }
-      ++size_;
+
+      last_ = obj;
+      size_++;
     }
 
     iterator insert_impl(iterator it, T* obj)
     {
-      if (it == end()) {
+      if (empty()) {
+        intrusive_list_access<T>::set_next(*obj, nullptr);
+        intrusive_list_access<T>::set_prev(*obj, nullptr);
+
         first_ = obj;
-        last_ = first_;
+        last_ = obj;
+      } else if (it == end()) {
+        // last is not null
+        intrusive_list_access<T>::set_next(*last_, obj);
+
+        intrusive_list_access<T>::set_next(*obj, nullptr);
+        intrusive_list_access<T>::set_prev(*obj, last_);
+
+        last_ = obj;
+      } else if (it.current_ == first_) {
+        // first is not null
+        intrusive_list_access<T>::set_next(*obj, first_);
+        intrusive_list_access<T>::set_prev(*obj, nullptr);
+
+        intrusive_list_access<T>::set_prev(*first_, obj);
+        first_ = obj;
       } else {
-        auto next_ = intrusive_list_access<T>::get_next(*it);
-        // Forward and back pointers for inserted object
-        intrusive_list_access<T>::set_next(*obj, next_);
-        intrusive_list_access<T>::set_prev(*obj, it.current_);
+        // it->prev is not null
+        auto prev_ = intrusive_list_access<T>::get_prev(*it);
 
-        if (next_ != nullptr) { // Back pointer for next_
-         intrusive_list_access<T>::set_prev(*next_, obj);
-        } else { // Inserting at beginning of list
-          last_ = obj;
-        }
+        // Forward pointers
+        intrusive_list_access<T>::set_next(*prev_, obj);
+        intrusive_list_access<T>::set_next(*obj, it.current_);
 
-        // Finally forward pointer for *it
-        intrusive_list_access<T>::set_next(*it, obj);
+        // Backward pointers
+        intrusive_list_access<T>::set_prev(*it, obj);
+        intrusive_list_access<T>::set_prev(*obj, prev_);
       }
-      ++size_;
 
+      size_++;
       return iterator(obj);
+	}
+
+    iterator splice_impl(iterator it, intrusive_list<T>& xs)
+    {
+      if (xs.empty()) {
+        return it;
+      }
+      
+      if (empty()) {
+        first_ = xs.first_;
+        last_ = xs.last_;
+      } else if (it == end()) {
+        // last & xs.first are not null
+        intrusive_list_access<T>::set_next(*last_, xs.first_);
+        intrusive_list_access<T>::set_prev(*(xs.first_), last_);
+        last_ = xs.last_;
+      } else if (it.current_ == first_) {
+        // first & xs.last are not null
+        intrusive_list_access<T>::set_next(*(xs.last_), first_);
+        intrusive_list_access<T>::set_prev(*first_, xs.last_);
+        first_ = xs.first_;
+      } else {
+        // it->prev, as.first & as.last are not null
+        auto prev_ = intrusive_list_access<T>::get_prev(*it);
+
+        // Forward pointers
+        intrusive_list_access<T>::set_next(*prev_, xs.first_);
+        intrusive_list_access<T>::set_next(*(xs.last_), it.current_);
+
+        // Backward pointers
+        intrusive_list_access<T>::set_prev(*it, xs.last_);
+        intrusive_list_access<T>::set_prev(*(xs.first_), prev_);
+      }
+
+      size_ += xs.size_;
+      return iterator(xs.first_);
 	}
 
     iterator assign_impl(iterator it, T* obj)
     {
-      if (it == end()) {
+      if (empty()) {
+        intrusive_list_access<T>::set_next(*obj, nullptr);
+        intrusive_list_access<T>::set_prev(*obj, nullptr);
+
         first_ = obj;
-        last_ = first_;
+        last_ = obj;
+      } else if (it == end()) {
+        // last is not nullptr
+        intrusive_list_access<T>::set_next(*last_, obj);
+
+        intrusive_list_access<T>::set_next(*obj, nullptr);
+        intrusive_list_access<T>::set_prev(*obj, last_);
+
+        last_ = obj;
       } else {
         auto prev_ = intrusive_list_access<T>::get_prev(*it);
         auto next_ = intrusive_list_access<T>::get_next(*it);
@@ -311,9 +401,11 @@ namespace detail {
 	}
 
     // Note: sets 'it' to the next element
-    iterator remove_impl(iterator it)
+    iterator erase_impl(iterator it)
     {
-      if (it != end()) {
+      if (it == end()) {
+        return end();
+      } else {
         auto prev_ = intrusive_list_access<T>::get_prev(*it);
         auto next_ = intrusive_list_access<T>::get_next(*it);
 
@@ -331,9 +423,6 @@ namespace detail {
 
         --size_;
         return iterator(next_);
-
-      } else {
-        return end();
       }
 	}
 

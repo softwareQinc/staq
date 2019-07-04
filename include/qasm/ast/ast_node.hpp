@@ -119,6 +119,11 @@ namespace qasm {
       return children_.insert(it, static_cast<Derived*>(this), ptr);
     }
 
+    iterator insert_children(iterator it, detail::intrusive_list<T> xs)
+    {
+      return children_.splice(it, static_cast<Derived*>(this), xs);
+    }
+
     iterator set_child(iterator it, T* ptr)
     {
       return children_.assign(it, static_cast<Derived*>(this), ptr);
@@ -126,7 +131,7 @@ namespace qasm {
 
     iterator delete_child(iterator it)
     {
-      return children_.remove(it);
+      return children_.erase(it);
     }
 
   protected:
