@@ -167,6 +167,7 @@ namespace synthewareQ {
     // Create a mapping from qubits to functions generating declaration references
     auto inputs = stats.i_indexes;
     inputs.insert(inputs.end(), stats.o_indexes.begin(), stats.o_indexes.end());
+    std::cout << "Params: " << params->num_children() << ", inputs: " << inputs.size() << std::endl;
     assert(params->num_children() == inputs.size()); //sanity check, should be checked in semantic analysis phase
 
     auto i = 0;

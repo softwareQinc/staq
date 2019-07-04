@@ -17,6 +17,9 @@
 namespace synthewareQ {
 namespace qasm {
 
+  void print_source(ast_context*);
+
+  /* Implementation */
   static const std::set<std::string_view> qelib_defs {
     "u3", "u2", "u1", "cx", "id", "u0", "x", "y", "z",
       "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
@@ -373,6 +376,11 @@ namespace qasm {
 	std::ostream& os_;
     bool ambiguous_ = false;
   };
+
+  void print_source(ast_context* ctx) {
+    source_printer printer;
+    printer.visit(*ctx);
+  }
 
 } // namespace qasm
 } // namespace synthewareQ

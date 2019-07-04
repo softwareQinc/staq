@@ -10,19 +10,25 @@
 #include "synthesis/logic_synthesis.hpp"
 
 namespace synthewareQ {
+namespace transformations {
 
-  class logic_elaborator final : public qasm::replacer<logic_elaborator> {
+  /* \brief! Synthesizes all declared oracles over standard library gates
+   *
+   * Visits an AST and synthesizes any declared oracles,
+   * replacing them with regular gate declarations which may
+   * optionally declare local ancillas 
+   */
+  void expand_oracles(qasm::ast_context*);
+
+  /* Implementation */
+  class oracle_synthesizer final : public qasm::replacer<oracle_synthesizer> {
   public:
-    using replacer<logic_elaborator>::visit;
+    using replacer<oracle_synthesizer>::visit;
     
-    logic_elaborator(qasm::ast_context* ctx)
-      : replacer<logic_elaborator>()
-      , ctx_(ctx)
-    {}
-    ~logic_elaborator() {}
+    oracle_synthesizer(qasm::ast_context* ctx) : ctx_(ctx) {}
+    ~oracle_synthesizer() {}
 
-    qasm::ast_node* replace(qasm::decl_oracle* node)
-	{
+    qasm::ast_node* replace(qasm::decl_oracle* node) {
       auto decl_builder = qasm::decl_gate::builder(ctx_, node->location(), node->identifier());
       decl_builder.add_arguments(&node->arguments());
 
@@ -36,5 +42,11 @@ namespace synthewareQ {
   private:
     qasm::ast_context* ctx_;
   };
+
+  void expand_oracles(qasm::ast_context* ctx) {
+    auto expander = oracle_synthesizer(ctx);
+    expander.visit(*ctx);
+  }
     
+}
 }

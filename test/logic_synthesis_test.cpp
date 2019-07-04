@@ -7,7 +7,7 @@
 #define FMT_HEADER_ONLY = true
 
 #include "qasm/qasm.hpp"
-#include "transformations/logic_elaborator.hpp"
+#include "transformations/oracle_synthesizer.hpp"
 #include "qasm/visitors/source_printer.hpp"
 
 #include <fmt/color.h>
@@ -23,9 +23,8 @@ int main(int argc, char** argv)
   }
   auto program = qasm::read_from_file(argv[1]);
   if (program) {
-    logic_elaborator elaborator(program.get());
-    qasm::source_printer printer(std::cout);
-    elaborator.visit(*program);
-    printer.visit(*program);
+    transformations::expand_oracles(program.get());
+
+    qasm::print_source(program.get());
   }
 }
