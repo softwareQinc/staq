@@ -36,7 +36,7 @@ namespace synthewareQ {
     rotation_folder() : visitor_base<rotation_folder>() {}
     ~rotation_folder() {}
 
-    std::unordered_map<ast_node*, ast_node*> run(ast_context& ctx) {
+    std::unordered_map<ast_node*, ast_node_list> run(ast_context& ctx) {
       ctx_ = &ctx;
       visit(ctx);
       return replacement_list_;
@@ -172,7 +172,7 @@ namespace synthewareQ {
       std::list<std::variant<uninterp_op, clifford_op, std::pair<rotation_info, rotation_op> > >;
 
     ast_context* ctx_;
-    std::unordered_map<ast_node*, ast_node*> replacement_list_;
+    std::unordered_map<ast_node*, ast_node_list> replacement_list_;
 
     /* Algorithm state */
     circuit_callback accum_;       // The currently accumulating circuit (in channel repr.)
@@ -198,7 +198,10 @@ namespace synthewareQ {
 
           phase += new_phase;
           if (!(new_R == tmp->second)) {
-            replacement_list_[tmp->first.node] = new_rotation(tmp->first, new_R.rotation_angle());
+            auto node = tmp->first.node;
+            ast_node_list xs;
+            xs.push_back(&node->parent(), new_rotation(tmp->first, new_R.rotation_angle()));
+            replacement_list_[node] = xs;
           }
         }
       }
@@ -226,7 +229,7 @@ namespace synthewareQ {
                 R = new_R;
 
                 // Delete R in circuit & the node
-                replacement_list_[Rop.first.node] = nullptr;
+                replacement_list_[Rop.first.node] = ast_node_list();
                 circuit.erase(std::next(it).base());
 
                 return false;

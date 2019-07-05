@@ -15,9 +15,9 @@ namespace qasm {
   /*! \brief Generic node replacement visitor
   *
   * Usage: override the replace methods for the nodes desired.
-  * Returning the original node pointer leaves the node unchanged,
-  * returning null deletes the node and any other pointer replaces
-  * the current node
+  * Returning nullopt leaves the node unchanged, returning 
+  * a list of nodes (via intrusive list) deletes the node and replaces
+  * it with the given list spliced in
   */
   template <typename Derived>
   class replacer : public visitor_base<Derived> {
@@ -26,35 +26,35 @@ namespace qasm {
     
   protected:
     /* Declarations */
-    virtual ast_node* replace(decl_program* node) { return node; };
-    virtual ast_node* replace(decl_register* node) { return node; };
-    virtual ast_node* replace(decl_param* node) { return node; };
-    virtual ast_node* replace(decl_gate* node) { return node; };
-    //virtual ast_node* replace(decl_opaque* node) { return node; };
+    virtual std::optional<ast_node_list> replace(decl_program* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(decl_register* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(decl_param* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(decl_gate* node) { return std::nullopt; };
+    //virtual std::optional<ast_node_list> replace(decl_opaque* node) { return std::nullopt; };
     /* Statements */
-    virtual ast_node* replace(stmt_barrier* node) { return node; };
-    virtual ast_node* replace(stmt_cnot* node) { return node; };
-    virtual ast_node* replace(stmt_unitary* node) { return node; };
-    virtual ast_node* replace(stmt_gate* node) { return node; };
-    virtual ast_node* replace(stmt_reset* node) { return node; };
-    virtual ast_node* replace(stmt_measure* node) { return node; };
-    virtual ast_node* replace(stmt_if* node) { return node; };
+    virtual std::optional<ast_node_list> replace(stmt_barrier* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(stmt_cnot* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(stmt_unitary* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(stmt_gate* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(stmt_reset* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(stmt_measure* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(stmt_if* node) { return std::nullopt; };
     /* Expressions */
-    virtual ast_node* replace(expr_var* node) { return node; };
-    virtual ast_node* replace(expr_reg_offset* node) { return node; };
-    virtual ast_node* replace(expr_integer* node) { return node; };
-    virtual ast_node* replace(expr_pi* node) { return node; };
-    virtual ast_node* replace(expr_real* node) { return node; };
-    virtual ast_node* replace(expr_binary_op* node) { return node; };
-    virtual ast_node* replace(expr_unary_op* node) { return node; };
+    virtual std::optional<ast_node_list> replace(expr_var* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(expr_reg_offset* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(expr_integer* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(expr_pi* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(expr_real* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(expr_binary_op* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(expr_unary_op* node) { return std::nullopt; };
     /* Extensions */
-    virtual ast_node* replace(decl_oracle* node) { return node; };
-    virtual ast_node* replace(decl_ancilla* node) { return node; };
+    virtual std::optional<ast_node_list> replace(decl_oracle* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(decl_ancilla* node) { return std::nullopt; };
     /* Lists */
-    virtual ast_node* replace(list_gops* node) { return node; };
-    virtual ast_node* replace(list_ids* node) { return node; };
-    virtual ast_node* replace(list_aps* node) { return node; };
-    virtual ast_node* replace(list_exprs* node) { return node; };
+    virtual std::optional<ast_node_list> replace(list_gops* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(list_ids* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(list_aps* node) { return std::nullopt; };
+    virtual std::optional<ast_node_list> replace(list_exprs* node) { return std::nullopt; };
 
     void visit(decl_program* node)
     {
@@ -155,18 +155,19 @@ namespace qasm {
     }
 
   private:
-    ast_node* replacement_;
+    std::optional<ast_node_list> replacement_;
 
 	template<typename NodeT>
 	void visit_children(NodeT* node)
 	{
-      for (auto it = node->begin(); it != node->end(); it++) {
+      for (auto it = node->begin(); it != node->end(); it) {
         visit(it.operator->());
-        if (replacement_ == nullptr) {
+        if (replacement_.has_value()) {
+          node->insert_children(it, *replacement_);
           it = node->delete_child(it);
-        } else if (replacement_ != it.operator->()) {
-          it = node->set_child(it, replacement_);
-		}
+        } else {
+          it++;
+        }
       }
 	}
     
@@ -182,9 +183,9 @@ namespace qasm {
   public:
     using visitor_base<bulk_replacer>::visit;
     friend visitor_base<bulk_replacer>;
-    friend void bulk_replace(ast_context&, std::unordered_map<ast_node*, ast_node*>);
+    friend void bulk_replace(ast_context&, std::unordered_map<ast_node*, ast_node_list>);
 
-    bulk_replacer(std::unordered_map<ast_node*, ast_node*> replacements)
+    bulk_replacer(std::unordered_map<ast_node*, ast_node_list> replacements)
       : replacements_(replacements)
     {}
 
@@ -215,7 +216,7 @@ namespace qasm {
     void visit(list_exprs* node) { visit_children(node); }
 
   private:
-    std::unordered_map<ast_node*, ast_node*> replacements_;
+    std::unordered_map<ast_node*, ast_node_list> replacements_;
 
 	template<typename NodeT>
 	void visit_children(NodeT* node)
@@ -225,12 +226,8 @@ namespace qasm {
 
         visit(child);
         if (replacements_.find(child) != replacements_.end()) {
-          if (replacements_[child] == nullptr) {
-            it = node->delete_child(it);
-          } else {
-            it = node->set_child(it, replacements_[child]);
-            it++;
-          }
+          node->insert_children(it, replacements_[child]);
+          it = node->delete_child(it);
         } else {
           it++;
         }
@@ -239,7 +236,7 @@ namespace qasm {
     
   };
 
-  void bulk_replace(ast_context& ctx, std::unordered_map<ast_node*, ast_node*> replacements) {
+  void bulk_replace(ast_context& ctx, std::unordered_map<ast_node*, ast_node_list> replacements) {
     auto replacer = bulk_replacer(replacements);
     replacer.visit(ctx);
   }

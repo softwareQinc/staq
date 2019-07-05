@@ -154,6 +154,15 @@ namespace detail {
       , last_(nullptr)
     {}
 
+    // Shallow assignment operator
+    intrusive_list<T>& operator=(const intrusive_list<T>& xs)
+    {
+	  size_ = xs.size_;
+      first_ = xs.first_;
+      last_ = xs.last_;
+      return *this;
+    }
+
     bool empty() const
     {
       return first_ == nullptr;
