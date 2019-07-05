@@ -12,6 +12,7 @@
 #include <caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
 
 #include <unordered_map>
+#include <fstream>
 
 #include "qasm/ast/ast.hpp"
 
@@ -39,19 +40,27 @@ namespace synthewareQ {
 
   mockturtle::mig_network read_from_file(std::string_view fname_tmp) {
     auto fname = std::string(fname_tmp);
+    mockturtle::mig_network mig;
+
+    std::ifstream f(fname.c_str());
+    if (!f.good()) {
+      std::cerr << "Could not open file \"" << fname << "\"" << std::endl;
+      return mig;
+    }
 
     const auto i = fname.find_last_of(".");
     if (i == std::string::npos) {
       std::cerr << "No filename extension" << std::endl;
+      return mig;
     }
  
     const auto it = ext_to_format.find(fname.substr(i+1));
     if (it == ext_to_format.end()) {
       std::cerr << "Unrecognized file format" << std::endl;
+      return mig;
     }
 
     // Read input file into a logic network
-    mockturtle::mig_network mig;
     switch(it->second) {
     case format::binary_aiger:
       lorina::read_aiger(fname, mockturtle::aiger_reader(mig));
@@ -167,7 +176,6 @@ namespace synthewareQ {
     // Create a mapping from qubits to functions generating declaration references
     auto inputs = stats.i_indexes;
     inputs.insert(inputs.end(), stats.o_indexes.begin(), stats.o_indexes.end());
-    std::cout << "Params: " << params->num_children() << ", inputs: " << inputs.size() << std::endl;
     assert(params->num_children() == inputs.size()); //sanity check, should be checked in semantic analysis phase
 
     auto i = 0;
