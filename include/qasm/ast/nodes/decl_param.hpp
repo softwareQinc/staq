@@ -16,34 +16,39 @@
 namespace synthewareQ {
 namespace qasm {
 
-// This represents a variable parameter in a gate declaration (`decl_gate`)
-class decl_param final : public ast_node {
-public:
-	static decl_param* build(ast_context* ctx, uint32_t location, std::string_view identifier)
-	{
-		auto result = new (*ctx) decl_param(location, identifier);
-		return result;
-	}
+  // This represents a variable parameter in a gate declaration (`decl_gate`)
+  class decl_param final : public ast_node {
+  public:
+    static decl_param* build(ast_context* ctx, uint32_t location, std::string_view identifier)
+    {
+      auto result = new (*ctx) decl_param(location, identifier);
+      return result;
+    }
 
-	std::string_view identifier() const
-	{
-		return identifier_;
-	}
+    ast_node* copy(ast_context* ctx) const
+    {
+      return build(ctx, location_, identifier_);
+    }
 
-private:
-	decl_param(uint32_t location, std::string_view identifier)
-	    : ast_node(location)
-	    , identifier_(identifier)
-	{}
+    std::string_view identifier() const
+    {
+      return identifier_;
+    }
 
-	ast_node_kinds do_get_kind() const override
-	{
-		return ast_node_kinds::decl_param;
-	}
+  private:
+    decl_param(uint32_t location, std::string_view identifier)
+      : ast_node(location)
+      , identifier_(identifier)
+    {}
 
-private:
-	std::string identifier_;
-};
+    ast_node_kinds do_get_kind() const override
+    {
+      return ast_node_kinds::decl_param;
+    }
+
+  private:
+    std::string identifier_;
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

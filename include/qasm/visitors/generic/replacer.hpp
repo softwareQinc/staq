@@ -25,6 +25,8 @@ namespace qasm {
     using visitor_base<Derived>::visit;
     
   protected:
+    std::optional<ast_node_list> replacement_;
+
     /* Declarations */
     virtual std::optional<ast_node_list> replace(decl_program* node) { return std::nullopt; };
     virtual std::optional<ast_node_list> replace(decl_register* node) { return std::nullopt; };
@@ -153,9 +155,6 @@ namespace qasm {
       visit_children(node);
       replacement_ = replace(node);
     }
-
-  private:
-    std::optional<ast_node_list> replacement_;
 
 	template<typename NodeT>
 	void visit_children(NodeT* node)

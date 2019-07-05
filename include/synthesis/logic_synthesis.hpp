@@ -554,6 +554,14 @@ namespace synthewareQ {
         }
       });
 
+    // Reset ancillas -- needs to be changed if in the future dirty ancillas are allowed
+    // 
+    /*
+    auto reset_builder = qasm::stmt_reset::builder(ctx_, location);
+    reset_builder.add_child(qasm::expr_var::build(ctx_, location, "anc"));
+    builder.add_child(reset_builder.finish());
+    */
+
     return builder.finish();
   }
     

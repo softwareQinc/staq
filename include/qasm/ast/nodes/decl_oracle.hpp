@@ -15,65 +15,74 @@
 namespace synthewareQ {
 namespace qasm {
 
-class decl_oracle final
-  : public ast_node
-  , public ast_node_container<decl_oracle, ast_node> {
-public:
-  class builder {
+  class decl_oracle final
+    : public ast_node
+    , public ast_node_container<decl_oracle, ast_node> {
   public:
-    explicit builder(ast_context* ctx, uint32_t location, std::string_view identifier)
-      : statement_(new (*ctx) decl_oracle(location, identifier))
-    {}
+    class builder {
+    public:
+      explicit builder(ast_context* ctx, uint32_t location, std::string_view identifier)
+        : statement_(new (*ctx) decl_oracle(location, identifier))
+      {}
 
-    void add_arguments(ast_node* arguments)
+      void add_arguments(ast_node* arguments)
+      {
+        statement_->add_child(arguments);
+      }
+
+      void add_target(std::string_view filename)
+      {
+        statement_->filename_ = filename;
+      }
+
+      decl_oracle* finish()
+      {
+        return statement_;
+      }
+
+    private:
+      decl_oracle* statement_;
+    };
+
+    ast_node* copy(ast_context* ctx) const
     {
-      statement_->add_child(arguments);
+      auto tmp = builder(ctx, location_, identifier_);
+      tmp.add_arguments(begin()->copy(ctx));
+      tmp.add_target(filename_);
+
+      return tmp.finish();
     }
 
-    void add_target(std::string_view filename)
+    std::string_view identifier() const
     {
-      statement_->filename_ = filename;
+      return identifier_;
     }
 
-    decl_oracle* finish()
+    ast_node& arguments()
     {
-      return statement_;
+      return *(this->begin());
+    }
+    
+    std::string_view target() const
+    {
+      return filename_;
     }
 
   private:
-    decl_oracle* statement_;
-  };
+    decl_oracle(uint32_t location, std::string_view identifier)
+      : ast_node(location)
+      , identifier_(identifier)
+    {}
 
-  std::string_view identifier() const
-  {
-    return identifier_;
-  }
-
-  ast_node& arguments()
-  {
-    return *(this->begin());
-  }
-    
-  std::string_view target() const
-  {
-    return filename_;
-  }
-
-private:
-	decl_oracle(uint32_t location, std::string_view identifier)
-	    : ast_node(location)
-	    , identifier_(identifier)
-	{}
-
-	ast_node_kinds do_get_kind() const override
-	{
+    ast_node_kinds do_get_kind() const override
+    {
       return ast_node_kinds::decl_oracle;
 	}
 
-private:
+  private:
     std::string identifier_;
     std::string filename_;
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

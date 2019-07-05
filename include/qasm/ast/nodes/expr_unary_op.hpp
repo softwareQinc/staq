@@ -17,70 +17,78 @@
 namespace synthewareQ {
 namespace qasm {
 
-enum class unary_ops {
-	unknown = 0,
-	sin = 1,
-	cos = 2,
-	tan = 4,
-	exp = 8,
-	ln = 16,
-	sqrt = 32,
-	minus = 64,
-	plus = 128,
-};
+  enum class unary_ops {
+    unknown = 0,
+    sin = 1,
+    cos = 2,
+    tan = 4,
+    exp = 8,
+    ln = 16,
+    sqrt = 32,
+    minus = 64,
+    plus = 128,
+  };
 
-//
-class expr_unary_op
+  //
+  class expr_unary_op
     : public ast_node
     , public ast_node_container<expr_unary_op, ast_node> {
-public:
-	class builder {
-	public:
-		explicit builder(ast_context* ctx, uint32_t location, unary_ops op)
-		    : expression_(new (*ctx) expr_unary_op(location, op))
-		{}
+  public:
+    class builder {
+    public:
+      explicit builder(ast_context* ctx, uint32_t location, unary_ops op)
+        : expression_(new (*ctx) expr_unary_op(location, op))
+      {}
 
-		void add_child(ast_node* child)
-		{
-			expression_->add_child(child);
-		}
+      void add_child(ast_node* child)
+      {
+        expression_->add_child(child);
+      }
 
-		expr_unary_op* finish()
-		{
-			return expression_;
-		}
+      expr_unary_op* finish()
+      {
+        return expression_;
+      }
 
-	private:
-		expr_unary_op* expression_;
-	};
+    private:
+      expr_unary_op* expression_;
+    };
 
-	unary_ops op() const
-	{
-		return static_cast<unary_ops>(this->config_bits_);
-	}
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto tmp = builder(ctx, location_, op());
+      tmp.add_child(begin()->copy(ctx));
 
-	bool is(unary_ops op) const
-	{
-		return this->config_bits_ == static_cast<uint32_t>(op);
-	}
+      return tmp.finish();
+    }
 
-	ast_node& subexpr()
-	{
-		return *(this->begin());
-	}
+    unary_ops op() const
+    {
+      return static_cast<unary_ops>(this->config_bits_);
+    }
 
-private:
-	expr_unary_op(uint32_t location, unary_ops op)
-	    : ast_node(location)
-	{
-		this->config_bits_ = static_cast<uint32_t>(op);
+    bool is(unary_ops op) const
+    {
+      return this->config_bits_ == static_cast<uint32_t>(op);
+    }
+
+    ast_node& subexpr()
+    {
+      return *(this->begin());
+    }
+
+  private:
+    expr_unary_op(uint32_t location, unary_ops op)
+      : ast_node(location)
+    {
+      this->config_bits_ = static_cast<uint32_t>(op);
 	}
 
 	ast_node_kinds do_get_kind() const override
 	{
-		return ast_node_kinds::expr_unary_op;
+      return ast_node_kinds::expr_unary_op;
 	}
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

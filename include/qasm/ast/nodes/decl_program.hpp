@@ -44,6 +44,14 @@ public:
 		decl_program* program_;
 	};
 
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto tmp = builder();
+      for (auto& child : *this) tmp.add_child(child.copy(ctx));
+
+      return tmp.finish();
+    }
+
 private:
 	decl_program()
 		: ast_node(0)

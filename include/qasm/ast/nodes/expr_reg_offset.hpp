@@ -26,6 +26,11 @@ namespace qasm {
       return new (*ctx) expr_reg_offset(location, id, expr);
     }
 
+    ast_node* copy(ast_context* ctx) const
+    {
+      return build(ctx, location_, id_, begin()->copy(ctx));
+    }
+
     std::string_view id() const
     {
       return id_;

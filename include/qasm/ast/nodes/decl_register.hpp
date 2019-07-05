@@ -21,54 +21,60 @@ enum class register_type : unsigned short {
 	quantum = 1,
 };
 
-// This represents a register (quantum or classical) declaration
-class decl_register final : public ast_node {
-private:
-	//Configure bits
-	enum {
-		is_quantum_ = 0
-	};
-public:
-	static decl_register* build(ast_context* ctx, uint32_t location, register_type type,
-	                            std::string_view identifier, uint32_t size)
-	{
-		return new (*ctx) decl_register(location, type, identifier, size);
-	}
+  // This represents a register (quantum or classical) declaration
+  class decl_register final : public ast_node {
+  private:
+    //Configure bits
+    enum {
+      is_quantum_ = 0
+    };
+  public:
+    static decl_register* build(ast_context* ctx, uint32_t location, register_type type,
+                                std::string_view identifier, uint32_t size)
+    {
+      return new (*ctx) decl_register(location, type, identifier, size);
+    }
 
-	bool is_quantum() const
-	{
-		return ((this->config_bits_ >> is_quantum_) & 1) == 1;
-	}
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto ty = is_quantum() ? register_type::quantum : register_type::classical;
+      return build(ctx, location_, ty, identifier_, size_);
+    }
 
-	std::string_view identifier() const
-	{
-		return identifier_;
-	}
+    bool is_quantum() const
+    {
+      return ((this->config_bits_ >> is_quantum_) & 1) == 1;
+    }
 
-	uint32_t size() const
-	{
-		return size_;
-	}
+    std::string_view identifier() const
+    {
+      return identifier_;
+    }
 
-private:
-	decl_register(uint32_t location, register_type type, std::string_view identifier,
-	              uint32_t size)
-	    : ast_node(location)
-	    , size_(size)
-	    , identifier_(identifier)
-	{
-		this->config_bits_ |= (static_cast<int>(type) << is_quantum_);
-	}
+    uint32_t size() const
+    {
+      return size_;
+    }
 
-	ast_node_kinds do_get_kind() const override
-	{
-		return ast_node_kinds::decl_register;
-	}
+  private:
+    decl_register(uint32_t location, register_type type, std::string_view identifier,
+                  uint32_t size)
+      : ast_node(location)
+      , size_(size)
+      , identifier_(identifier)
+    {
+      this->config_bits_ |= (static_cast<int>(type) << is_quantum_);
+    }
 
-private:
-	uint32_t size_;
+    ast_node_kinds do_get_kind() const override
+    {
+      return ast_node_kinds::decl_register;
+    }
+
+  private:
+    uint32_t size_;
 	std::string identifier_;
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

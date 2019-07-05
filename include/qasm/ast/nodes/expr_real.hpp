@@ -23,6 +23,11 @@ public:
 		return new (*ctx) expr_real(location, value);
 	}
 
+    ast_node* copy(ast_context* ctx) const
+    {
+      return create(ctx, location_, value_);
+    }
+
 	double evaluate() const
 	{
 		return value_;

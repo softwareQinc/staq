@@ -44,6 +44,14 @@ namespace qasm {
       list_exprs* node_;
     };
 
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto tmp = builder(ctx, location_);
+      for (auto& child : *this) tmp.add_child(child.copy(ctx));
+      
+      return tmp.finish(); 
+    }
+
   private:
     list_exprs(uint32_t location)
       : ast_node(location)

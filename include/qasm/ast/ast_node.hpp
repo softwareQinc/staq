@@ -15,6 +15,8 @@
 namespace synthewareQ {
 namespace qasm {
 
+  class ast_context;
+
   // Base class for all QASM AST nodes
   class ast_node : detail::intrusive_list_node<ast_node> {
   public:
@@ -22,6 +24,8 @@ namespace qasm {
     ast_node& operator=(const ast_node&) = delete;
 
     virtual ~ast_node() = default;
+
+    virtual ast_node* copy(ast_context* ctx) const = 0;
 
     ast_node_kinds kind() const
     {
@@ -55,6 +59,8 @@ namespace qasm {
     {}
 
     uint32_t config_bits_ = 0;
+    uint32_t location_;
+    ast_node const* parent_;
 
   private:
     virtual ast_node_kinds do_get_kind() const = 0;
@@ -63,10 +69,6 @@ namespace qasm {
     {
       parent_ = parent;
     }
-
-  private:
-    uint32_t location_;
-    ast_node const* parent_;
 
     template<typename T>
     friend struct detail::intrusive_list_access;

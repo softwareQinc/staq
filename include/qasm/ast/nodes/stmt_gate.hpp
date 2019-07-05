@@ -16,7 +16,6 @@
 namespace synthewareQ {
 namespace qasm {
 
-  // TODO: separate classical and quantum arguments
   class stmt_gate
     : public ast_node
     , public ast_node_container<stmt_gate, ast_node> {
@@ -46,6 +45,16 @@ namespace qasm {
     private:
       stmt_gate* statement_;
     };
+
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto tmp = builder(ctx, location_, name_);
+      auto it = begin();
+      if (has_cargs_) tmp.add_cargs((it++)->copy(ctx));
+      tmp.add_qargs(it->copy(ctx));
+      
+      return tmp.finish(); 
+    }
 
     std::string_view gate() const {
       return name_;

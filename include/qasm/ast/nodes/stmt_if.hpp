@@ -18,51 +18,59 @@
 namespace synthewareQ {
 namespace qasm {
 
-class stmt_if
+  class stmt_if
     : public ast_node
     , public ast_node_container<stmt_if, ast_node> {
-public:
-	class builder {
-	public:
-		explicit builder(ast_context* ctx, uint32_t location)
-		    : statement_(new (*ctx) stmt_if(location))
-		{}
+  public:
+    class builder {
+    public:
+      explicit builder(ast_context* ctx, uint32_t location)
+        : statement_(new (*ctx) stmt_if(location))
+      {}
 
-		void add_child(ast_node* child)
-		{
-			statement_->add_child(child);
-		}
+      void add_child(ast_node* child)
+      {
+        statement_->add_child(child);
+      }
 
-		stmt_if* finish()
-		{
-			return statement_;
-		}
+      stmt_if* finish()
+      {
+        return statement_;
+      }
 
-	private:
-		stmt_if* statement_;
-	};
+    private:
+      stmt_if* statement_;
+    };
 
-	ast_node& expression()
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto tmp = builder(ctx, location_);
+      for (auto& child : *this) tmp.add_child(child.copy(ctx));
+      
+      return tmp.finish(); 
+    }
+
+    ast_node& expression()
+    {
+      return *(this->begin());
+    }
+
+    ast_node& quantum_op()
+    {
+      auto iter = this->begin();
+      return *(++iter);
+    }
+
+  private:
+    stmt_if(uint32_t location)
+      : ast_node(location)
+    {}
+
+    ast_node_kinds do_get_kind() const override
 	{
-		return *(this->begin());
+      return ast_node_kinds::stmt_if;
 	}
-
-	ast_node& quantum_op()
-	{
-		auto iter = this->begin();
-		return *(++iter);
-	}
-
-private:
-	stmt_if(uint32_t location)
-	    : ast_node(location)
-	{}
-
-	ast_node_kinds do_get_kind() const override
-	{
-		return ast_node_kinds::stmt_if;
-	}
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ

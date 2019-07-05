@@ -23,6 +23,11 @@ namespace qasm {
       return new (*ctx) expr_var(location, id);
     }
 
+    ast_node* copy(ast_context* ctx) const
+    {
+      return build(ctx, location_, id_);
+    }
+
     std::string_view id() const
     {
       return id_;

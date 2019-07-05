@@ -23,6 +23,11 @@ public:
 		return new (*ctx) expr_pi(location);
 	}
 
+    ast_node* copy(ast_context* ctx) const
+    {
+      return create(ctx, location_);
+    }
+
 	double evaluate() const
 	{
 		return M_PI;

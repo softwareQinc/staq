@@ -16,50 +16,58 @@
 namespace synthewareQ {
 namespace qasm {
 
-class stmt_barrier
+  class stmt_barrier
     : public ast_node
     , public ast_node_container<stmt_barrier, ast_node> {
-public:
-	class builder {
-	public:
-		explicit builder(ast_context* ctx, uint32_t location)
-		    : statement_(new (*ctx) stmt_barrier(location))
-		{}
+  public:
+    class builder {
+    public:
+      explicit builder(ast_context* ctx, uint32_t location)
+        : statement_(new (*ctx) stmt_barrier(location))
+      {}
 
-		void add_child(ast_node* child)
-		{
-			statement_->add_child(child);
-		}
+      void add_child(ast_node* child)
+      {
+        statement_->add_child(child);
+      }
 
-		stmt_barrier& get()
-		{
-			return *statement_;
-		}
+      stmt_barrier& get()
+      {
+        return *statement_;
+      }
 
-		stmt_barrier* finish()
-		{
-			return statement_;
-		}
+      stmt_barrier* finish()
+      {
+        return statement_;
+      }
 
-	private:
-		stmt_barrier* statement_;
-	};
+    private:
+      stmt_barrier* statement_;
+    };
+  
+    ast_node* copy(ast_context* ctx) const
+    {
+      auto tmp = builder(ctx, location_);
+      for (auto& child : *this) tmp.add_child(child.copy(ctx));
+      
+      return tmp.finish(); 
+    }
 
     ast_node& first_arg()
     {
-        return *(this->begin());
+      return *(this->begin());
     }
 
-private:
-	stmt_barrier(uint32_t location)
-	    : ast_node(location)
-	{}
+  private:
+    stmt_barrier(uint32_t location)
+      : ast_node(location)
+    {}
 
-	ast_node_kinds do_get_kind() const override
+    ast_node_kinds do_get_kind() const override
 	{
-		return ast_node_kinds::stmt_barrier;
+      return ast_node_kinds::stmt_barrier;
 	}
-};
+  };
 
 } // namespace qasm
 } // namespace synthewareQ
