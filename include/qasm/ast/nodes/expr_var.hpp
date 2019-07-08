@@ -33,6 +33,11 @@ namespace qasm {
       return id_;
     }
 
+    void set_id(std::string const x)
+    {
+      id_ = x;
+    }
+
   private:
     expr_var(uint32_t location, std::string_view id)
       : ast_node(location)

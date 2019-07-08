@@ -36,6 +36,11 @@ namespace qasm {
       return id_;
     }
 
+    void set_id(std::string const x)
+    {
+      id_ = x;
+    }
+
     ast_node& index()
     {
       return *(this->begin());
