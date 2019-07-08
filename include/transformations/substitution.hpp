@@ -30,9 +30,11 @@ namespace transformations {
   // TODO: this is another instance where a proper class hierarchy would help
 
   /* Implementation */
-  class substitor final : public replacer<substitutor> {
+  class substitutor final : public replacer<substitutor> {
   public:
-    using visitor<renamer>::visit;
+    using replacer<substitutor>::visit;
+
+    substitutor(ast_context* ctx) : ctx_(ctx) {}
 
     // Scoping
     void visit(decl_program* node) override {
@@ -79,6 +81,8 @@ namespace transformations {
     }
 
   private:
+    ast_context* ctx_;
+
     std::unordered_map<std::string, std::string> subst_; // The substitution
     std::list<std::set<std::string> > bound_;            // The declared identifiers in scope
 
@@ -100,7 +104,7 @@ namespace transformations {
 
   };
     
-  void subst(std::unordered_map<std::string, std::string> substs, ast_node* node);
+  void subst(ast_context* ctx, std::unordered_map<std::string, std::string> substs, ast_node* node);
     auto tmp = renamer(substs);
     tmp.visit(node);
   }
