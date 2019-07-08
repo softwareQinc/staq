@@ -5,7 +5,7 @@
 *------------------------------------------------------------------------------------------------*/
 
 #include "qasm/ast/ast.hpp"
-#include "qasm/visitors/generic/visitor.hpp"
+#include "qasm/visitors/generic/replacer.hpp"
 
 #include <list>
 #include <unordered_map>
@@ -18,43 +18,63 @@ namespace transformations {
 
   /* \brief! Applies a name substitution to an AST
    *
-   * Given a partial map from identifiers to identifiers,
+   * Given a partial map from identifiers to ast nodes,
    * replaces each identifier in the outer-most scope
    * with its mapping, if it exists. Used to implement
    * substitution & mapping to physical qubits
    *
-   * Modification is in-place -- i.e. without copying
-   * nodes, hence if the tree is a DAG, renaming 
-   * may escape the current sub-tree
+   * Generally doesn't do sanity checks to ensure the
+   * substituted node is in fact an access path
    */
   void subst(std::unordered_map<std::string, std::string>, ast_node*);
+  // TODO: this is another instance where a proper class hierarchy would help
 
   /* Implementation */
-  class renamer final : public visitor<renamer> {
+  class substitor final : public replacer<substitutor> {
   public:
     using visitor<renamer>::visit;
 
     // Scoping
-    void visit_pre(decl_program* node) override { push_scope(); }
-    void visit_post(decl_program* node) override { push_scope(); }
-    void visit_pre(decl_gate* node) override { push_scope(); }
-    void visit_post(decl_gate* node) override { push_scope(); }
+    void visit(decl_program* node) override {
+      push_scope();
+      visit_children(node);
+      pop_scope();
+    }
+    void visit(decl_gate* node) override {
+      push_scope();
+      visit_children(node);
+      pop_scope();
+    }
 
     // Decls
     void visit(decl_register* node) override { add_to_scope(node->identifier()); }
     void visit(decl_param* node) override { add_to_scope(node->identifier()); }
 
     // Substitution
-    void visit(expr_var* node) override {
+    std::optional<ast_node_list> replace(expr_var* node) override {
       auto v = node->id();
       if (free(v) && substs.find(v) != substs.end()) {
-        node->set_id(substs[v]);
+        return substs[v]->copy(ctx_);
       }
     }
-    void visit_pre(expr_reg_offset* node) override {
+    std::optional<ast_node_list> replace(expr_reg_offset* node) override {
       auto v = node->id();
       if (free(v) && substs.find(v) != subst_.end()) {
-        node->set_id(substs[v]);
+        auto subst = substs[v];
+        expr_integer* offset = nullptr; // to avoid cross initialization in switch
+        switch(subst->kind()) {
+        case ast_nodes_kinds::expr_var:
+          // Replace the root variable
+          return expr_reg_offset::build(ctx_, node->location(), subst->id(), node->offset.copy(ctx_));
+        case ast_node_kinds::expr_reg_offset:
+          // Replace the root variable and add the offsets
+          offset = expr_integer::create(ctx_, node->location(), node->index_numeric() +
+                                        (static_cast<expr_reg_offset*>(subst))->index_numeric);
+          return expr_reg_offset::build(ctx_, node->location(), subst->id(), offset);
+        default:
+          std::cerr << "Error: Invalid substitution\n";
+          return std::nullopt;
+        }
       }
     }
 

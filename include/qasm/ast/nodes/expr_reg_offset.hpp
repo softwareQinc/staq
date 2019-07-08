@@ -46,12 +46,11 @@ namespace qasm {
       return *(this->begin());
     }
 
-    /*
-    std::optional<uint32_t> index_numeric() const
+    uint32_t index_numeric()
     {
-      return *(this->begin());
+      // Unsafe
+      return (static_cast<expr_integer*>(&(*begin())))->evaluate();
     }
-    */
 
 
   private:

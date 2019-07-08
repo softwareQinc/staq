@@ -12,7 +12,7 @@
 namespace synthewareQ {
 namespace qasm {
 
-  /*! \brief Generic node replacement visitor
+  /*! \brief Generic complete traversal with node replacement
   *
   * Usage: override the replace methods for the nodes desired.
   * Returning nullopt leaves the node unchanged, returning 
