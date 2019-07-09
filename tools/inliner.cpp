@@ -16,7 +16,7 @@ int main() {
 
   auto program = qasm::read_from_stdin();
   if (program) {
-    transformations::inline_ast(program.get(), { });
+    transformations::inline_ast(program.get());
     qasm::print_source(program.get());
   } else {
     std::cerr << "Parsing failed\n";

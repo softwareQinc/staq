@@ -15,10 +15,10 @@ int main() {
 
   auto program = qasm::read_from_stdin();
   if (program) {
-    resource_estimator res;
+    qasm::resource_estimator res;
 
     std::cout << "Resources used:\n";
-    count = res.estimate(*program);
+    auto count = res.estimate(*program);
     for (auto& [name, num] : count) {
       std::cout << "  " << name << ": " << num << "\n";
     }

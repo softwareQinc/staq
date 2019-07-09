@@ -11,6 +11,7 @@
 #include "substitution.hpp"
 
 #include <unordered_map>
+#include <set>
 
 namespace synthewareQ {
 namespace transformations {
@@ -27,14 +28,20 @@ namespace transformations {
    */
   void inline_ast(ast_context*);
 
+  /* \brief! Default override */
+  static const std::set<std::string_view> default_overrides {
+    "x", "y", "z", "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
+      "cz", "cy", "swap", "cx"
+      };
+
   /* Implementation */
   class inliner final : public replacer<inliner> {
   public:
     using replacer<inliner>::visit;
 
     struct config {
-      bool inline_qelib = false;
       bool keep_declarations = true;
+      std::set<std::string_view> overrides = default_overrides;
     };
 
     inliner(ast_context* ctx) : ctx_(ctx), substitutor_(ctx) {}
@@ -61,7 +68,7 @@ namespace transformations {
     }
 
     std::optional<ast_node_list> replace(stmt_gate* node) override {
-      if (!config_.inline_qelib && qelib_defs.find(node->gate()) != qelib_defs.end()) {
+      if (config_.overrides.find(node->gate()) != config_.overrides.end()) {
         return std::nullopt;
       }
       
