@@ -61,6 +61,8 @@ namespace transformations {
         ret.push_back(&node->parent(), subst_[v]->copy(ctx_));
         return ret;
       }
+
+      return std::nullopt;
     }
     std::optional<ast_node_list> replace(expr_reg_offset* node) override {
       auto v = node->id();
@@ -100,7 +102,7 @@ namespace transformations {
     ast_context* ctx_;
 
     std::unordered_map<std::string_view, ast_node*> subst_; // The substitution
-    std::list<std::set<std::string_view> > bound_;            // The declared identifiers in scope
+    std::list<std::set<std::string_view> > bound_ = { { } };            // The declared identifiers in scope
 
     // Scoping
     void push_scope() {
