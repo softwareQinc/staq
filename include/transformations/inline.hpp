@@ -6,6 +6,7 @@
 
 #include "qasm/ast/ast.hpp"
 #include "qasm/visitors/generic/replacer.hpp"
+#include "qasm/visitors/source_printer.hpp"   // For qelib identifiers
 
 #include "substitution.hpp"
 
@@ -13,6 +14,8 @@
 
 namespace synthewareQ {
 namespace transformations {
+
+  // TODO: hoist ancilla declarations
 
   using namespace qasm;
 
@@ -22,14 +25,20 @@ namespace transformations {
    * inlined, but optionally can be. Local ancillas are hoisted to the global
    * level and reused
    */
-  void inline_ast(ast_context* ctx);
+  void inline_ast(ast_context*);
 
   /* Implementation */
   class inliner final : public replacer<inliner> {
   public:
     using replacer<inliner>::visit;
 
+    struct config {
+      bool inline_qelib = false;
+      bool keep_declarations = true;
+    };
+
     inliner(ast_context* ctx) : ctx_(ctx), substitutor_(ctx) {}
+    inliner(ast_context* ctx, const config& params) : ctx_(ctx), substitutor_(ctx), config_(params) {}
 
     std::optional<ast_node_list> replace(decl_gate* node) override {
       // Replacement is post-order, so body should be inlined now
@@ -40,7 +49,11 @@ namespace transformations {
         tmp.q_params = static_cast<list_ids*>(&node->arguments());
         tmp.body     = &node->body();
 
-        return std::nullopt; //ast_node_list({});
+        if (config_.keep_declarations) {
+          return std::nullopt;
+        } else {
+          return ast_node_list({});
+        }
       } else {
         // Opaque decl, don't inline
         return std::nullopt;
@@ -48,6 +61,10 @@ namespace transformations {
     }
 
     std::optional<ast_node_list> replace(stmt_gate* node) override {
+      if (!config_.inline_qelib && qelib_defs.find(node->gate()) != qelib_defs.end()) {
+        return std::nullopt;
+      }
+      
       if (auto it = gate_decls_.find(node->gate()); it != gate_decls_.end()) {
         ast_node_list ret;
         ast_node* body = it->second.body->copy(ctx_);
@@ -88,12 +105,18 @@ namespace transformations {
     };
     
     ast_context* ctx_;
+    config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
     substitutor substitutor_;
   };
 
   void inline_ast(ast_context* ctx) {
     auto tmp = inliner(ctx);
+    tmp.visit(*ctx);
+  }
+
+  void inline_ast(ast_context* ctx, const inliner::config& params) {
+    auto tmp = inliner(ctx, params);
     tmp.visit(*ctx);
   }
 

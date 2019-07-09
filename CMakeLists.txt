@@ -17,3 +17,6 @@ add_subdirectory(examples)
 # Tests
 add_subdirectory(test)
 
+# Binary tools
+add_subdirectory(tools)
+
