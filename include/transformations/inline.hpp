@@ -7,6 +7,8 @@
 #include "qasm/ast/ast.hpp"
 #include "qasm/visitors/generic/replacer.hpp"
 
+#include "substitution.hpp"
+
 #include <unordered_map>
 
 namespace synthewareQ {
@@ -27,7 +29,7 @@ namespace transformations {
   public:
     using replacer<inliner>::visit;
 
-    inliner(ast_context* ctx) : ctx_(ctx) {}
+    inliner(ast_context* ctx) : ctx_(ctx), subst_(ctx) {}
 
     std::optional<ast_node_list> replace(decl_gate* node) override {
       // Replacement is post-order, so body should be inlined now
@@ -48,6 +50,8 @@ namespace transformations {
     std::optional<ast_node_list> replace(stmt_gate* node) override {
       if (gate_decls_.find(node->gate()) != gate_decls_.end()) {
         // Inline it
+
+        // Generate a subst map
         // TODO: substitution
         ast_node_list ret;
         ret.push_back(&node->parent(), gate_decls_[node->gate()].body->copy(ctx_));
@@ -66,6 +70,9 @@ namespace transformations {
     
     ast_context* ctx_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
+
+    // For substitutions
+    substitutor subst_;
   };
 
   void inline_ast(ast_context* ctx) {
