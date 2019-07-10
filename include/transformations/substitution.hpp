@@ -85,7 +85,7 @@ namespace transformations {
           return ret;
         case ast_node_kinds::expr_reg_offset:
           // Replace the root variable and add the offsets
-          new_v = (static_cast<expr_var*>(sub))->id();
+          new_v = (static_cast<expr_reg_offset*>(sub))->id();
           offset = expr_integer::create(ctx_, node->location(), node->index_numeric() +
                                         (static_cast<expr_reg_offset*>(sub))->index_numeric());
           deref = expr_reg_offset::build(ctx_, node->location(), new_v, offset);

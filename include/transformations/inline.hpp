@@ -42,10 +42,24 @@ namespace transformations {
     struct config {
       bool keep_declarations = true;
       std::set<std::string_view> overrides = default_overrides;
+      std::string ancilla_name = "auto_anc";
     };
 
     inliner(ast_context* ctx) : ctx_(ctx), substitutor_(ctx) {}
     inliner(ast_context* ctx, const config& params) : ctx_(ctx), substitutor_(ctx), config_(params) {}
+
+    std::optional<ast_node_list> replace(decl_program* node) override {
+      // Replacement is post-order, so we know the max ancillas needed now
+
+      if (max_ancilla != 0) {
+        auto anc_decl = decl_register::build(ctx_, node->location(), register_type::quantum,
+                                             config_.ancilla_name, max_ancilla);
+        node->insert_child(node->begin(), anc_decl);
+      }
+
+      return std::nullopt;
+    }
+
 
     std::optional<ast_node_list> replace(decl_gate* node) override {
       // Replacement is post-order, so body should be inlined now
@@ -55,6 +69,12 @@ namespace transformations {
         tmp.c_params = node->has_parameters() ? static_cast<list_ids*>(&node->parameters()) : nullptr;
         tmp.q_params = static_cast<list_ids*>(&node->arguments());
         tmp.body     = &node->body();
+        tmp.ancillas.swap(current_ancillas);
+        if (num_ancilla > max_ancilla) {
+          max_ancilla = num_ancilla;
+        }
+        num_ancilla = 0;
+
 
         if (config_.keep_declarations) {
           return std::nullopt;
@@ -67,6 +87,16 @@ namespace transformations {
       }
     }
 
+    std::optional<ast_node_list> replace(decl_ancilla* node) override {
+      if (!node->is_dirty()) {
+        current_ancillas.push_back(std::make_pair(node->identifier(), node->size()));
+        num_ancilla += node->size();
+      } else {
+        std::cerr << "Error: dirty ancillas not currently supported by inliner\n";
+      }
+      return std::nullopt;
+    }
+
     std::optional<ast_node_list> replace(stmt_gate* node) override {
       if (config_.overrides.find(node->gate()) != config_.overrides.end()) {
         return std::nullopt;
@@ -76,7 +106,7 @@ namespace transformations {
         ast_node_list ret;
         ast_node* body = it->second.body->copy(ctx_);
 
-        // Generate a subst map
+        // Generating the substitution
         std::unordered_map<std::string_view, ast_node*> substs;
         if (node->has_cargs()) {
           auto c_args = static_cast<list_exprs*>(&node->c_args());
@@ -94,8 +124,23 @@ namespace transformations {
           substs[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
         }
 
+        // For local ancillas
+        auto current_offset = 0;
+        for (auto& [id, num] : it->second.ancillas) {
+          substs[id] = expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name,
+                                              expr_integer::create(ctx_, node->location(), num));
+        }
+
         // Perform the substitution
         substitutor_.subst(substs, body);
+
+        // Reset ancillas
+        if (it->second.ancillas.size() > 0) {
+          auto tmp = static_cast<list_gops*>(body);
+          auto reset_builder = stmt_reset::builder(ctx_, node->location());
+          reset_builder.add_child(expr_var::build(ctx_, node->location(), config_.ancilla_name));
+          tmp->add_child(reset_builder.finish());
+        }
         
         ret.push_back(&node->parent(), body);
         return ret;
@@ -109,12 +154,18 @@ namespace transformations {
       list_ids* c_params;
       list_ids* q_params;
       ast_node* body;
+      std::list<std::pair<std::string_view, uint32_t> > ancillas;
     };
     
     ast_context* ctx_;
     config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
     substitutor substitutor_;
+    uint32_t max_ancilla = 0;
+
+    // Gate-local accumulating values
+    std::list<std::pair<std::string_view, uint32_t> > current_ancillas;
+    uint32_t num_ancilla = 0;
   };
 
   void inline_ast(ast_context* ctx) {
