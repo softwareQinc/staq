@@ -46,7 +46,11 @@ namespace transformations {
     };
 
     inliner(ast_context* ctx) : ctx_(ctx), substitutor_(ctx) {}
-    inliner(ast_context* ctx, const config& params) : ctx_(ctx), substitutor_(ctx), config_(params) {}
+    inliner(ast_context* ctx, const config& params)
+      : ctx_(ctx)
+      , substitutor_(ctx)
+      , config_(params)
+    {}
 
     std::optional<ast_node_list> replace(decl_program* node) override {
       // Replacement is post-order, so we know the max ancillas needed now
@@ -128,11 +132,15 @@ namespace transformations {
         auto current_offset = 0;
         for (auto& [id, num] : it->second.ancillas) {
           substs[id] = expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name,
-                                              expr_integer::create(ctx_, node->location(), num));
+                                              expr_integer::create(ctx_, node->location(), current_offset));
+          current_offset += num;
         }
 
         // Perform the substitution
         substitutor_.subst(substs, body);
+
+        // Strip ancilla declarations
+        cleaner_.visit(body);
 
         // Reset ancillas
         if (it->second.ancillas.size() > 0) {
@@ -150,6 +158,15 @@ namespace transformations {
     }
 
   private:
+    /* Helper class */
+    class cleaner final : public replacer<cleaner> {
+    public:
+      using replacer<cleaner>::visit;
+      std::optional<ast_node_list> replace(decl_ancilla* node) override {
+        return std::make_optional(ast_node_list());
+      }
+    };
+
     struct gate_info {
       list_ids* c_params;
       list_ids* q_params;
@@ -161,6 +178,7 @@ namespace transformations {
     config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
     substitutor substitutor_;
+    cleaner cleaner_;
     uint32_t max_ancilla = 0;
 
     // Gate-local accumulating values
