@@ -16,8 +16,6 @@
 namespace synthewareQ {
 namespace transformations {
 
-  // TODO: hoist ancilla declarations
-
   using namespace qasm;
 
   /* \brief! Inlines gate calls
