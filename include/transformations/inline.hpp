@@ -43,10 +43,10 @@ namespace transformations {
       std::string ancilla_name = "auto_anc";
     };
 
-    inliner(ast_context* ctx) : ctx_(ctx), substitutor_(ctx) {}
+    inliner(ast_context* ctx) : ctx_(ctx), var_subst_(ctx) {}
     inliner(ast_context* ctx, const config& params)
       : ctx_(ctx)
-      , substitutor_(ctx)
+      , var_subst_(ctx)
       , config_(params)
     {}
 
@@ -109,13 +109,13 @@ namespace transformations {
         ast_node* body = it->second.body->copy(ctx_);
 
         // Generating the substitution
-        std::unordered_map<std::string_view, ast_node*> substs;
+        std::unordered_map<std::string_view, ast_node*> substitution;
         if (node->has_cargs()) {
           auto c_args = static_cast<list_exprs*>(&node->c_args());
           auto p_it = it->second.c_params->begin();
           auto a_it = c_args->begin();
           for (; (p_it != it->second.c_params->end()) && (a_it != c_args->end()); p_it++, a_it++) {
-            substs[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
+            substitution[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
           }
         }
 
@@ -123,19 +123,19 @@ namespace transformations {
         auto p_it = it->second.q_params->begin();
         auto a_it = q_args->begin();
         for (; (p_it != it->second.q_params->end()) && (a_it != q_args->end()); p_it++, a_it++) {
-          substs[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
+          substitution[(static_cast<expr_var&>(*p_it)).id()] = &(*a_it);
         }
 
         // For local ancillas
         auto current_offset = 0;
         for (auto& [id, num] : it->second.ancillas) {
-          substs[id] = expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name,
+          substitution[id] = expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name,
                                               expr_integer::create(ctx_, node->location(), current_offset));
           current_offset += num;
         }
 
         // Perform the substitution
-        substitutor_.subst(substs, body);
+        var_subst_.subst(substitution, body);
 
         // Strip ancilla declarations
         cleaner_.visit(body);
@@ -175,7 +175,7 @@ namespace transformations {
     ast_context* ctx_;
     config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
-    substitutor substitutor_;
+    variable_substitutor var_subst_;
     cleaner cleaner_;
     uint32_t max_ancilla = 0;
 

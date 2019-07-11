@@ -14,7 +14,7 @@ namespace mapping {
 
   class device {
   public:
-    device(std::string name, uint32_t n, std::vector<std::pair<uint32_t, uint32_t> >& dag)
+    device(std::string name, size_t n, std::vector<std::pair<size_t, size_t> >& dag)
       : name_(name)
       , qubits_(n)
       , couplings_(dag)
@@ -28,7 +28,7 @@ namespace mapping {
         coupling_fidelities[pair] = 1.0;
       }
     }
-    device(std::string name, uint32_t n, std::vector<std::vector<bool> >& dag,
+    device(std::string name, size_t n, std::vector<std::vector<bool> >& dag,
            std::vector<double>& sq_fi, std::vector<std::vector<double> >& tq_fi)
       : name_(name)
       , qubits_(n)
@@ -38,10 +38,24 @@ namespace mapping {
     {}
 
     std::string name_;
-    uint32_t qubits_;
-    std::vector<std::vector<bool> > couplings_;
+    size_t qubits_;
+
+    bool coupled(size_t i, size_t j) {
+      if (0 <= i && i < qubits_ && 0 <= j && j < qubits) return couplings_[i][j];
+      else throw std::out_of_range("Qubit(s) not in range");
+    }
+
+    double sq_fidelity(size_t i) {
+      if (0 <= i && i < qubits_) return single_qubit_fidelities[i];
+      else throw std::out_of_range("Qubit not in range");
+    }
+    double tq_fidelity(size_t i, size_t j) {
+      if (coupled(i, j)) return coupling_fidelities[i][j];
+      else throw std::logic_error("Qubit not coupled");
+    }
 
   private:
+    std::vector<std::vector<bool> > couplings_;
     std::vector<double> single_qubit_fidelities_;
     std::vector<std::vector<double> > coupling_fidelities_;
 
