@@ -4,6 +4,8 @@
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
 
+#pragma once
+
 #include <vector>
 #include <map>
 
@@ -14,43 +16,42 @@ namespace mapping {
 
   class device {
   public:
-    device(std::string name, size_t n, std::vector<std::pair<size_t, size_t> >& dag)
+    device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag)
       : name_(name)
       , qubits_(n)
       , couplings_(dag)
     {
-      single_qubit_fidelities.resize(n);
+      single_qubit_fidelities_.resize(n);
       for (auto i = 0; i < n; i++) {
-        single_qubit_fidelities[i] = 1.0;
-      }
-
-      for (auto pair : couplings) {
-        coupling_fidelities[pair] = 1.0;
+        single_qubit_fidelities_[i] = 1.0;
+        for (auto j = 0; j < n; j++) {
+          coupling_fidelities_[i][j] = 1.0;
+        }
       }
     }
-    device(std::string name, size_t n, std::vector<std::vector<bool> >& dag,
-           std::vector<double>& sq_fi, std::vector<std::vector<double> >& tq_fi)
+    device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag,
+           const std::vector<double>& sq_fi, const std::vector<std::vector<double> >& tq_fi)
       : name_(name)
       , qubits_(n)
       , couplings_(dag)
-      , single_qubit_fidelities(sq_fi)
-      , coupling_fidelities(tq_fi)
+      , single_qubit_fidelities_(sq_fi)
+      , coupling_fidelities_(tq_fi)
     {}
 
     std::string name_;
     size_t qubits_;
 
     bool coupled(size_t i, size_t j) {
-      if (0 <= i && i < qubits_ && 0 <= j && j < qubits) return couplings_[i][j];
+      if (0 <= i && i < qubits_ && 0 <= j && j < qubits_) return couplings_[i][j];
       else throw std::out_of_range("Qubit(s) not in range");
     }
 
     double sq_fidelity(size_t i) {
-      if (0 <= i && i < qubits_) return single_qubit_fidelities[i];
+      if (0 <= i && i < qubits_) return single_qubit_fidelities_[i];
       else throw std::out_of_range("Qubit not in range");
     }
     double tq_fidelity(size_t i, size_t j) {
-      if (coupled(i, j)) return coupling_fidelities[i][j];
+      if (coupled(i, j)) return coupling_fidelities_[i][j];
       else throw std::logic_error("Qubit not coupled");
     }
 

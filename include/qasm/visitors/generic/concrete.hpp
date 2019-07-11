@@ -84,7 +84,7 @@ namespace qasm {
     virtual void visit(expr_real*) {}
     virtual void visit(decl_ancilla*) {}
 
-  private:
+  protected:
     void visit(decl_program* node)
     {
       visit_pre(node);
@@ -139,7 +139,7 @@ namespace qasm {
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
       visit_post(node);
     }
-    void visit(expr_reg_idx_ref* node)
+    void visit(expr_reg_offset* node)
     {
       visit_pre(node);
       for (auto& child : *node) visit(const_cast<ast_node*>(&child));
