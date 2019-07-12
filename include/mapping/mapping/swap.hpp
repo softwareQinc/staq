@@ -40,6 +40,10 @@ namespace mapping {
       }
     }
 
+    // Ignore declarations if they were left in during inlining
+    void visit(decl_gate* node) override {}
+    void visit(decl_oracle* node) override {}
+
     std::optional<ast_node_list> replace(expr_reg_offset* node) override {
       if (node->id() == config_.register_name) {
         ast_node_list ret;
@@ -56,11 +60,15 @@ namespace mapping {
 
     // Where the magic happens
     std::optional<ast_node_list> replace(stmt_cnot* node) override {
+      assert(node->control().kind() == ast_node_kinds::expr_reg_offset);
+      assert(node->target().kind() == ast_node_kinds::expr_reg_offset);
       // Unsafe
       auto ctrl = static_cast<expr_reg_offset*>(&node->control());
       auto trgt = static_cast<expr_reg_offset*>(&node->target());
 
       // Post-order replacement, so the indices should already refer to the current permutation
+      assert(ctrl->index().kind() == ast_node_kinds::expr_integer);
+      assert(trgt->index().kind() == ast_node_kinds::expr_integer);
       auto ctl = ctrl->index_numeric();
       auto tgt = trgt->index_numeric();
       path cnot_chain = device_.shortest_path(ctl, tgt);
