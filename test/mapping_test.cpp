@@ -5,6 +5,7 @@
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
+#include "mapping/mapping/swap.hpp"
 
 using namespace synthewareQ;
 
@@ -23,6 +24,10 @@ int main(int argc, char** argv) {
     auto physical_layout = mapping::compute_layout(program.get(), mapping::rigetti_8q);
     mapping::apply_layout(program.get(), physical_layout);
     std::cout << "\nPhysical layout:\n";
+    src.visit(*program);
+
+    std::cout << "\nCNOT mapped layout:\n";
+    mapping::map_onto_device(program.get(), mapping::rigetti_8q);
     src.visit(*program);
   } else {
     std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";

@@ -31,6 +31,8 @@ namespace mapping {
           coupling_fidelities_[i][j] = 1.0;
         }
       }
+
+      compute_shortest_paths();
     }
     device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag,
            const std::vector<double>& sq_fi, const std::vector<std::vector<double> >& tq_fi)
@@ -39,7 +41,9 @@ namespace mapping {
       , couplings_(dag)
       , single_qubit_fidelities_(sq_fi)
       , coupling_fidelities_(tq_fi)
-    {}
+    {
+      compute_shortest_paths();
+    }
 
     std::string name_;
     size_t qubits_;
@@ -58,6 +62,21 @@ namespace mapping {
       else throw std::logic_error("Qubit not coupled");
     }
 
+    path shortest_path(size_t i, size_t j) {
+      path ret;
+      
+      if (shortest_paths[i][j] == qubits_) {
+        return ret;
+      }
+
+      while(i != j) {
+        i = shortest_paths[i][j];
+        ret.push_back(i);
+      }
+
+      return ret;
+    }
+        
   private:
     std::vector<std::vector<bool> > couplings_;
     std::vector<double> single_qubit_fidelities_;
@@ -103,22 +122,6 @@ namespace mapping {
         }
       }
     }
-
-    path shortest_path(size_t i, size_t j) {
-      path ret;
-      
-      if (shortest_paths[i][j] == qubits_) {
-        return ret;
-      }
-
-      while(i != j) {
-        i = shortest_paths[i][j];
-        ret.push_back(i);
-      }
-
-      return ret;
-    }
-        
 
   };
 

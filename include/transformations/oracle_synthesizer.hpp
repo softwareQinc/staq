@@ -4,6 +4,8 @@
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
 
+#pragma once
+
 #include "qasm/ast/ast.hpp"
 #include "qasm/visitors/generic/replacer.hpp"
 

@@ -4,6 +4,8 @@
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
 
+#pragma once
+
 #include "qasm/ast/ast.hpp"
 #include "qasm/visitors/generic/replacer.hpp"
 #include "qasm/visitors/source_printer.hpp"   // For qelib identifiers

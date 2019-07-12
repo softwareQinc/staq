@@ -4,6 +4,8 @@
 | Author(s): Matthew Amy
 *------------------------------------------------------------------------------------------------*/
 
+#pragma once
+
 #include "qasm/ast/ast.hpp"
 #include "qasm/visitors/generic/replacer.hpp"
 #include "qasm/visitors/generic/concrete.hpp"
@@ -81,7 +83,7 @@ namespace mapping {
 
     void visit(decl_register* node) override {
       if (node->is_quantum()) {
-        if (n_ + node->size() < device_.qubits_) {
+        if (n_ + node->size() <= device_.qubits_) {
           for (auto i = 0; i < node->size(); i++) {
             current_[std::make_pair(node->identifier(), i)] = n_ + i;
           }
