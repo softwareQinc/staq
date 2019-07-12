@@ -8,12 +8,15 @@
 
 #include <vector>
 #include <map>
+#include <list>
 
 namespace synthewareQ {
 namespace mapping {
 
-  /* \brief! Definition of physical devices for efficient mapping */
+  using layout = std::map<std::pair<std::string_view, size_t>, size_t>;
+  using path   = std::list<size_t>;
 
+  /* \brief! Definition of physical devices for efficient mapping */
   class device {
   public:
     device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag)
@@ -59,6 +62,63 @@ namespace mapping {
     std::vector<std::vector<bool> > couplings_;
     std::vector<double> single_qubit_fidelities_;
     std::vector<std::vector<double> > coupling_fidelities_;
+
+    std::vector<std::vector<size_t> > shortest_paths;
+
+    // Floyd-Warshall, since it's simple to implement and devices are not currently that big
+    void compute_shortest_paths() {
+      if (shortest_paths.empty()) {
+        // Initialize
+        shortest_paths = std::vector<std::vector<size_t> >(qubits_, std::vector<size_t>(qubits_));
+
+        // All-pairs shortest paths
+        std::vector<std::vector<double> > dist(qubits_, std::vector<double>(qubits_));
+        for (auto i = 0; i < qubits_; i++) {
+          for (auto j = 0; j < qubits_; j++) {
+            if (i == j) {
+              dist[i][j] = 0;
+              shortest_paths[i][j] = j;
+            } else if (couplings_[i][j]) {
+              dist[i][j] = 1.0 - coupling_fidelities_[i][j];
+              shortest_paths[i][j] = j;
+            } else if (couplings_[j][i]) { // Since swaps are the same cost either direction
+              dist[i][j] = 1.0 - coupling_fidelities_[j][i];
+              shortest_paths[i][j] = j;
+            } else {
+              dist[i][j] = 10.0; // Effectively infinite
+              shortest_paths[i][j] = qubits_;
+            }
+          }
+        }
+
+        for (auto k = 0; k < qubits_; k++) {
+          for (auto i = 0; i < qubits_; i++) {
+            for (auto j = 0; j < qubits_; j++) {
+              if (dist[i][j] > (dist[i][k] + dist[k][j])) {
+                dist[i][j] = dist[i][k] + dist[k][j];
+                shortest_paths[i][j] = shortest_paths[i][k];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    path shortest_path(size_t i, size_t j) {
+      path ret;
+      
+      if (shortest_paths[i][j] == qubits_) {
+        return ret;
+      }
+
+      while(i != j) {
+        i = shortest_paths[i][j];
+        ret.push_back(i);
+      }
+
+      return ret;
+    }
+        
 
   };
 

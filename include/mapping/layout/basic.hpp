@@ -19,9 +19,6 @@ namespace mapping {
   using namespace qasm;
   using namespace transformations;
 
-  /* \brief! Layout of virtual qubits onto physical hardware */
-  using layout = std::map<std::pair<std::string_view, uint32_t>, uint32_t>;
-
   /* \brief! Applies a layout to a circuit */
   class layout_transformer final : public replacer<layout_transformer> {
   public:
