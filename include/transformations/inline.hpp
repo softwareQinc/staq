@@ -143,10 +143,11 @@ namespace transformations {
         cleaner_.visit(body);
 
         // Reset ancillas
-        if (it->second.ancillas.size() > 0) {
-          auto tmp = static_cast<list_gops*>(body);
+        auto tmp = static_cast<list_gops*>(body);
+        for (auto i = 0; i < it->second.ancillas.size(); i++) {
           auto reset_builder = stmt_reset::builder(ctx_, node->location());
-          reset_builder.add_child(expr_var::build(ctx_, node->location(), config_.ancilla_name));
+          auto expr_i = expr_integer::create(ctx_, node->location(), i);
+          reset_builder.add_child(expr_reg_offset::build(ctx_, node->location(), config_.ancilla_name, expr_i));
           tmp->add_child(reset_builder.finish());
         }
         
