@@ -205,6 +205,13 @@ namespace channel_representation {
       return false;
     }
 
+    bool is_z() const {
+      for (auto& [q, p] : pauli_) {
+        if ((p != pauli_gate::i) && (p != pauli_gate::z)) return false;
+      }
+      return true;
+    }
+
     /* Printing */
     std::ostream& print(std::ostream& os) const {
       os << phase_;
@@ -408,6 +415,10 @@ namespace channel_representation {
       } else {
         return std::nullopt;
       }
+    }
+
+    bool is_z_rotation() const {
+      return pauli_.is_z();
     }
 
     /* Printing */

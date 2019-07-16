@@ -189,6 +189,19 @@ namespace synthewareQ {
 
     /* Phase two of the algorithm */
     td::angle fold(circuit_callback& circuit) {
+      // Debugging
+      /*
+      std::cout << "Channel circuit:\n  ";
+      for (auto& op : circuit) {
+        auto visitor = overloaded {
+          [](uninterp_op& Uop) { std::cout << Uop; },
+          [](clifford_op& Cop) { std::cout << Cop; },
+          [](std::pair<rotation_info, rotation_op>& Rop) { std::cout << Rop.second; }
+        };
+        std::visit(visitor, op);
+      }
+      */
+      
       auto phase = td::angles::zero;
 
       for (auto it = circuit.rbegin(); it != circuit.rend(); it++) {
@@ -200,7 +213,8 @@ namespace synthewareQ {
           if (!(new_R == tmp->second)) {
             auto node = tmp->first.node;
             ast_node_list xs;
-            xs.push_back(&node->parent(), new_rotation(tmp->first, new_R.rotation_angle()));
+            auto new_node = new_rotation(tmp->first, new_R.rotation_angle());
+            if (new_node) xs.push_back(&node->parent(), new_node);
             replacement_list_[node] = xs;
           }
         }
