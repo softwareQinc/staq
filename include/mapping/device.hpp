@@ -9,12 +9,16 @@
 #include <vector>
 #include <map>
 #include <list>
+#include <set>
+
+#include <functional>
 
 namespace synthewareQ {
 namespace mapping {
 
-  using layout = std::map<std::pair<std::string_view, size_t>, size_t>;
-  using path   = std::list<size_t>;
+  using layout   = std::map<std::pair<std::string_view, size_t>, size_t>;
+  using path     = std::list<size_t>;
+  using coupling = std::pair<size_t, size_t>;
 
   /* \brief! Definition of physical devices for efficient mapping */
   class device {
@@ -72,6 +76,25 @@ namespace mapping {
       while(i != j) {
         i = shortest_paths[i][j];
         ret.push_back(i);
+      }
+
+      return ret;
+    }
+
+    std::set<std::pair<coupling, double> > couplings() {
+      // Sort in order of decreasing coupling fidelity
+      using comparator = std::function<bool(std::pair<coupling, double>, std::pair<coupling, double>)>;
+      comparator cmp = [](std::pair<coupling, double> a, std::pair<coupling, double> b) {
+        return a.second > b.second;
+      };
+
+      std::set<std::pair<coupling, double> > ret;
+      for (auto i = 0; i < qubits_; i++) {
+        for (auto j = 0; j < qubits_; j++) {
+          if (couplings_[i][j]) {
+            ret.insert(std::make_pair(std::make_pair(i, j), coupling_fidelities_[i][j]));
+          }
+        }
       }
 
       return ret;
