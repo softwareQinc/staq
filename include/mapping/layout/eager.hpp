@@ -75,35 +75,33 @@ namespace mapping {
       auto ctrl = get_access_path(&node->control());
       auto tgt = get_access_path(&node->target());
 
-      if (layout_.find(ctrl) == layout_.end() && layout_.find(tgt) == layout_.end()) {
-        return;
-      }
-
       size_t ctrl_bit;
       size_t tgt_bit;
       for (auto& [coupling, f] : couplings_) {
         if (auto it = layout_.find(ctrl); it != layout_.end()) {
-          if (it->second != coupling.first) break;
+          if (it->second != coupling.first) continue;
           else ctrl_bit = it->second;
         } else if (!allocated_[coupling.first]) {
           ctrl_bit = coupling.first;
         } else {
-          break;
+          continue;
         }
 
         if (auto it = layout_.find(tgt); it != layout_.end()) {
-          if (it->second != coupling.second) break;
+          if (it->second != coupling.second) continue;
           else tgt_bit = it->second;
         } else if (!allocated_[coupling.second]) {
-          tgt_bit = coupling.first;
+          tgt_bit = coupling.second;
         } else {
-          break;
+          continue;
         }
 
         layout_[ctrl] = ctrl_bit;
         layout_[tgt] = tgt_bit;
         allocated_[ctrl_bit] = true;
         allocated_[tgt_bit] = true;
+        couplings_.erase(std::make_pair(coupling, f));
+        break;
       }
 
     }

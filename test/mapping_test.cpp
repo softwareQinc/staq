@@ -2,9 +2,11 @@
 
 #include "qasm/qasm.hpp"
 #include "qasm/visitors/source_printer.hpp"
+#include "qasm/visitors/ast_printer.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
+#include "mapping/layout/eager.hpp"
 #include "mapping/mapping/swap.hpp"
 
 using namespace synthewareQ;
@@ -21,7 +23,7 @@ int main(int argc, char** argv) {
     qasm::source_printer src(std::cout);
     src.visit(*program);
 
-    auto physical_layout = mapping::compute_layout(program.get(), mapping::rigetti_8q);
+    auto physical_layout = mapping::compute_layout_eager(program.get(), mapping::rigetti_8q);
     mapping::apply_layout(program.get(), physical_layout);
     std::cout << "\nPhysical layout:\n";
     src.visit(*program);
