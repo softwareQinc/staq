@@ -12,13 +12,17 @@
 #include <set>
 
 #include <functional>
+#include <queue>
+
+#include <iostream>
 
 namespace synthewareQ {
 namespace mapping {
 
-  using layout   = std::map<std::pair<std::string_view, size_t>, size_t>;
-  using path     = std::list<size_t>;
-  using coupling = std::pair<size_t, size_t>;
+  using layout       = std::map<std::pair<std::string_view, size_t>, size_t>;
+  using path         = std::list<size_t>;
+  using coupling     = std::pair<size_t, size_t>;
+  using spanning_tree = std::list<std::pair<size_t, size_t> >;
 
   /* \brief! Definition of physical devices for efficient mapping */
   class device {
@@ -29,14 +33,14 @@ namespace mapping {
       , couplings_(dag)
     {
       single_qubit_fidelities_.resize(n);
+      coupling_fidelities_.resize(n);
       for (auto i = 0; i < n; i++) {
         single_qubit_fidelities_[i] = 1.0;
+        coupling_fidelities_[i].resize(n);
         for (auto j = 0; j < n; j++) {
           coupling_fidelities_[i][j] = 1.0;
         }
       }
-
-      compute_shortest_paths();
     }
     device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag,
            const std::vector<double>& sq_fi, const std::vector<std::vector<double> >& tq_fi)
@@ -45,9 +49,7 @@ namespace mapping {
       , couplings_(dag)
       , single_qubit_fidelities_(sq_fi)
       , coupling_fidelities_(tq_fi)
-    {
-      compute_shortest_paths();
-    }
+    { }
 
     std::string name_;
     size_t qubits_;
@@ -67,6 +69,7 @@ namespace mapping {
     }
 
     path shortest_path(size_t i, size_t j) {
+      compute_shortest_paths();
       path ret;
       
       if (shortest_paths[i][j] == qubits_) {
@@ -99,22 +102,71 @@ namespace mapping {
 
       return ret;
     }
+
+    // Returns an approximation to the minimal rooted steiner tree
+    spanning_tree steiner(std::list<size_t> terminals, size_t root)
+    {
+      compute_shortest_paths();
+
+      spanning_tree ret;
+
+      // Internal data structures
+      std::vector<double> vertex_cost(qubits_);
+      std::vector<size_t> edge_in(qubits_);
+      std::set<size_t> in_tree{root};
+
+      auto min_node = terminals.end();
+      for (auto it = terminals.begin(); it != terminals.end(); it++) {
+        vertex_cost[*it] = dist[root][*it];
+        edge_in[*it] = root;
+        if (min_node == terminals.end() || (vertex_cost[*it] < vertex_cost[*min_node])) {
+          min_node = it;
+        }
+      }
+
+      // Algorithm proper
+      while (min_node != terminals.end()) {
+        auto current = *min_node;
+        terminals.erase(min_node);
+        auto new_nodes = add_to_tree(ret, shortest_path(edge_in[current], current), in_tree);
+        in_tree.insert(new_nodes.begin(), new_nodes.end());
+
+        // Update costs, edges, and find new minimum edge
+        min_node = terminals.end();
+        for (auto it = terminals.begin(); it != terminals.end(); it++) {
+          for (auto node : new_nodes) {
+            if (dist[node][*it] < vertex_cost[*it]) {
+              vertex_cost[*it] = dist[node][*it];
+              edge_in[*it] = node;
+            }
+          }
+          if (min_node == terminals.end() || (vertex_cost[*it] < vertex_cost[*min_node])) {
+            min_node = it;
+          }
+        }
+      }
+
+      return ret;
+    }
         
   private:
     std::vector<std::vector<bool> > couplings_;
     std::vector<double> single_qubit_fidelities_;
     std::vector<std::vector<double> > coupling_fidelities_;
 
+    // Utilities computed by all-pairs-shortest-paths, for use getting shortest paths
+    // and Steiner trees
+    std::vector<std::vector<double> > dist;
     std::vector<std::vector<size_t> > shortest_paths;
 
     // Floyd-Warshall, since it's simple to implement and devices are not currently that big
     void compute_shortest_paths() {
-      if (shortest_paths.empty()) {
+      if (dist.empty() || shortest_paths.empty()) {
         // Initialize
+        dist           = std::vector<std::vector<double> >(qubits_, std::vector<double>(qubits_));
         shortest_paths = std::vector<std::vector<size_t> >(qubits_, std::vector<size_t>(qubits_));
 
         // All-pairs shortest paths
-        std::vector<std::vector<double> > dist(qubits_, std::vector<double>(qubits_));
         for (auto i = 0; i < qubits_; i++) {
           for (auto j = 0; j < qubits_; j++) {
             if (i == j) {
@@ -146,6 +198,30 @@ namespace mapping {
       }
     }
 
+    // Adds a path to a spanning tree, maintaining the spanning tree property &
+    // the topological order on s_tree
+    //
+    // Additionally returns the nodes added to the tree
+    std::set<size_t> add_to_tree(spanning_tree& s_tree, const path& p, const std::set<size_t>& in_tree) {
+      std::set<size_t> ret;
+
+      size_t next = -1;
+      auto insert_iter = s_tree.end();
+      for (auto it = p.rbegin(); it != p.rend(); it++) {
+        // If we're not at the endpoint, insert the edge
+        if (next != -1) {
+          s_tree.insert(insert_iter, std::make_pair(*it, next));
+          --insert_iter;
+        }
+        next = *it;
+
+        // If the current node is already in the tree, we're done
+        if (in_tree.find(*it) != in_tree.end()) break;
+      }
+
+      return ret;
+    }
+
   };
 
   device rigetti_8q(
@@ -170,6 +246,19 @@ namespace mapping {
       {0.91, 0, 0, 0, 0, 0, 0.91, 0},}
   );
     
+  device square_9q(
+    "9 qubit square lattice",
+    9,
+    { {0, 1, 0, 0, 0, 1, 0, 0, 0},
+      {1, 0, 1, 0, 1, 0, 0, 0, 0},
+      {0, 1, 0, 1, 0, 0, 0, 0, 0},
+      {0, 0, 1, 0, 1, 0, 0, 0, 1},
+      {0, 1, 0, 1, 0, 1, 0, 1, 0},
+      {1, 0, 0, 0, 1, 0, 1, 0, 0},
+      {0, 0, 0, 0, 0, 1, 0, 1, 0},
+      {0, 0, 0, 0, 1, 0, 1, 0, 1},
+      {0, 0, 0, 1, 0, 0, 0, 1, 0}, }
+  );
 
 }
 }
