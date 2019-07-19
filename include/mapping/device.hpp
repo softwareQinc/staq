@@ -70,7 +70,7 @@ namespace mapping {
 
     path shortest_path(size_t i, size_t j) {
       compute_shortest_paths();
-      path ret;
+      path ret { i };
       
       if (shortest_paths[i][j] == qubits_) {
         return ret;
@@ -214,6 +214,7 @@ namespace mapping {
           --insert_iter;
         }
         next = *it;
+        ret.insert(*it);
 
         // If the current node is already in the tree, we're done
         if (in_tree.find(*it) != in_tree.end()) break;

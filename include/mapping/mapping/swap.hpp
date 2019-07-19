@@ -82,7 +82,9 @@ namespace mapping {
         // Create a swap chain & update the current permutation
         auto i = ctl;
         for (auto j : cnot_chain) {
-          if (j == tgt) {
+          if (j == i) {
+            break;
+          } else if (j == tgt) {
             ret.push_back(&node->parent(), generate_cnot(i, j, node->location()));
             break;
           } else {
