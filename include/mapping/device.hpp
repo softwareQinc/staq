@@ -84,6 +84,22 @@ namespace mapping {
       return ret;
     }
 
+    size_t distance(size_t i, size_t j) {
+      compute_shortest_paths();
+
+      if (shortest_paths[i][j] == qubits_) {
+        return -1;
+      }
+
+      size_t ret = 0;
+      while(i != j) {
+        i = shortest_paths[i][j];
+        ++ret;
+      }
+
+      return ret;
+    }
+
     std::set<std::pair<coupling, double> > couplings() {
       // Sort in order of decreasing coupling fidelity
       using comparator = std::function<bool(std::pair<coupling, double>, std::pair<coupling, double>)>;
