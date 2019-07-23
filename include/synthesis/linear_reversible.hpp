@@ -11,7 +11,7 @@
 #include <vector>
 #include <list>
 
-#define debug 0
+#define debug false
 
 namespace synthewareQ {
 namespace synthesis {
@@ -28,7 +28,7 @@ namespace synthesis {
     return A;
   }
 
-  std::list<std::pair<size_t, size_t> > steiner_gauss(linear_op<bool>& mat, mapping::device& d) {
+  std::list<std::pair<size_t, size_t> > steiner_gauss(linear_op<bool> mat, mapping::device& d) {
     std::list<std::pair<size_t, size_t> > ret;
 
     // Stores the location of the leading 1 for each row
@@ -39,6 +39,7 @@ namespace synthesis {
     std::vector<bool> leading_parent(mat.size(), false);
 
     for (auto i = 0; i < mat[0].size(); i++) {
+      std::fill(leading_parent.begin(), leading_parent.end(), false);
 
       // Debug
       if (debug) {
@@ -54,22 +55,58 @@ namespace synthesis {
         std::cout << "\n";
       }
 
-      // Phase 1: Compute steiner tree covering the 1's in column i
+      // Phase 0: Find pivot & swap
       size_t pivot = -1;
       size_t dist;
-      std::list<size_t> pivots;
-      for (auto j = 0; j < mat.size(); j++) {
+      std::list<std::pair<size_t, size_t> > swap;
+      for (auto j = i; j < mat.size(); j++) {
         if (mat[j][i] == true) {
-          if (leading_one[j] == -1 && (pivot == -1 || d.distance(j, i) < dist)) {
-            if (pivot != -1) pivots.push_back(pivot);
+          if (pivot == -1 || d.distance(j, i) < dist) {
             pivot = j;
             dist = d.distance(j, i);
-          } else {
-            pivots.push_back(j);
           }
         }
       }
+      if (pivot == -1) {
+        std::cerr << "Error: linear operator is not invertible\n";
+        return ret;
+      }
+
+      mat[pivot].swap(mat[i]);
+      // Swap operations
+      for (auto j : d.shortest_path(pivot, i)) {
+        if (j != pivot) {
+          swap.push_back(std::make_pair(pivot, j));
+          swap.push_back(std::make_pair(j, pivot));
+          swap.push_back(std::make_pair(pivot, j));
+          pivot = j;
+        }
+      }
+      // So that the other rows do not end up out of order
+      if (!swap.empty()) {
+        swap.insert(swap.end(), std::next(swap.rbegin(), 3), swap.rend());
+      }
+      if (debug) {
+        std::cout << "  Swapping:\n    ";
+        for (auto [ctrl, tgt] : swap) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
+        std::cout << "\n";
+        std::cout << "  Matrix:\n";
+        for (auto i = 0; i < 9; i++) {
+          std::cout << "    ";
+          for (auto j = 0; j < 9; j++) {
+            std::cout << (mat[i][j] ? "1" : "0");
+          }
+          std::cout << "\n";
+        }
+      }
+
+      // Phase 1: Compute steiner tree covering the 1's in column i
+      std::list<size_t> pivots;
+      for (auto j = 0; j < mat.size(); j++) {
+        if (j != i && mat[j][i] == true) pivots.push_back(j);
+      }
       auto s_tree = d.steiner(pivots, pivot);
+
       if (debug) {
         std::cout << "  Pivot: " << pivot << "\n";
         std::cout << "  Steiner tree:\n    ";
@@ -93,8 +130,6 @@ namespace synthesis {
 
       if (debug) {
         std::cout << "  Filling with 1's:\n    ";
-        for (auto [ctrl, tgt] : compute) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
-        std::cout << "\n";
         for (auto [ctrl, tgt] : compute) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
         std::cout << "\n";
         std::cout << "  Matrix:\n";
@@ -153,26 +188,11 @@ namespace synthesis {
         std::cout << "\n";
       }
 
-      // Phase 5: Swap into row i
-      std::list<std::pair<size_t, size_t> > swap;
-      /*
-      auto ctrl = -1;
-      for (auto j : d.shortest_path(pivot, i)) {
-        if (j != pivot) {
-          swap.push_back(std::make_pair(ctrl, j));
-          swap.push_back(std::make_pair(j, ctrl));
-          swap.push_back(std::make_pair(ctrl, j));
-        }
-        ctrl = j;
-      }
-      pivot = i;
-      */
-
 
       leading_one[pivot] = i;
+      ret.splice(ret.end(), swap);
       ret.splice(ret.end(), compute);
       ret.splice(ret.end(), uncompute);
-      ret.splice(ret.end(), swap);
     }
     return ret;
   }

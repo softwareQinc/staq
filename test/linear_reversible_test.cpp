@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
                         { 1, 1, 1, 1, 0, 0, 1, 1, 0 },
                         { 0, 0, 1, 0, 0, 1, 0, 1, 1 } };
 
-  std::cout << "Reversible op:\n";
+  std::cout << "Parity matrix:\n";
   for (auto i = 0; i < 9; i++) {
     std::cout << "  ";
     for (auto j = 0; j < 9; j++) {
@@ -30,11 +30,14 @@ int main(int argc, char** argv) {
 
   auto res = steiner_gauss(mat, synthewareQ::mapping::square_9q);
 
-  std::cout << "Circuit:\n";
-  for (auto [i, j] : res) std::cout << "CX " << i << "," << j << "; ";
-  std::cout << "\n";
+  std::cout << "\nCircuit:\n";
+  for (auto [i, j] : res) {
+    std::cout << "CX " << i << "," << j << "; ";
+    mat[j] ^= mat[i];
+  }
+  std::cout << "\nCNOTs: " << res.size() << "\n";
 
-  std::cout << "Matrix\n";
+  std::cout << "\nResulting matrix:\n";
   for (auto i = 0; i < 9; i++) {
     std::cout << "  ";
     for (auto j = 0; j < 9; j++) {
