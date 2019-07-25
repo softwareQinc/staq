@@ -28,14 +28,28 @@ int main(int argc, char** argv) {
     std::cout << "\n";
   }
 
-  auto res = steiner_gauss(mat, synthewareQ::mapping::square_9q);
+  auto res_jordan = gauss_jordan(mat);
+  auto res_gauss = gaussian_elim(mat);
+  auto res_steiner = steiner_gauss(mat, synthewareQ::mapping::square_9q);
 
-  std::cout << "\nCircuit:\n";
-  for (auto [i, j] : res) {
+  std::cout << "\nUnmapped (Gauss-Jordan) circuit:\n";
+  for (auto [i, j] : res_jordan) {
+    std::cout << "CX " << i << "," << j << "; ";
+  }
+  std::cout << "\nCNOTs: " << res_jordan.size() << "\n";
+
+  std::cout << "\nUnmapped (Gaussian elimination) circuit:\n";
+  for (auto [i, j] : res_gauss) {
+    std::cout << "CX " << i << "," << j << "; ";
+  }
+  std::cout << "\nCNOTs: " << res_gauss.size() << "\n";
+
+  std::cout << "\nMapped (Steiner-Gauss) circuit:\n";
+  for (auto [i, j] : res_steiner) {
     std::cout << "CX " << i << "," << j << "; ";
     mat[j] ^= mat[i];
   }
-  std::cout << "\nCNOTs: " << res.size() << "\n";
+  std::cout << "\nCNOTs: " << res_steiner.size() << "\n";
 
   std::cout << "\nResulting matrix:\n";
   for (auto i = 0; i < 9; i++) {

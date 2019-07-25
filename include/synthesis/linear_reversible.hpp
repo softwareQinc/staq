@@ -28,18 +28,127 @@ namespace synthesis {
     return A;
   }
 
+  std::list<std::pair<size_t, size_t> > gauss_jordan(linear_op<bool> mat) {
+    std::list<std::pair<size_t, size_t> > ret;
+
+    for (auto i = 0; i < mat[0].size(); i++) {
+
+      // Find pivot
+      size_t pivot = -1;
+      for (auto j = i; j < mat.size(); j++) {
+        if (mat[j][i] == true) {
+          pivot = j;
+          break;
+        }
+      }
+      if (pivot == -1) {
+        std::cerr << "Error: linear operator is not invertible\n";
+        return ret;
+      }
+
+      // Swap into place
+      if (pivot != i) {
+        mat[pivot].swap(mat[i]);
+        ret.push_back(std::make_pair(pivot, i));
+        ret.push_back(std::make_pair(i, pivot));
+        ret.push_back(std::make_pair(pivot, i));
+      }
+
+      // Zero other rows
+      for (auto j = 0; j < mat.size(); j++) {
+        if (j != i && mat[j][i] == true) {
+          mat[j] ^= mat[i];
+          ret.push_back(std::make_pair(i, j));
+        }
+      }
+    }
+
+    return ret;
+  }
+
+  std::list<std::pair<size_t, size_t> > gaussian_elim(linear_op<bool> mat) {
+    std::list<std::pair<size_t, size_t> > ret;
+
+    for (auto i = 0; i < mat[0].size(); i++) {
+
+      // Find pivot
+      size_t pivot = -1;
+      for (auto j = i; j < mat.size(); j++) {
+        if (mat[j][i] == true) {
+          pivot = j;
+          break;
+        }
+      }
+      if (pivot == -1) {
+        std::cerr << "Error: linear operator is not invertible\n";
+        return ret;
+      }
+
+      // Swap into place
+      if (pivot != i) {
+        mat[pivot].swap(mat[i]);
+        ret.push_back(std::make_pair(pivot, i));
+        ret.push_back(std::make_pair(i, pivot));
+        ret.push_back(std::make_pair(pivot, i));
+      }
+
+      // Zero other row below diagonal
+      for (auto j = i+1; j < mat.size(); j++) {
+        if (mat[j][i] == true) {
+          mat[j] ^= mat[i];
+          ret.push_back(std::make_pair(i, j));
+        }
+      }
+    }
+
+    for (int i = mat[0].size() - 1; i >= 0; i--) {
+      for (int j = i-1; j >= 0; j--) {
+        if (mat[j][i] == true) {
+          mat[j] ^= mat[i];
+          ret.push_back(std::make_pair(i, j));
+        }
+      }
+    }
+
+    return ret;
+  }
+
+  /* \brief! Steiner tree based device constrained CNOT synthesis
+   * 
+   * Our version of steiner-gauss (see arXiv:1904.01972 and arXiv:1904.00633)
+   * works a little differently from either of those. We follow arXiv:1904.00633
+   * by filling the steiner points with 0's in the column in question, then "flushing"
+   * the zeros with a reverse-topological order traversal. 
+   *
+   * To deal with 1's to the left of the diagonal -- i.e. from paths that cross 
+   * the diagonal -- we adopt a different approach. In particular, the path 2-->1-->0-->3
+   * has the effect of adding 1's to the left of column 3 in the following:
+   *
+   * 10100            10100             11010
+   * 01000  one-fill  01110  zero-fill  01000
+   * 00110  ------->  00110  -------->  00110
+   * 00101            00101             10001
+   * 00010            00010             00010
+   *
+   * Our solution is to keep track of the transitive dependencies on rows above the diagonal.
+   * Then to uncompute 1's to the left of the diagonal we reverse the sequence of CNOTs,
+   * restricted to just those CNOTs with targets in the transitive dependencies. E.g.,
+   *
+   * 10100            10100             11010             10010
+   * 01000  one-fill  01110  zero-fill  01000  uncompute  01000
+   * 00110  ------->  00110  -------->  00110  -------->  00110
+   * 00101            00101             10001             00011
+   * 00010            00010             00010             00010
+   *
+   */
   std::list<std::pair<size_t, size_t> > steiner_gauss(linear_op<bool> mat, mapping::device& d) {
     std::list<std::pair<size_t, size_t> > ret;
 
-    // Stores the location of the leading 1 for each row
-    std::vector<size_t> leading_one(mat.size(), -1);
-
-    // Stores whether a parent with an earlier leading
-    // zero has been added to the row
-    std::vector<bool> leading_parent(mat.size(), false);
+    // Whether or not a row has a dependence on a row above the diagonal
+    std::vector<bool> above_diagonal_dep(mat.size(), false);
 
     for (auto i = 0; i < mat[0].size(); i++) {
-      std::fill(leading_parent.begin(), leading_parent.end(), false);
+      std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
       // Debug
       if (debug) {
@@ -86,6 +195,7 @@ namespace synthesis {
       if (!swap.empty()) {
         swap.insert(swap.end(), std::next(swap.rbegin(), 3), swap.rend());
       }
+
       if (debug) {
         std::cout << "  Swapping:\n    ";
         for (auto [ctrl, tgt] : swap) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
@@ -121,10 +231,7 @@ namespace synthesis {
           mat[tgt] ^= mat[ctrl];
           compute.push_back(std::make_pair(ctrl, tgt));
 
-          auto leading_edge = leading_one[tgt] == -1 ? i : leading_one[tgt];
-          if (leading_parent[ctrl] || (leading_one[ctrl] != -1 && leading_one[ctrl] != leading_edge)) {
-            leading_parent[tgt] = true;
-          }
+          above_diagonal_dep[tgt] = above_diagonal_dep[tgt] || above_diagonal_dep[ctrl] || (ctrl < pivot);
         }
       }
 
@@ -150,10 +257,7 @@ namespace synthesis {
         mat[tgt] ^= mat[ctrl];
         compute.push_back(std::make_pair(ctrl, tgt));
 
-        auto leading_edge = leading_one[tgt] == -1 ? i : leading_one[tgt];
-        if (leading_parent[ctrl] || (leading_one[ctrl] != -1 && leading_one[ctrl] != leading_edge)) {
-          leading_parent[tgt] = true;
-        }
+        above_diagonal_dep[tgt] = above_diagonal_dep[tgt] || above_diagonal_dep[ctrl] || (ctrl < pivot);
       }
 
       if (debug) {
@@ -170,13 +274,13 @@ namespace synthesis {
         }
       }
 
-      // Phase 4: For each node that has had a parent with an earlier leading
-      // zero added to it, repeat the previous steps to undo the additions
+      // Phase 4: For each node that has an above diagonal dependency,
+      // reverse the previous steps to undo the additions
       std::list<std::pair<size_t, size_t> > uncompute;
       for (auto it = compute.rbegin(); it != compute.rend(); it++) {
         auto ctrl = it->first;
         auto tgt = it->second;
-        if (leading_parent[tgt] && it->first != pivot) {
+        if (above_diagonal_dep[tgt] && it->first != pivot) {
           mat[tgt] ^= mat[ctrl];
           uncompute.push_back(std::make_pair(ctrl, tgt));
         }
@@ -189,7 +293,6 @@ namespace synthesis {
       }
 
 
-      leading_one[pivot] = i;
       ret.splice(ret.end(), swap);
       ret.splice(ret.end(), compute);
       ret.splice(ret.end(), uncompute);
