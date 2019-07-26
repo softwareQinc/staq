@@ -19,6 +19,7 @@ namespace synthewareQ {
 namespace synthesis {
 
   namespace td = tweedledum;
+  using namespace mapping;
   using phase_term = std::pair<std::vector<bool>, td::angle>;
   using cx_dihedral = std::variant<std::pair<size_t, size_t>, std::pair<td::angle, size_t> >;
 
@@ -99,8 +100,10 @@ namespace synthesis {
       stack.pop_front();
 
       // Debug
+      /*
       std::cout << "Processing partition:\n  ";
       print_partition(part);
+      */
 
       if (part.terms.size() == 0) continue;
       else if (part.terms.size() == 1 && part.target) {
@@ -150,6 +153,88 @@ namespace synthesis {
     return ret;
   }
 
+  std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f, linear_op<bool> A, device& d) {
+    // Initialize
+    std::list<cx_dihedral> ret;
+    std::list<partition> stack;
+
+    std::set<size_t> indices;
+    for (auto i = 0; i < A.size(); i++) indices.insert(i);
+
+    stack.push_front({std::nullopt, indices, f});
+
+    while (!stack.empty()) {
+      auto part = stack.front();
+      stack.pop_front();
+
+      // Debug
+      /*
+      std::cout << "Processing partition:\n  ";
+      print_partition(part);
+      */
+
+      if (part.terms.size() == 0) continue;
+      else if (part.terms.size() == 1 && part.target) {
+        // This case allows us to shortcut a lot of partitions
+
+        auto tgt = *(part.target);
+        auto& [vec, angle] = part.terms.front();
+
+        std::list<size_t> terminals;
+        for (auto ctrl = 0; ctrl < vec.size(); ctrl++) {
+          if (ctrl != tgt && vec[ctrl]) terminals.push_back(ctrl);
+        }
+
+        auto s_tree = d.steiner(terminals, tgt);
+
+        // Fill each steiner point with a one
+        for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
+          if (vec[it->second] == 0) {
+            ret.push_back(std::make_pair((size_t)(it->second), (size_t)(it->first)));
+            adjust_vectors(it->second, it->first, stack);
+            for (auto i = 0; i < A.size(); i++) {
+              A[i][it->second] = A[i][it->second] ^ A[i][it->first];
+            }
+          }
+        }
+        
+        // Zero out each row except for the root
+        for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
+          ret.push_back(std::make_pair((size_t)(it->second), (size_t)(it->first)));
+          adjust_vectors(it->second, it->first, stack);
+          for (auto i = 0; i < A.size(); i++) {
+              A[i][it->second] = A[i][it->second] ^ A[i][it->first];
+          }
+        }
+
+        ret.push_back(std::make_pair(angle, tgt));
+      } else if (!part.remaining_indices.empty()) {
+        // Divide into the zeros and ones of some row
+        auto i = find_best_split(part.terms, part.remaining_indices);
+        auto [zeros, ones] = split(part.terms, i);
+
+        // Remove i from the remaining indices
+        part.remaining_indices.erase(i);
+
+        // Add the new partitions on the stack
+        if (part.target) {
+          stack.push_front({part.target, part.remaining_indices, ones});
+        } else {
+          stack.push_front({i, part.remaining_indices, ones});
+        }
+        stack.push_front({part.target, part.remaining_indices, zeros});
+      } else {
+        throw std::logic_error("No indices left to pivot on, but multiple vectors remain!\n");
+      }
+
+    }
+
+    // Synthesize the overall linear transformation
+    auto linear_trans = steiner_gauss(A, d);
+    for (auto gate : linear_trans) ret.push_back(gate);
+
+    return ret;
+  }
 
 }
 }

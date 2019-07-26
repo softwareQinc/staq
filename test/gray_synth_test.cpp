@@ -54,8 +54,21 @@ int main(int argc, char** argv) {
 
   auto circuit = gray_synth(f, A);
 
-  std::cout << "\nSynthesized circuit:\n";
+  std::cout << "\n(Unmapped) synthesized circuit:\n";
   for (auto& gate : circuit) {
+    std::visit(overloaded {
+        [](std::pair<size_t, size_t>& cnot) {
+          std::cout << "CNOT " << cnot.first << "," << cnot.second << ";\n";
+        },
+        [](std::pair<td::angle, size_t>& rz) {
+          std::cout << "RZ(" << rz.first << ") " << rz.second << ";\n";
+        }}, gate);
+  }
+
+  auto mapped_circuit = gray_steiner(f, A, synthewareQ::mapping::square_9q);
+
+  std::cout << "\n(Mapped) synthesized circuit:\n";
+  for (auto& gate : mapped_circuit) {
     std::visit(overloaded {
         [](std::pair<size_t, size_t>& cnot) {
           std::cout << "CNOT " << cnot.first << "," << cnot.second << ";\n";
