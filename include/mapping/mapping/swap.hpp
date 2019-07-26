@@ -18,7 +18,7 @@
 namespace synthewareQ {
 namespace mapping {
 
-  /* \brief! Simple swap-inserting mapping algorithm 
+  /*! \brief Simple swap-inserting mapping algorithm 
    *
    * Assumes the circuit has already been laid out onto a single register 
    * with name given in the configuration
@@ -75,19 +75,15 @@ namespace mapping {
       if (cnot_chain.empty()) {
         std::cerr << "Error: could not find path between qubits " << ctl << " and " << tgt << "\n";
         return std::nullopt;
-      } else if (cnot_chain.front() == tgt) {
-        return std::nullopt;
       } else {
         ast_node_list ret;
         // Create a swap chain & update the current permutation
         auto i = ctl;
         for (auto j : cnot_chain) {
-          if (j == i) {
-            break;
-          } else if (j == tgt) {
+          if (j == tgt) {
             ret.push_back(&node->parent(), generate_cnot(i, j, node->location()));
             break;
-          } else {
+          } else if (j != i) {
             // Swap i and j
             auto swap_i = i;
             auto swap_j = j;

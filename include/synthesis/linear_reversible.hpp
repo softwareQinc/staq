@@ -11,8 +11,6 @@
 #include <vector>
 #include <list>
 
-#define debug false
-
 namespace synthewareQ {
 namespace synthesis {
 
@@ -113,7 +111,7 @@ namespace synthesis {
     return ret;
   }
 
-  /* \brief! Steiner tree based device constrained CNOT synthesis
+  /*! \brief Steiner tree based device constrained CNOT synthesis
    * 
    * Our version of steiner-gauss (see arXiv:1904.01972 and arXiv:1904.00633)
    * works a little differently from either of those. We follow arXiv:1904.00633
@@ -150,20 +148,6 @@ namespace synthesis {
     for (auto i = 0; i < mat[0].size(); i++) {
       std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
-      // Debug
-      if (debug) {
-        std::cout << "Column " << i << ":\n";
-        std::cout << "  Matrix:\n";
-        for (auto i = 0; i < 9; i++) {
-          std::cout << "    ";
-          for (auto j = 0; j < 9; j++) {
-            std::cout << (mat[i][j] ? "1" : "0");
-          }
-          std::cout << "\n";
-        }
-        std::cout << "\n";
-      }
-
       // Phase 0: Find pivot & swap
       size_t pivot = -1;
       size_t dist;
@@ -196,33 +180,12 @@ namespace synthesis {
         swap.insert(swap.end(), std::next(swap.rbegin(), 3), swap.rend());
       }
 
-      if (debug) {
-        std::cout << "  Swapping:\n    ";
-        for (auto [ctrl, tgt] : swap) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
-        std::cout << "\n";
-        std::cout << "  Matrix:\n";
-        for (auto i = 0; i < 9; i++) {
-          std::cout << "    ";
-          for (auto j = 0; j < 9; j++) {
-            std::cout << (mat[i][j] ? "1" : "0");
-          }
-          std::cout << "\n";
-        }
-      }
-
       // Phase 1: Compute steiner tree covering the 1's in column i
       std::list<size_t> pivots;
       for (auto j = 0; j < mat.size(); j++) {
         if (j != i && mat[j][i] == true) pivots.push_back(j);
       }
       auto s_tree = d.steiner(pivots, pivot);
-
-      if (debug) {
-        std::cout << "  Pivot: " << pivot << "\n";
-        std::cout << "  Steiner tree:\n    ";
-        for (auto [i, j] : s_tree) std::cout << "(" << i << "," << j << "), ";
-        std::cout << "\n";
-      }
 
       std::list<std::pair<size_t, size_t> > compute;
       // Phase 2: Propagate 1's to column i for each Steiner point
@@ -232,20 +195,6 @@ namespace synthesis {
           compute.push_back(std::make_pair(ctrl, tgt));
 
           above_diagonal_dep[tgt] = above_diagonal_dep[tgt] || above_diagonal_dep[ctrl] || (ctrl < pivot);
-        }
-      }
-
-      if (debug) {
-        std::cout << "  Filling with 1's:\n    ";
-        for (auto [ctrl, tgt] : compute) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
-        std::cout << "\n";
-        std::cout << "  Matrix:\n";
-        for (auto i = 0; i < 9; i++) {
-          std::cout << "    ";
-          for (auto j = 0; j < 9; j++) {
-            std::cout << (mat[i][j] ? "1" : "0");
-          }
-          std::cout << "\n";
         }
       }
 
@@ -260,20 +209,6 @@ namespace synthesis {
         above_diagonal_dep[tgt] = above_diagonal_dep[tgt] || above_diagonal_dep[ctrl] || (ctrl < pivot);
       }
 
-      if (debug) {
-        std::cout << "  Full compute cycle:\n    ";
-        for (auto [ctrl, tgt] : compute) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
-        std::cout << "\n";
-        std::cout << "  Matrix:\n";
-        for (auto i = 0; i < 9; i++) {
-          std::cout << "    ";
-          for (auto j = 0; j < 9; j++) {
-            std::cout << (mat[i][j] ? "1" : "0");
-          }
-          std::cout << "\n";
-        }
-      }
-
       // Phase 4: For each node that has an above diagonal dependency,
       // reverse the previous steps to undo the additions
       std::list<std::pair<size_t, size_t> > uncompute;
@@ -285,13 +220,6 @@ namespace synthesis {
           uncompute.push_back(std::make_pair(ctrl, tgt));
         }
       }
-
-      if (debug) {
-        std::cout << "  Uncompute cycle:\n    ";
-        for (auto [ctrl, tgt] : uncompute) std::cout << "CNOT " << ctrl << "," << tgt << "; ";
-        std::cout << "\n";
-      }
-
 
       ret.splice(ret.end(), swap);
       ret.splice(ret.end(), compute);

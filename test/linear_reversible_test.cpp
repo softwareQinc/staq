@@ -4,8 +4,47 @@
 #include "synthesis/linear_reversible.hpp"
 
 #include <vector>
+#include <list>
+#include <map>
 
 using namespace synthewareQ::synthesis;
+using namespace synthewareQ::mapping;
+
+std::list<std::pair<size_t, size_t> > map(const std::list<std::pair<size_t, size_t> >& circuit, device& d) {
+  std::list<std::pair<size_t, size_t> > ret;
+  
+  for (auto [ctrl, tgt] : circuit) {
+    path cnot_chain = d.shortest_path(ctrl, tgt);
+    auto i = ctrl;
+
+    for (auto j : cnot_chain) {
+      if (j == tgt) {
+        ret.push_back(std::make_pair(i, j));
+        break;
+      } else if (j != i) {
+        ret.push_back(std::make_pair(i, j));
+        ret.push_back(std::make_pair(j, i));
+        ret.push_back(std::make_pair(i, j));
+      }
+      i = j;
+    }
+
+    auto it = std::next(cnot_chain.rbegin());
+    i = *it;
+    ++it;
+    for (; it != cnot_chain.rend(); it++) {
+      ret.push_back(std::make_pair(i, *it));
+      ret.push_back(std::make_pair(*it, i));
+      ret.push_back(std::make_pair(i, *it));
+
+      i = *it;
+    }
+
+  }
+
+  return ret;
+}
+
 
 int main(int argc, char** argv) {
 
@@ -29,7 +68,9 @@ int main(int argc, char** argv) {
   }
 
   auto res_jordan = gauss_jordan(mat);
+  auto res_jordan_mapped = map(res_jordan, synthewareQ::mapping::square_9q);
   auto res_gauss = gaussian_elim(mat);
+  auto res_gauss_mapped = map(res_gauss, synthewareQ::mapping::square_9q);
   auto res_steiner = steiner_gauss(mat, synthewareQ::mapping::square_9q);
 
   std::cout << "\nUnmapped (Gauss-Jordan) circuit:\n";
@@ -38,11 +79,23 @@ int main(int argc, char** argv) {
   }
   std::cout << "\nCNOTs: " << res_jordan.size() << "\n";
 
+  std::cout << "\nMapped (Gauss-Jordan) circuit:\n";
+  for (auto [i, j] : res_jordan_mapped) {
+    std::cout << "CX " << i << "," << j << "; ";
+  }
+  std::cout << "\nCNOTs: " << res_jordan_mapped.size() << "\n";
+
   std::cout << "\nUnmapped (Gaussian elimination) circuit:\n";
   for (auto [i, j] : res_gauss) {
     std::cout << "CX " << i << "," << j << "; ";
   }
   std::cout << "\nCNOTs: " << res_gauss.size() << "\n";
+
+  std::cout << "\nMapped (Gaussian elimination) circuit:\n";
+  for (auto [i, j] : res_gauss_mapped) {
+    std::cout << "CX " << i << "," << j << "; ";
+  }
+  std::cout << "\nCNOTs: " << res_gauss_mapped.size() << "\n";
 
   std::cout << "\nMapped (Steiner-Gauss) circuit:\n";
   for (auto [i, j] : res_steiner) {
