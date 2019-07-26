@@ -61,6 +61,7 @@ namespace synthesis {
       }
     }
 
+    ret.reverse();
     return ret;
   }
 
@@ -108,6 +109,7 @@ namespace synthesis {
       }
     }
 
+    ret.reverse();
     return ret;
   }
 
@@ -225,6 +227,8 @@ namespace synthesis {
       ret.splice(ret.end(), compute);
       ret.splice(ret.end(), uncompute);
     }
+
+    ret.reverse();
     return ret;
   }
 

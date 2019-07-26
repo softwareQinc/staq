@@ -28,6 +28,21 @@ namespace synthesis {
     std::list<phase_term> terms;
   };
 
+  void print_partition(partition& part) {
+    std::cout << "{";
+    if (part.target) std::cout << *(part.target);
+    else std::cout << "_";
+    std::cout << ", [";
+    for (auto i : part.remaining_indices) std::cout << i << ",";
+    std::cout << "], {";
+    for (auto& [vec, angle] : part.terms) {
+      std::cout << angle << "*(";
+      for (auto i = 0; i < vec.size(); i++) std::cout << (vec[i] ? "1" : "0");
+      std::cout << "), ";
+    }
+    std::cout << "}}\n";
+  }
+
   void adjust_vectors(size_t ctrl, size_t tgt, std::list<partition>& stack) {
     for (auto& part : stack) {
       for (auto& [vec, angle] : part.terms) {
@@ -83,31 +98,31 @@ namespace synthesis {
       auto part = stack.front();
       stack.pop_front();
 
-      switch (part.terms.size()) {
-      case 0: continue;
-      case 1: {
+      // Debug
+      std::cout << "Processing partition:\n  ";
+      print_partition(part);
+
+      if (part.terms.size() == 0) continue;
+      else if (part.terms.size() == 1 && part.target) {
+        // This case allows us to shortcut a lot of partitions
+
+        auto tgt = *(part.target);
         auto& [vec, angle] = part.terms.front();
 
-        if (part.target) {
-          auto tgt = *(part.target);
-          for (auto ctrl = 0; ctrl < vec.size(); ctrl++) {
-            if (ctrl != tgt && vec[ctrl]) {
-              ret.push_back(std::make_pair((size_t)ctrl, (size_t)tgt));
+        for (auto ctrl = 0; ctrl < vec.size(); ctrl++) {
+          if (ctrl != tgt && vec[ctrl]) {
+            ret.push_back(std::make_pair((size_t)ctrl, (size_t)tgt));
 
-              // Adjust remaining vectors & output function
-              adjust_vectors(ctrl, tgt, stack);
-              for (auto i = 0; i < A.size(); i++) {
-                A[i][ctrl] = A[i][ctrl] ^ A[i][tgt];
-              }
+            // Adjust remaining vectors & output function
+            adjust_vectors(ctrl, tgt, stack);
+            for (auto i = 0; i < A.size(); i++) {
+              A[i][ctrl] = A[i][ctrl] ^ A[i][tgt];
             }
           }
+        }
 
-          ret.push_back(std::make_pair(angle, tgt));
-        } // Else can only be the all-zero vector
-
-        break;
-      }
-      default: {
+        ret.push_back(std::make_pair(angle, tgt));
+      } else if (!part.remaining_indices.empty()) {
         // Divide into the zeros and ones of some row
         auto i = find_best_split(part.terms, part.remaining_indices);
         auto [zeros, ones] = split(part.terms, i);
@@ -122,14 +137,15 @@ namespace synthesis {
           stack.push_front({i, part.remaining_indices, ones});
         }
         stack.push_front({part.target, part.remaining_indices, zeros});
-        break;
-      }
+      } else {
+        throw std::logic_error("No indices left to pivot on, but multiple vectors remain!\n");
       }
 
     }
 
     // Synthesize the overall linear transformation
-
+    auto linear_trans = gauss_jordan(A);
+    for (auto gate : linear_trans) ret.push_back(gate);
 
     return ret;
   }
