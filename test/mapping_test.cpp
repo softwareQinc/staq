@@ -9,6 +9,7 @@
 #include "mapping/layout/eager.hpp"
 #include "mapping/layout/bestfit.hpp"
 #include "mapping/mapping/swap.hpp"
+#include "mapping/mapping/steiner.hpp"
 
 using namespace synthewareQ;
 
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
     src.visit(*program);
 
     std::cout << "\nCNOT mapped layout:\n";
-    mapping::map_onto_device(program.get(), mapping::rigetti_8q);
+    mapping::steiner_mapping(program.get(), mapping::rigetti_8q);
     src.visit(*program);
   } else {
     std::cout << "Parsing of file \"" << argv[1] << "\" failed\n";

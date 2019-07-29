@@ -15,6 +15,8 @@
 
 #include <map>
 
+// TODO: figure out what to do with if statements
+
 namespace synthewareQ {
 namespace mapping {
 
@@ -40,9 +42,6 @@ namespace mapping {
       }
     }
 
-    // Ignore declarations if they were left in during inlining
-    void visit(decl_gate* node) override {}
-    void visit(decl_oracle* node) override {}
 
     std::optional<ast_node_list> replace(expr_reg_offset* node) override {
       if (node->id() == config_.register_name) {
