@@ -27,6 +27,7 @@ namespace mapping {
   /* \brief! Definition of physical devices for efficient mapping */
   class device {
   public:
+    device() {}
     device(std::string name, size_t n, const std::vector<std::vector<bool> >& dag)
       : name_(name)
       , qubits_(n)

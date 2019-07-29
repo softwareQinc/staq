@@ -26,11 +26,13 @@ using namespace synthewareQ;
 // and have this tool accept a machine definition as input for mapping
 
 int main(int argc, char** argv) {
+  std::string device_name = "square_9q";
   std::string layout = "linear";
   std::string mapper = "swap";
 
   CLI::App app{ "Physical mapper" };
 
+  app.add_option("-d", device_name, "Device to map onto (rigetti_8q|square_9q)");
   app.add_option("-l", layout, "Layout algorithm to use (linear|eager|bestfit)");
   app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");
 
@@ -38,26 +40,44 @@ int main(int argc, char** argv) {
 
   auto program = qasm::read_from_stdin();
   if (program) {
+
     // Inline fully first
     auto preprocessor = transformations::inliner(program.get(), { false, {}, "anc" });
     preprocessor.visit(*program);
 
+    // Physical device
+    mapping::device dev;
+    if (device_name == "rigetti_8q") {
+      dev = mapping::rigetti_8q;
+    } else if (device_name == "square_9q") {
+      dev = mapping::square_9q;
+    } else {
+      std::cerr << "Error: invalid device name\n";
+      return 0;
+    }
+
     // Initial layout
     mapping::layout physical_layout;
     if (layout == "linear") {
-      physical_layout = mapping::compute_layout(program.get(), mapping::rigetti_8q);
+      physical_layout = mapping::compute_layout(program.get(), dev);
     } else if (layout == "eager") {
-      physical_layout = mapping::compute_layout_eager(program.get(), mapping::rigetti_8q);
+      physical_layout = mapping::compute_layout_eager(program.get(), dev);
     } else if (layout == "bestfit") {
-      physical_layout = mapping::compute_layout_bestfit(program.get(), mapping::rigetti_8q);
+      physical_layout = mapping::compute_layout_bestfit(program.get(), dev);
+    } else {
+      std::cerr << "Error: invalid layout algorithm\n";
+      return 0;
     }
     mapping::apply_layout(program.get(), physical_layout);
 
     // Mapping
     if (mapper == "swap") {
-      mapping::map_onto_device(program.get(), mapping::rigetti_8q);
+      mapping::map_onto_device(program.get(), dev);
     } else if (mapper == "steiner") {
-      mapping::steiner_mapping(program.get(), mapping::rigetti_8q);
+      mapping::steiner_mapping(program.get(), dev);
+    } else {
+      std::cerr << "Error: invalid mapping algorithm\n";
+      return 0;
     }
 
     // Print result
