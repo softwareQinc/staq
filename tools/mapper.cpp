@@ -26,13 +26,13 @@ using namespace synthewareQ;
 // and have this tool accept a machine definition as input for mapping
 
 int main(int argc, char** argv) {
-  std::string device_name = "square_9q";
+  std::string device_name = "square9";
   std::string layout = "linear";
   std::string mapper = "swap";
 
   CLI::App app{ "Physical mapper" };
 
-  app.add_option("-d", device_name, "Device to map onto (rigetti_8q|square_9q)");
+  app.add_option("-d", device_name, "Device to map onto (rigetti8|square9|fullycon9)");
   app.add_option("-l", layout, "Layout algorithm to use (linear|eager|bestfit)");
   app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");
 
@@ -47,10 +47,12 @@ int main(int argc, char** argv) {
 
     // Physical device
     mapping::device dev;
-    if (device_name == "rigetti_8q") {
+    if (device_name == "rigetti8") {
       dev = mapping::rigetti_8q;
-    } else if (device_name == "square_9q") {
+    } else if (device_name == "square9") {
       dev = mapping::square_9q;
+    } else if (device_name == "fullycon9") {
+      dev = mapping::fully_connected(9);
     } else {
       std::cerr << "Error: invalid device name\n";
       return 0;

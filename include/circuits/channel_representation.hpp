@@ -125,10 +125,10 @@ namespace channel_representation {
     pauli_op(std::unordered_map<id, pauli_gate> pauli) : pauli_(pauli) {}
 
     /* Gate constructors */
-    static pauli_op i_gate(id q) { return pauli_op({{ q, pauli_gate::i }}); }
-    static pauli_op x_gate(id q) { return pauli_op({{ q, pauli_gate::x }}); }
-    static pauli_op z_gate(id q) { return pauli_op({{ q, pauli_gate::z }}); }
-    static pauli_op y_gate(id q) { return pauli_op({{ q, pauli_gate::y }}); }
+    static pauli_op i_gate(id q) { return pauli_op(std::unordered_map<id, pauli_gate>({{ q, pauli_gate::i }})); }
+    static pauli_op x_gate(id q) { return pauli_op(std::unordered_map<id, pauli_gate>({{ q, pauli_gate::x }})); }
+    static pauli_op z_gate(id q) { return pauli_op(std::unordered_map<id, pauli_gate>({{ q, pauli_gate::z }})); }
+    static pauli_op y_gate(id q) { return pauli_op(std::unordered_map<id, pauli_gate>({{ q, pauli_gate::y }})); }
 
     /* Accessors */
     pauli_phase phase() const { return phase_; }
