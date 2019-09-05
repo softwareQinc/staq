@@ -25,9 +25,10 @@
 #pragma once
 
 // TODO: Account for compound gates, i.e. qreg q[n]; reset q;
-// TODO: Depth computations. Requires dependence visitor
 
 #include "ast/ast.hpp"
+
+#include <algorithm>
 
 namespace synthewareQ {
 namespace tools {
@@ -82,13 +83,25 @@ namespace tools {
     void visit(ast::VarExpr&) {}
 
     /* Statements */
-    void visit(ast::MeasureStmt&) {
+    void visit(ast::MeasureStmt& stmt) {
       auto& [counts, depths] = running_estimate_;
+
+      // Gate count
       counts["measurement"] += 1;
+
+      // Depth
+      int in_depth = std::max(depths[stmt.c_arg()], depths[stmt.q_arg()]);
+      depths[stmt.c_arg()] = in_depth + 1;
+      depths[stmt.q_arg()] = in_depth + 1;
     }
-    void visit(ast::ResetStmt&) {
+    void visit(ast::ResetStmt& stmt) {
       auto& [counts, depths] = running_estimate_;
+
+      // Gate count
       counts["reset"] += 1;
+
+      // Depth
+      depths[stmt.arg()] += 1;
     }
     void visit(ast::IfStmt& stmt) {
       stmt.then().accept(*this);
@@ -98,6 +111,7 @@ namespace tools {
     void visit(ast::UGate& gate) {
       auto& [counts, depths] = running_estimate_;
 
+      // Gate count
       std::stringstream ss;
       auto theta = gate.theta().constant_eval();
       auto phi = gate.phi().constant_eval();
@@ -109,19 +123,41 @@ namespace tools {
         ss << "U";
 
       counts[ss.str()] += 1;
+
+      // Depth
+      depths[gate.arg()] += 1;
     }
-    void visit(ast::CNOTGate&) {
+    void visit(ast::CNOTGate& gate) {
       auto& [counts, depths] = running_estimate_;
+
+      // Gate count
       counts["CX"] += 1;
+
+      // Depth
+      int in_depth = std::max(depths[gate.ctrl()], depths[gate.tgt()]);
+      depths[gate.ctrl()] = in_depth + 1;
+      depths[gate.tgt()] = in_depth + 1;
     }
-    void visit(ast::BarrierGate&) {
+    void visit(ast::BarrierGate& gate) {
       auto& [counts, depths] = running_estimate_;
+
+      // Gate count
       counts["barrier"] += 1;
+
+      // Depth
+      int in_depth = -1;
+      gate.foreach_arg([&in_depth, &depths](auto& arg){
+          in_depth = std::max(in_depth, depths[arg]);
+      });
+      gate.foreach_arg([in_depth, &depths](auto& arg){
+          depths[arg] = in_depth + 1;
+      });
     }
     void visit(ast::DeclaredGate& gate) {
       auto& [counts, depths] = running_estimate_;
 
-      // Gate name
+      // Gate count
+      counts["barrier"] += 1;
       auto tmp = gate.name();
       if (config_.merge_dagger) strip_dagger(tmp);
 
@@ -162,6 +198,14 @@ namespace tools {
         counts[name] += 1;
       }
 
+      // Depth
+      int in_depth = -1;
+      gate.foreach_qarg([&in_depth, &depths](auto& arg){
+          in_depth = std::max(in_depth, depths[arg]);
+      });
+      gate.foreach_qarg([in_depth, &depths](auto& arg){
+          depths[arg] = in_depth + 1;
+      });
     }
 
     /* Declarations */
@@ -197,7 +241,7 @@ namespace tools {
     }
 
   private:
-    using depth_count = std::unordered_map<std::string, int>;
+    using depth_count = std::unordered_map<ast::VarAccess, int>;
     using resource_state = std::pair<resource_count, depth_count>;
 
     config config_;

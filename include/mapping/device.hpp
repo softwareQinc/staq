@@ -297,8 +297,10 @@ namespace mapping {
       {0, 0, 0, 1, 0, 0, 0, 1, 0}, }
   );
 
-  device fully_connected(uint32_t n) {
-    return device("Fully connected device", n, std::vector<std::vector<bool> >(n, std::vector<bool>(n, true)));
+  Device fully_connected(uint32_t n) {
+    return Device("Fully connected device", 
+                  n, 
+                  std::vector<std::vector<bool> >(n, std::vector<bool>(n, true)));
   }
 
 }
