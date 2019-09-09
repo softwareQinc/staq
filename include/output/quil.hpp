@@ -277,7 +277,7 @@ namespace output {
         globals_[decl.id()] = std::make_pair(max_cbit_, decl.size());
         max_cbit_ += decl.size();
       }
-      os_ << "\t# " << decl;
+      os_ << "# " << decl;
     }
 
     void visit(ast::AncillaDecl& decl) {
