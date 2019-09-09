@@ -53,7 +53,7 @@ namespace output {
   public:
 
     struct config {
-      bool std_includes = true;
+      bool std_includes = false; // stdgates.quil is not supported natively by quilc
     };
 
     QuilOutputter(std::ostream& os) : Visitor(), os_(os) {}
