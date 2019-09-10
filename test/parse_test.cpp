@@ -1,5 +1,6 @@
 #include "parser/position.hpp"
 #include "ast/ast.hpp"
+#include "ast/semantic.hpp"
 #include "parser/parser.hpp"
 #include "tools/ast_printer.hpp"
 #include "tools/resource_estimator.hpp"
@@ -21,6 +22,9 @@ int main(int argc, char** argv) {
   auto program = parser::parse_file(argv[1]);
   if (program) {
     std::cout << "Source:\n" << *program << "\n";
+
+    ast::check_source(*program);
+    std::cout << "Passed semantic analysis\n\n";
 
     std::cout << "AST:\n";
     tools::print_tree(*program);
