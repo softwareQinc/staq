@@ -109,7 +109,7 @@ namespace ast {
         std::cerr << stmt.pos() << ": Identifier \"" << stmt.var() << "\" undeclared\n";
         error_ = true;
       } else if (!std::holds_alternative<RegisterType>(*entry) ||
-                 !(std::get<RegisterType>(*entry).type != BitType::Cbit)) {
+                 !(std::get<RegisterType>(*entry).type == BitType::Cbit)) {
         std::cerr << stmt.pos() << ": Identifier \"" << stmt.var();
         std::cerr << "\" does not have classical register type\n";
         error_ = true;
