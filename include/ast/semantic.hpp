@@ -133,16 +133,13 @@ namespace ast {
       check_uniform(gate.args(), types);
     }
     void visit(DeclaredGate& gate) {
-      auto entry = lookup(gate.name());
+      auto entry = lookup_gate(gate.name());
       
       if (!entry) {
-        std::cerr << gate.pos() << ": Identifier \"" << gate.name() << "\" undeclared\n";
-        error_ = true;
-      } else if (!std::holds_alternative<GateType>(*entry)) {
-        std::cerr << gate.pos() << ": Identifier \"" << gate.name() << "\" does not have gate type\n";
+        std::cerr << gate.pos() << ": Gate \"" << gate.name() << "\" undeclared\n";
         error_ = true;
       } else {
-        auto ty = std::get<GateType>(*entry);
+        auto ty = *entry;
         if (ty.num_c_params != gate.num_cargs()) {
           std::cerr << gate.pos() << ": Gate \"" << gate.name() << "\" expects " << ty.num_c_params;
           std::cerr << " classical arguments, got " << gate.num_cargs() << "\n";
@@ -161,8 +158,8 @@ namespace ast {
     }
 
     void visit(GateDecl& decl) {
-      if (lookup(decl.id())) {
-        std::cerr << decl.pos() << ": Identifier \"" << decl.id() << "\" previous declared\n";
+      if (lookup_gate(decl.id())) {
+        std::cerr << decl.pos() << ": Gate \"" << decl.id() << "\" previous declared\n";
         error_ = true;
       } else {
         // Check the body
@@ -179,7 +176,7 @@ namespace ast {
         pop_scope();
 
         // Add declaration
-        set(decl.id(), GateType{(int)decl.c_params().size(), (int)decl.q_params().size()});
+        set_gate(decl.id(), GateType{(int)decl.c_params().size(), (int)decl.q_params().size()});
       }
     }
     void visit(OracleDecl& decl) {
@@ -187,7 +184,7 @@ namespace ast {
         std::cerr << decl.pos() << ": Identifier \"" << decl.id() << "\" previous declared\n";
         error_ = true;
       } else {
-        set(decl.id(), GateType{ 0, (int)decl.params().size() });
+        set_gate(decl.id(), GateType{ 0, (int)decl.params().size() });
       }
     }
     void visit(RegisterDecl& decl) {
@@ -223,6 +220,7 @@ namespace ast {
 
   private:
     bool error_ = false;
+    std::unordered_map<ast::symbol, GateType> gate_decls_{};
     std::list<std::unordered_map<ast::symbol, Type> > symbol_table_{{}};
 
     void push_scope() { symbol_table_.push_front({}); }
@@ -240,6 +238,16 @@ namespace ast {
         throw std::logic_error("No current symbol table!");
 
       symbol_table_.front()[id] = typ;
+    }
+
+    std::optional<GateType> lookup_gate(const ast::symbol& id) {
+      if (auto it = gate_decls_.find(id); it != gate_decls_.end()) {
+          return it->second;
+      }
+      return std::nullopt;
+    }
+    void set_gate(const ast::symbol& id, GateType typ) {
+      gate_decls_[id] = typ;
     }
 
     /** \brief Checks a vector of bit accesses */
