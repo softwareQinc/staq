@@ -106,7 +106,7 @@ namespace output {
     }
 
     void visit(ast::PiExpr&) {
-      os_ << "math.pi";
+      os_ << "pi";
     }
 
     void visit(ast::IntExpr& expr) {
@@ -118,7 +118,11 @@ namespace output {
     }
 
     void visit(ast::VarExpr& expr) {
-      os_ << expr.var();
+      // Hack because lambda is reserved by python
+      if (expr.var() == "lambda")
+        os_ << "lambd";
+      else
+        os_ << expr.var();
     }
 
     // Statements
@@ -143,7 +147,7 @@ namespace output {
 
     // Gates
     void visit(ast::UGate& gate) {
-      os_ << prefix_ << "U(";
+      os_ << prefix_ << "UGate(";
       gate.theta().accept(*this);
       os_ << ", ";
       gate.phi().accept(*this);
@@ -217,15 +221,21 @@ namespace output {
       if (decl.is_opaque())
         throw std::logic_error("Opaque declarations not supported");
       
-      if (qasmstd_to_projectq.find(decl.id()) != qasmstd_to_projectq.end()) {
+      if (qasmstd_to_projectq.find(decl.id()) == qasmstd_to_projectq.end()) {
         os_ << prefix_ << "def " << decl.id() << "(";
         for (auto i = 0; i < decl.c_params().size(); i++) {
           if (i != 0)
             os_ << ", ";
-          os_ << decl.c_params()[i];
+          // Hack because lambda is reserved by python
+          if (decl.c_params()[i] == "lambda")
+            os_ << "lambd";
+          else
+            os_ << decl.c_params()[i];
         }
 
         for (auto i = 0; i < decl.q_params().size(); i++) {
+          if (decl.c_params().size() > 0 || i != 0)
+            os_ << ", ";
           os_ << " " << decl.q_params()[i];
         }
         os_ << ")";
@@ -252,15 +262,15 @@ namespace output {
 
     void visit(ast::RegisterDecl& decl) {
       if (decl.is_quantum()) {
-        os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qubit(" << decl.size() << ")\n";
+        os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qureg(" << decl.size() << ")";
       } else {
-        os_ << prefix_ << decl.id() << " = [None] * " << decl.size() << "\n";
+        os_ << prefix_ << decl.id() << " = [None] * " << decl.size();
       }
       os_ << "\t# " << decl;
     }
 
     void visit(ast::AncillaDecl& decl) {
-      os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qubit(" << decl.size() << ")";
+      os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qureg(" << decl.size() << ")";
       os_ << "\t# " << decl;
       ancillas_.push_back(std::make_pair(decl.id(), decl.size()));
     }
@@ -271,11 +281,11 @@ namespace output {
         os_ << "from projectq import MainEngine, ops\n";
       }
       os_ << "from projectq import ops\n";
-      os_ << "from math import exp,sin,cos,tan,log as ln,sqrt\n";
+      os_ << "from math import pi,exp,sin,cos,tan,log as ln,sqrt\n";
       os_ << "import numpy as np\n\n";
 
       // QASM U gate
-      os_ << "class U(ops.BasicGate):\n";
+      os_ << "class UGate(ops.BasicGate):\n";
       os_ << "    def __init__(self, theta, phi, lambd):\n";
       os_ << "        ops.BasicGate.__init__(self)\n";
       os_ << "        self.theta = theta\n";
@@ -288,7 +298,7 @@ namespace output {
       os_ << "        return str(self.__class__.__name__) + \"$(\" + str(self.theta) + \",\" \\\n";
       os_ << "               + str(self.phi) + \",\" + str(self.lambd) + \")$\"\n\n";
       os_ << "    def get_inverse(self):\n";
-      os_ << "        tmp = 2 * math.pi\n";
+      os_ << "        tmp = 2 * pi\n";
       os_ << "        return self.__class__(-self.theta + tmp, -self.lambd + tmp, -self.phi + tmp)\n\n";
       os_ << "    def __eq__(self, other):\n";
       os_ << "        if isinstance(other, self.__class__):\n";
@@ -306,7 +316,7 @@ namespace output {
       os_ << "        return np.matrix([[exp(-1j*(self.phi+self.lambd)/2)*cos(self.theta/2),\n";
       os_ << "                           -exp(-1j*(self.phi-self.lambd)/2)*sin(self.theta/2)],\n";
       os_ << "                          [exp(1j*(self.phi-self.lambd)/2)*sin(self.theta/2),\n";
-      os_ << "                           exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n\n\n";
+      os_ << "                           exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n\n";
 
       // QASM reset statement
       os_ << "def reset(qubit):\n";
