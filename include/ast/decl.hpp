@@ -129,6 +129,7 @@ namespace ast {
         }
         os << "}\n";
       }
+	  return os;
     }
     GateDecl* clone() const override {
       std::list<ptr<Gate> > tmp;
@@ -165,6 +166,7 @@ namespace ast {
         os << (it == params_.begin() ? "" : ",") << *it;
       }
       os << " { \"" << fname_ << "\" }\n";
+	  return os;
     }
     OracleDecl* clone() const override {
       return new OracleDecl(pos_, id_, params_, fname_);

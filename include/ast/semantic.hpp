@@ -254,7 +254,7 @@ namespace ast {
     void check_uniform(const std::vector<VarAccess>& args, const std::vector<std::optional<BitType> >& types) {
       int mapping_size = -1;
 
-      for (int i = 0; i < args.size(); i++) {
+      for (auto i = 0; i < args.size(); i++) {
         auto entry = lookup(args[i].var());
       
         if (!entry) {

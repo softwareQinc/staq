@@ -137,7 +137,7 @@ namespace gates {
   public:
     Pauli() {}
     Pauli(std::pair<qarg, PauliOp> gate) { pauli_[gate.first] = gate.second; }
-    Pauli(std::unordered_map<qarg, PauliOp> pauli) : pauli_(pauli) {}
+    Pauli(const std::unordered_map<qarg, PauliOp>& pauli) : pauli_(pauli) {}
     static Pauli i(const qarg& q) { return Pauli({{ q, PauliOp::i }}); }
     static Pauli x(const qarg& q) { return Pauli({{ q, PauliOp::x }}); }
     static Pauli z(const qarg& q) { return Pauli({{ q, PauliOp::z }}); }

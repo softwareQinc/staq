@@ -133,6 +133,7 @@ namespace ast {
       case BinaryOp::Times: return *lexp * *rexp;
       case BinaryOp::Divide: return *lexp / *rexp;
       case BinaryOp::Pow: return pow(*lexp, *rexp);
+	  default: return 0; // inaccessible
       }
     }
 
@@ -192,6 +193,7 @@ namespace ast {
       case UnaryOp::Sqrt: return sqrt(*expr);
       case UnaryOp::Ln: return log(*expr);
       case UnaryOp::Exp: return exp(*expr);
+	  default: return 0; // inaccessible
       }
     }
     

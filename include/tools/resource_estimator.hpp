@@ -61,7 +61,7 @@ namespace tools {
       auto& [counts, depths] = running_estimate_;
 
       // Get maximum critical path length
-      uint32_t depth = 0;
+      int depth = 0;
       for (auto& [id, length] : depths) {
         if (length > depth) depth = length;
       }

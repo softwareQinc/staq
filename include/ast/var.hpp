@@ -30,6 +30,8 @@
 
 #include "base.hpp"
 
+#include <optional>
+
 namespace synthewareQ {
 namespace ast {
 
