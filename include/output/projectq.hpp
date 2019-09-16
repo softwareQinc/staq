@@ -281,7 +281,7 @@ namespace output {
         os_ << "from projectq import MainEngine, ops\n";
       }
       os_ << "from projectq import ops\n";
-      os_ << "from math import pi,exp,sin,cos,tan,log as ln,sqrt\n";
+      os_ << "from cmath import pi,exp,sin,cos,tan,log as ln,sqrt\n";
       os_ << "import numpy as np\n\n";
 
       // QASM U gate
