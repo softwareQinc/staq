@@ -26,6 +26,8 @@
 
 #include "ast/ast.hpp"
 
+#include <typeinfo>
+
 namespace synthewareQ {
 namespace output {
 
@@ -118,11 +120,7 @@ namespace output {
     }
 
     void visit(ast::VarExpr& expr) {
-      // Hack because lambda is reserved by python
-      if (expr.var() == "lambda")
-        os_ << "lambd";
-      else
-        os_ << expr.var();
+      os_ << sanitize(expr.var());
     }
 
     // Statements
@@ -147,7 +145,7 @@ namespace output {
 
     // Gates
     void visit(ast::UGate& gate) {
-      os_ << prefix_ << "UGate(";
+      os_ << prefix_ << "U(";
       gate.theta().accept(*this);
       os_ << ", ";
       gate.phi().accept(*this);
@@ -179,41 +177,23 @@ namespace output {
     void visit(ast::DeclaredGate& gate) {
       os_ << prefix_;
 
-      // Different syntax for built in gates & qasm circuits...
-      // may be able to use decompositions to avoid this
-      if (auto it = qasmstd_to_projectq.find(gate.name()); it != qasmstd_to_projectq.end()) {
+      if (auto it = qasmstd_to_projectq.find(gate.name()); it != qasmstd_to_projectq.end())
         os_ << it->second << "(";
-
-        for (int i = 0; i < gate.num_cargs(); i++) {
-          if (i != 0)
-            os_ << ", ";
-          gate.carg(i).accept(*this);
-        }
-        os_ << ") | (";
-        for (int i = 0; i < gate.num_qargs(); i++) {
-          if (i > 0)
-            os_ << ", ";
-          gate.qarg(i).accept(*this);
-        }
-        os_ << ")";
-      }
-      else {
+      else
         os_ << gate.name() << "(";
 
-        for (int i = 0; i < gate.num_cargs(); i++) {
-          if (i != 0)
-            os_ << ", ";
-          gate.carg(i).accept(*this);
-        }
-        for (int i = 0; i < gate.num_qargs(); i++) {
-          if (gate.num_cargs() > 0 || i > 0)
-            os_ << ", ";
-          gate.qarg(i).accept(*this);
-        }
-        os_ << ")";
+      for (int i = 0; i < gate.num_cargs(); i++) {
+        if (i != 0)
+          os_ << ", ";
+        gate.carg(i).accept(*this);
       }
-
-      os_ << "\t# " << gate;
+      os_ << ") | (";
+      for (int i = 0; i < gate.num_qargs(); i++) {
+        if (i > 0)
+          os_ << ", ";
+        gate.qarg(i).accept(*this);
+      }
+      os_ << ")\t# " << gate;
     }
 
     // Declarations
@@ -222,27 +202,68 @@ namespace output {
         throw std::logic_error("Opaque declarations not supported");
       
       if (qasmstd_to_projectq.find(decl.id()) == qasmstd_to_projectq.end()) {
-        os_ << prefix_ << "def " << decl.id() << "(";
+
+        os_ << "class " << decl.id() << "(ops.BasicGate):";
+        os_ << "\t# " << "gate " << decl.id() << "\n";
+
+        // Class instantiation
+        os_ << "    def __init__(self, ";
         for (auto i = 0; i < decl.c_params().size(); i++) {
           if (i != 0)
             os_ << ", ";
-          // Hack because lambda is reserved by python
-          if (decl.c_params()[i] == "lambda")
-            os_ << "lambd";
-          else
-            os_ << decl.c_params()[i];
+          os_ << sanitize(decl.c_params()[i]);
         }
+        os_ << "):\n";
+        os_ << "        ops.BasicGate.__init__(self)\n";
+        for (auto param : decl.c_params()) {
+          auto tmp = sanitize(param);
+          os_ << "        self." << tmp << " = " << tmp << "\n";
+        }
+        os_ << "\n";
 
+        // String representation
+        os_ << "    def __str__(self):\n";
+        os_ << "        return str(self.__class__.__name__) + \"(\" + ";
+        for (auto i = 0; i < decl.c_params().size(); i++) {
+          if (i != 0)
+            os_ << " + \",\" + ";
+          os_ << "str(self." << sanitize(decl.c_params()[i]) << ")";
+        }
+        os_ << " + \")\"\n\n";
+
+        // Equality 
+        os_ << "    def __eq__(self, other):\n";
+        os_ << "        if isinstance(other, self.__class__):\n";
+        os_ << "            return True";
+        for (auto i = 0; i < decl.c_params().size(); i++) {
+          auto tmp = sanitize(decl.c_params()[i]);
+          os_ << "\\\n                   & self." << tmp << " == other." << tmp;
+        }
+        os_ << "\n";
+        os_ << "        else:\n";
+        os_ << "            return False\n\n";
+
+        os_ << "    def __ne__(self, other):\n";
+        os_ << "        return not self.__eq__(other)\n\n";
+
+        // Hashing
+        os_ << "    def __hash__(self):\n";
+        os_ << "        return hash(str(self))\n\n";
+
+        // Implementation as an override of ||
+        os_ << "    def __or__(self, qubits):\n";
+        auto tmp = eng_;
+        eng_ = "qubits[0].engine";
+
+        os_ << "        if len(qubits) != " << decl.q_params().size() << ":\n";
+        os_ << "            raise TypeError(\"Expected " << decl.q_params().size()
+                                                         << " qubits, given \" + len(qubits))\n";
         for (auto i = 0; i < decl.q_params().size(); i++) {
-          if (decl.c_params().size() > 0 || i != 0)
-            os_ << ", ";
-          os_ << " " << decl.q_params()[i];
+          os_ << "        " << decl.q_params()[i] << " = qubits[" << i << "]\n";
         }
-        os_ << ")";
+        os_ <<"\n";
 
-        os_ << ":\t# " << "gate " << decl.id() << "\n";
-
-        prefix_ += "    ";
+        prefix_ = "        ";
         decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
 
         // deallocate all ancillas
@@ -251,8 +272,10 @@ namespace output {
             os_ << prefix_ << eng_ << ".deallocate_qubit(" << name << "[" << i << "])\n";
           }
         }
-        prefix_.resize(prefix_.size() - 4);
+        prefix_ = "";
         os_ << "\n";
+
+        eng_ = tmp;
       }
     }
 
@@ -277,15 +300,12 @@ namespace output {
     
     // Program
     void visit(ast::Program& prog) {
-      if (config_.standalone) {
-        os_ << "from projectq import MainEngine, ops\n";
-      }
-      os_ << "from projectq import ops\n";
+      os_ << "from projectq import MainEngine, ops\n";
       os_ << "from cmath import pi,exp,sin,cos,tan,log as ln,sqrt\n";
       os_ << "import numpy as np\n\n";
 
       // QASM U gate
-      os_ << "class UGate(ops.BasicGate):\n";
+      os_ << "class U(ops.BasicGate):\n";
       os_ << "    def __init__(self, theta, phi, lambd):\n";
       os_ << "        ops.BasicGate.__init__(self)\n";
       os_ << "        self.theta = theta\n";
@@ -325,22 +345,28 @@ namespace output {
       os_ << "    if int(qubit):\n";
       os_ << "        ops.X | qubit\n\n";
 
+      // Gate declarations
+      prog.foreach_stmt([this](auto& stmt) {
+          if (typeid(stmt) == typeid(ast::GateDecl))
+            stmt.accept(*this);
+        });
 
-      os_ << "def " << config_.circuit_name << "(" << eng_ << "):\n";
+      if (config_.standalone) { // Standalone simulation
+        os_ << "if __name__ == \"__main__\":\n";
+        os_ << "    " << eng_ << " = MainEngine()\n";
+      } else {                  // Otherwise put file into a function
+        os_ << "def " << config_.circuit_name << "(" << eng_ << "):\n";
+      }
       prefix_ = "    ";
 
       // Program body
-      prog.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
+      prog.foreach_stmt([this](auto& stmt) {
+          if (typeid(stmt) != typeid(ast::GateDecl))
+            stmt.accept(*this);
+        });
 
       os_ << "\n";
       prefix_ = "";
-
-      // Standalone simulation
-      if (config_.standalone) {
-        os_ << "if __name__ == \"__main__\":\n";
-        os_ << "    " << eng_ << " = MainEngine()\n";
-        os_ << "    " << config_.circuit_name << "(" << eng_ << ")\n\n";
-      }
     }
 
   private:
@@ -351,6 +377,12 @@ namespace output {
     std::string eng_ = "eng";
     std::list<std::pair<std::string, int> > ancillas_{};
     bool ambiguous_ = false;
+
+    // Hack because lambda is reserved by python
+    std::string sanitize(const std::string& id) {
+      if (id == "lambda") return "lambd";
+      else return id;
+    }
 
   };
 
