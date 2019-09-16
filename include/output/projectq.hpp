@@ -34,17 +34,17 @@ namespace output {
   /** \brief Equivalent quil standard gates for qasm standard gates */
   std::unordered_map<std::string, std::string> qasmstd_to_projectq {
     { "id", "ops.Rz(0)" },
-    { "x", "ops.X" },
-    { "y", "ops.Y" },
-    { "z", "ops.Z" },
-    { "h", "ops.H" },
-    { "s", "ops.S" },
-    { "sdg", "ops.Sdag" },
-    { "t", "ops.T" },
-    { "tdg", "ops.Tdag" },
-    { "cx", "ops.CNOT" },
-    { "cz", "ops.CZ" },
-    { "ccx", "ops.Toffoli" },
+    { "x", "ops.XGate" },
+    { "y", "ops.YGate" },
+    { "z", "ops.ZGate" },
+    { "h", "ops.HGate" },
+    { "s", "ops.SGate" },
+    { "sdg", "SdagGate" },
+    { "t", "ops.TGate" },
+    { "tdg", "TdagGate" },
+    { "cx", "CNOTGate" },
+    { "cz", "CZGate" },
+    { "ccx", "CCXGate" },
     { "rx", "ops.Rx" },
     { "ry", "ops.Ry" },
     { "rz", "ops.Rz" },
@@ -125,12 +125,12 @@ namespace output {
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
-      os_ << prefix_ << "Measure | " << stmt.q_arg() << "\t# " << stmt;
+      os_ << prefix_ << "ops.Measure | " << stmt.q_arg() << "\t# " << stmt;
       os_ << prefix_ << stmt.c_arg() << " = int(" << stmt.q_arg() << ")\n";
     }
 
     void visit(ast::ResetStmt& stmt) {
-      os_ << prefix_ << "reset(" << stmt.arg() << ")\t# " << stmt;
+      os_ << prefix_ << "Reset | " << stmt.arg() << "\t# " << stmt;
     }
 
     void visit(ast::IfStmt& stmt) {
@@ -145,7 +145,7 @@ namespace output {
 
     // Gates
     void visit(ast::UGate& gate) {
-      os_ << prefix_ << "U(";
+      os_ << prefix_ << "UGate(";
       gate.theta().accept(*this);
       os_ << ", ";
       gate.phi().accept(*this);
@@ -304,8 +304,15 @@ namespace output {
       os_ << "from cmath import pi,exp,sin,cos,tan,log as ln,sqrt\n";
       os_ << "import numpy as np\n\n";
 
+      // Convenience functions
+      os_ << "def SdagGate(): return ops.Sdag\n";
+      os_ << "def TdagGate(): return ops.Tdag\n";
+      os_ << "def CNOTGate(): return ops.CNOT\n";
+      os_ << "def CZGate(): return ops.CZ\n";
+      os_ << "def CCXGate(): return ops.Toffoli\n\n";
+
       // QASM U gate
-      os_ << "class U(ops.BasicGate):\n";
+      os_ << "class UGate(ops.BasicGate):\n";
       os_ << "    def __init__(self, theta, phi, lambd):\n";
       os_ << "        ops.BasicGate.__init__(self)\n";
       os_ << "        self.theta = theta\n";
@@ -339,11 +346,14 @@ namespace output {
       os_ << "                           exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n\n";
 
       // QASM reset statement
-      os_ << "def reset(qubit):\n";
-      os_ << "    ops.Measure | qubit\n";
-      //os_ << "    qubit.eng.flush()\n";
-      os_ << "    if int(qubit):\n";
-      os_ << "        ops.X | qubit\n\n";
+      os_ << "class ResetGate(ops.FastForwardingGate):\n";
+      os_ << "    def __str__(self):\n";
+      os_ << "        return \"Reset\"\n\n";
+      os_ << "    def __or__(self, qubit):\n";
+      os_ << "        ops.Measure | qubit\n";
+      os_ << "        if int(qubit):\n";
+      os_ << "            ops.X | qubit\n";
+      os_ << "Reset = ResetGate()\n\n";
 
       // Gate declarations
       prog.foreach_stmt([this](auto& stmt) {

@@ -184,11 +184,11 @@ namespace transformations {
 
         // Do the expansion
         for (int i = 0; i < *num; i++) {
-          auto c_arg = expand(stmt.c_arg(), i);
           auto q_arg = expand(stmt.q_arg(), i);
+          auto c_arg = expand(stmt.c_arg(), i);
 
           ret.emplace_back(std::make_unique<ast::MeasureStmt>(
-            ast::MeasureStmt(stmt.pos(), std::move(c_arg), std::move(q_arg))));
+            ast::MeasureStmt(stmt.pos(), std::move(q_arg), std::move(c_arg))));
         }
 
         return std::move(ret);
