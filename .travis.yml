@@ -1,9 +1,9 @@
 language: cpp
-dist: xenial
+dist: bionic
 
 matrix:
     include:
-        # Ubuntu Linux 16.04 gcc7.1
+        # Ubuntu Linux 18.04 gcc7.1
         - os: linux
           compiler: gcc
           before_install:
