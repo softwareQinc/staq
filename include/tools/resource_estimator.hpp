@@ -146,11 +146,11 @@ namespace tools {
 
       // Depth
       int in_depth = -1;
-      gate.foreach_arg([&in_depth, &depths](auto& arg){
-          in_depth = std::max(in_depth, depths[arg]);
+      gate.foreach_arg([&in_depth, this](auto& arg){
+          in_depth = std::max(in_depth, running_estimate_.second[arg]);
       });
-      gate.foreach_arg([in_depth, &depths](auto& arg){
-          depths[arg] = in_depth + 1;
+      gate.foreach_arg([in_depth, this](auto& arg){
+          running_estimate_.second[arg] = in_depth + 1;
       });
     }
     void visit(ast::DeclaredGate& gate) {
@@ -200,11 +200,11 @@ namespace tools {
 
       // Depth
       int in_depth = -1;
-      gate.foreach_qarg([&in_depth, &depths](auto& arg){
-          in_depth = std::max(in_depth, depths[arg]);
+      gate.foreach_qarg([&in_depth, this](auto& arg){
+          in_depth = std::max(in_depth, running_estimate_.second[arg]);
       });
-      gate.foreach_qarg([in_depth, &depths](auto& arg){
-          depths[arg] = in_depth + 1;
+      gate.foreach_qarg([in_depth, this](auto& arg){
+          running_estimate_.second[arg] = in_depth + 1;
       });
     }
 
