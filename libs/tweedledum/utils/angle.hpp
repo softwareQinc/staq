@@ -5,9 +5,10 @@
 *-------------------------------------------------------------------------------------------------*/
 #pragma once
 
-#include <cassert>
 #define _USE_MATH_DEFINES
 #include <cmath>
+
+#include <cassert>
 #include <cstdint>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -161,7 +162,7 @@ private:
 	{
 		double const factor = static_cast<double>(numerator_)
 		                      / static_cast<double>(denominator_);
-		numerical_ = factor * M_PI;
+		numerical_ = factor * 3.141592653589793238462643383279502884;
 	}
 
 	constexpr void normalize()

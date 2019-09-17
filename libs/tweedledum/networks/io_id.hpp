@@ -94,6 +94,6 @@ private:
 	uint32_t data_;
 };
 
-constexpr auto io_invalid = io_id(std::numeric_limits<uint32_t>::max(), true, true);
+constexpr auto io_invalid = io_id((std::numeric_limits<uint32_t>::max)(), true, true);
 
 } // namespace tweedledum

@@ -157,8 +157,8 @@ public:
     const auto _n1 = columns[c1];
     const auto _n2 = columns[c2];
 
-    const auto n1 = std::min( _n1, _n2 );
-    const auto n2 = std::max( _n1, _n2 );
+    const auto n1 = (std::min)( _n1, _n2 );
+    const auto n2 = (std::max)( _n1, _n2 );
 
     return ( n1 == 0x30 && n2 == 0x31 ) || ( ( n1 + 0x20 ) == n2 );
   }

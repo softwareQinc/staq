@@ -56,7 +56,7 @@ public:
 
 template<>
 struct node_pointer<0> {
-	static constexpr auto max = std::numeric_limits<uint32_t>::max();
+	static constexpr auto max = (std::numeric_limits<uint32_t>::max)();
 
 	node_pointer()
 	    : data(max)

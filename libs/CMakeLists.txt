@@ -10,6 +10,9 @@ endif()
 
 if (NOT TARGET glucose)
   add_library(glucose INTERFACE)
+  if(MSVC)
+    target_include_directories(glucose ${CMAKE_CURRENT_SOURCE_DIR}/pthreadwin32 ${CMAKE_CURRENT_SOURCE_DIR}/zlib)
+  endif
   target_include_directories(glucose INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/glucose)
 endif()
 

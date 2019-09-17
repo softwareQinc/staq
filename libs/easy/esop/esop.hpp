@@ -52,7 +52,7 @@ using esops_t = std::vector<esop_t>;
  */
 inline unsigned min_pairwise_distance( const esop_t& esop )
 {
-  auto min = std::numeric_limits<unsigned>::max();
+  auto min = (std::numeric_limits<unsigned>::max)();
   for ( auto i = 0u; i < esop.size(); ++i )
   {
     for ( auto j = i + 1; j < esop.size(); ++j )
