@@ -33,6 +33,7 @@
 #include "expr.hpp"
 
 #include <functional>
+#include <vector>
 
 namespace synthewareQ {
 namespace ast {
