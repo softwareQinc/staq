@@ -25,6 +25,8 @@
 #include "ast.hpp"
 #include "visitor.hpp"
 
+#include <unordered_map>
+
 /**
  * \file ast/semantic.hpp
  * \brief Semantic analysis for syntax trees
@@ -63,7 +65,7 @@ namespace ast {
    * Checks for anything that could cause a run-time error -- notably, 
    * type errors, invalid uniform gates, etc.
    */
-  class SemanticChecker : public Visitor {
+  class SemanticChecker final : public Visitor {
   public:
 
     bool run(Program& prog) {
@@ -149,7 +151,7 @@ namespace ast {
           std::cerr << " quantum arguments, got " << gate.num_qargs() << "\n";
           error_ = true;
         } else {
-          gate.foreach_carg([this](auto& expr){ expr.accept(*this); });
+          gate.foreach_carg([this](Expr& expr){ expr.accept(*this); });
 
           std::vector<std::optional<BitType> > types(ty.num_q_params, BitType::Qubit);
           check_uniform(gate.qargs(), types);
@@ -171,7 +173,7 @@ namespace ast {
           set(param, BitType::Qubit);
         }
 
-        decl.foreach_stmt([this](auto& gate){ gate.accept(*this); });
+        decl.foreach_stmt([this](Gate& gate){ gate.accept(*this); });
 
         pop_scope();
 
@@ -213,7 +215,7 @@ namespace ast {
     void visit(Program& prog) {
       push_scope();
 
-      prog.foreach_stmt([this](auto& stmt){ stmt.accept(*this); });
+      prog.foreach_stmt([this](Stmt& stmt){ stmt.accept(*this); });
 
       pop_scope();
     }
