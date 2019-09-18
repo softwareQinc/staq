@@ -21,7 +21,7 @@ matrix:
           before_install:
               - rm -rf /usr/local/include/c++
               - brew update
-              - brew install gcc7
+              - brew install gcc@7
               - export CXX="g++-7" CC="gcc-7"
               - sudo softwareupdate -i "Command Line Tools (macOS Mojave version 10.14) for Xcode-10.2"
 
