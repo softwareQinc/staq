@@ -25,6 +25,12 @@ matrix:
               - export CXX="g++-7" CC="gcc-7"
               - sudo softwareupdate -i "Command Line Tools (macOS Mojave version 10.14) for Xcode-10.2"
 
+        # Windows VS 2017
+        - os: windows
+          compiler: dotnet
+          before_install:
+              - alias make="dotnet build synthewareQ.sln"
+
 notifications:
   email: false
 
@@ -34,4 +40,4 @@ script:
   # Build the examples
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug && make
