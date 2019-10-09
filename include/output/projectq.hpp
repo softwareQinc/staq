@@ -31,7 +31,7 @@
 namespace synthewareQ {
 namespace output {
 
-  /** \brief Equivalent quil standard gates for qasm standard gates */
+  /** \brief Equivalent projectQ standard gates for qasm standard gates */
   std::unordered_map<std::string, std::string> qasmstd_to_projectq {
     { "id", "ops.Rz(0)" },
     { "x", "ops.XGate" },
@@ -272,6 +272,7 @@ namespace output {
             os_ << prefix_ << eng_ << ".deallocate_qubit(" << name << "[" << i << "])\n";
           }
         }
+        ancillas_.clear();
         prefix_ = "";
         os_ << "\n";
 
