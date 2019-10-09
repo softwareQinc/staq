@@ -140,6 +140,11 @@ namespace output {
         expr.subexp().accept(*this);
         os_ << ")";
         break;
+      case ast::UnaryOp::Exp:
+        os_ << "ExpD(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
       default:
         break;
       }

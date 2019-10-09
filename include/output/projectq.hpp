@@ -94,16 +94,26 @@ namespace output {
     }
 
     void visit(ast::UExpr& expr) {
-      os_ << expr.op();
-      if (expr.op() == ast::UnaryOp::Neg) {
+      switch(expr.op()) {
+      case ast::UnaryOp::Neg: {
         auto tmp = ambiguous_;
         ambiguous_ = true;
+        os_ << "-";
         expr.subexp().accept(*this);
         ambiguous_ = tmp;
-      } else {
+        break;
+      }
+      case ast::UnaryOp::Ln:
+        os_ << "log(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      default:
+        os_ << expr.op();
         os_ << "(";
         expr.subexp().accept(*this);
         os_ << ")";
+        break;
       }
     }
 

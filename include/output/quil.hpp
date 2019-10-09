@@ -100,18 +100,45 @@ namespace output {
       }
       ambiguous_ = tmp;
     }
-
+    
     void visit(ast::UExpr& expr) {
-      os_ << expr.op();
-      if (expr.op() == ast::UnaryOp::Neg) {
+      switch(expr.op()) {
+      case ast::UnaryOp::Neg: {
         auto tmp = ambiguous_;
         ambiguous_ = true;
+        os_ << "-";
         expr.subexp().accept(*this);
         ambiguous_ = tmp;
-      } else {
-        os_ << "(";
+        break;
+      }
+      case ast::UnaryOp::Sin:
+        os_ << "sin(";
         expr.subexp().accept(*this);
         os_ << ")";
+        break;
+      case ast::UnaryOp::Cos:
+        os_ << "cos(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      case ast::UnaryOp::Tan:
+        std::cerr << "Error: tan not supported by quil\n";
+        break;
+      case ast::UnaryOp::Ln:
+        std::cerr << "Error: ln not supported by quil\n";
+        break;
+      case ast::UnaryOp::Sqrt:
+        os_ << "sqrt(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      case ast::UnaryOp::Exp:
+        os_ << "exp(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      default:
+        break;
       }
     }
 
