@@ -111,33 +111,17 @@ namespace output {
         ambiguous_ = tmp;
         break;
       }
-      case ast::UnaryOp::Sin:
-        os_ << "sin(";
-        expr.subexp().accept(*this);
-        os_ << ")";
-        break;
-      case ast::UnaryOp::Cos:
-        os_ << "cos(";
-        expr.subexp().accept(*this);
-        os_ << ")";
-        break;
       case ast::UnaryOp::Tan:
         std::cerr << "Error: tan not supported by quil\n";
         break;
       case ast::UnaryOp::Ln:
         std::cerr << "Error: ln not supported by quil\n";
         break;
-      case ast::UnaryOp::Sqrt:
-        os_ << "sqrt(";
-        expr.subexp().accept(*this);
-        os_ << ")";
-        break;
-      case ast::UnaryOp::Exp:
-        os_ << "exp(";
-        expr.subexp().accept(*this);
-        os_ << ")";
-        break;
       default:
+        os_ << expr.op();
+        os_ << "(";
+        expr.subexp().accept(*this);
+        os_ << ")";
         break;
       }
     }
