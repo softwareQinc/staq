@@ -59,7 +59,7 @@ namespace output {
     struct config {
       bool driver = false;
       std::string ns = "Quantum.SynthewareQ";
-      std::string opname = "QasmCircuit";
+      std::string opname = "Main";
     };
 
     QSharpOutputter(std::ostream& os) : Visitor(), os_(os) {}
@@ -80,37 +80,73 @@ namespace output {
     // Expressions
     void visit(ast::BExpr& expr) {
       auto tmp = ambiguous_;
-      ambiguous_ = true;
-      if (tmp) {
-        os_ << "(";
+
+      if (expr.op() == ast::BinaryOp::Pow) {
+        ambiguous_ = false;
+        // Override since ^ is strictly integral in Q#
+        os_ << "PowD(";
         expr.lexp().accept(*this);
-        os_ << expr.op();
+        os_ << ", ";
         expr.rexp().accept(*this);
-        os_ << ")";
       } else {
-        expr.lexp().accept(*this);
-        os_ << expr.op();
-        expr.rexp().accept(*this);
+        ambiguous_ = true;
+        if (tmp) {
+          os_ << "(";
+          expr.lexp().accept(*this);
+          os_ << expr.op();
+          expr.rexp().accept(*this);
+          os_ << ")";
+        } else {
+          expr.lexp().accept(*this);
+          os_ << expr.op();
+          expr.rexp().accept(*this);
+        }
       }
       ambiguous_ = tmp;
     }
 
     void visit(ast::UExpr& expr) {
-      os_ << expr.op();
-      if (expr.op() == ast::UnaryOp::Neg) {
+      switch(expr.op()) {
+      case ast::UnaryOp::Neg: {
         auto tmp = ambiguous_;
         ambiguous_ = true;
+        os_ << "-";
         expr.subexp().accept(*this);
         ambiguous_ = tmp;
-      } else {
-        os_ << "(";
+        break;
+      }
+      case ast::UnaryOp::Sin:
+        os_ << "Sin(";
         expr.subexp().accept(*this);
         os_ << ")";
+        break;
+      case ast::UnaryOp::Cos:
+        os_ << "Cos(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      case ast::UnaryOp::Tan:
+        os_ << "Tan(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      case ast::UnaryOp::Ln:
+        os_ << "Log(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      case ast::UnaryOp::Sqrt:
+        os_ << "Sqrt(";
+        expr.subexp().accept(*this);
+        os_ << ")";
+        break;
+      default:
+        break;
       }
     }
 
     void visit(ast::PiExpr&) {
-      os_ << "pi";
+      os_ << "PI()";
     }
 
     void visit(ast::IntExpr& expr) {
@@ -215,10 +251,11 @@ namespace output {
         decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
 
         // Reset all local ancillas
-        for (auto& name : locals_) {
-          os_ << prefix_ << "ResetAll(" << name << ");\n";
+        os_ << "\n";
+        for (auto it = locals_.rbegin(); it != locals_.rend(); it++) {
+          os_ << prefix_ << "ResetAll(" << *it << ");\n";
           prefix_.resize(prefix_.size() - 4);
-          os_ << "}\n";
+          os_ << prefix_ << "}\n";
         }
         locals_.clear();
 
@@ -250,12 +287,13 @@ namespace output {
     
     // Program
     void visit(ast::Program& prog) {
-      os_ << prefix_ << "namespace " << config_.ns << "{\n";
+      os_ << prefix_ << "namespace " << config_.ns << " {\n";
       prefix_ += "    ";
 
       os_ << prefix_ << "open Microsoft.Quantum.Intrinsic;\n";
       os_ << prefix_ << "open Microsoft.Quantum.Convert;\n";
       os_ << prefix_ << "open Microsoft.Quantum.Canon;\n";
+      os_ << prefix_ << "open Microsoft.Quantum.Math;\n\n";
 
       // QASM U gate
       os_ << prefix_ << "operation U(theta : Double, phi : Double, lambda : Double, q : Qubit) : Unit {\n";
@@ -279,8 +317,21 @@ namespace output {
         if (typeid(stmt) != typeid(ast::GateDecl))
             stmt.accept(*this);
         });
+
+      // Reset all qubits
+      os_ << "\n";
+      for (auto it = locals_.rbegin(); it != locals_.rend(); it++) {
+        os_ << prefix_ << "ResetAll(" << *it << ");\n";
+        prefix_.resize(prefix_.size() - 4);
+        os_ << prefix_ << "}\n";
+      }
+      locals_.clear();
+
+      // Close operation
       prefix_.resize(prefix_.size() - 4);
-      os_ << prefix_ <<  "}\n";
+      os_ << prefix_ << "}\n";
+
+      // Close namespace
       prefix_.resize(prefix_.size() - 4);
       os_ << prefix_ <<  "}\n";
     }

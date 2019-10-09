@@ -17,7 +17,7 @@ h a[1];
 t a[1];
 h a[1];
 
-U(pi,pi,pi) a;
+U(sin(pi),pi,pi) a;
 CX a,b;
 reset a;
 measure a -> c;
