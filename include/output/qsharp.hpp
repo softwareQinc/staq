@@ -27,6 +27,7 @@
 #include "ast/ast.hpp"
 
 #include <typeinfo>
+#include <iomanip>
 
 namespace synthewareQ {
 namespace output {
@@ -155,11 +156,15 @@ namespace output {
     }
 
     void visit(ast::IntExpr& expr) {
-      os_ << std::showpoint << (double)expr.value();
+      os_ << expr.value() << ".0";
     }
 
     void visit(ast::RealExpr& expr) {
-      os_ << std::showpoint << expr.value();
+      auto tmp = expr.value();
+      
+      os_ << tmp;
+      if (tmp - floor(tmp) == 0)
+        os_ << ".0";
     }
 
     void visit(ast::VarExpr& expr) {
