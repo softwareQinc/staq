@@ -59,7 +59,7 @@ namespace output {
     struct config {
       bool driver = false;
       std::string ns = "Quantum.SynthewareQ";
-      std::string opname = "Main";
+      std::string opname = "Circuit";
     };
 
     QSharpOutputter(std::ostream& os) : Visitor(), os_(os) {}
@@ -155,11 +155,11 @@ namespace output {
     }
 
     void visit(ast::IntExpr& expr) {
-      os_ << expr.value();
+      os_ << std::showpoint << (double)expr.value();
     }
 
     void visit(ast::RealExpr& expr) {
-      os_ << expr.value();
+      os_ << std::showpoint << expr.value();
     }
 
     void visit(ast::VarExpr& expr) {
@@ -168,7 +168,10 @@ namespace output {
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
-      os_ << prefix_ << "set " << stmt.c_arg() << " = M(" << stmt.q_arg() << ");\t// " << stmt;
+      // Arrays are immutable in Q#
+      os_ << prefix_ << "set " << stmt.c_arg().var();
+      os_ << " w/= " << *(stmt.c_arg().offset());
+      os_ << " <- M(" << stmt.q_arg() << ");\t// " << stmt;
     }
 
     void visit(ast::ResetStmt& stmt) {
