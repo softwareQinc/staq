@@ -141,7 +141,7 @@ namespace output {
 
     // Gates
     void visit(ast::UGate& gate) {
-      os_ << prefix_ << "UGate";
+      os_ << prefix_ << "UGate(";
       gate.theta().accept(*this);
       os_ << ", ";
       gate.phi().accept(*this);
@@ -252,14 +252,15 @@ namespace output {
 
 	os_ << "        return [\n";
         prefix_ = "            ";
-        decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); os_ << ",\n"; });
+        decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
 	os_ << "        ]\n";
+
+        if (decl.c_params().size() == 0)
+          os_ << decl.id() << " = " << decl.id() << "Init()\n";
 
         prefix_ = "";
         os_ << "\n";
 
-        if (decl.c_params().size() == 0)
-          os_ << decl.id() << " = " << decl.id() << "Init()\n";
       }
     }
 
@@ -269,8 +270,8 @@ namespace output {
 
     void visit(ast::RegisterDecl& decl) {
       if (decl.is_quantum()) {
-        os_ << prefix_ << decl.id() << " = [cirq.NamedQubit(" << decl.id() << "[i] for i in range(";
-	os_ << decl.size() << "]\n";
+        os_ << prefix_ << decl.id() << " = [cirq.NamedQubit(" << decl.id() << "[i]) for i in range(";
+	os_ << decl.size() << ")]\n";
       }
     }
 
@@ -282,11 +283,7 @@ namespace output {
     void visit(ast::Program& prog) {
       os_ << "import cirq\n";
       os_ << "import numpy as np\n";
-      os_ << "from cmath import pi,exp,sin,cos,tan,log as ln,sqrt\n";
-
-      // Convenience functions
-      os_ << "def SdagGate(): return ops.Sdag\n";
-      os_ << "def TdagGate(): return ops.Tdag\n";
+      os_ << "from cmath import pi,exp,sin,cos,tan,log as ln,sqrt\n\n";
 
       // QASM U gate
       os_ << "class UGate(cirq.SingleQubitMatrixGate):\n";
@@ -295,7 +292,7 @@ namespace output {
       os_ << "                          -exp(-1j*(self.phi-self.lambd)/2)*sin(self.theta/2)],\n";
       os_ << "                         [exp(1j*(self.phi-self.lambd)/2)*sin(self.theta/2),\n";
       os_ << "                          exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n";
-      os_ << "        cirq.SingleQubitMatrixGate.__init__(self, mat)\n\n";
+      os_ << "        cirq.SingleQubitMatrixGate.__init__(self, mat)\n";
       os_ << "        self.theta = theta\n";
       os_ << "        self.phi = phi\n";
       os_ << "        self.lambd = lambd\n\n";
@@ -324,7 +321,7 @@ namespace output {
 
       // Program body
       prog.foreach_stmt([this](auto& stmt) {
-          if (typeid(stmt) != typeid(ast::GateDecl))
+          if (typeid(stmt) != typeid(ast::GateDecl) && typeid(stmt) != typeid(ast::RegisterDecl))
             stmt.accept(*this);
         });
 
