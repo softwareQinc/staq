@@ -24,7 +24,7 @@
 
 #include "parser/parser.hpp"
 #include "transformations/desugar.hpp"
-#include "output/projectq.hpp"
+#include "output/cirq.hpp"
 
 #include <CLI/CLI.hpp>
 
@@ -33,7 +33,7 @@ using namespace synthewareQ;
 int main(int argc, char** argv) {
   std::string filename = "";
     
-  CLI::App app{ "QASM to projectQ transpiler" };
+  CLI::App app{ "QASM to cirq transpiler" };
 
   app.add_option("-o", filename, "Output to a file");
 
@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
   if (program) {
     transformations::desugar(*program);
     if (filename == "")
-      output::output_projectq(*program);
+      output::output_cirq(*program);
     else
-      output::write_projectq(*program, filename);
+      output::write_cirq(*program, filename);
   } else {
     std::cerr << "Parsing failed\n";
   }

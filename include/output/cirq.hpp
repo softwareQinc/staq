@@ -31,43 +31,39 @@
 namespace synthewareQ {
 namespace output {
 
-  /** \brief Equivalent projectQ standard gates for qasm standard gates */
-  std::unordered_map<std::string, std::string> qasmstd_to_projectq {
-    { "id", "ops.Rz(0)" },
-    { "x", "ops.XGate" },
-    { "y", "ops.YGate" },
-    { "z", "ops.ZGate" },
-    { "h", "ops.HGate" },
-    { "s", "ops.SGate" },
-    { "sdg", "SdagGate" },
-    { "t", "ops.TGate" },
-    { "tdg", "TdagGate" },
-    { "cx", "CNOTGate" },
-    { "cz", "CZGate" },
-    { "ccx", "CCXGate" },
-    { "rx", "ops.Rx" },
-    { "ry", "ops.Ry" },
-    { "rz", "ops.Rz" },
-    { "u1", "ops.Rz" },
-    { "crz", "ops.CRz" },
-    { "cu1", "ops.CRz" } };
+  /** \brief Equivalent cirq standard gates for qasm standard gates */
+  std::unordered_map<std::string, std::string> qasmstd_to_cirq {
+    { "id", "cirq.I" },
+    { "x", "cirq.X" },
+    { "y", "cirq.Y" },
+    { "z", "cirq.Z" },
+    { "h", "cirq.H" },
+    { "s", "cirq.S" },
+    { "sdg", "cirq.S**(-1)" },
+    { "t", "cirq.T" },
+    { "tdg", "cirq.T**(-1)" },
+    { "cx", "cirq.CNOT" },
+    { "cz", "cirq.CZ" },
+    { "ccx", "cirq.CCX" },
+    { "rx", "cirq.Rx" },
+    { "ry", "cirq.Ry" },
+    { "rz", "cirq.Rz" },
+    { "u1", "cirq.Rz" } };
 
-  class ProjectQOutputter final : public ast::Visitor {
+  class CirqOutputter final : public ast::Visitor {
   public:
 
     struct config {
-      bool standalone = true;
-      std::string circuit_name = "qasmcircuit";
+      std::string circuit_name = "circuit";
     };
 
-    ProjectQOutputter(std::ostream& os) : Visitor(), os_(os) {}
-    ProjectQOutputter(std::ostream& os, const config& params) : Visitor(), os_(os), config_(params) {}
-    ~ProjectQOutputter() = default;
+    CirqOutputter(std::ostream& os) : Visitor(), os_(os) {}
+    CirqOutputter(std::ostream& os, const config& params) : Visitor(), os_(os), config_(params) {}
+    ~CirqOutputter() = default;
 
     void run(ast::Program& prog) {
       prefix_ = "";
       ambiguous_ = false;
-      ancillas_.clear();
 
       prog.accept(*this);
     }
@@ -130,75 +126,69 @@ namespace output {
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
-      os_ << prefix_ << "ops.Measure | " << stmt.q_arg() << "\t# " << stmt;
-      os_ << prefix_ << stmt.c_arg() << " = int(" << stmt.q_arg() << ")\n";
+      os_ << prefix_ << config_.circuit_name << ".append(";
+      os_ << "cirq.measure([" << stmt.q_arg() << "], [" << stmt.c_arg() << "])"; 
+      os_ << ",\n";
     }
 
     void visit(ast::ResetStmt& stmt) {
-      os_ << prefix_ << "Reset | " << stmt.arg() << "\t# " << stmt;
+      throw std::logic_error("Qubit reset not yet supported in cirq");
     }
 
     void visit(ast::IfStmt& stmt) {
-      os_ << prefix_ << "if sum(v<<i for i, v in enumerate(" << stmt.var() << "[::-1])) == (";
-      os_ << stmt.cond() << "%len(" << stmt.var() << "):";
-      os_ << "# " << stmt;
-
-      prefix_ += "    ";
-      stmt.then().accept(*this);
-      prefix_.resize(prefix_.size() - 4);
+      throw std::logic_error("Classical control not yet supported in cirq");
     }
 
     // Gates
     void visit(ast::UGate& gate) {
-      os_ << prefix_ << "UGate(";
+      os_ << prefix_ << "UGate";
       gate.theta().accept(*this);
       os_ << ", ";
       gate.phi().accept(*this);
       os_ << ", ";
       gate.lambda().accept(*this);
-      os_ << ") | ";
+      os_ << ")(";
       gate.arg().accept(*this);
-      os_ << "\t# " << gate;
+      os_ << "),\n";
     }
 
     void visit(ast::CNOTGate& gate) {
-      os_ << prefix_ << "ops.CNOT | (";
+      os_ << prefix_ << "cirq.CNOT(";
       gate.ctrl().accept(*this);
       os_ << ", ";
       gate.tgt().accept(*this);
-      os_ << ")\t#" << gate;
+      os_ << "),\n";
     }
 
     void visit(ast::BarrierGate& gate) {
-      os_ << prefix_ << "ops.Barrier | (";
-      for (int i = 0; i < gate.num_args(); i++) {
-        if (i > 0)
-          os_ << ", ";
-        gate.arg(i).accept(*this);
-      }
-      os_ <<  ")\t# " << gate;
+      os_ << prefix_ << "# " << gate;
     }
 
     void visit(ast::DeclaredGate& gate) {
       os_ << prefix_;
 
-      if (auto it = qasmstd_to_projectq.find(gate.name()); it != qasmstd_to_projectq.end())
-        os_ << it->second << "(";
+      if (auto it = qasmstd_to_cirq.find(gate.name()); it != qasmstd_to_cirq.end())
+        os_ << it->second;
       else
-        os_ << gate.name() << "(";
+        os_ << gate.name();
 
-      for (int i = 0; i < gate.num_cargs(); i++) {
-        if (i != 0)
-          os_ << ", ";
-        gate.carg(i).accept(*this);
+      if (gate.num_cargs() > 0) {
+        os_ << "(";
+        for (int i = 0; i < gate.num_cargs(); i++) {
+          if (i != 0)
+            os_ << ", ";
+          gate.carg(i).accept(*this);
+        }
+        os_ << ")";
       }
-      os_ << ") | (";
+
+      os_ << "(";
       for (int i = 0; i < gate.num_qargs(); i++) {
         if (i > 0)
           os_ << ", ";
         gate.qarg(i).accept(*this);
       }
-      os_ << ")\t# " << gate;
+      os_ << "),\n";
     }
 
     // Declarations
@@ -206,20 +196,19 @@ namespace output {
       if (decl.is_opaque())
         throw std::logic_error("Opaque declarations not supported");
       
-      if (qasmstd_to_projectq.find(decl.id()) == qasmstd_to_projectq.end()) {
+      if (qasmstd_to_cirq.find(decl.id()) == qasmstd_to_cirq.end()) {
 
-        os_ << "class " << decl.id() << "(ops.BasicGate):";
-        os_ << "\t# " << "gate " << decl.id() << "\n";
+        if (decl.c_params().size() == 0)
+          os_ << "class " << decl.id() << "Init(cirq.Gate):\n";
+	else
+          os_ << "class " << decl.id() << "(cirq.Gate):\n";
 
         // Class instantiation
-        os_ << "    def __init__(self, ";
+        os_ << "    def __init__(self";
         for (auto i = 0; i < decl.c_params().size(); i++) {
-          if (i != 0)
-            os_ << ", ";
-          os_ << sanitize(decl.c_params()[i]);
+          os_ << ", " << sanitize(decl.c_params()[i]);
         }
         os_ << "):\n";
-        os_ << "        ops.BasicGate.__init__(self)\n";
         for (auto param : decl.c_params()) {
           auto tmp = sanitize(param);
           os_ << "        self." << tmp << " = " << tmp << "\n";
@@ -251,15 +240,8 @@ namespace output {
         os_ << "    def __ne__(self, other):\n";
         os_ << "        return not self.__eq__(other)\n\n";
 
-        // Hashing
-        os_ << "    def __hash__(self):\n";
-        os_ << "        return hash(str(self))\n\n";
-
         // Implementation as an override of ||
-        os_ << "    def __or__(self, qubits):\n";
-        auto tmp = eng_;
-        eng_ = "qubits[0].engine";
-
+        os_ << "    def _decompose_(self, qubits):\n";
         os_ << "        if len(qubits) != " << decl.q_params().size() << ":\n";
         os_ << "            raise TypeError(\"Expected " << decl.q_params().size()
                                                          << " qubits, given \" + len(qubits))\n";
@@ -268,71 +250,58 @@ namespace output {
         }
         os_ <<"\n";
 
-        prefix_ = "        ";
-        decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
+	os_ << "        return [\n";
+        prefix_ = "            ";
+        decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); os_ << ",\n"; });
+	os_ << "        ]\n";
 
-        // deallocate all ancillas
-        for (auto& [name, size] : ancillas_) {
-          for (int i = 0; i < size; i++) {
-            os_ << prefix_ << eng_ << ".deallocate_qubit(" << name << "[" << i << "])\n";
-          }
-        }
-        ancillas_.clear();
         prefix_ = "";
         os_ << "\n";
 
-        eng_ = tmp;
+        if (decl.c_params().size() == 0)
+          os_ << decl.id() << " = " << decl.id() << "Init()\n";
       }
     }
 
     void visit(ast::OracleDecl& decl) {
-      throw std::logic_error("ProjectQ has no support for oracle declarations via logic files");
+      throw std::logic_error("Cirq has no support for oracle declarations via logic files");
     }
 
     void visit(ast::RegisterDecl& decl) {
       if (decl.is_quantum()) {
-        os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qureg(" << decl.size() << ")";
-      } else {
-        os_ << prefix_ << decl.id() << " = [None] * " << decl.size();
+        os_ << prefix_ << decl.id() << " = [cirq.NamedQubit(" << decl.id() << "[i] for i in range(";
+	os_ << decl.size() << "]\n";
       }
-      os_ << "\t# " << decl;
     }
 
     void visit(ast::AncillaDecl& decl) {
-      os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qureg(" << decl.size() << ")";
-      os_ << "\t# " << decl;
-      ancillas_.push_back(std::make_pair(decl.id(), decl.size()));
+      throw std::logic_error("Cirq has no support for local ancillas");
     }
     
     // Program
     void visit(ast::Program& prog) {
-      os_ << "from projectq import MainEngine, ops\n";
+      os_ << "import cirq\n";
+      os_ << "import numpy as np\n";
       os_ << "from cmath import pi,exp,sin,cos,tan,log as ln,sqrt\n";
-      os_ << "import numpy as np\n\n";
 
       // Convenience functions
       os_ << "def SdagGate(): return ops.Sdag\n";
       os_ << "def TdagGate(): return ops.Tdag\n";
-      os_ << "def CNOTGate(): return ops.CNOT\n";
-      os_ << "def CZGate(): return ops.CZ\n";
-      os_ << "def CCXGate(): return ops.Toffoli\n\n";
 
       // QASM U gate
-      os_ << "class UGate(ops.BasicGate):\n";
+      os_ << "class UGate(cirq.SingleQubitMatrixGate):\n";
       os_ << "    def __init__(self, theta, phi, lambd):\n";
-      os_ << "        ops.BasicGate.__init__(self)\n";
+      os_ << "        mat = np.matrix([[exp(-1j*(self.phi+self.lambd)/2)*cos(self.theta/2),\n";
+      os_ << "                          -exp(-1j*(self.phi-self.lambd)/2)*sin(self.theta/2)],\n";
+      os_ << "                         [exp(1j*(self.phi-self.lambd)/2)*sin(self.theta/2),\n";
+      os_ << "                          exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n";
+      os_ << "        cirq.SingleQubitMatrixGate.__init__(self, mat)\n\n";
       os_ << "        self.theta = theta\n";
       os_ << "        self.phi = phi\n";
       os_ << "        self.lambd = lambd\n\n";
       os_ << "    def __str__(self):\n";
       os_ << "        return str(self.__class__.__name__) + \"(\" + str(self.theta) + \",\" \\\n";
       os_ << "               + str(self.phi) + \",\" + str(self.lambd) + \")\"\n\n";
-      os_ << "    def tex_str(self):\n";
-      os_ << "        return str(self.__class__.__name__) + \"$(\" + str(self.theta) + \",\" \\\n";
-      os_ << "               + str(self.phi) + \",\" + str(self.lambd) + \")$\"\n\n";
-      os_ << "    def get_inverse(self):\n";
-      os_ << "        tmp = 2 * pi\n";
-      os_ << "        return self.__class__(-self.theta + tmp, -self.lambd + tmp, -self.phi + tmp)\n\n";
       os_ << "    def __eq__(self, other):\n";
       os_ << "        if isinstance(other, self.__class__):\n";
       os_ << "            return self.theta == other.theta \\\n";
@@ -342,37 +311,15 @@ namespace output {
       os_ << "            return False\n\n";
       os_ << "    def __ne__(self, other):\n";
       os_ << "        return not self.__eq__(other)\n\n";
-      os_ << "    def __hash__(self):\n";
-      os_ << "        return hash(str(self))\n\n";
-      os_ << "    @property\n";
-      os_ << "    def matrix(self):\n";
-      os_ << "        return np.matrix([[exp(-1j*(self.phi+self.lambd)/2)*cos(self.theta/2),\n";
-      os_ << "                           -exp(-1j*(self.phi-self.lambd)/2)*sin(self.theta/2)],\n";
-      os_ << "                          [exp(1j*(self.phi-self.lambd)/2)*sin(self.theta/2),\n";
-      os_ << "                           exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n\n";
 
-      // QASM reset statement
-      os_ << "class ResetGate(ops.FastForwardingGate):\n";
-      os_ << "    def __str__(self):\n";
-      os_ << "        return \"Reset\"\n\n";
-      os_ << "    def __or__(self, qubit):\n";
-      os_ << "        ops.Measure | qubit\n";
-      os_ << "        if int(qubit):\n";
-      os_ << "            ops.X | qubit\n";
-      os_ << "Reset = ResetGate()\n\n";
-
-      // Gate declarations
+      // Gate & qubit declarations
       prog.foreach_stmt([this](auto& stmt) {
-          if (typeid(stmt) == typeid(ast::GateDecl))
+          if (typeid(stmt) == typeid(ast::GateDecl) || typeid(stmt) == typeid(ast::RegisterDecl))
             stmt.accept(*this);
         });
 
-      if (config_.standalone) { // Standalone simulation
-        os_ << "if __name__ == \"__main__\":\n";
-        os_ << "    " << eng_ << " = MainEngine()\n";
-      } else {                  // Otherwise put file into a function
-        os_ << "def " << config_.circuit_name << "(" << eng_ << "):\n";
-      }
+      os_ << config_.circuit_name << " = cirq.Circuit()\n";
+      os_ << config_.circuit_name << ".append([\n";
       prefix_ = "    ";
 
       // Program body
@@ -381,7 +328,7 @@ namespace output {
             stmt.accept(*this);
         });
 
-      os_ << "\n";
+      os_ << "])\n\nprint(" << config_.circuit_name << ")";
       prefix_ = "";
     }
 
@@ -390,8 +337,6 @@ namespace output {
     config config_;
 
     std::string prefix_ = "";
-    std::string eng_ = "eng";
-    std::list<std::pair<std::string, int> > ancillas_{};
     bool ambiguous_ = false;
 
     // Hack because lambda is reserved by python
@@ -402,19 +347,19 @@ namespace output {
 
   };
 
-  void output_projectq(ast::Program& prog) {
-    ProjectQOutputter outputter(std::cout);
+  void output_cirq(ast::Program& prog) {
+    CirqOutputter outputter(std::cout);
     outputter.run(prog);
   }
 
-  void write_projectq(ast::Program& prog, std::string fname) {
+  void write_cirq(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);
 
     if (!ofs.good()) {
       std::cerr << "Error: failed to open output file " << fname << "\n";
     } else {
-      ProjectQOutputter outputter(ofs);
+      CirqOutputter outputter(ofs);
       outputter.run(prog);
     }
 
