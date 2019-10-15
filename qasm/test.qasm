@@ -19,7 +19,7 @@ h a[1];
 
 U(sin(pi),pi,pi) a;
 CX a,b;
-reset a;
+//reset a;
 measure a -> c;
 barrier b, a[0];
 cx a[1],b;

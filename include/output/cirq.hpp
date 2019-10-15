@@ -39,9 +39,9 @@ namespace output {
     { "z", "cirq.Z" },
     { "h", "cirq.H" },
     { "s", "cirq.S" },
-    { "sdg", "cirq.S**(-1)" },
+    { "sdg", "(cirq.S**(-1))" },
     { "t", "cirq.T" },
-    { "tdg", "cirq.T**(-1)" },
+    { "tdg", "(cirq.T**(-1))" },
     { "cx", "cirq.CNOT" },
     { "cz", "cirq.CZ" },
     { "ccx", "cirq.CCX" },
@@ -126,8 +126,7 @@ namespace output {
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
-      os_ << prefix_ << config_.circuit_name << ".append(";
-      os_ << "cirq.measure([" << stmt.q_arg() << "], [" << stmt.c_arg() << "])"; 
+      os_ << prefix_ << "cirq.measure(" << stmt.q_arg() << ", key=\"" << stmt.c_arg() << "\")"; 
       os_ << ",\n";
     }
 
@@ -200,7 +199,7 @@ namespace output {
 
         if (decl.c_params().size() == 0)
           os_ << "class " << decl.id() << "Init(cirq.Gate):\n";
-	else
+        else
           os_ << "class " << decl.id() << "(cirq.Gate):\n";
 
         // Class instantiation
@@ -213,6 +212,7 @@ namespace output {
           auto tmp = sanitize(param);
           os_ << "        self." << tmp << " = " << tmp << "\n";
         }
+        os_ << "        return\n";
         os_ << "\n";
 
         // String representation
@@ -250,10 +250,15 @@ namespace output {
         }
         os_ <<"\n";
 
-	os_ << "        return [\n";
+        os_ << "        return [\n";
         prefix_ = "            ";
         decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
-	os_ << "        ]\n";
+        os_ << "        ]\n";
+
+        // num_qubits (abstract method) override
+        os_ << "    def num_qubits(self):\n";
+        os_ << "        return " << decl.q_params().size();
+        os_ << "\n";
 
         if (decl.c_params().size() == 0)
           os_ << decl.id() << " = " << decl.id() << "Init()\n";
@@ -270,7 +275,7 @@ namespace output {
 
     void visit(ast::RegisterDecl& decl) {
       if (decl.is_quantum()) {
-        os_ << prefix_ << decl.id() << " = [cirq.NamedQubit(" << decl.id() << "[i]) for i in range(";
+        os_ << prefix_ << decl.id() << " = [cirq.NamedQubit(\"" << decl.id() << "[i]\") for i in range(";
 	os_ << decl.size() << ")]\n";
       }
     }
@@ -288,10 +293,10 @@ namespace output {
       // QASM U gate
       os_ << "class UGate(cirq.SingleQubitMatrixGate):\n";
       os_ << "    def __init__(self, theta, phi, lambd):\n";
-      os_ << "        mat = np.matrix([[exp(-1j*(self.phi+self.lambd)/2)*cos(self.theta/2),\n";
-      os_ << "                          -exp(-1j*(self.phi-self.lambd)/2)*sin(self.theta/2)],\n";
-      os_ << "                         [exp(1j*(self.phi-self.lambd)/2)*sin(self.theta/2),\n";
-      os_ << "                          exp(1j*(self.phi+self.lambd)/2)*cos(self.theta/2)]])\n";
+      os_ << "        mat = np.matrix([[exp(-1j*(phi+lambd)/2)*cos(theta/2),\n";
+      os_ << "                          -exp(-1j*(phi-lambd)/2)*sin(theta/2)],\n";
+      os_ << "                         [exp(1j*(phi-lambd)/2)*sin(theta/2),\n";
+      os_ << "                          exp(1j*(phi+lambd)/2)*cos(theta/2)]])\n";
       os_ << "        cirq.SingleQubitMatrixGate.__init__(self, mat)\n";
       os_ << "        self.theta = theta\n";
       os_ << "        self.phi = phi\n";
