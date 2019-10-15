@@ -28,11 +28,11 @@ matrix:
               - sudo softwareupdate -i "Command Line Tools (macOS Mojave version 10.14) for Xcode-10.2"
 
         # Windows VS 2017
-        - os: windows
-          compiler: dotnet
-          before_install:
-              - export CXX="dotnet" CC="dotnet"
-              - export BUILD="dotnet build synthewareQ.sln"
+        #- os: windows
+        #  compiler: dotnet
+        #  before_install:
+        #      - export CXX="dotnet" CC="dotnet"
+        #      - export BUILD="dotnet build synthewareQ.sln"
 
 notifications:
   email: false
