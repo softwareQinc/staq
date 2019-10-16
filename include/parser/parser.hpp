@@ -990,6 +990,14 @@ namespace parser {
     return parser.parse();
   }
 
+  ast::ptr<ast::Program> parse_istream(std::istream& is) {
+    Preprocessor pp;
+    Parser parser(pp);
 
-} /* namespace qasm */
-} /* namespace qpp */
+    pp.add_target_stream(std::shared_ptr<std::istream>(&is));
+
+    return parser.parse();
+  }
+
+} /* namespace parser */
+} /* namespace synthewareQ */
