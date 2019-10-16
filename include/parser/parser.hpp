@@ -368,6 +368,7 @@ namespace parser {
 
       auto q_params = parse_idlist();
 
+      consume_until(Token::Kind::semicolon);
       return std::make_unique<ast::GateDecl>(ast::GateDecl(pos, id.as_string(),
                                                        true, c_params, q_params, {}));
     }
@@ -979,22 +980,24 @@ namespace parser {
     return parser.parse();
   }
 
-  ast::ptr<ast::Program> parse_stdin() {
+  ast::ptr<ast::Program> parse_stdin(std::string name="") {
     Preprocessor pp;
     Parser parser(pp);
 
     // This is a bad idea, but it's necessary for automatic bookkeeping
     // accross all different forms and sources of source streams
-    pp.add_target_stream(std::shared_ptr<std::istream>(&std::cin, [](std::istream*){}));
+    pp.add_target_stream(std::shared_ptr<std::istream>(&std::cin, [](std::istream*){}), name);
 
     return parser.parse();
   }
 
-  ast::ptr<ast::Program> parse_istream(std::istream& is) {
+  ast::ptr<ast::Program> parse_string(const std::string& str, std::string name="") {
     Preprocessor pp;
     Parser parser(pp);
+    std::shared_ptr<std::istream> is = std::make_shared<std::istringstream>(str);
 
-    pp.add_target_stream(std::shared_ptr<std::istream>(&is));
+
+    pp.add_target_stream(is, name);
 
     return parser.parse();
   }
