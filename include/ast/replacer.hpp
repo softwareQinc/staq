@@ -292,7 +292,7 @@ namespace ast {
     }
   };
 
-  void replace_gates(ASTNode& node, std::unordered_map<int, std::list<ptr<Gate> > >&& replacements) {
+  inline void replace_gates(ASTNode& node, std::unordered_map<int, std::list<ptr<Gate> > >&& replacements) {
     GateReplacer replacer(std::move(replacements));
     node.accept(replacer);
   }

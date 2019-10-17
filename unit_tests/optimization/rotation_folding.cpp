@@ -30,7 +30,7 @@ using namespace synthewareQ;
 
 // Testing rotation folding optimization
 /******************************************************************************/
-TEST(Rotation_folding, TMerge) {
+TEST(Rotation_folding, T_Merge) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -46,7 +46,7 @@ TEST(Rotation_folding, TMerge) {
     "qreg q[1];\n" \
     "s q[0];\n";
 
-  auto program = parser::parse_string(pre, "TMerge.qasm");
+  auto program = parser::parse_string(pre, "t_merge.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -56,7 +56,7 @@ TEST(Rotation_folding, TMerge) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, TCancel) {
+TEST(Rotation_folding, T_Cancel) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -71,7 +71,7 @@ TEST(Rotation_folding, TCancel) {
     "\n" \
     "qreg q[1];\n";
 
-  auto program = parser::parse_string(pre, "TCancel.qasm");
+  auto program = parser::parse_string(pre, "t_cancel.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -81,7 +81,7 @@ TEST(Rotation_folding, TCancel) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, TNoMerge) {
+TEST(Rotation_folding, T_No_Merge) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -98,7 +98,7 @@ TEST(Rotation_folding, TNoMerge) {
     "t q[0];\n" \
     "x q[0];\n";
 
-  auto program = parser::parse_string(pre, "TNoMerge.qasm");
+  auto program = parser::parse_string(pre, "t_no_merge.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -108,7 +108,7 @@ TEST(Rotation_folding, TNoMerge) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, TConjMerge) {
+TEST(Rotation_folding, T_Conj_Merge) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -127,7 +127,7 @@ TEST(Rotation_folding, TConjMerge) {
     "x q[0];\n" \
     "h q[0];\ns q[0];\nh q[0];\n";
 
-  auto program = parser::parse_string(pre, "TConjMerge.qasm");
+  auto program = parser::parse_string(pre, "t_conj_merge.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -137,7 +137,7 @@ TEST(Rotation_folding, TConjMerge) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, RzMerge) {
+TEST(Rotation_folding, Rz_Merge) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -153,7 +153,7 @@ TEST(Rotation_folding, RzMerge) {
     "qreg q[1];\n" \
     "rz(0.392699) q[0];\n"; // pi/8 = 0.392699
 
-  auto program = parser::parse_string(pre, "RzMerge.qasm");
+  auto program = parser::parse_string(pre, "rz_merge.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -163,7 +163,7 @@ TEST(Rotation_folding, RzMerge) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, RxMerge) {
+TEST(Rotation_folding, Rx_Merge) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -179,7 +179,7 @@ TEST(Rotation_folding, RxMerge) {
     "qreg q[1];\n" \
     "rx(0.392699) q[0];\n"; // pi/8 = 0.392699
 
-  auto program = parser::parse_string(pre, "RxMerge.qasm");
+  auto program = parser::parse_string(pre, "rx_merge.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -189,7 +189,7 @@ TEST(Rotation_folding, RxMerge) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, TCNOTMerge) {
+TEST(Rotation_folding, T_CNOT_Merge) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -206,7 +206,7 @@ TEST(Rotation_folding, TCNOTMerge) {
     "cx q[0],q[1];\ncx q[0],q[1];\n" \
     "cx q[1],q[0];\ns q[0];\ncx q[1],q[0];\n";
 
-  auto program = parser::parse_string(pre, "TCNOTMerge.qasm");
+  auto program = parser::parse_string(pre, "t_cnot_merge.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;
@@ -216,7 +216,7 @@ TEST(Rotation_folding, TCNOTMerge) {
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(Rotation_folding, GlobalPhase) {
+TEST(Rotation_folding, Global_Phase) {
   std::string pre =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
@@ -236,7 +236,7 @@ TEST(Rotation_folding, GlobalPhase) {
     "h q[0];\ns q[0];\nh q[0];\ns q[0];\nh q[0];\ns q[0];\n" \
     "x q[0];\n";
 
-  auto program = parser::parse_string(pre, "GlobalPhase.qasm");
+  auto program = parser::parse_string(pre, "global_phase.qasm");
   optimization::fold_rotations(*program);
   std::stringstream ss;
   ss << *program;

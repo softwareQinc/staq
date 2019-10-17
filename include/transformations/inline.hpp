@@ -69,6 +69,9 @@ namespace transformations {
           prog.pos(), config_.ancilla_name, true, max_ancilla));
         prog.body().emplace_front(std::move(decl));
       }
+
+      // Final cleanup to remove ancilla declarations outside of function bodies
+      prog.accept(cleaner_);
     }
 
     std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::GateDecl& decl) override {
@@ -144,7 +147,6 @@ namespace transformations {
           auto new_gate = gate->clone();
           new_gate->accept(var_subst);
           new_gate->accept(ap_subst);
-          new_gate->accept(cleaner_);
           body.emplace_back(ast::ptr<ast::Gate>(new_gate));
         }
 
@@ -158,6 +160,7 @@ namespace transformations {
     /* Helper class */
     class Cleaner final : public Replacer {
     public:
+      void visit(ast::GateDecl& decl) override { } // Don't descend into gate declarations
       std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::AncillaDecl&) override {
         return std::list<ast::ptr<ast::Gate> >();
       }
