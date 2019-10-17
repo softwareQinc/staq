@@ -305,7 +305,7 @@ namespace ast {
         
   };
 
-  void check_source(Program& prog) {
+  inline void check_source(Program& prog) {
     SemanticChecker analysis;
     if (analysis.run(prog))
       throw SemanticError();

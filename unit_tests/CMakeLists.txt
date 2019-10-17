@@ -1,7 +1,11 @@
 set(target "unit_tests")
 
+include_directories(${CMAKE_SOURCE_DIR}/libs/googletest/include ${CMAKE_SOURCE_DIR}/libs/googletest)
 aux_source_directory(. FILES)
-aux_source_directory(parsing FILES)
+aux_source_directory(parser FILES)
+aux_source_directory(utils FILES)
+aux_source_directory(gates FILES)
+aux_source_directory(optimization FILES)
 add_executable(${target} main.cpp)
 if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)

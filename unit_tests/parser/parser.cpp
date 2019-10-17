@@ -30,14 +30,14 @@
 #include "parser/parser.hpp"
 #include "ast/semantic.hpp"
 
+#include <sstream>
+
 using namespace synthewareQ;
 
 // Parsing & semantic analysis unit tests
 /******************************************************************************/
-TEST(qasm_parsing, Syntax) {
-  std::unique_ptr<ast::Program> tmp;
-
-  std::string syntax =
+TEST(Parsing, Syntax_All) {
+  std::string src =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
     "qreg q[2];\n" \
@@ -55,109 +55,99 @@ TEST(qasm_parsing, Syntax) {
     "reset q;\n" \
     "measure q -> c;\n" \
     "if(c==1) a q[0];\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(syntax, "syntax.qasm"));
-  EXPECT_NO_THROW(ast::check_source(*tmp));
+  EXPECT_NO_THROW(parser::parse_string(src, "syntax_all.qasm"));
 }
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(qasm_parsing, StdLib) {
-  std::unique_ptr<ast::Program> tmp;
-
-  std::string std_gates =
+TEST(Parsing, Standard_Gates) {
+  std::string src =
     "OPENQASM 2.0;\n" \
     "include \"qelib1.inc\";\n" \
     "qreg q[3];\n" \
-    "u3(0,0,0) q[0];\n";
-    "u2(0,0) q[0];\n";
-    "u1(0) q[0];\n";
-    "cx q[0],q[1];\n";
-    "id(0) q[0];\n";
-    "x q[0];\n";
-    "y q[0];\n";
-    "z q[0];\n";
-    "h q[0];\n";
-    "s q[0];\n";
-    "sdg q[0];\n";
-    "t q[0];\n";
-    "tdg q[0];\n";
-    "rx q[0],q[1];\n";
-    "ry q[0],q[1];\n";
-    "rz q[0],q[1];\n";
-    "cz q[0],q[1];\n";
-    "cy q[0],q[1];\n";
-    "ch q[0],q[1];\n";
-    "ccx q[0],q[1],q[2];\n";
-    "crz(0) q[0],q[1];\n";
-    "cu1(0) q[0],q[1];\n";
+    "u3(0,0,0) q[0];\n" \
+    "u2(0,0) q[0];\n" \
+    "u1(0) q[0];\n" \
+    "cx q[0],q[1];\n" \
+    "id q[0];\n" \
+    "x q[0];\n" \
+    "y q[0];\n" \
+    "z q[0];\n" \
+    "h q[0];\n" \
+    "s q[0];\n" \
+    "sdg q[0];\n" \
+    "t q[0];\n" \
+    "tdg q[0];\n" \
+    "rx(0) q[0];\n" \
+    "ry(0) q[0];\n" \
+    "rz(0) q[0];\n" \
+    "cz q[0],q[1];\n" \
+    "cy q[0],q[1];\n" \
+    "ch q[0],q[1];\n" \
+    "ccx q[0],q[1],q[2];\n" \
+    "crz(0) q[0],q[1];\n" \
+    "cu1(0) q[0],q[1];\n" \
     "cu3(0,0,0) q[0],q[1];\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(std_gates, "std_gates.qasm"));
-  EXPECT_NO_THROW(ast::check_source(*tmp));
+  EXPECT_NO_THROW(parser::parse_string(src, "standard_gates.qasm"));
 }
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(qasm_parsing, Types) {
-  std::unique_ptr<ast::Program> tmp;
-
-  std::string type_good_1 =
-    "OPENQASM 2.0;\n" \
-    "qreg x[1];\n" \
-    "U(0,0,0) x[0];\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(type_good_1, "type_good_1.qasm"));
-  EXPECT_NO_THROW(ast::check_source(*tmp));
-
-  // This one is a little unintuitive. We want the gate and regster names to live in
-  // different namespaces, as per the openQASM standard
-  std::string type_good_2 =
+TEST(Parsing, Namespaces) {
+  std::string src =
     "OPENQASM 2.0;\n" \
     "opaque x y;\n" \
     "qreg x[1];\n" \
     "x x;\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(type_good_2, "type_good_2.qasm"));
-  EXPECT_NO_THROW(ast::check_source(*tmp));
+  EXPECT_NO_THROW(parser::parse_string(src, "namespaces.qasm"));
+}
+/******************************************************************************/
 
-  std::string type_bad_1 =
+/******************************************************************************/
+TEST(Parsing, Type_Error_Cbit) {
+  std::string src =
     "OPENQASM 2.0;\n" \
     "creg x[1];\n" \
     "U(0,0,0) x[0];\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(type_bad_1, "type_bad_1.qasm"));
-  EXPECT_THROW(ast::check_source(*tmp), ast::SemanticError);
+  EXPECT_THROW(parser::parse_string(src, "type_error_cbit.qasm"), ast::SemanticError);
+}
+/******************************************************************************/
 
-  std::string type_bad_2 =
+/******************************************************************************/
+TEST(Parsing, Type_Error_Real) {
+  std::string src =
     "OPENQASM 2.0;\n" \
     "gate bad(x) y {\n" \
     "  U(0,0,0) x;\n" \
     "}\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(type_bad_2, "type_bad_2.qasm"));
-  EXPECT_THROW(ast::check_source(*tmp), ast::SemanticError);
+  EXPECT_THROW(parser::parse_string(src, "type_error_real.qasm"), ast::SemanticError);
 }
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(qasm_parsing, Mapping) {
-  std::unique_ptr<ast::Program> tmp;
-
-  std::string mapping_good =
+TEST(Parsing, Mapping_Pass) {
+  std::string src =
     "OPENQASM 2.0;\n" \
     "qreg x[2];\n" \
     "qreg y[2];\n" \
     "CX x, y;\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(mapping_good, "mapping_good.qasm"));
-  EXPECT_NO_THROW(ast::check_source(*tmp));
-  
-  std::string mapping_bad =
-    "OPENQASM 2.0;\n" \
-    "qreg x[1];\n" \
-    "qreg y[2];\n" \
-    "CX x, y;\n";
-  EXPECT_NO_THROW(tmp = parser::parse_string(mapping_bad, "mapping_bad.qasm"));
-  EXPECT_THROW(ast::check_source(*tmp), ast::SemanticError);
+  EXPECT_NO_THROW(parser::parse_string(src, "mapping_pass.qasm"));
 }
 /******************************************************************************/
 
 /******************************************************************************/
-TEST(qasm_parsing, StdCompliance) {
+TEST(Parsing, Mapping_Fail) {
+  std::string src =
+    "OPENQASM 2.0;\n" \
+    "qreg x[1];\n" \
+    "qreg y[2];\n" \
+    "CX x, y;\n";
+  EXPECT_THROW(parser::parse_string(src, "mapping_fail.qasm"), ast::SemanticError);
+}
+/******************************************************************************/
+
+/******************************************************************************/
+TEST(Parsing, Standard_Compliance) {
   // generic circuits
   EXPECT_NO_THROW(parser::parse_file(PATH "/qasm/generic/adder.qasm"));
   EXPECT_NO_THROW(parser::parse_file(PATH "/qasm/generic/bigadder.qasm"));
@@ -183,9 +173,37 @@ TEST(qasm_parsing, StdCompliance) {
   EXPECT_NO_THROW(parser::parse_file(PATH "/qasm/ibmqx2/W3test.qasm"));
 
   // invalid circuits
-  EXPECT_THROW(ast::check_source(*parser::parse_file(PATH "/qasm/invalid/gate_no_found.qasm")),
-               ast::SemanticError);
+  EXPECT_THROW(parser::parse_file(PATH "/qasm/invalid/gate_no_found.qasm"), ast::SemanticError);
   EXPECT_THROW(parser::parse_file(PATH "/qasm/invalid/missing_semicolon.qasm"), parser::ParseError);
 }
 /******************************************************************************/
 
+/******************************************************************************/
+TEST(Parsing, Idempotence) {
+  std::string src =
+    "OPENQASM 2.0;\n" \
+    "include \"qelib1.inc\";\n" \
+    "\n" \
+    "qreg q[2];\n" \
+    "creg c[2];\n" \
+    "opaque a q;\n" \
+    "gate b q {\n" \
+    "\tancilla a[1];\n" \
+    "\tdirty ancilla b[1];\n" \
+    "}\n" \
+    "oracle d q { \"dummy.v\" }\n" \
+    "U(0,0,0) q[0];\n" \
+    "CX q[0],q[1];\n" \
+    "b q[0];\n" \
+    "barrier q;\n" \
+    "reset q;\n" \
+    "measure q -> c;\n" \
+    "if (c==1) a q[0];\n";
+
+  auto prog = parser::parse_string(src, "idempotence_test.qasm");
+  std::stringstream ss;
+  ss << *prog;
+
+  EXPECT_EQ(ss.str(), src);
+}
+/******************************************************************************/

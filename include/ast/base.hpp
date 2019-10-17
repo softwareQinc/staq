@@ -47,14 +47,14 @@ namespace ast {
    * \brief Base class for AST nodes
    */
   class ASTNode {
-    static int max_uid_;
+    static int& max_uid_() { static int v; return v; }
 
   protected:
     const int uid_;
     const parser::Position pos_;
 
   public:
-    ASTNode(parser::Position pos) : uid_(++max_uid_), pos_(pos) { }
+    ASTNode(parser::Position pos) : uid_(++max_uid_()), pos_(pos) { }
     virtual ~ASTNode() = default;
 
     int uid() const { return uid_; }
@@ -63,12 +63,12 @@ namespace ast {
     virtual void accept(Visitor& visitor) = 0;
     virtual std::ostream& pretty_print(std::ostream& os) const = 0;
     virtual ASTNode* clone() const = 0;
-  };
-  int ASTNode::max_uid_ = 0;
 
-  std::ostream& operator<<(std::ostream& os, const ASTNode& node) {
-    return node.pretty_print(os);
-  }
+    friend std::ostream& operator<<(std::ostream& os, const ASTNode& node) {
+      return node.pretty_print(os);
+    }
+  };
+
 
 }
 }

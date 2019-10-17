@@ -76,11 +76,16 @@ namespace parser {
      *
      * \return A unique pointer to a QCircuit object
      */
-    ast::ptr<ast::Program> parse() {
+    ast::ptr<ast::Program> parse(bool check = true) {
       // Parse the program
       auto result = parse_program();
       if (error_)
         throw ParseError();
+
+      // Perform semantic analysis before returning
+      if (check) 
+        ast::check_source(*result);
+
       return result;
     }
 
@@ -962,7 +967,7 @@ namespace parser {
     }
   };
 
-  ast::ptr<ast::Program> parse_file(std::string fname) {
+  inline ast::ptr<ast::Program> parse_file(std::string fname) {
     Preprocessor pp;
     Parser parser(pp);
 
@@ -980,7 +985,7 @@ namespace parser {
     return parser.parse();
   }
 
-  ast::ptr<ast::Program> parse_stdin(std::string name="") {
+  inline ast::ptr<ast::Program> parse_stdin(std::string name="") {
     Preprocessor pp;
     Parser parser(pp);
 
@@ -991,7 +996,7 @@ namespace parser {
     return parser.parse();
   }
 
-  ast::ptr<ast::Program> parse_string(const std::string& str, std::string name="") {
+  inline ast::ptr<ast::Program> parse_string(const std::string& str, std::string name="") {
     Preprocessor pp;
     Parser parser(pp);
     std::shared_ptr<std::istream> is = std::make_shared<std::istringstream>(str);

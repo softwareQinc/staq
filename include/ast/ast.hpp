@@ -29,3 +29,4 @@
 #include "ast/stmt.hpp"
 #include "ast/decl.hpp"
 #include "ast/program.hpp"
+#include "ast/semantic.hpp"

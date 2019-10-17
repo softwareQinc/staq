@@ -40,7 +40,7 @@ namespace ast {
    * \brief Enum of binary operators
    */
   enum class BinaryOp { Plus, Minus, Times, Divide, Pow };
-  std::ostream& operator<<(std::ostream& os, const BinaryOp& bop) {
+  inline std::ostream& operator<<(std::ostream& os, const BinaryOp& bop) {
       switch (bop) {
       case BinaryOp::Plus: os << "+"; break;
       case BinaryOp::Minus: os << "-"; break;
@@ -55,7 +55,7 @@ namespace ast {
    * \brief Enum of unary operators
    */
   enum class UnaryOp { Neg, Sin, Cos, Tan, Ln, Sqrt, Exp };
-  std::ostream& operator<<(std::ostream& os, const UnaryOp& uop) {
+  inline std::ostream& operator<<(std::ostream& os, const UnaryOp& uop) {
     switch (uop) {
     case UnaryOp::Neg: os << "-"; break;
     case UnaryOp::Sin: os << "sin"; break;
@@ -335,7 +335,7 @@ namespace ast {
   /** 
    * \brief Returns an Expr for a given angle
    */
-  ptr<Expr> angle_to_expr(const utils::Angle& theta) {
+  inline ptr<Expr> angle_to_expr(const utils::Angle& theta) {
     parser::Position pos;
     
     if (theta.is_symbolic()) {

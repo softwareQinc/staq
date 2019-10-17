@@ -121,7 +121,7 @@ namespace ast {
         os << (it == q_params_.begin() ? "" : ",") << *it;
       }
       if (opaque_) {
-        os << ";";
+        os << ";\n";
       } else {
         os << " {\n";
         for (auto it = body_.begin(); it != body_.end(); it++) {

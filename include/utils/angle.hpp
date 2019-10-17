@@ -101,7 +101,7 @@ namespace utils {
     constexpr Angle operator-() const {
       if (std::holds_alternative<fraction>(value_)) {
         auto frac = std::get<fraction>(value_);
-        return Angle(-frac.first, frac.second);
+        return Angle(2*frac.second - frac.first, frac.second);
       } else {
         return Angle(-std::get<double>(value_));
       }

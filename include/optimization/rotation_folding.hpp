@@ -51,7 +51,7 @@ namespace optimization {
 
   public:
     struct config {
-      bool correct_global_phase;
+      bool correct_global_phase = true;
     };
 
     RotationOptimizer() = default;
@@ -180,7 +180,7 @@ namespace optimization {
       accum_.push_back(current_clifford_);
 
       // Fold the gate body
-      fold(accum_);
+      fold(accum_, true);
 
       // Reset the state
       std::swap(accum_, local_state);
@@ -195,7 +195,7 @@ namespace optimization {
       prog.foreach_stmt([this](auto& stmt){ stmt.accept(*this); });
       accum_.push_back(current_clifford_);
 
-      fold(accum_);
+      fold(accum_, config_.correct_global_phase);
     }
 
   private:
@@ -237,15 +237,17 @@ namespace optimization {
     }
 
     /* Phase two of the algorithm */
-    utils::Angle fold(circuit_callback& circuit) {
-      auto phase = utils::angles::zero;
+    void fold(circuit_callback& circuit, bool phase_correction) {
+      auto global_phase = utils::angles::zero;
+      ast::VarAccess* tgt = nullptr;
+      std::list<ast::ptr<ast::Gate> >* subst_ref = nullptr;
 
       for (auto it = circuit.rbegin(); it != circuit.rend(); it++) {
         auto& op = *it;
         if (auto tmp = std::get_if<std::pair<rotation_info, Gatelib::Rotation> >(&op)) {
           auto [new_phase, new_R] = fold_forward(circuit, std::next(it), tmp->second);
 
-          phase += new_phase;
+          global_phase += new_phase;
           if (!(new_R == tmp->second)) {
             std::list<ast::ptr<ast::Gate> > subst;
 
@@ -253,11 +255,60 @@ namespace optimization {
             if (rot)
               subst.emplace_back(rot);
             replacement_list_[tmp->first.uid] = std::move(subst);
+
+            // WARNING: this is a massive hack so that the global phase correction can
+            // be performed by the replacement engine. We append the final phase correction to
+            // the last gate substitution in-place in the replacement list. Since we need
+            // a qubit to apply the phase correction on, we select the qubit on which the
+            // rotation itself was applied.
+            tgt = &(tmp->first.arg);
+            subst_ref = &(replacement_list_[tmp->first.uid]);
           }
         }
       }
 
-      return phase;
+      if (phase_correction && (global_phase != utils::angles::zero)) {
+        if (global_phase == utils::angles::pi) {
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "z", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "z", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+        } else if (global_phase == utils::angles::pi_half) {
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "s", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "s", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+        } else if (global_phase == -utils::angles::pi_half) {
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "sdg", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "sdg", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+        } else if (global_phase == utils::angles::pi_quarter) {
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "h", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "s", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "h", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "s", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "h", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "s", {}, { *tgt }));
+        } else if (global_phase == -utils::angles::pi_quarter) {
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "sdg", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "h", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "sdg", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "h", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "sdg", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "h", {}, { *tgt }));
+        } else {
+          std::vector<ast::ptr<ast::Expr> > tmp1;
+          std::vector<ast::ptr<ast::Expr> > tmp2;
+          tmp1.emplace_back(ast::angle_to_expr(global_phase));
+          tmp2.emplace_back(ast::angle_to_expr(global_phase));
+
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "rz", std::move(tmp1), { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "rz", std::move(tmp2), { *tgt }));
+          subst_ref->emplace_back(new ast::DeclaredGate(parser::Position(), "x", {}, { *tgt }));
+        }
+      }
     }
 
     std::pair<utils::Angle, Gatelib::Rotation>
@@ -394,7 +445,7 @@ namespace optimization {
     }
   };
 
-  void fold_rotations(ast::ASTNode& node) {
+  inline void fold_rotations(ast::ASTNode& node) {
     RotationOptimizer optimizer;
 
     auto res = optimizer.run(node);
