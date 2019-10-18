@@ -261,7 +261,7 @@ namespace mapping {
 
   };
 
-  Device rigetti_8q(
+  static Device rigetti_8q(
     "Rigetti 8Q",
     8,
     { {0, 1, 0, 0, 0, 0, 0, 1},
@@ -283,7 +283,7 @@ namespace mapping {
       {0.91, 0, 0, 0, 0, 0, 0.91, 0},}
   );
     
-  Device square_9q(
+  static Device square_9q(
     "9 qubit square lattice",
     9,
     { {0, 1, 0, 0, 0, 1, 0, 0, 0},
@@ -297,7 +297,7 @@ namespace mapping {
       {0, 0, 0, 1, 0, 0, 0, 1, 0}, }
   );
 
-  Device fully_connected(uint32_t n) {
+  inline Device fully_connected(uint32_t n) {
     return Device("Fully connected device", 
                   n, 
                   std::vector<std::vector<bool> >(n, std::vector<bool>(n, true)));

@@ -201,7 +201,7 @@ namespace gates {
       return true;
     }
     bool operator!=(const Pauli& P) const {
-      return not (*this == P);
+      return !(*this == P);
     }
 
     bool commutes_with(const Pauli& P) const {
@@ -412,7 +412,7 @@ namespace gates {
       return (theta_ == R.theta_) && (pauli_ == R.pauli_);
     }
     bool operator!=(const Rotation& R) const {
-      return not (*this == R);
+      return !(*this == R);
     }
 
     bool commutes_with(const Rotation& R) const {
