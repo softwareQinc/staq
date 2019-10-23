@@ -184,10 +184,6 @@ namespace synthesis {
       stack.pop_front();
 
       // Debug
-      /*
-      std::cout << "Processing partition:\n  ";
-      print_partition(part);
-      */
 
       if (part.terms.size() == 0) continue;
       else if (part.terms.size() == 1 && part.target) {
@@ -204,7 +200,7 @@ namespace synthesis {
         auto s_tree = d.steiner(terminals, tgt);
 
         // Fill each steiner point with a one
-        for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
+        for (auto it = s_tree.begin(); it != s_tree.end(); it++) {
           if (vec[it->second] == 0) {
             ret.push_back(std::make_pair((int)(it->second), (int)(it->first)));
             adjust_vectors(it->second, it->first, stack);

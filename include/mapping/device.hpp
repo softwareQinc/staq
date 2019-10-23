@@ -42,6 +42,7 @@ namespace mapping {
   using layout        = std::unordered_map<ast::VarAccess, int>;
   using path          = std::list<int>;
   using coupling      = std::pair<int, int>;
+  using cmp_couplings = std::function<bool(std::pair<coupling, double>, std::pair<coupling, double>)>;
   using spanning_tree = std::list<std::pair<int, int> >;
 
   /** \brief Definition of physical devices for efficient mapping */
@@ -121,14 +122,13 @@ namespace mapping {
       return ret;
     }
 
-    std::set<std::pair<coupling, double> > couplings() {
+    std::multiset<std::pair<coupling, double>, cmp_couplings> couplings() {
       // Sort in order of decreasing coupling fidelity
-      using comparator = std::function<bool(std::pair<coupling, double>, std::pair<coupling, double>)>;
-      comparator cmp = [](std::pair<coupling, double> a, std::pair<coupling, double> b) {
+      cmp_couplings cmp = [](std::pair<coupling, double> a, std::pair<coupling, double> b) {
         return a.second > b.second;
       };
 
-      std::set<std::pair<coupling, double> > ret;
+      std::multiset<std::pair<coupling, double>, cmp_couplings> ret(cmp);
       for (auto i = 0; i < qubits_; i++) {
         for (auto j = 0; j < qubits_; j++) {
           if (couplings_[i][j]) {

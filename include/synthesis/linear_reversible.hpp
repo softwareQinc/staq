@@ -37,14 +37,14 @@ namespace synthesis {
 
   // TODO: replace vector<bool> with a custom packed bitvector that supports faster
   // bitwise operations
-  std::vector<bool>& operator^=(std::vector<bool>& A, const std::vector<bool>& B) {
+  inline std::vector<bool>& operator^=(std::vector<bool>& A, const std::vector<bool>& B) {
     for (auto i = 0; i < A.size(); i++) {
       A[i] = B[i] ^ A[i];
     }
     return A;
   }
 
-  std::list<std::pair<int, int> > gauss_jordan(linear_op<bool> mat) {
+  static std::list<std::pair<int, int> > gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int> > ret;
 
     for (auto i = 0; i < mat[0].size(); i++) {
@@ -83,7 +83,7 @@ namespace synthesis {
     return ret;
   }
 
-  std::list<std::pair<int, int> > gaussian_elim(linear_op<bool> mat) {
+  static std::list<std::pair<int, int> > gaussian_elim(linear_op<bool> mat) {
     std::list<std::pair<int, int> > ret;
 
     for (auto i = 0; i < mat[0].size(); i++) {
@@ -159,7 +159,7 @@ namespace synthesis {
    * 00010            00010             00010             00010
    *
    */
-  std::list<std::pair<int, int> > steiner_gauss(linear_op<bool> mat, mapping::Device& d) {
+  static std::list<std::pair<int, int> > steiner_gauss(linear_op<bool> mat, mapping::Device& d) {
     std::list<std::pair<int, int> > ret;
 
     // Whether or not a row has a dependence on a row above the diagonal

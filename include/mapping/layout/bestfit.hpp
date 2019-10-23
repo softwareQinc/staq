@@ -80,11 +80,12 @@ namespace mapping {
       using mapping = std::pair<std::pair<ast::VarAccess, ast::VarAccess>, int>;
       using comparator = std::function<bool(mapping, mapping)>;
       comparator cmp = [](mapping a, mapping b) { return a.second > b.second; };
-      std::set<mapping,comparator> sorted_pairs(histogram_.begin(), histogram_.end(), cmp);
+      std::list<mapping> pairs(histogram_.begin(), histogram_.end());
+      pairs.sort(cmp);
 
       // For each pair with CNOT gates between them, try to assign a coupling
       auto couplings = device_.couplings();
-      for (auto& [args, val] : sorted_pairs) {
+      for (auto& [args, val] : pairs) {
         int ctrl_bit;
         int tgt_bit;
         for (auto& [coupling, f] : couplings) {

@@ -31,7 +31,16 @@ using namespace synthewareQ;
 // Testing devices
 using steiner_edges = std::set<std::pair<int, int> >;
 
-mapping::Device test_device(
+bool subset(const steiner_edges& A, const steiner_edges& B) {
+  for (auto it = A.begin(); it != A.end(); it++) {
+    if (B.find(*it) == B.end())
+      return false;
+  }
+
+  return true;
+}
+
+static mapping::Device test_device(
 	"Test device",
 	9,
 	{ {0, 1, 0, 0, 0, 1, 0, 0, 0},
@@ -51,7 +60,7 @@ mapping::Device test_device(
 	  {0, 0.9, 0, 0.1, 0, 0.1, 0, 0.9, 0},
 	  {0.1, 0, 0, 0, 0.1, 0, 0.1, 0, 0},
 	  {0, 0, 0, 0, 0, 0.1, 0, 0.1, 0},
-	  {0, 0, 0, 0, 0.9, 0, 0.9, 0, 0.1},
+	  {0, 0, 0, 0, 0.9, 0, 0.9, 0, 0.9},
 	  {0, 0, 0, 0.1, 0, 0, 0, 0.11, 0}, }
 );
 
@@ -92,7 +101,7 @@ TEST(Device, Steiner_tree) {
 		      steiner_edges({ {1,4},{4,7},{7,8},{4,3} }));
 	EXPECT_EQ(steiner_edges(tmp3.begin(), tmp3.end()),
 		      steiner_edges({ {0,1},{1,4},{4,7},{1,2} }));
-	EXPECT_EQ(steiner_edges(tmp4.begin(), tmp4.end()),
-		steiner_edges({ {0,1},{1,4},{4,7},{7,6},{7,8},{1,2},{2,3},{4,5} }));
+	EXPECT_TRUE(subset(steiner_edges({{0,1},{1,4},{4,7},{7,6},{7,8}}),
+                       steiner_edges(tmp4.begin(), tmp4.end())));
 }
 /******************************************************************************/

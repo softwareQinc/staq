@@ -105,12 +105,12 @@ namespace mapping {
     size_t n_;
   };
 
-  void apply_layout(const layout& l, ast::Program& prog) {
+  inline void apply_layout(const layout& l, ast::Program& prog) {
     LayoutTransformer alg;
     alg.run(prog, l);
   }
 
-  layout compute_basic_layout(Device& device, ast::Program& prog) {
+  inline layout compute_basic_layout(Device& device, ast::Program& prog) {
     BasicLayout gen(device);
     return gen.generate(prog);
   }

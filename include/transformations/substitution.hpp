@@ -111,7 +111,7 @@ namespace transformations {
     std::unordered_map<std::string_view, ast::Expr*> subst_; // The substitution
   };
 
-  void subst_var_expr(std::unordered_map<std::string_view, ast::Expr*>& subst, ast::ASTNode& node) {
+  inline void subst_var_expr(std::unordered_map<std::string_view, ast::Expr*>& subst, ast::ASTNode& node) {
     SubstVar alg(subst);
     node.accept(alg);
   }
@@ -166,7 +166,7 @@ namespace transformations {
     std::unordered_map<ast::VarAccess, ast::VarAccess> subst_; // The substitution
   };
 
-  void subst_ap_ap(std::unordered_map<ast::VarAccess, ast::VarAccess>& subst, ast::ASTNode& node) {
+  inline void subst_ap_ap(std::unordered_map<ast::VarAccess, ast::VarAccess>& subst, ast::ASTNode& node) {
     SubstAP alg(subst);
     node.accept(alg);
   }
