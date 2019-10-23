@@ -19,9 +19,6 @@ include_directories(libs)
 add_library(synthewareQ INTERFACE)
 target_include_directories(synthewareQ INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
-#### Examples
-add_subdirectory(examples)
-
 #### Binary tools
 add_subdirectory(tools)
 
