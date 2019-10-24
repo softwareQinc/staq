@@ -157,7 +157,6 @@ namespace tools {
       auto& [counts, depths] = running_estimate_;
 
       // Gate count
-      counts["barrier"] += 1;
       auto tmp = gate.name();
       if (config_.merge_dagger) strip_dagger(tmp);
 
