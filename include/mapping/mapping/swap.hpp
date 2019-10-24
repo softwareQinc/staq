@@ -56,6 +56,10 @@ namespace mapping {
       }
     }
 
+    // Ignore declarations if they were left in during inlining
+    void visit(ast::GateDecl&) override {}
+    void visit(ast::OracleDecl&) override {}
+
     std::optional<ast::VarAccess> replace(ast::VarAccess& va) override {
       if (va.var() == config_.register_name)
         return ast::VarAccess(va.pos(), va.var(), permutation_[*va.offset()]);
