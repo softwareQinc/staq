@@ -45,7 +45,7 @@ namespace synthesis {
     std::list<phase_term> terms;
   };
 
-  void print_partition(partition& part) {
+  static void print_partition(partition& part) {
     std::cout << "{";
     if (part.target) std::cout << *(part.target);
     else std::cout << "_";
@@ -60,7 +60,7 @@ namespace synthesis {
     std::cout << "}}\n";
   }
 
-  void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
+  static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
     for (auto& part : stack) {
       for (auto& [vec, angle] : part.terms) {
         vec[ctrl] = vec[ctrl] ^ vec[tgt];
@@ -68,7 +68,7 @@ namespace synthesis {
     }
   }
 
-  int find_best_split(const std::list<phase_term>& terms, const std::set<int>& indices) {
+  static int find_best_split(const std::list<phase_term>& terms, const std::set<int>& indices) {
     int max = -1;
     int max_i = -1;
     for (auto i : indices) {
@@ -89,7 +89,7 @@ namespace synthesis {
     return max_i;
   }
 
-  std::pair<std::list<phase_term>, std::list<phase_term> > split(std::list<phase_term>& terms, int i) {
+  static std::pair<std::list<phase_term>, std::list<phase_term> > split(std::list<phase_term>& terms, int i) {
     std::list<phase_term> zeros;
     std::list<phase_term> ones;
 
@@ -101,7 +101,7 @@ namespace synthesis {
     return std::make_pair(zeros, ones);
   }
 
-  std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f, linear_op<bool> A) {
+  static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f, linear_op<bool> A) {
     // Initialize
     std::list<cx_dihedral> ret;
     std::list<partition> stack;
@@ -169,7 +169,7 @@ namespace synthesis {
     return ret;
   }
 
-  std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f, linear_op<bool> A, Device& d) {
+  static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f, linear_op<bool> A, Device& d) {
     // Initialize
     std::list<cx_dihedral> ret;
     std::list<partition> stack;
