@@ -23,7 +23,7 @@ source-to-source tranformations, where only specific changes are desired.
 Likewise, this allows translations to other common circuit description languages
 and libraries to closely follow the openQASM source.
 
-Check out the [wiki](https://github.com/meamy/synthewareq/wiki/Introduction) for
+Check out the [wiki](https://github.com/meamy/synthewareq/wiki) for
 more information about the library and included tools.
 
 ---
