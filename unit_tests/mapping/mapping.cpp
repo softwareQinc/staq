@@ -113,3 +113,116 @@ TEST(Swap_Mapper, Shortest_Path) {
   EXPECT_EQ(ss.str(), post);
 }
 /******************************************************************************/
+
+/******************************************************************************/
+TEST(Steiner_Mapper, Base) {
+  std::string pre =
+    "OPENQASM 2.0;\n" \
+    "\n" \
+    "qreg q[9];\n" \
+    "CX q[0],q[2];\n" \
+    "CX q[0],q[6];\n";
+
+  std::string post =
+    "OPENQASM 2.0;\n" \
+    "\n" \
+    "qreg q[9];\n" \
+    "CX q[1],q[2];\n" \
+    "CX q[1],q[4];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[7],q[6];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[1],q[4];\n" \
+    "CX q[0],q[1];\n" \
+    "CX q[1],q[2];\n" \
+    "CX q[1],q[4];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[7],q[6];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[1],q[4];\n" \
+    "CX q[0],q[1];\n";
+
+  auto program = parser::parse_string(pre, "steiner_base.qasm");
+  mapping::steiner_mapping(test_device, *program);
+  std::stringstream ss;
+  ss << *program;
+
+  EXPECT_EQ(ss.str(), post);
+}
+/******************************************************************************/
+
+/******************************************************************************/
+TEST(Steiner_Mapper, Swap) {
+  std::string pre =
+    "OPENQASM 2.0;\n" \
+    "\n" \
+    "qreg q[9];\n" \
+    "CX q[7],q[1];\n" \
+    "CX q[1],q[7];\n" \
+    "CX q[7],q[1];\n" \
+    "U(0,0,pi/4) q[1];\n" \
+    "CX q[7],q[1];\n" \
+    "CX q[1],q[7];\n" \
+    "CX q[7],q[1];\n";
+
+  std::string post =
+    "OPENQASM 2.0;\n" \
+    "\n" \
+    "qreg q[9];\n" \
+    "U(0,0,0.785398) q[7];\n";
+
+  auto program = parser::parse_string(pre, "steiner_swap.qasm");
+  mapping::steiner_mapping(test_device, *program);
+  std::stringstream ss;
+  ss << *program;
+
+  EXPECT_EQ(ss.str(), post);
+}
+/******************************************************************************/
+
+/******************************************************************************/
+TEST(Steiner_Mapper, Swap_No_Z) {
+  std::string pre =
+    "OPENQASM 2.0;\n" \
+    "\n" \
+    "qreg q[9];\n" \
+    "CX q[7],q[1];\n" \
+    "CX q[1],q[7];\n" \
+    "CX q[7],q[1];\n" \
+    "U(0,pi/4,0) q[1];\n" \
+    "CX q[7],q[1];\n" \
+    "CX q[1],q[7];\n" \
+    "CX q[7],q[1];\n";
+
+  std::string post =
+    "OPENQASM 2.0;\n" \
+    "\n" \
+    "qreg q[9];\n" \
+    "CX q[7],q[4];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[7],q[4];\n" \
+    "CX q[4],q[1];\n" \
+    "CX q[1],q[4];\n" \
+    "CX q[4],q[1];\n" \
+    "CX q[7],q[4];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[7],q[4];\n" \
+    "U(0,pi/4,0) q[1];\n" \
+    "CX q[7],q[4];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[7],q[4];\n" \
+    "CX q[4],q[1];\n" \
+    "CX q[1],q[4];\n" \
+    "CX q[4],q[1];\n" \
+    "CX q[7],q[4];\n" \
+    "CX q[4],q[7];\n" \
+    "CX q[7],q[4];\n";
+
+  auto program = parser::parse_string(pre, "steiner_swap_no_z.qasm");
+  mapping::steiner_mapping(test_device, *program);
+  std::stringstream ss;
+  ss << *program;
+
+  EXPECT_EQ(ss.str(), post);
+}
+/******************************************************************************/
