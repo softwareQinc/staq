@@ -1,6 +1,7 @@
 set(target "unit_tests")
 
 include_directories(${CMAKE_SOURCE_DIR}/libs/googletest/include ${CMAKE_SOURCE_DIR}/libs/googletest)
+
 aux_source_directory(. FILES)
 aux_source_directory(parser FILES)
 aux_source_directory(utils FILES)
@@ -19,4 +20,4 @@ foreach(filename ${FILES})
 endforeach()
 
 target_link_libraries(${target} PUBLIC gmock)
-target_link_libraries(${target} PUBLIC synthewareQ)
+target_link_libraries(${target} PUBLIC libsynthewareQ)
