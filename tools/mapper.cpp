@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   std::string layout = "linear";
   std::string mapper = "swap";
 
-  CLI::App app{ "Physical mapper" };
+  CLI::App app{ "QASM physical mapper" };
 
   app.add_option("-d", device_name, "Device to map onto (rigetti8|square9|fullycon9)");
   app.add_option("-l", layout, "Layout algorithm to use (linear|eager|bestfit)");
