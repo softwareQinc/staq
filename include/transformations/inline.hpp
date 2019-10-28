@@ -53,7 +53,7 @@ namespace transformations {
     struct config {
       bool keep_declarations = true;
       std::set<std::string_view> overrides = default_overrides;
-      std::string ancilla_name = "auto_anc";
+      std::string ancilla_name = "anc";
     };
 
     Inliner() = default;
@@ -71,6 +71,7 @@ namespace transformations {
       }
 
       // Final cleanup to remove ancilla declarations outside of function bodies
+      cleaner_.set_config(&config_);
       prog.accept(cleaner_);
     }
 
@@ -94,12 +95,7 @@ namespace transformations {
         }
         num_ancilla = 0;
 
-        // Keep or delete the declaration
-        if (config_.keep_declarations) {
-          return std::nullopt;
-        } else {
-          return std::list<ast::ptr<ast::Stmt> >();
-        }
+        return std::nullopt;
       }
     }
 
@@ -159,10 +155,30 @@ namespace transformations {
   private:
     /* Helper class */
     class Cleaner final : public Replacer {
+      bool in_decl_ = false;
+      config* conf_; // An annoying hack to give access to the inliner's configs
+
     public:
-      void visit(ast::GateDecl& decl) override { } // Don't descend into gate declarations
+      void set_config(config* conf) {
+        conf_ = conf;
+      }
+
+      void visit(ast::GateDecl& decl) override {
+        in_decl_ = true;
+        Replacer::visit(decl);
+        in_decl_ = false;
+      }
+      std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::GateDecl& decl) override {
+        if (!conf_->keep_declarations && conf_->overrides.find(decl.id()) == conf_->overrides.end())
+          return std::list<ast::ptr<ast::Stmt> >();
+        else
+          return std::nullopt;
+      }
       std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::AncillaDecl&) override {
-        return std::list<ast::ptr<ast::Gate> >();
+        if (!in_decl_)
+          return std::list<ast::ptr<ast::Gate> >();
+        else 
+          return std::nullopt;
       }
     };
 

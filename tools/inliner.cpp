@@ -25,13 +25,28 @@
 #include "parser/parser.hpp"
 #include "transformations/inline.hpp"
 
+#include <CLI/CLI.hpp>
+
 using namespace synthewareQ;
 
-int main() {
+int main(int argc, char** argv) {
+  bool clear_decls = false;
+  bool inline_stdlib = false;
+  std::string ancilla_name = "anc";
+
+  CLI::App app{ "QASM inliner" };
+
+  app.add_flag("--clear-decls", clear_decls, "Remove gate declarations");
+  app.add_flag("--inline-stdlib", inline_stdlib, "Inline qelib1.inc declarations as well");
+  app.add_option("--ancilla-name", ancilla_name, "Name of the global ancilla register, if applicable");
+
+  CLI11_PARSE(app, argc, argv);
 
   auto program = parser::parse_stdin();
   if (program) {
-    transformations::inline_ast(*program);
+    std::set<std::string_view> overrides = inline_stdlib ? std::set<std::string_view>() 
+                                                         : transformations::default_overrides;
+    transformations::inline_ast(*program, {!clear_decls, overrides, ancilla_name});
     std::cout << *program;
   } else {
     std::cerr << "Parsing failed\n";
