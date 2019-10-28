@@ -22,18 +22,34 @@
  * SOFTWARE.
  */
 
+#include "ast/ast.hpp"
 #include "parser/parser.hpp"
 #include "tools/resource_estimator.hpp"
 
+#include <CLI/CLI.hpp>
+
 using namespace synthewareQ;
 
-int main() {
+int main(int argc, char** argv) {
+  bool unbox_qelib = false;
+  bool box_gates = false;
+  bool no_merge_dagger = false;
+
+  CLI::App app{ "QASM resource estimator" };
+
+  app.add_flag("--box-gates", box_gates, "Treat gate declarations as atomic gates");
+  app.add_flag("--unbox-qelib", unbox_qelib, "Unboxes standard library gates");
+  app.add_flag("--no-merge-dagger", no_merge_dagger, "Counts gates and their inverses separately");
+
+  CLI11_PARSE(app, argc, argv);
 
   auto program = parser::parse_stdin();
   if (program) {
 
+    std::set<std::string_view> overrides = unbox_qelib ? std::set<std::string_view>() : ast::qelib_defs;
+    auto count = tools::estimate_resources(*program, { !box_gates, !no_merge_dagger, overrides });
+
     std::cout << "Resources used:\n";
-    auto count = tools::estimate_resources(*program);
     for (auto& [name, num] : count) {
       std::cout << "  " << name << ": " << num << "\n";
     }

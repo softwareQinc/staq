@@ -452,5 +452,12 @@ namespace optimization {
     replace_gates(node, std::move(res));
   }
 
+  inline void fold_rotations(ast::ASTNode& node, const RotationOptimizer::config& params) {
+    RotationOptimizer optimizer(params);
+
+    auto res = optimizer.run(node);
+    replace_gates(node, std::move(res));
+  }
+
 }
 }

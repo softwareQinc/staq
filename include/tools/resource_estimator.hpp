@@ -188,23 +188,27 @@ namespace tools {
       else
         name = tmp;
 
+      auto& [gate_counts, depth_counts] = resource_map_[name];
       if (config_.unbox
           && (config_.overrides.find(name) == config_.overrides.end())
           && (gate.num_cargs() == 0))
       {
-        add_counts(counts, resource_map_[name].first);
+        add_counts(counts, gate_counts);
+
+        // Note that this gives the "boxed" depth, which is not really optimal
+        // In the future this should be changed
+        int in_depth = -1;
+        int gate_depth = gate_counts["depth"];
+        gate.foreach_qarg([&in_depth, this](auto& arg){
+          in_depth = std::max(in_depth, running_estimate_.second[arg]);
+        });
+        gate.foreach_qarg([in_depth, this, gate_depth](auto& arg){
+          running_estimate_.second[arg] = in_depth + gate_depth;
+        });
       } else {
         counts[name] += 1;
+        gate.foreach_qarg([this](auto& arg){running_estimate_.second[arg] += 1;});
       }
-
-      // Depth
-      int in_depth = -1;
-      gate.foreach_qarg([&in_depth, this](auto& arg){
-          in_depth = std::max(in_depth, running_estimate_.second[arg]);
-      });
-      gate.foreach_qarg([in_depth, this](auto& arg){
-          running_estimate_.second[arg] = in_depth + 1;
-      });
     }
 
     /* Declarations */
@@ -214,6 +218,16 @@ namespace tools {
       std::swap(running_estimate_, local_state);
 
       decl.foreach_stmt([this](auto& gate){ gate.accept(*this); });
+
+      // Get maximum critical path length
+      auto& [counts, depths] = running_estimate_;
+      int depth = 0;
+      for (auto& [id, length] : depths) {
+        if (length > depth) depth = length;
+      }
+
+      // Set depth and return
+      counts["depth"] = depth;
 
       std::swap(running_estimate_, local_state);
     }
@@ -265,6 +279,11 @@ namespace tools {
 
   resource_count estimate_resources(ast::ASTNode& node) {
     ResourceEstimator estimator;
+    return estimator.run(node);
+  }
+
+  resource_count estimate_resources(ast::ASTNode& node, const ResourceEstimator::config& params) {
+    ResourceEstimator estimator(params);
     return estimator.run(node);
   }
 

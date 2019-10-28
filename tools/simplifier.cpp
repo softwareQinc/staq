@@ -25,13 +25,22 @@
 #include "parser/parser.hpp"
 #include "optimization/simplify.hpp"
 
+#include <CLI/CLI.hpp>
+
 using namespace synthewareQ;
 
-int main() {
+int main(int argc, char** argv) {
+  bool no_fixpoint = false;
+
+  CLI::App app{ "QASM simplifier" };
+
+  app.add_flag("--no-fixpoint", no_fixpoint, "Stops the simplifier after one iteration");
+
+  CLI11_PARSE(app, argc, argv);
 
   auto program = parser::parse_stdin();
   if (program) {
-    optimization::simplify(*program);
+    optimization::simplify(*program, { !no_fixpoint });
     std::cout << *program;
   } else {
     std::cerr << "Parsing failed\n";

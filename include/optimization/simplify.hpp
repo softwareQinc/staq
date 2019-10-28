@@ -274,5 +274,10 @@ namespace optimization {
     optimizer.run(node);
   }
 
+  inline void simplify(ast::ASTNode& node, const Simplifier::config& params) {
+    Simplifier optimizer(params);
+    optimizer.run(node);
+  }
+
 }
 }
