@@ -39,8 +39,8 @@ executable, from the root directory execute
   make synthewareQ
   ```
 
-To build all binaries, from the `build` directory, enter `make`. Unit tests can
-be built with the command `make unit_tests`.
+To build the synthewareQ tool suite, from the `build` directory, enter 
+`make tools`. Unit tests can be built with the command `make unit_tests`.
 
 ### Windows
 Building on windows requires [Visual Studio](https://www.visualstudio.com) 2017 
