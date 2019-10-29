@@ -125,7 +125,10 @@ namespace mapping {
     std::multiset<std::pair<coupling, double>, cmp_couplings> couplings() {
       // Sort in order of decreasing coupling fidelity
       cmp_couplings cmp = [](std::pair<coupling, double> a, std::pair<coupling, double> b) {
-        return a.second > b.second;
+        if (a.second == b.second)
+          return a.first < b.first;
+        else
+          return a.second > b.second;
       };
 
       std::multiset<std::pair<coupling, double>, cmp_couplings> ret(cmp);
