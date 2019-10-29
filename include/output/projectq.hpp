@@ -139,8 +139,8 @@ namespace output {
     }
 
     void visit(ast::IfStmt& stmt) {
-      os_ << prefix_ << "if sum(v<<i for i, v in enumerate(" << stmt.var() << "[::-1])) == (";
-      os_ << stmt.cond() << "%len(" << stmt.var() << "):";
+      os_ << prefix_ << "if sum(v<<i for i, v in enumerate(" << stmt.var();
+      os_ << "[::-1])) == " << stmt.cond() << ":";
       os_ << "# " << stmt;
 
       prefix_ += "    ";

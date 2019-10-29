@@ -250,7 +250,7 @@ namespace output {
       if (decl.is_opaque())
         throw std::logic_error("Quil instruction set has no support for opaque declarations");
       
-      if (config_.std_includes && qasmstd_to_quilstd.find(decl.id()) != qasmstd_to_quilstd.end()) {
+      if (!config_.std_includes || qasmstd_to_quilstd.find(decl.id()) != qasmstd_to_quilstd.end()) {
         os_ << "DEFCIRCUIT " << decl.id();
 
         if (decl.c_params().size() > 0) {

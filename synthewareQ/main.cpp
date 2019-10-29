@@ -227,6 +227,9 @@ int main(int argc, char** argv) {
           case Pass::rotfold: optimization::fold_rotations(*prog); break;
           case Pass::simplify: optimization::simplify(*prog); break;
           case Pass::map: {
+            /* Inline fully first */
+            transformations::inline_ast(*prog, { false, {}, "anc" });
+
             /* Generate the layout */
             mapping::layout initial_layout;
             switch (layout_alg) {

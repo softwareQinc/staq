@@ -1,22 +1,20 @@
 OPENQASM 2.0;
 include "qelib1.inc";
-qreg q[3];
+
+gate bell x,y {
+  h x;
+  cx x,y;
+}
+
+qreg q[1];
+qreg anc[2];
 creg c0[1];
 creg c1[1];
-creg c2[1];
 
-x q[0];
-h q[1];
-rz(123.0) q[2];
-rz(1.0) q[2];
-rz(0.123) q[2];
-cx q[1],q[2];
-barrier q;
-cx q[0],q[1];
-h q[0];
-measure q[0] -> c0[0];
-measure q[1] -> c1[0];
-if(c0==1) z q[2];
-if(c1==1) x q[2];
-
-measure q[2] -> c2[0];
+bell anc[0],anc[1];
+cx q,anc[0];
+h q;
+measure q -> c0[0];
+measure anc[0] -> c1[0];
+//if(c0==1) z anc[1];
+//if(c1==1) x anc[1];

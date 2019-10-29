@@ -118,7 +118,7 @@ namespace synthesis {
   std::list<ast::ptr<ast::Gate> > synthesize_net(parser::Position pos,
                                                  T& l_net,
                                                  const std::vector<ast::symbol>& params,
-                                                 std::string anc = "auto_anc") {
+                                                 std::string anc = "anc") {
     std::list<ast::ptr<ast::Gate> > ret;
 
     // Map network into lut with "cut size" 4
