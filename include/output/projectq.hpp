@@ -130,18 +130,17 @@ namespace output {
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
-      os_ << prefix_ << "ops.Measure | " << stmt.q_arg() << "\t# " << stmt;
+      os_ << prefix_ << "ops.Measure | " << stmt.q_arg() << "\n";
       os_ << prefix_ << stmt.c_arg() << " = int(" << stmt.q_arg() << ")\n";
     }
 
     void visit(ast::ResetStmt& stmt) {
-      os_ << prefix_ << "Reset | " << stmt.arg() << "\t# " << stmt;
+      os_ << prefix_ << "Reset | " << stmt.arg() << "\n";
     }
 
     void visit(ast::IfStmt& stmt) {
       os_ << prefix_ << "if sum(v<<i for i, v in enumerate(" << stmt.var();
-      os_ << "[::-1])) == " << stmt.cond() << ":";
-      os_ << "# " << stmt;
+      os_ << "[::-1])) == " << stmt.cond() << ":\n";
 
       prefix_ += "    ";
       stmt.then().accept(*this);
@@ -158,7 +157,7 @@ namespace output {
       gate.lambda().accept(*this);
       os_ << ") | ";
       gate.arg().accept(*this);
-      os_ << "\t# " << gate;
+      os_ << "\n";
     }
 
     void visit(ast::CNOTGate& gate) {
@@ -166,7 +165,7 @@ namespace output {
       gate.ctrl().accept(*this);
       os_ << ", ";
       gate.tgt().accept(*this);
-      os_ << ")\t#" << gate;
+      os_ << ")\n";
     }
 
     void visit(ast::BarrierGate& gate) {
@@ -176,7 +175,7 @@ namespace output {
           os_ << ", ";
         gate.arg(i).accept(*this);
       }
-      os_ <<  ")\t# " << gate;
+      os_ <<  ")\n";
     }
 
     void visit(ast::DeclaredGate& gate) {
@@ -198,7 +197,7 @@ namespace output {
           os_ << ", ";
         gate.qarg(i).accept(*this);
       }
-      os_ << ")\t# " << gate;
+      os_ << ")\n";
     }
 
     // Declarations
@@ -208,8 +207,7 @@ namespace output {
       
       if (qasmstd_to_projectq.find(decl.id()) == qasmstd_to_projectq.end()) {
 
-        os_ << "class " << decl.id() << "(ops.BasicGate):";
-        os_ << "\t# " << "gate " << decl.id() << "\n";
+        os_ << "class " << decl.id() << "(ops.BasicGate):\n";
 
         // Class instantiation
         os_ << "    def __init__(self, ";
@@ -295,12 +293,11 @@ namespace output {
       } else {
         os_ << prefix_ << decl.id() << " = [None] * " << decl.size();
       }
-      os_ << "\t# " << decl;
+      os_ << "\n";
     }
 
     void visit(ast::AncillaDecl& decl) {
-      os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qureg(" << decl.size() << ")";
-      os_ << "\t# " << decl;
+      os_ << prefix_ << decl.id() << " = " << eng_ << ".allocate_qureg(" << decl.size() << ")\n";
       ancillas_.push_back(std::make_pair(decl.id(), decl.size()));
     }
     

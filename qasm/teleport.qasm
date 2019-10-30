@@ -16,5 +16,5 @@ cx q,anc[0];
 h q;
 measure q -> c0[0];
 measure anc[0] -> c1[0];
-//if(c0==1) z anc[1];
-//if(c1==1) x anc[1];
+if(c0==1) z anc[1];
+if(c1==1) x anc[1];

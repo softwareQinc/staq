@@ -176,16 +176,16 @@ namespace output {
       // Arrays are immutable in Q#
       os_ << prefix_ << "set " << stmt.c_arg().var();
       os_ << " w/= " << *(stmt.c_arg().offset());
-      os_ << " <- M(" << stmt.q_arg() << ");\t// " << stmt;
+      os_ << " <- M(" << stmt.q_arg() << ");\n";
     }
 
     void visit(ast::ResetStmt& stmt) {
-      os_ << prefix_ << "Reset(" << stmt.arg() << ");\t// " << stmt;
+      os_ << prefix_ << "Reset(" << stmt.arg() << ");\n";
     }
 
     void visit(ast::IfStmt& stmt) {
-      os_ << prefix_ << "if (ResultArrayAsInt(" << stmt.var() << ") == " << stmt.cond() << ") {";
-      os_ << "// " << stmt;
+      os_ << prefix_ << "if (ResultArrayAsInt(" << stmt.var();
+      os_ << ") == " << stmt.cond() << ") {\n";
 
       prefix_ += "    ";
       stmt.then().accept(*this);
@@ -204,7 +204,7 @@ namespace output {
       gate.lambda().accept(*this);
       os_ << ", ";
       gate.arg().accept(*this);
-      os_ << ");\t// " << gate;
+      os_ << ");\n";
     }
 
     void visit(ast::CNOTGate& gate) {
@@ -212,12 +212,10 @@ namespace output {
       gate.ctrl().accept(*this);
       os_ << ", ";
       gate.tgt().accept(*this);
-      os_ << ");\t// " << gate;
+      os_ << ");\n";
     }
 
-    void visit(ast::BarrierGate& gate) {
-      os_ << prefix_ << "// " << gate;
-    }
+    void visit(ast::BarrierGate&) { }
 
     void visit(ast::DeclaredGate& gate) {
       os_ << prefix_;
@@ -236,7 +234,7 @@ namespace output {
         else
           gate.qarg(i - gate.num_cargs()).accept(*this);
       }
-      os_ << ");\t// " << gate;
+      os_ << ");\n";
     }
 
     // Declarations
@@ -264,7 +262,6 @@ namespace output {
         decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
 
         // Reset all local ancillas
-        os_ << "\n";
         for (auto it = locals_.rbegin(); it != locals_.rend(); it++) {
           os_ << prefix_ << "ResetAll(" << *it << ");\n";
           prefix_.resize(prefix_.size() - 4);
@@ -289,7 +286,7 @@ namespace output {
       } else {
         os_ << prefix_ << "mutable " << decl.id() << " = new Result[" << decl.size() << "];";
       }
-      os_ << "\t// " << decl;
+      os_ << "\n";
     }
 
     void visit(ast::AncillaDecl& decl) {
@@ -315,7 +312,7 @@ namespace output {
       os_ << prefix_ << "Ry(theta, q);\n";
       os_ << prefix_ << "Rz(phi, q);\n";
       prefix_.resize(prefix_.size() - 4);
-      os_ << prefix_ << "}\n";
+      os_ << prefix_ << "}\n\n";
 
       // Gate declarations
       prog.foreach_stmt([this](auto& stmt) {

@@ -148,14 +148,13 @@ namespace output {
       stmt.q_arg().accept(*this);
       os_ << " ";
       stmt.c_arg().accept(*this);
-      os_ << "\t# " << stmt;
+      os_ << "\n";
     }
 
     void visit(ast::ResetStmt& stmt) {
       os_ << "CLEAR ";
       stmt.arg().accept(*this);
-      os_ << " [" << max_cbit_ << "]";
-      os_ << "\t# " << stmt;
+      os_ << " [" << max_cbit_ << "]\n";
     }
 
     void visit(ast::IfStmt& stmt) {
@@ -171,8 +170,7 @@ namespace output {
         else
           os_ << "JUMP-WHEN";
 
-        os_ << " @end" << stmt.uid() << " [" << r + i << "]";
-        os_ << "\t# " << stmt;
+        os_ << " @end" << stmt.uid() << " [" << r + i << "]\n";
       }
 
       stmt.then().accept(*this);
@@ -195,7 +193,7 @@ namespace output {
 
       os_ << " ";
       gate.arg().accept(*this);
-      os_ << "\t# " << gate;
+      os_ << "\n";
     }
 
     void visit(ast::CNOTGate& gate) {
@@ -206,7 +204,7 @@ namespace output {
       gate.ctrl().accept(*this);
       os_ << " ";
       gate.tgt().accept(*this);
-      os_ << "\t# " << gate;
+      os_ << "\n";
     }
 
     void visit(ast::BarrierGate& gate) {
@@ -214,8 +212,7 @@ namespace output {
         os_ << "    ";
 
       // An approximation to openQASM's barrier
-      os_ << "PRAGMA parallelization_barrier";
-      os_ << "\t# " << gate;
+      os_ << "PRAGMA parallelization_barrier\n";
     }
 
     void visit(ast::DeclaredGate& gate) {
@@ -242,7 +239,7 @@ namespace output {
         gate.qarg(i).accept(*this);
       }
 
-      os_ << "\t# " << gate;
+      os_ << "\n";
     }
 
     // Declarations
@@ -267,7 +264,7 @@ namespace output {
           os_ << " " << decl.q_params()[i];
         }
 
-        os_ << ":\t# " << "gate " << decl.id() << "\n";
+        os_ << ":\n";
 
         circuit_local_ = true;
         decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
@@ -288,7 +285,6 @@ namespace output {
         globals_[decl.id()] = std::make_pair(max_cbit_, decl.size());
         max_cbit_ += decl.size();
       }
-      os_ << "# " << decl;
     }
 
     void visit(ast::AncillaDecl& decl) {

@@ -159,9 +159,7 @@ namespace output {
       os_ << "),\n";
     }
 
-    void visit(ast::BarrierGate& gate) {
-      os_ << prefix_ << "# " << gate;
-    }
+    void visit(ast::BarrierGate&) { }
 
     void visit(ast::DeclaredGate& gate) {
       os_ << prefix_;
