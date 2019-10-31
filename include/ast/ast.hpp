@@ -23,6 +23,10 @@
  */
 #pragma once
 
+/**
+ * \file ast/ast.hpp
+ */
+
 #include "ast/visitor.hpp"
 #include "ast/base.hpp"
 #include "ast/expr.hpp"

@@ -23,7 +23,7 @@
  */
 
 /**
- * \file ast/ast.hpp
+ * \file ast/base.hpp
  * \brief openQASM syntax trees
  */
 #pragma once
