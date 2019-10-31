@@ -34,12 +34,22 @@
 namespace synthewareQ {
 namespace ast {
   /** 
-   * \brief Generic complete traversal with node replacement
+   * \class synthewareQ::ast::Replacer
+   * \brief Generic complete traversal with post-order node replacement
+   * \see synthewareQ::ast::Visitor
    *
-   * Usage: override the replace methods for the nodes desired.
-   * Returning nullopt leaves the node unchanged, returning 
-   * a list of nodes (via intrusive list) deletes the node and replaces
-   * it with the given list spliced in
+   * The replacer provides a visitor-style interface where the visitor
+   * of a node optionally returns a node of the same base type (in the
+   * case of statements or gates, a possibly empty list of statements or 
+   * gates). The visitor logic then replaces the visited node with the
+   * returned node, if non-empty, or otherwise leaves the node unchanged.
+   *
+   * Standard usage is to derive from Replacer and override the replace 
+   * methods only for the relevant nodes. The replace method is called
+   * post-order -- after visiting all children -- and overriding a replace
+   * method does not kill traversal to the node's children. To stop 
+   * descending into the children of a node, the node's visit overload
+   * can be overridden.
    */
   class Replacer : public Visitor {
     std::optional<VarAccess> replacement_var_;
@@ -266,7 +276,13 @@ namespace ast {
   };
 
   /** 
+   * \class synthewareQ::ast::GateReplacer
    * \brief Bulk gate replacement
+   * \see synthewareQ::ast::Replacer
+   *
+   * Implements bulk replacement of gates given by a hash map. Use the
+   * functional interface synthewareQ::ast::replace_gates rather than
+   * the class.
    */
   class GateReplacer final : public Replacer {
   public:
@@ -292,6 +308,16 @@ namespace ast {
     }
   };
 
+  /**
+   * \brief Replaces the specified gates within an AST
+   *
+   * Used to perform a list of gate replacements in one traversal. All keys in the 
+   * hash map should refer to gates (U, CNOT, barrier or a declared gate). 
+   * For replacement of other types of nodes, use the Replacer class.
+   * 
+   * \param node Reference to the root of the AST in which replacement will take place
+   * \param replacements Hash map from gate UID's to a list of gates which should replace it
+   */
   inline void replace_gates(ASTNode& node, std::unordered_map<int, std::list<ptr<Gate> > >&& replacements) {
     GateReplacer replacer(std::move(replacements));
     node.accept(replacer);

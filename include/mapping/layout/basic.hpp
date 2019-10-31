@@ -72,9 +72,9 @@ namespace mapping {
   };
 
   /** \brief A basic qubit layout algorithm */
-  class BasicLayout final : public ast::PostVisitor {
+  class BasicLayout final : public ast::Traverse {
   public:
-    BasicLayout(Device& device) : PostVisitor(), device_(device) {}
+    BasicLayout(Device& device) : Traverse(), device_(device) {}
     ~BasicLayout() = default;
 
     layout generate(ast::Program& prog) {

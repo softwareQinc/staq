@@ -42,18 +42,54 @@ namespace ast {
     std::list<ptr<Stmt> > body_; ///< the body of the program
 
   public:
+    /**
+     * \brief Constructs a QASM program
+     *
+     * \param pos The source position
+     * \param std_include Whether the standard library has been included
+     * \param body The program body
+     */
     Program(parser::Position pos, bool std_include, std::list<ptr<Stmt> >&& body)
       : ASTNode(pos)
       , std_include_(std_include)
       , body_(std::move(body))
     {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<Program> create(parser::Position pos, bool std_include, std::list<ptr<Stmt> >&& body) {
+      return std::make_unique<Program>(pos, std_include, std::move(body));
+    }
+
+    /**
+     * \brief Get the program body
+     *
+     * \return Reference to the body as a list of statements
+     */
     std::list<ptr<Stmt> >& body() { return body_; }
+
+    /**
+     * \brief Apply a function to each statement in order
+     *
+     * \param f Void function accepting a reference to a statement
+     */
     void foreach_stmt(std::function<void(Stmt&)> f) {
       for (auto it = body_.begin(); it != body_.end(); it++) f(**it);
     }
 
+    /**
+     * \brief Get an iterator to the beginning of the body
+     *
+     * \return std::list iterator
+     */
     std::list<ptr<Stmt> >::iterator begin() { return body_.begin(); }
+
+    /**
+     * \brief Get an iterator to the end of the body
+     *
+     * \return std::list iterator
+     */
     std::list<ptr<Stmt> >::iterator end() { return body_.end(); }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }

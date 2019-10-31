@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * Authors: Matthew Amy
+ * Adapted from Bruno Schmitt's Tweedledee library
  */
 
 /**
@@ -291,5 +291,5 @@ namespace parser {
     {"dirty", Token::Kind::kw_dirty},
     {"ancilla", Token::Kind::kw_ancilla}};
 
-} /* namespace qasm */
-} /* namespace qpp */
+}
+}

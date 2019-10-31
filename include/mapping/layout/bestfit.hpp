@@ -38,9 +38,9 @@ namespace mapping {
    * Chooses a layout where the most coupled virtual qubits are assigned to the highest
    * fidelity couplings. Should perform well for devices with a high degree of connectivity
    */
-  class BestFit final : public ast::PostVisitor {
+  class BestFit final : public ast::Traverse {
   public:
-    BestFit(Device& device) : PostVisitor(), device_(device) {}
+    BestFit(Device& device) : Traverse(), device_(device) {}
     ~BestFit() = default;
 
     layout generate(ast::Program& prog) {

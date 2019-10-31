@@ -51,7 +51,7 @@ namespace parser {
   /**
    * \class synthewareQ::parser::Parser
    * \brief openQASM parser class
-   * \see synthewareQ::parser::Lexer
+   * \see synthewareQ::parser::Preprocessor
    */
   class Parser {
     Preprocessor& pp_lexer_; ///< preprocessed, tokenized input stream
@@ -250,7 +250,7 @@ namespace parser {
         }
       }
 
-      return std::make_unique<ast::Program>(ast::Program(pos, pp_lexer_.includes_stdlib(), std::move(ret)));
+      return ast::Program::create(pos, pp_lexer_.includes_stdlib(), std::move(ret));
     }
 
     /**
@@ -284,7 +284,7 @@ namespace parser {
       expect_and_consume_token(Token::Kind::r_square);
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(pos, id.as_string(), quantum, size.as_int()));
+      return ast::RegisterDecl::create(pos, id.as_string(), quantum, size.as_int());
     }
 
     /**
@@ -311,7 +311,7 @@ namespace parser {
       expect_and_consume_token(Token::Kind::r_square);
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::AncillaDecl>(ast::AncillaDecl(pos, id.as_string(), dirty, size.as_int()));
+      return ast::AncillaDecl::create(pos, id.as_string(), dirty, size.as_int());
     }
 
     /**
@@ -345,8 +345,7 @@ namespace parser {
         expect_and_consume_token(Token::Kind::r_brace);
       }
 
-      return std::make_unique<ast::GateDecl>(ast::GateDecl(pos, id.as_string(), false, c_params,
-                                                       q_params, std::move(body)));
+      return ast::GateDecl::create(pos, id.as_string(), false, c_params, q_params, std::move(body));
     }
 
     /**
@@ -374,8 +373,7 @@ namespace parser {
       auto q_params = parse_idlist();
 
       consume_until(Token::Kind::semicolon);
-      return std::make_unique<ast::GateDecl>(ast::GateDecl(pos, id.as_string(),
-                                                       true, c_params, q_params, {}));
+      return ast::GateDecl::create(pos, id.as_string(), true, c_params, q_params, {});
     }
 
     /**
@@ -396,8 +394,7 @@ namespace parser {
       auto file = expect_and_consume_token(Token::Kind::string);
       expect_and_consume_token(Token::Kind::r_brace);
 
-      return std::make_unique<ast::OracleDecl>(ast::OracleDecl(pos, id.as_string(),
-                                                          params, file.as_string()));
+      return ast::OracleDecl::create(pos, id.as_string(), params, file.as_string());
     }
 
     /**
@@ -671,7 +668,7 @@ namespace parser {
 
         auto bop = parse_binaryop();
         auto rexp = parse_exp(next_min_precedence);
-        lexp = std::make_unique<ast::BExpr>(ast::BExpr(pos, std::move(lexp), bop, std::move(rexp)));
+        lexp = ast::BExpr::create(pos, std::move(lexp), bop, std::move(rexp));
       }
 
       return lexp;
@@ -697,26 +694,26 @@ namespace parser {
       case Token::Kind::minus: {
         consume_token();
         auto exp = parse_exp();
-        return std::make_unique<ast::UExpr>(ast::UExpr(pos, ast::UnaryOp::Neg, std::move(exp)));
+        return ast::UExpr::create(pos, ast::UnaryOp::Neg, std::move(exp));
       }
 
       case Token::Kind::identifier: {
         auto id = current_token_;
         consume_token();
-        return std::make_unique<ast::VarExpr>(ast::VarExpr(pos, id.as_string()));
+        return ast::VarExpr::create(pos, id.as_string());
       }
       case Token::Kind::nninteger: {
         auto integer = current_token_;
         consume_token();
-        return std::make_unique<ast::IntExpr>(ast::IntExpr(pos, integer.as_int()));
+        return ast::IntExpr::create(pos, integer.as_int());
       }
       case Token::Kind::kw_pi:
         consume_token();
-        return std::make_unique<ast::PiExpr>(ast::PiExpr(pos));
+        return ast::PiExpr::create(pos);
       case Token::Kind::real: {
         auto real = current_token_;
         consume_token();
-        return std::make_unique<ast::RealExpr>(ast::RealExpr(pos, real.as_real()));
+        return ast::RealExpr::create(pos, real.as_real());
       }
 
       case Token::Kind::kw_sin:
@@ -729,7 +726,7 @@ namespace parser {
         expect_and_consume_token(Token::Kind::l_paren);
         auto exp = parse_exp();
         expect_and_consume_token(Token::Kind::r_paren);
-        return std::make_unique<ast::UExpr>(ast::UExpr(pos, op, std::move(exp)));
+        return ast::UExpr::create(pos, op, std::move(exp));
       }
 
       default:
@@ -839,7 +836,7 @@ namespace parser {
       auto tgt = parse_argument();
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::CNOTGate>(ast::CNOTGate(pos, std::move(ctrl), std::move(tgt)));
+      return ast::CNOTGate::create(pos, std::move(ctrl), std::move(tgt));
     }
 
     /**
@@ -863,8 +860,7 @@ namespace parser {
       auto arg = parse_argument();
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::UGate>(ast::UGate(pos, std::move(theta), std::move(phi),
-                                                    std::move(lambda), std::move(arg)));
+      return ast::UGate::create(pos, std::move(theta), std::move(phi), std::move(lambda), std::move(arg));
     }
 
     /**
@@ -888,8 +884,7 @@ namespace parser {
       auto q_args = parse_anylist();
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::DeclaredGate>(ast::DeclaredGate(pos, id.as_string(),
-                                                           std::move(c_args), std::move(q_args)));
+      return ast::DeclaredGate::create(pos, id.as_string(), std::move(c_args), std::move(q_args));
     }
 
     /**
@@ -908,7 +903,7 @@ namespace parser {
       auto c_arg = parse_argument();
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::MeasureStmt>(ast::MeasureStmt(pos, std::move(q_arg), std::move(c_arg)));
+      return ast::MeasureStmt::create(pos, std::move(q_arg), std::move(c_arg));
     }
 
     /**
@@ -925,7 +920,7 @@ namespace parser {
       auto arg = parse_argument();
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::ResetStmt>(ast::ResetStmt(pos, std::move(arg)));
+      return ast::ResetStmt::create(pos, std::move(arg));
     }
 
     /**
@@ -942,7 +937,7 @@ namespace parser {
       auto args = parse_anylist();
       consume_until(Token::Kind::semicolon);
 
-      return std::make_unique<ast::BarrierGate>(ast::BarrierGate(pos, std::move(args)));
+      return ast::BarrierGate::create(pos, std::move(args));
     }
 
     /**
@@ -963,10 +958,13 @@ namespace parser {
       expect_and_consume_token(Token::Kind::r_paren);
       auto op = parse_qop();
 
-      return std::make_unique<ast::IfStmt>(ast::IfStmt(pos, id.as_string(), integer.as_int(), std::move(op)));
+      return ast::IfStmt::create(pos, id.as_string(), integer.as_int(), std::move(op));
     }
   };
 
+  /**
+   * \brief Parse a specified file
+   */
   inline ast::ptr<ast::Program> parse_file(std::string fname) {
     Preprocessor pp;
     Parser parser(pp);
@@ -985,6 +983,9 @@ namespace parser {
     return parser.parse();
   }
 
+  /**
+   * \brief Parse input from stdin
+   */
   inline ast::ptr<ast::Program> parse_stdin(std::string name="") {
     Preprocessor pp;
     Parser parser(pp);
@@ -996,16 +997,19 @@ namespace parser {
     return parser.parse();
   }
 
+  /**
+   * \brief Parse a string
+   * \note For small programs
+   */
   inline ast::ptr<ast::Program> parse_string(const std::string& str, std::string name="") {
     Preprocessor pp;
     Parser parser(pp);
     std::shared_ptr<std::istream> is = std::make_shared<std::istringstream>(str);
-
 
     pp.add_target_stream(is, name);
 
     return parser.parse();
   }
 
-} /* namespace parser */
-} /* namespace synthewareQ */
+}
+}

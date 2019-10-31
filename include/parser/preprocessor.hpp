@@ -75,7 +75,11 @@ static const std::string std_include =
   /**
    * \class synthewareQ::parser::Preprocessor
    * \brief openQASM preprocessor class
-   * \see synthewareQ::parser::Preprocessor
+   * \see synthewareQ::parser::Lexer
+   * 
+   * The preprocessor acts as a wrapper around the lexer, providing a token stream
+   * that matches the stream produced by explicitly inserting included code.
+   * Effectively, the preprocessor acts as the lexer on preprocessed code.
    */
   class Preprocessor {
     using LexerPtr = std::unique_ptr<Lexer>;

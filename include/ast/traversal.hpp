@@ -35,9 +35,22 @@ namespace synthewareQ {
 namespace ast {
 
   /** 
-   * \brief Generic complete post-order traversal of ASTs
+   * \class synthewareQ::ast::Traverse
+   * \brief Generic complete traversal of ASTs
+   * \see synthewareQ::ast::Visitor
+   *
+   * Implements a generic, pass-through traversal of the entire
+   * AST. Standard usage is to derive from this class and override only
+   * the nodes desired. 
+   *
+   * Note that overriding a node kills traversal to
+   * children of that node. This can be useful for cutting off traversal
+   * to certain subtrees. Traversal logic can be accessed through the
+   * parent class, e.g. by calling Traverse::visit. In this way, the
+   * Traverse class can be used to implement post-order, pre-order, or
+   * mixed pre/post algorithms by directly calling the traversal logic.
    */
-  class PostVisitor : public Visitor {
+  class Traverse : public Visitor {
   public:
     void visit(VarAccess& var) override { }
     void visit(BExpr& expr) override {

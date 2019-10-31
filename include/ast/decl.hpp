@@ -52,19 +52,24 @@ namespace ast {
    */
   class Decl {
   protected:
-    symbol id_;
+    symbol id_; ///< the name of the declaration
 
   public:
     Decl(symbol id) : id_(id) {}
     virtual ~Decl() = default;
 
+    /**
+     * \brief Return the name being declared
+     *
+     * \return Constant reference to the identifier
+     */
     const symbol& id() { return id_; }
-    //virtual Type get_type() = 0;
   };
 
   /**
    * \class synthewareQ::ast::GateDecl
    * \brief Class for gate declarations
+   * \see synthewareQ::ast::Stmt
    * \see synthewareQ::ast::Decl
    */
   class GateDecl final : public Stmt, public Decl {
@@ -92,15 +97,64 @@ namespace ast {
       , body_(std::move(body))
     {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<GateDecl> create(parser::Position pos, symbol id, bool opaque, std::vector<symbol> c_params,
+                                std::vector<symbol> q_params, std::list<ptr<Gate> >&& body)
+    {
+      return std::make_unique<GateDecl>(pos, id, opaque, c_params, q_params, std::move(body));
+    }
+
+    /**
+     * \brief Whether the declaration is opaque
+     *
+     * \return true is the declaration is opaque
+     */
     bool is_opaque() { return opaque_; }
+
+    /**
+     * \brief Get the classical parameter list
+     *
+     * \return Reference to the list of classical parameter names
+     */
     std::vector<symbol>& c_params() { return c_params_; }
+
+    /**
+     * \brief Get the quantum parameter list
+     *
+     * \return Reference to the list of quantum parameter names
+     */
     std::vector<symbol>& q_params() { return q_params_; }
+
+    /**
+     * \brief Get the gate body
+     *
+     * \return Reference to the body of the gate as a list of gate statements
+     */
     std::list<ptr<Gate> >& body() { return body_; }
+
+    /**
+     * \brief Apply a function to each statement of the gate
+     *
+     * \param f A void function taking a reference to a Gate
+     */
     void foreach_stmt(std::function<void(Gate&)> f) {
       for (auto it = body_.begin(); it != body_.end(); it++) f(**it);
     }
 
+    /**
+     * \brief Get an iterator to the beginning of the body
+     *
+     * \return std::list iterator
+     */
     std::list<ptr<Gate> >::iterator begin() { return body_.begin(); }
+
+    /**
+     * \brief Get an iterator to the end of the body
+     *
+     * \return std::list iterator
+     */
     std::list<ptr<Gate> >::iterator end() { return body_.end(); }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
@@ -150,13 +204,39 @@ namespace ast {
     symbol fname_;               ///< filename of external declaration
 
   public:
+    /**
+     * \brief Constructs an oracle declaration
+     *
+     * \param pos The source position
+     * \param id The gate identifier
+     * \param params List of quantum parameters
+     * \param fname Filename defining the classical logic
+     */
     OracleDecl(parser::Position pos, symbol id, std::vector<symbol> params, symbol fname)
       : Stmt(pos), Decl(id)
       , params_(params)
       , fname_(fname)
     {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<OracleDecl> create(parser::Position pos, symbol id, std::vector<symbol> params, symbol fname) {
+      return std::make_unique<OracleDecl>(pos, id, params, fname);
+    }
+
+    /**
+     * \brief Get the parameter list
+     *
+     * \return Reference to the list of quantum parameter names
+     */
     std::vector<symbol>& params() { return params_; }
+
+    /**
+     * \brief Get the filename
+     *
+     * \return Constant reference to the filename
+     */
     const symbol& fname() { return fname_; }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
@@ -194,7 +274,25 @@ namespace ast {
     RegisterDecl(parser::Position pos, symbol id, bool quantum, int size)
       : Stmt(pos), Decl(id), quantum_(quantum), size_(size) {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<RegisterDecl> create(parser::Position pos, symbol id, bool quantum, int size) {
+      return std::make_unique<RegisterDecl>(pos, id, quantum, size);
+    }
+
+    /**
+     * \brief Whether the register is quantum or classical
+     *
+     * \return true if the register is quantum
+     */
     bool is_quantum() { return quantum_; }
+
+    /**
+     * \brief Get the size of the register
+     *
+     * \return The size of the register
+     */
     int size() { return size_; }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
@@ -228,7 +326,25 @@ namespace ast {
     AncillaDecl(parser::Position pos, symbol id, bool dirty, int size)
       : Gate(pos), Decl(id), dirty_(dirty), size_(size) {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<AncillaDecl> create(parser::Position pos, symbol id, bool dirty, int size) {
+      return std::make_unique<AncillaDecl>(pos, id, dirty, size);
+    }
+
+    /**
+     * \brief Whether the register is dirty
+     *
+     * \return true if the register is dirty
+     */
     bool is_dirty() { return dirty_; }
+
+    /**
+     * \brief Get the size of the register
+     *
+     * \return The size of the register
+     */
     int size() { return size_; }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }

@@ -35,9 +35,9 @@ namespace synthewareQ {
 namespace mapping {
 
   /** \brief Allocates qubits on demand prioritizing coupling fidelity */
-  class EagerLayout final : public ast::PostVisitor {
+  class EagerLayout final : public ast::Traverse {
   public:
-    EagerLayout(Device& device) : PostVisitor(), device_(device) {
+    EagerLayout(Device& device) : Traverse(), device_(device) {
       couplings_ = device_.couplings();
     }
 

@@ -52,11 +52,18 @@ namespace ast {
   class AncillaDecl;
   class Program;
 
-  /** \brief Base visitor interface 
+  /** 
+   * \class synthewareQ::ast::Visitor
+   * \brief Base visitor interface 
    *  
-   *  Classic visitor style via (virtual) double dispatch.
-   *  Traversal to sub-nodes is handled by the particular visitor, not the
-   *  node class
+   * Classic visitor via (virtual) double dispatch. Standard usage is to
+   * derive from this class and provide implementations of visit for **every**
+   * node type.
+   *
+   * Traversal to sub-nodes is handled by the particular visitor, not the
+   * node class. For a visitor that automatically handles traversal and also
+   * allows picking and choosing the particular visit overloads, see
+   * synthewareQ::ast::Traverse.
    */
   class Visitor {
   public:

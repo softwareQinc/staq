@@ -41,6 +41,10 @@ namespace parser {
   /**
    * \class synthewareQ::parser::Lexer
    * \brief openPARSER lexer class
+   *
+   * The Lexer reads from (a shared_ptr to) an istream object given during
+   * initialization. Rather than lex the entire buffer at once, tokens are
+   * lexed and returned on-demand
    */
   class Lexer {
   public:

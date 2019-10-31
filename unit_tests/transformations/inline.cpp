@@ -110,7 +110,7 @@ TEST(Inline, Multi_Ancilla) {
   std::string post =
     "OPENQASM 2.0;\n" \
     "\n" \
-    "qreg auto_anc[2];\n" \
+    "qreg anc[2];\n" \
     "gate foo q {\n" \
     "\tancilla a[1];\n" \
     "\tancilla b[1];\n" \
@@ -118,8 +118,8 @@ TEST(Inline, Multi_Ancilla) {
     "\tCX q,b[0];\n" \
     "}\n" \
     "qreg q[1];\n" \
-    "CX q[0],auto_anc[0];\n" \
-    "CX q[0],auto_anc[1];\n";
+    "CX q[0],anc[0];\n" \
+    "CX q[0],anc[1];\n";
 
   auto program = parser::parse_string(pre, "multi_ancilla.qasm");
   transformations::inline_ast(*program);

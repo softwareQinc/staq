@@ -47,28 +47,59 @@ namespace ast {
    * \brief Base class for AST nodes
    */
   class ASTNode {
-    static int& max_uid_() { static int v; return v; }
+    static int& max_uid_() { static int v; return v; } ///< the maximum uid that has been assigned
 
   protected:
-    const int uid_;
-    const parser::Position pos_;
+    const int uid_;              ///< the node's unique ID
+    const parser::Position pos_; ///< the node's source code position
 
   public:
     ASTNode(parser::Position pos) : uid_(++max_uid_()), pos_(pos) { }
     virtual ~ASTNode() = default;
 
+    /**
+     * \brief Get the ID of the node
+     *
+     * \return The node's unique ID
+     */
     int uid() const { return uid_; }
+
+    /**
+     * \brief Get the position of the node
+     *
+     * \return The node's position in source
+     */
     parser::Position pos() const { return pos_; }
 
+    /**
+     * \brief Provides dispatch for the Visitor pattern
+     */
     virtual void accept(Visitor& visitor) = 0;
+
+    /**
+     * \brief Print the formatted QASM source code of the node
+     *
+     * \param os Output stream
+     */
     virtual std::ostream& pretty_print(std::ostream& os) const = 0;
+
+    /**
+     * \brief Generate a deep copy of the node
+     */
     virtual ASTNode* clone() const = 0;
 
+    /**
+     * \brief Extraction operator override
+     *
+     * Extraction is non-virtual and delegates to pretty_print
+     *
+     * \param os Output stream
+     * \param node Node to print
+     */
     friend std::ostream& operator<<(std::ostream& os, const ASTNode& node) {
       return node.pretty_print(os);
     }
   };
-
 
 }
 }

@@ -81,6 +81,8 @@ namespace ast {
     /**
      * \brief Evaluate constant expressions
      *
+     * All sub-classes must override this
+     *
      * \return Returns the value of the expression if it
      *         is constant, or nullopt otherwise
      */
@@ -104,10 +106,18 @@ namespace ast {
    */
   class BExpr final : public Expr {
     ptr<Expr> lexp_; ///< the left sub-expression
-    BinaryOp op_; ///< the binary operator
+    BinaryOp op_;    ///< the binary operator
     ptr<Expr> rexp_; ///< the right sub-expression
 
   public:
+    /**
+     * \brief Constructs a Binary expression
+     *
+     * \param pos The source position
+     * \param lexp The left sub-expression
+     * \param op The binary operator
+     * \param rexp The right sub-expression
+     */
     BExpr(parser::Position pos, ptr<Expr> lexp, BinaryOp op, ptr<Expr> rexp)
       : Expr(pos)
       , lexp_(std::move(lexp))
@@ -115,10 +125,46 @@ namespace ast {
       , rexp_(std::move(rexp))
     {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<BExpr> create(parser::Position pos, ptr<Expr> lexp, BinaryOp op, ptr<Expr> rexp) {
+      return std::make_unique<BExpr>(pos, std::move(lexp), op, std::move(rexp));
+    }
+
+    /**
+     * \brief Get the binary operator
+     *
+     * \return A binary operator enum
+     */
     BinaryOp op() const { return op_; }
+
+    /**
+     * \brief Get the left sub-expression
+     *
+     * \return A reference to the left sub-expression
+     */
     Expr& lexp() { return *lexp_; }
+
+    /**
+     * \brief Get the right sub-expression
+     *
+     * \return A reference to the right sub-expression
+     */
     Expr& rexp() { return *rexp_; }
+
+    /**
+     * \brief Set the left sub-expression
+     *
+     * \param exp The new left sub-expression
+     */
     void set_lexp(ptr<Expr> exp) { lexp_ = std::move(exp); }
+
+    /**
+     * \brief Set the right sub-expression
+     *
+     * \param exp The new right sub-expression
+     */
     void set_rexp(ptr<Expr> exp) { rexp_ = std::move(exp); }
 
     std::optional<double> constant_eval() const override {
@@ -136,7 +182,6 @@ namespace ast {
 	  default: return 0; // inaccessible
       }
     }
-
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
       if (ctx) {
@@ -170,14 +215,45 @@ namespace ast {
     ptr<Expr> exp_; ///< the sub-expression
 
   public:
+    /**
+     * \brief Constructs a Unary expression
+     *
+     * \param pos The source position
+     * \param op The unary operator
+     * \param exp The sub-expression
+     */
     UExpr(parser::Position pos, UnaryOp op, ptr<Expr> exp)
       : Expr(pos)
       , op_(op)
       , exp_(std::move(exp))
     {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<UExpr> create(parser::Position pos, UnaryOp op, ptr<Expr> exp) {
+      return std::make_unique<UExpr>(pos, op, std::move(exp));
+    }
+
+    /**
+     * \brief Get the operator
+     *
+     * \return A unary operator enum
+     */
 	UnaryOp op() const { return op_; }
+
+    /**
+     * \brief Get the sub-expression
+     *
+     * \return A reference to the sub-expression
+     */
     Expr& subexp() { return *exp_; }
+
+    /**
+     * \brief Set the sub-expression
+     *
+     * \param exp The new sub-expression
+     */
     void set_subexp(ptr<Expr> exp) { exp_ = std::move(exp); }
 
     std::optional<double> constant_eval() const override {
@@ -196,7 +272,6 @@ namespace ast {
 	  default: return 0; // inaccessible
       }
     }
-    
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
       (void)ctx;
@@ -226,12 +301,23 @@ namespace ast {
   class PiExpr final : public Expr {
     
   public:
+    /**
+     * \brief Construct a Pi expression
+     *
+     * \param pos The source position
+     */
     PiExpr(parser::Position pos) : Expr(pos) {}
+
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<PiExpr> create(parser::Position pos) {
+      return std::make_unique<PiExpr>(pos);
+    }
 
     std::optional<double> constant_eval() const override {
       return 3.14159265359;
     }
-
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
       (void)ctx;
@@ -254,14 +340,31 @@ namespace ast {
     int value_; ///< the integer value
 
   public:
+    /**
+     * \brief Construct an integer expression
+     *
+     * \param pos The source position
+     * \param val The integer value
+     */
     IntExpr(parser::Position pos, int value) : Expr(pos), value_(value) {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<IntExpr> create(parser::Position pos, int value) {
+      return std::make_unique<IntExpr>(pos, value);
+    }
+
+    /** 
+     * \brief Get the integer value
+     *
+     * \return The integer value
+     */
     int value() const { return value_; }
 
     std::optional<double> constant_eval() const override {
       return (double)value_;
     }
-    
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
       (void)ctx;
@@ -284,14 +387,31 @@ namespace ast {
     double value_; ///< the floating point value
 
   public:
+    /**
+     * \brief Construct a real-value expression
+     *
+     * \param pos The source position
+     * \param val The floating point value
+     */
     RealExpr(parser::Position pos, double value) : Expr(pos), value_(value) {}
 
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<RealExpr> create(parser::Position pos, double value) {
+      return std::make_unique<RealExpr>(pos, value);
+    }
+
+    /** 
+     * \brief Get the real value
+     *
+     * \return The floating point value
+     */
     double value() const { return value_; }
 
     std::optional<double> constant_eval() const override {
       return value_;
     }
-    
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
       (void)ctx;
@@ -313,14 +433,31 @@ namespace ast {
     symbol var_; ///< the identifier
 
   public:
+    /**
+     * \brief Construct a variable expression
+     *
+     * \param pos The source position
+     * \param var The variable name
+     */
     VarExpr(parser::Position pos, symbol var) : Expr(pos), var_(var) {}
     
+    /**
+     * \brief Protected heap-allocated construction
+     */
+    static ptr<VarExpr> create(parser::Position pos, symbol var) {
+      return std::make_unique<VarExpr>(pos, var);
+    }
+
+    /** 
+     * \brief Get the variable name
+     *
+     * \return Constant reference to the name
+     */
     const symbol& var() const { return var_; }
 
     std::optional<double> constant_eval() const override {
       return std::nullopt;
     }
-
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
       (void)ctx;
@@ -333,7 +470,10 @@ namespace ast {
   };
 
   /** 
-   * \brief Returns an Expr for a given angle
+   * \brief Returns an Expr representing the given angle
+   *
+   * \param theta The angle
+   * \return The equivalent QASM expression
    */
   inline ptr<Expr> angle_to_expr(const utils::Angle& theta) {
     parser::Position pos;
