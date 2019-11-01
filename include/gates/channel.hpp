@@ -538,7 +538,7 @@ namespace gates {
      * \brief Class storing a rotation of some angle around a pauli
      *
      * A rotation with angle \f$\theta\f$ and Pauli \f$P\f$ represents the unitary
-     *     \f$\frac{1 + e^{i\theta}}{2} I + \frac{1 - e^{i\theta}}{2} P
+     *     \f$\frac{1 + e^{i\theta}}{2} I + \frac{1 - e^{i\theta}}{2} P\f$
      */
     class Rotation {
     public:
@@ -580,8 +580,6 @@ namespace gates {
       /** \brief Get the angle of rotation */
       utils::Angle rotation_angle() { return theta_; }
       /**@}*/
-
-      /* Operators */
 
       /** @name Operators */
       /**@{*/
@@ -660,8 +658,8 @@ namespace gates {
       /**@}*/
 
     private:
-      utils::Angle theta_;
-      Pauli pauli_;
+      utils::Angle theta_; ///< The angle of rotation
+      Pauli pauli_;        ///< The Pauli rotated on
 
     };
 

@@ -24,6 +24,11 @@
 
 #pragma once
 
+/**
+ * \file mapping/device.hpp
+ * \brief Representation & tools for restricted device topologies
+ */
+
 #include "ast/var.hpp"
 
 #include <vector>
@@ -45,10 +50,33 @@ namespace mapping {
   using cmp_couplings = std::function<bool(std::pair<coupling, double>, std::pair<coupling, double>)>;
   using spanning_tree = std::list<std::pair<int, int> >;
 
-  /** \brief Definition of physical devices for efficient mapping */
+  /** 
+   * \class synthewareQ::mapping::Device
+   * \brief Class representing physical devices with restricted topologies & gate fidelities
+   *
+   * A device is used to store information about the number and arrangement of qubits
+   * in a hypothetical or real physical device. Devices may or may not include approximate
+   * fidelities for single-qubit and multi-qubit gates, but every device at least contains
+   * a number of qubits and a digraph giving the allowable CNOT gates. At the moment, all
+   * two-qubit gates are CNOT gates.
+   *
+   * The device class also allows computation of shortest paths between vertices and
+   * [Steiner trees](https://en.wikipedia.org/wiki/Steiner_tree_problem) for solving
+   * mapping problems.
+   */
   class Device {
   public:
+
+    /** @name Constructors */
+    /**@{*/
+    /** \brief Empty constructor */
     Device() {}
+    /** 
+     * \brief Construct a device from a coupling graph 
+     * \param name A name for the device
+     * \param n The number of qubits
+     * \param dag A digraph, given as a Boolean adjacency matrix
+     */
     Device(std::string name, int n, const std::vector<std::vector<bool> >& dag)
       : name_(name)
       , qubits_(n)
@@ -64,6 +92,14 @@ namespace mapping {
         }
       }
     }
+    /** 
+     * \brief Construct a device from a coupling graph 
+     * \param name A name for the device
+     * \param n The number of qubits
+     * \param dag A digraph, given as a Boolean adjacency matrix
+     * \param sq_fi A vector of average single-qubit gate fidelities for each qubit
+     * \param tq_fi A matrix of average two-qubit gate fidelities for each directed pair
+     */
     Device(std::string name, int n, const std::vector<std::vector<bool> >& dag,
            const std::vector<double>& sq_fi, const std::vector<std::vector<double> >& tq_fi)
       : name_(name)
@@ -72,24 +108,51 @@ namespace mapping {
       , single_qubit_fidelities_(sq_fi)
       , coupling_fidelities_(tq_fi)
     { }
+    /**@}*/
 
     std::string name_;
     int qubits_;
 
+    /** 
+     * \brief Whether the device allows a CNOT between two qubits
+     * \param i The control qubit
+     * \param j The target qubit
+     * \return True if the device admits a CNOT between qubits i and j
+     */
     bool coupled(int i, int j) {
       if (0 <= i && i < qubits_ && 0 <= j && j < qubits_) return couplings_[i][j];
       else throw std::out_of_range("Qubit(s) not in range");
     }
 
+    /** 
+     * \brief Get the single-qubit gate fidelity at a qubit
+     * \param i The qubit
+     * \return The fidelity as a double precision float
+     */
     double sq_fidelity(int i) {
       if (0 <= i && i < qubits_) return single_qubit_fidelities_[i];
       else throw std::out_of_range("Qubit not in range");
     }
+    /** 
+     * \brief Get the two-qubit gate fidelity at a coupling
+     * \param i The control qubit
+     * \param j The target qubit
+     * \return The fidelity as a double precision float
+     */
     double tq_fidelity(int i, int j) {
       if (coupled(i, j)) return coupling_fidelities_[i][j];
       else throw std::logic_error("Qubit not coupled");
     }
 
+    /** 
+     * \brief Get a shortest path between two qubits
+     *
+     * Paths are represented as a list of qubits indices
+     *
+     * \param i The control qubit
+     * \param j The target qubit
+     * \return A shortest (or highest fidelity) path between qubits i and j
+     */
     path shortest_path(int i, int j) {
       compute_shortest_paths();
       path ret { i };
@@ -106,6 +169,12 @@ namespace mapping {
       return ret;
     }
 
+    /** 
+     * \brief Get the distance of a shortest path between two qubits
+     * \param i The control qubit
+     * \param j The target qubit
+     * \return The length of a shortest path between qubits i and j
+     */
     int distance(int i, int j) {
       compute_shortest_paths();
 
@@ -122,7 +191,12 @@ namespace mapping {
       return ret;
     }
 
-    std::multiset<std::pair<coupling, double>, cmp_couplings> couplings() {
+    /** 
+     * \brief Get a list of all edges in the coupling digraph
+     * \note Couplings are ordered in decreasing fidelity.
+     * \return A set of (coupling, fidelity) pairs
+     */
+    std::set<std::pair<coupling, double>, cmp_couplings> couplings() {
       // Sort in order of decreasing coupling fidelity
       cmp_couplings cmp = [](std::pair<coupling, double> a, std::pair<coupling, double> b) {
         if (a.second == b.second)
@@ -131,7 +205,7 @@ namespace mapping {
           return a.second > b.second;
       };
 
-      std::multiset<std::pair<coupling, double>, cmp_couplings> ret(cmp);
+      std::set<std::pair<coupling, double>, cmp_couplings> ret(cmp);
       for (auto i = 0; i < qubits_; i++) {
         for (auto j = 0; j < qubits_; j++) {
           if (couplings_[i][j]) {
@@ -143,7 +217,16 @@ namespace mapping {
       return ret;
     }
 
-    // Returns an approximation to the minimal rooted steiner tree
+    /** 
+     * \brief Get an approximation to a minimal Steiner tree
+     *
+     * Given a set of terminal nodes and a root node in the coupling graph, attempts
+     * to find a minimal weight set of edges connecting the root to each terminal.
+     *
+     * \param terminals A list of terminal qubits to be connected
+     * \param root A root for the Steiner tree
+     * \return A spanning tree represented as a list of edges
+     */
     spanning_tree steiner(std::list<int> terminals, int root) {
       compute_shortest_paths();
 
@@ -189,16 +272,20 @@ namespace mapping {
     }
         
   private:
-    std::vector<std::vector<bool> > couplings_;
-    std::vector<double> single_qubit_fidelities_;
-    std::vector<std::vector<double> > coupling_fidelities_;
+    std::vector<std::vector<bool> > couplings_;   ///< The adjacency matrix of the device topology
+    std::vector<double> single_qubit_fidelities_; ///< The fidelities of single-qubit gates
+    std::vector<std::vector<double> > coupling_fidelities_; ///< The fidelities of two-qubit gates
 
-    // Utilities computed by all-pairs-shortest-paths, for use getting shortest paths
-    // and Steiner trees
-    std::vector<std::vector<double> > dist;
-    std::vector<std::vector<int> > shortest_paths;
+    /** @name All-pairs-shortest-paths */
+    /**@{*/
+    std::vector<std::vector<double> > dist;        ///< Distances returned by Floyd-Warshall
+    std::vector<std::vector<int> > shortest_paths; ///< Matrix return by Floyd-Warshall
+    /**@}*/
 
-    // Floyd-Warshall, since it's simple to implement and devices are not currently that big
+    /** 
+     * \brief Floyd-Warshall all-pairs-shortest-paths algorithm
+     * \note Assigns result to dist and shortest_paths
+     */
     void compute_shortest_paths() {
       if (dist.empty() || shortest_paths.empty()) {
         // Initialize
@@ -237,10 +324,18 @@ namespace mapping {
       }
     }
 
-    // Adds a path to a spanning tree, maintaining the spanning tree property &
-    // the topological order on s_tree
-    //
-    // Additionally returns the nodes added to the tree
+    /** 
+     * \brief Adds a path to a spanning tree
+     *
+     * Inserts a path into a spanning tree so that edges are not duplicated, and
+     * moreover maintains the spanning tree property & the topological order on
+     * the tree
+     *
+     * \param s_tree The input spanning tree
+     * \param p Const reference to the path to be inserted
+     * \param in_tree The set of nodes already in the tree
+     * \return The set of nodes in the resulting spanning tree
+     */
     std::set<int> add_to_tree(spanning_tree& s_tree, const path& p, const std::set<int>& in_tree) {
       std::set<int> ret;
 
@@ -264,6 +359,10 @@ namespace mapping {
 
   };
 
+  /** 
+   * \var Device rigetti_8q
+   * \brief The Rigetti 8 qubit Agave qpu 
+   */
   static Device rigetti_8q(
     "Rigetti 8Q",
     8,
@@ -286,6 +385,19 @@ namespace mapping {
       {0.91, 0, 0, 0, 0, 0, 0.91, 0},}
   );
     
+  /** 
+   * \var Device square_9q
+   * \brief A 9 qubit square lattice 
+   *
+   * Qubits are arranged like so:
+     \verbatim
+     0 -- 1 -- 2
+     |    |    |
+     5 -- 4 -- 3
+     |    |    |
+     6 -- 7 -- 8
+     \endverbatim
+   */
   static Device square_9q(
     "9 qubit square lattice",
     9,
@@ -300,6 +412,7 @@ namespace mapping {
       {0, 0, 0, 1, 0, 0, 0, 1, 0}, }
   );
 
+  /** \brief Generates a fully connected device with a given number of qubits */
   inline Device fully_connected(uint32_t n) {
     return Device("Fully connected device", 
                   n, 
