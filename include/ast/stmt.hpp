@@ -46,7 +46,7 @@ namespace ast {
   public:
     Stmt(parser::Position pos) : ASTNode(pos) {}
     virtual ~Stmt() = default;
-    virtual Stmt* clone() const = 0;
+    virtual Stmt* clone() const override = 0;
 
     /**
      * \brief Internal pretty-printer which can suppress the output of the stdlib

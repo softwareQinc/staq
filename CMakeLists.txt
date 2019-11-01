@@ -10,7 +10,7 @@ endif ()
 
 ### Clang and glibc don't seem to mesh
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v -stdlib=libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
 #### Source directory
