@@ -33,3 +33,6 @@
 
 # CMake build directory
 build/*
+
+# Documentation source files 
+doc/

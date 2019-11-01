@@ -76,7 +76,7 @@ namespace ast {
   public:
     Expr(parser::Position pos) : ASTNode(pos) {}
     virtual ~Expr() = default;
-    virtual Expr* clone() const = 0;
+    virtual Expr* clone() const override = 0;
 
     /**
      * \brief Evaluate constant expressions

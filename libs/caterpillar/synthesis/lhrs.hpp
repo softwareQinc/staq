@@ -498,12 +498,12 @@ private:
 
   void compute_and( SetQubits controls, uint32_t t )
   {
-    qnet.add_gate( tweedledum::gate::mcx, controls, SetQubits{{t}} );
+    qnet.add_gate( tweedledum::gate::mcx, controls, SetQubits{t} );
   }
 
   void compute_or( SetQubits controls, uint32_t t )
   {
-    qnet.add_gate( tweedledum::gate::mcx, controls, SetQubits{{t}} );
+    qnet.add_gate( tweedledum::gate::mcx, controls, SetQubits{t} );
     qnet.add_gate( tweedledum::gate::pauli_x, tweedledum::io_id( t, true ) );
   }
 
@@ -540,7 +540,7 @@ private:
     SetQubits controls;
     controls.push_back( tweedledum::io_id( c1, true ) );
     controls.push_back( tweedledum::io_id( c2, true ) );
-    qnet.add_gate( tweedledum::gate::mcx, controls, SetQubits{{t}} );
+    qnet.add_gate( tweedledum::gate::mcx, controls, SetQubits{t} );
 
     qnet.add_gate( tweedledum::gate::cx, tweedledum::io_id( c3, true ), c1 );
     qnet.add_gate( tweedledum::gate::cx, tweedledum::io_id( c1, true ), c2 );
