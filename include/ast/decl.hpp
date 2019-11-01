@@ -320,8 +320,8 @@ namespace ast {
      *
      * \param pos The source position
      * \param id The register identifier
-     * \param quantum whether the register is a quantum register
-     * \param size the size of the register
+     * \param dirty Whether the register is dirty
+     * \param size The size of the register
      */
     AncillaDecl(parser::Position pos, symbol id, bool dirty, int size)
       : Gate(pos), Decl(id), dirty_(dirty), size_(size) {}

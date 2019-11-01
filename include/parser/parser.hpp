@@ -39,6 +39,10 @@
 namespace synthewareQ {
 namespace parser {
 
+  /**
+   * \class synthewareQ::parser::ParseError
+   * \brief Exception class for parse errors
+   */
   class ParseError : public std::exception {
   public:
     ParseError() noexcept = default;

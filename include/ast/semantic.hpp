@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#pragma once
+
 #include "ast.hpp"
 #include "visitor.hpp"
 
@@ -31,11 +33,14 @@
  * \file ast/semantic.hpp
  * \brief Semantic analysis for syntax trees
  */
-#pragma once
 
 namespace synthewareQ {
 namespace ast {
 
+  /**
+   * \class synthewareQ::ast::SemanticError
+   * \brief Exception class for semantic errors
+   */
   class SemanticError : public std::exception {
   public:
     SemanticError() noexcept = default;
@@ -45,25 +50,52 @@ namespace ast {
     }
   };
 
-  /* Types */
+  /**
+   * \class synthewareQ::ast::BitType
+   * \brief Enum for types of bits
+   */
   enum class BitType { Cbit, Qubit };
+
+  /**
+   * \struct synthewareQ::ast::GateType
+   * \brief Data struct for gate types
+   */
   struct GateType {
     int num_c_params;
     int num_q_params;
   };
+
+  /**
+   * \struct synthewareQ::ast::RegisterType
+   * \brief Data struct for register types
+   */
   struct RegisterType {
     BitType type;
     int length;
   };
+
+  /**
+   * \struct synthewareQ::ast::RealType
+   * \brief Empty structure denoting a real type
+   */
   struct RealType {};
 
+  /**
+   * \brief openQASM types as a std::variant
+   *
+   * Functional-style syntax trees in C++17 as a simpler alternative
+   * to inheritance hierarchy. Support is still lacking for large-scale.
+   */
   using Type = std::variant<BitType, GateType, RegisterType, RealType>;
 
   /** 
+   * \class synthewareQ::ast::SemanticChecker
    * \brief Implementation of the semantic analysis compiler phase
+   * \see synthewareQ::ast::Visitor
    *  
    * Checks for anything that could cause a run-time error -- notably, 
-   * type errors, invalid uniform gates, etc.
+   * type errors, invalid uniform gates, etc. Use the functional
+   * interface synthewareQ::ast::check_source instead.
    */
   class SemanticChecker final : public Visitor {
   public:
@@ -221,12 +253,29 @@ namespace ast {
     }
 
   private:
-    bool error_ = false;
-    std::unordered_map<ast::symbol, GateType> gate_decls_{};
-    std::list<std::unordered_map<ast::symbol, Type> > symbol_table_{{}};
+    bool error_ = false;                                                 ///< whether errors have occurred
+    std::unordered_map<ast::symbol, GateType> gate_decls_{};             ///< global gate declarations
+    std::list<std::unordered_map<ast::symbol, Type> > symbol_table_{{}}; ///< a stack of symbol tables
 
+    /**
+     * \brief Enters a new scope
+     */
     void push_scope() { symbol_table_.push_front({}); }
+
+    /**
+     * \brief Exits the current scope
+     */
     void pop_scope() { symbol_table_.pop_front(); }
+
+    /**
+     * \brief Looks up a symbol in the symbol table
+     *
+     * Lookup checks in each symbol table going backwards up the enclosing scopes.
+     * Does not look in the global gate scope.
+     *
+     * \param id Const reference to a symbol
+     * \return The type of the symbol, if found
+     */
     std::optional<Type> lookup(const ast::symbol& id) {
       for (auto& table : symbol_table_) {
         if (auto it = table.find(id); it != table.end()) {
@@ -235,6 +284,13 @@ namespace ast {
       }
       return std::nullopt;
     }
+
+    /**
+     * \brief Assigns a symbol in the current scope
+     *
+     * \param id Const reference to a symbol
+     * \param typ The type of the symbol
+     */
     void set(const ast::symbol& id, Type typ) {
       if (symbol_table_.empty())
         throw std::logic_error("No current symbol table!");
@@ -242,17 +298,51 @@ namespace ast {
       symbol_table_.front()[id] = typ;
     }
 
+    /**
+     * \brief Looks up a symbol in the gate table
+     *
+     * \param id Const reference to a symbol
+     * \return The gate type of the symbol, if found
+     */
     std::optional<GateType> lookup_gate(const ast::symbol& id) {
       if (auto it = gate_decls_.find(id); it != gate_decls_.end()) {
           return it->second;
       }
       return std::nullopt;
     }
+
+    /**
+     * \brief Assigns a symbol in the global gate scope
+     *
+     * \param id Const reference to a symbol
+     * \param typ The gate type
+     */
     void set_gate(const ast::symbol& id, GateType typ) {
       gate_decls_[id] = typ;
     }
 
-    /** \brief Checks a vector of bit accesses */
+    /** 
+     * \brief Checks a vector of bit accesses 
+     *
+     * Given a vector of variable access and a vector of optional bit types,
+     * checks that each variable access is well-formed, is of the correct type
+     * if its type is specific, and that all **register** accesses are of the same
+     * length.
+     *
+     * For instance,
+     *     qreg q[2];
+     *     qreg r[2];
+     *     CX q,r;
+     * will pass the check, while
+     *     qreg q[2];
+     *     qreg r[1];
+     *     CX q,r;
+     * will not.
+     *
+     * \param args Const reference to a vector of arguments
+     * \param types Const reference to a vector of optional bit types
+     * \note Sets the error flag if an error is found
+     */
     void check_uniform(const std::vector<VarAccess>& args, const std::vector<std::optional<BitType> >& types) {
       int mapping_size = -1;
 
@@ -305,6 +395,9 @@ namespace ast {
         
   };
 
+  /**
+   * \brief Checks a program for semantic errors
+   */
   inline void check_source(Program& prog) {
     SemanticChecker analysis;
     if (analysis.run(prog))
