@@ -119,7 +119,7 @@ namespace mapping {
     layout layout_;
     std::vector<bool> allocated_;
     std::set<ast::VarAccess> access_paths_;
-    std::multiset<std::pair<coupling, double>, cmp_couplings> couplings_;
+    std::set<std::pair<coupling, double>, cmp_couplings> couplings_;
   };
 
   layout compute_eager_layout(Device& device, ast::Program& prog) {
