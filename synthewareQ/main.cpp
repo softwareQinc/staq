@@ -223,7 +223,9 @@ int main(int argc, char** argv) {
         /* Passes */
         for (auto pass : passes) switch (pass) {
           case Pass::desugar: transformations::desugar(*prog); break;
-          case Pass::inln: transformations::inline_ast(*prog); break;
+          case Pass::inln: 
+            transformations::inline_ast(*prog, {false, transformations::default_overrides, "anc"}); 
+            break;
           case Pass::synth: transformations::synthesize_oracles(*prog); break;
           case Pass::rotfold: optimization::fold_rotations(*prog); break;
           case Pass::simplify: optimization::simplify(*prog); break;

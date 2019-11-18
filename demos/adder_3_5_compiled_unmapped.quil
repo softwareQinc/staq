@@ -1,0 +1,230 @@
+DEFGATE X:
+    0, 1
+    1, 0
+
+DEFGATE CNOT:
+    1, 0, 0, 0
+    0, 1, 0, 0
+    0, 0, 0, 1
+    0, 0, 1, 0
+
+DEFGATE U(%theta, %phi, %lambda):
+    EXP(-i*(%phi+%lambda)/2)*COS(%theta/2), -EXP(-i*(%phi-%lambda)/2)*SIN(%theta/2)
+    EXP(i*(%phi-%lambda)/2)*SIN(%theta/2), EXP(i*(%phi+%lambda)/2)*COS(%theta/2)
+
+DEFCIRCUIT CLEAR q scratch_bit:
+    MEASURE q scratch_bit
+    JUMP-UNLESS @end scratch_bit
+    X q
+    LABEL @end
+
+DEFCIRCUIT cx c t:
+    CNOT c t
+
+DEFCIRCUIT x a:
+    U(pi, 0, pi) a
+
+DEFCIRCUIT y a:
+    U(pi, pi/2, pi/2) a
+
+DEFCIRCUIT z a:
+    U(0, 0, pi) a
+
+DEFCIRCUIT h a:
+    U(pi/2, 0, pi) a
+
+DEFCIRCUIT s a:
+    U(0, 0, pi/2) a
+
+DEFCIRCUIT sdg a:
+    U(0, 0, -(pi/2)) a
+
+DEFCIRCUIT t a:
+    U(0, 0, pi/4) a
+
+DEFCIRCUIT tdg a:
+    U(0, 0, -(pi/4)) a
+
+DEFCIRCUIT rx(%theta) a:
+    U(%theta, -(pi/2), pi/2) a
+
+DEFCIRCUIT ry(%theta) a:
+    U(%theta, 0, 0) a
+
+DEFCIRCUIT rz(%phi) a:
+    U(0, 0, %phi) a
+
+DEFCIRCUIT cz a b:
+    H b
+    CNOT a b
+    H b
+
+DEFCIRCUIT cy a b:
+    DAGGER S b
+    CNOT a b
+    S b
+
+DEFCIRCUIT swap a b:
+    CNOT a b
+    CNOT b a
+    CNOT a b
+
+DECLARE result BIT[4]
+X 3
+X 4
+X 7
+X 9
+CNOT 3 11
+CNOT 7 11
+H 0
+CNOT 7 0
+DAGGER T 0
+CNOT 3 0
+T 0
+CNOT 7 0
+DAGGER T 0
+CNOT 3 0
+T 0
+H 0
+CNOT 4 12
+CNOT 8 12
+CNOT 0 12
+H 1
+CNOT 8 1
+CNOT 4 1
+T 1
+CNOT 8 1
+CNOT 4 1
+DAGGER T 1
+CNOT 0 1
+CNOT 4 1
+T 1
+CNOT 0 1
+DAGGER S 1
+CNOT 4 1
+S 4
+CNOT 8 1
+S 1
+CNOT 0 1
+T 1
+CNOT 8 1
+DAGGER S 1
+CNOT 0 1
+S 0
+DAGGER S 8
+H 1
+CNOT 5 13
+CNOT 9 13
+CNOT 1 13
+H 2
+CNOT 9 2
+CNOT 5 2
+T 2
+CNOT 9 2
+CNOT 5 2
+DAGGER T 2
+CNOT 1 2
+CNOT 5 2
+T 2
+CNOT 1 2
+DAGGER S 2
+CNOT 5 2
+S 5
+CNOT 9 2
+S 2
+CNOT 1 2
+T 2
+CNOT 9 2
+DAGGER S 2
+CNOT 1 2
+S 1
+DAGGER S 9
+H 2
+CNOT 6 14
+CNOT 10 14
+CNOT 2 14
+H 2
+CNOT 9 2
+CNOT 5 2
+T 2
+CNOT 9 2
+CNOT 5 2
+DAGGER T 2
+CNOT 5 9
+DAGGER S 9
+CNOT 5 9
+CNOT 1 2
+CNOT 5 2
+T 2
+CNOT 1 2
+DAGGER S 2
+CNOT 5 2
+CNOT 5 1
+DAGGER S 1
+CNOT 5 1
+S 5
+CNOT 9 2
+S 2
+CNOT 1 2
+T 2
+CNOT 9 2
+DAGGER S 2
+CNOT 1 2
+CNOT 1 9
+DAGGER S 9
+CNOT 1 9
+S 1
+DAGGER S 9
+H 2
+H 1
+CNOT 8 1
+CNOT 4 1
+T 1
+CNOT 8 1
+CNOT 4 1
+DAGGER T 1
+CNOT 4 8
+DAGGER S 8
+CNOT 4 8
+CNOT 0 1
+CNOT 4 1
+T 1
+CNOT 0 1
+DAGGER S 1
+CNOT 4 1
+CNOT 4 0
+DAGGER S 0
+CNOT 4 0
+S 4
+CNOT 8 1
+S 1
+CNOT 0 1
+T 1
+CNOT 8 1
+DAGGER S 1
+CNOT 0 1
+CNOT 0 8
+DAGGER S 8
+CNOT 0 8
+S 0
+DAGGER S 8
+H 1
+H 0
+CNOT 7 0
+DAGGER T 0
+CNOT 3 0
+T 0
+CNOT 7 0
+DAGGER T 0
+CNOT 3 0
+T 0
+CNOT 3 7
+DAGGER S 7
+CNOT 3 7
+S 3
+S 7
+H 0
+MEASURE 11 result[0]
+MEASURE 12 result[1]
+MEASURE 13 result[2]
+MEASURE 14 result[3]

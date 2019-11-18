@@ -76,8 +76,13 @@ namespace output {
       // accesses refer to circuit parameters while dereferences refer to
       // qubit addresses
       if (ap.offset()) {
-        auto [r, length] = globals_[ap.var()];
-        os_ << r + *(ap.offset());
+        // Need to determine if it's a qubit address or classical bit
+        if (globals_.find(ap.var()) != globals_.end()) {
+          auto [r, length] = globals_[ap.var()];
+          os_ << r + *(ap.offset());
+        } else {
+          os_ << ap.var() << "[" << *(ap.offset()) << "]";
+        }
       } else {
         os_ << ap.var();
       }
@@ -170,7 +175,8 @@ namespace output {
         else
           os_ << "JUMP-WHEN";
 
-        os_ << " @end" << stmt.uid() << " [" << r + i << "]\n";
+        os_ << " @end" << stmt.uid() << " " 
+            << stmt.var() << "[" << r << "]\n";
       }
 
       stmt.then().accept(*this);
@@ -282,8 +288,7 @@ namespace output {
         globals_[decl.id()] = std::make_pair(max_qbit_, decl.size());
         max_qbit_ += decl.size();
       } else {
-        globals_[decl.id()] = std::make_pair(max_cbit_, decl.size());
-        max_cbit_ += decl.size();
+        os_ << "DECLARE " << decl.id() << " BIT[" << decl.size() << "]\n";
       }
     }
 
