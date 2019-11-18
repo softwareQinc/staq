@@ -14,5 +14,5 @@ circ1 = transpile(circ, basis_gates=basis, backend=None, seed_transpiler=11, opt
 print("Optimized:\n  {}".format(circ1.count_ops()))
 
 # Optimize and map
-circ2 = transpile(circ, basis_gates=basis, backend=FakeTokyo(), seed_transpiler=11, optimization_level=3)
+circ2 = transpile(circ, backend=FakeTokyo(), seed_transpiler=11, optimization_level=3)
 print("Mapped:\n  {}".format(circ2.count_ops()))
