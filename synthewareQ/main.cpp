@@ -113,8 +113,8 @@ void print_help() {
             << "Output filename. Otherwise prints to stdout\n";
   std::cout << std::setw(width) << std::left << "-f,--format (qasm|quil|projectq|qsharp|cirq|resources)"
             << "Output format. Default=qasm\n";
-  std::cout << std::setw(width) << std::left << "-d,--device (rigetti8|square9|fullycon9|aspen4)"
-            << "Device for physical mapping. Default=fullycon9\n";
+  std::cout << std::setw(width) << std::left << "-d,--device (tokyo|agave|aspen-4|square|fullycon)"
+            << "Device for physical mapping. Default=tokyo\n";
   std::cout << std::setw(width) << std::left << "-l,--layout (linear|eager|bestfit)"
             << "Initial device layout algorithm. Default=linear\n";
   std::cout << std::setw(width) << std::left << "-M,--mapping-alg (swap|steiner)"
@@ -126,7 +126,7 @@ void print_help() {
 int main(int argc, char** argv) {
   std::list<Pass> passes{Pass::desugar};
 
-  mapping::Device dev = mapping::fully_connected(9);
+  mapping::Device dev = mapping::tokyo;
   Layout layout_alg = Layout::linear;
   Mapper mapper = Mapper::swap;
   std::string ofile = "";
@@ -163,10 +163,11 @@ int main(int argc, char** argv) {
     /* Device configuration */
     case Option::d: {
       std::string_view arg(argv[++i]);
-      if (arg == "rigetti8") dev = mapping::rigetti_8q;
-      else if (arg == "square9") dev = mapping::square_9q;
-      else if (arg == "fullycon9") dev = mapping::fully_connected(9);
-      else if (arg == "aspen4") dev = mapping::aspen_4;
+      if (arg == "tokyo") dev = mapping::tokyo;
+      else if (arg == "agave") dev = mapping::agave;
+      else if (arg == "aspen-4") dev = mapping::aspen4;
+      else if (arg == "square") dev = mapping::square_9q;
+      else if (arg == "fullycon") dev = mapping::fully_connected(9);
       else std::cout << "Error: unrecognized device \"" << arg << "\"\n";
       break;
     }
