@@ -113,7 +113,7 @@ void print_help() {
             << "Output filename. Otherwise prints to stdout\n";
   std::cout << std::setw(width) << std::left << "-f,--format (qasm|quil|projectq|qsharp|cirq|resources)"
             << "Output format. Default=qasm\n";
-  std::cout << std::setw(width) << std::left << "-d,--device (rigetti8|square9|fullycon9)"
+  std::cout << std::setw(width) << std::left << "-d,--device (rigetti8|square9|fullycon9|aspen4)"
             << "Device for physical mapping. Default=fullycon9\n";
   std::cout << std::setw(width) << std::left << "-l,--layout (linear|eager|bestfit)"
             << "Initial device layout algorithm. Default=linear\n";
@@ -166,6 +166,7 @@ int main(int argc, char** argv) {
       if (arg == "rigetti8") dev = mapping::rigetti_8q;
       else if (arg == "square9") dev = mapping::square_9q;
       else if (arg == "fullycon9") dev = mapping::fully_connected(9);
+      else if (arg == "aspen4") dev = mapping::aspen_4;
       else std::cout << "Error: unrecognized device \"" << arg << "\"\n";
       break;
     }

@@ -161,7 +161,11 @@ namespace synthesis {
     // Create a mapping from qubits to functions generating declaration references
     auto inputs = stats.i_indexes;
     inputs.insert(inputs.end(), stats.o_indexes.begin(), stats.o_indexes.end());
-    assert(params.size() == inputs.size()); //sanity check, should be checked in semantic analysis phase
+    if (params.size() != inputs.size()) {
+      std::cerr << "Error: expected .v file with " << params.size() 
+                << " inputs, got " << inputs.size() << "\n";
+      throw ast::SemanticError();
+    }
 
     std::vector<ast::VarAccess> id_refs;
     id_refs.reserve(num_qubits);
