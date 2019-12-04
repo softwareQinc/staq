@@ -200,22 +200,20 @@ TEST(Steiner_Mapper, Swap_No_Z) {
     "qreg q[9];\n" \
     "CX q[7],q[4];\n" \
     "CX q[4],q[7];\n" \
-    "CX q[7],q[4];\n" \
     "CX q[4],q[1];\n" \
+    "CX q[7],q[4];\n" \
     "CX q[1],q[4];\n" \
-    "CX q[4],q[1];\n" \
-    "CX q[7],q[4];\n" \
     "CX q[4],q[7];\n" \
+    "CX q[4],q[1];\n" \
     "CX q[7],q[4];\n" \
     "U(0,pi/4,0) q[1];\n" \
     "CX q[7],q[4];\n" \
     "CX q[4],q[7];\n" \
-    "CX q[7],q[4];\n" \
     "CX q[4],q[1];\n" \
+    "CX q[7],q[4];\n" \
     "CX q[1],q[4];\n" \
-    "CX q[4],q[1];\n" \
-    "CX q[7],q[4];\n" \
     "CX q[4],q[7];\n" \
+    "CX q[4],q[1];\n" \
     "CX q[7],q[4];\n";
 
   auto program = parser::parse_string(pre, "steiner_swap_no_z.qasm");

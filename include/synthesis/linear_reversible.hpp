@@ -168,10 +168,9 @@ namespace synthesis {
     for (auto i = 0; i < mat[0].size(); i++) {
       std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
-      // Phase 0: Find pivot & swap
+      // Phase 0: Find a pivot
       int pivot = -1;
       int dist;
-      std::list<std::pair<int, int> > swap;
       for (auto j = i; j < mat.size(); j++) {
         if (mat[j][i] == true) {
           if (pivot == -1 || d.distance(j, i) < dist) {
@@ -185,22 +184,36 @@ namespace synthesis {
         return ret;
       }
 
-      mat[pivot].swap(mat[i]);
-      // Swap operations
-      for (auto j : d.shortest_path(pivot, i)) {
-        if (j != pivot) {
-          swap.push_back(std::make_pair(pivot, j));
-          swap.push_back(std::make_pair(j, pivot));
-          swap.push_back(std::make_pair(pivot, j));
+      std::list<std::pair<int, int> > init;
+      int crossing_point = -1;
+      auto path = d.shortest_path(pivot, i);
+      // Phase 1: Propagate 1's in column i along shortest path to row i
+      for (auto j : path) {
+        if (j != pivot && mat[j][i] == false) {
+          mat[j] ^= mat[pivot];
+          init.push_back(std::make_pair(pivot, j));
+          if (j < i) crossing_point = pivot;
           pivot = j;
         }
       }
-      // So that the other rows do not end up out of order
-      if (!swap.empty()) {
-        swap.insert(swap.end(), std::next(swap.rbegin(), 3), swap.rend());
+
+      // Phase 2: If the path crossed the diagonal, backtrack to the point of
+      // crossing and uncompute the above the diagonal additions
+      int tmp = -1;
+      if (crossing_point != -1) {
+        for (auto j : path) {
+          if (tmp != -1) {
+            mat[j] ^= mat[tmp];
+            init.push_back(std::make_pair(tmp, j));
+            std::cout << "CNOT(" << tmp << "," << j << ")\n";
+          }
+
+          // We start adding CNOTs on the next iteration after the crossing point
+          if (tmp != -1 || j == crossing_point) tmp = j;
+        }
       }
 
-      // Phase 1: Compute steiner tree covering the 1's in column i
+      // Phase 3: Compute steiner tree covering the 1's in column i
       std::list<int> pivots;
       for (auto j = 0; j < mat.size(); j++) {
         if (j != i && mat[j][i] == true) pivots.push_back(j);
@@ -208,17 +221,19 @@ namespace synthesis {
       auto s_tree = d.steiner(pivots, pivot);
 
       std::list<std::pair<int, int> > compute;
-      // Phase 2: Propagate 1's to column i for each Steiner point
+      // Phase 4: Propagate 1's to column i for each Steiner point
       for (auto& [ctrl, tgt] : s_tree) {
         if (mat[tgt][i] == false) {
           mat[tgt] ^= mat[ctrl];
           compute.push_back(std::make_pair(ctrl, tgt));
 
-          above_diagonal_dep[tgt] = above_diagonal_dep[tgt] || above_diagonal_dep[ctrl] || (ctrl < pivot);
+          above_diagonal_dep[tgt] = above_diagonal_dep[tgt] 
+                                    || above_diagonal_dep[ctrl] 
+                                    || (ctrl < pivot);
         }
       }
 
-      // Phase 3: Empty all 1's from column i in the Steiner tree
+      // Phase 5: Empty all 1's from column i in the Steiner tree
       for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
         auto ctrl = it->first;
         auto tgt = it->second;
@@ -226,10 +241,12 @@ namespace synthesis {
         mat[tgt] ^= mat[ctrl];
         compute.push_back(std::make_pair(ctrl, tgt));
 
-        above_diagonal_dep[tgt] = above_diagonal_dep[tgt] || above_diagonal_dep[ctrl] || (ctrl < pivot);
+        above_diagonal_dep[tgt] = above_diagonal_dep[tgt] 
+                                  || above_diagonal_dep[ctrl] 
+                                  || (ctrl < pivot);
       }
 
-      // Phase 4: For each node that has an above diagonal dependency,
+      // Phase 6: For each node that has an above diagonal dependency,
       // reverse the previous steps to undo the additions
       std::list<std::pair<int, int> > uncompute;
       for (auto it = compute.rbegin(); it != compute.rend(); it++) {
@@ -241,7 +258,7 @@ namespace synthesis {
         }
       }
 
-      ret.splice(ret.end(), swap);
+      ret.splice(ret.end(), init);
       ret.splice(ret.end(), compute);
       ret.splice(ret.end(), uncompute);
     }
