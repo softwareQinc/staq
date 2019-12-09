@@ -176,13 +176,6 @@ namespace synthesis {
 
     for (auto i = 0; i < mat[0].size(); i++) {
 
-      std::cout << "Doing column " << i << ":\n";
-      print_linop(mat);
-      for (auto& [i,j] : ret) {
-        std::cout << "CNOT(" << i << "," << j << ")";
-      }
-      std::cout << "\n";
-
       std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
       // Phase 0: Find a pivot
@@ -202,54 +195,54 @@ namespace synthesis {
       }
 
       std::list<std::pair<int, int> > swap;
-      int crossing_point = -1;
+      std::list<std::pair<int, int> > uncompute_swap;
+      bool crossed_diag = false;
       auto path = d.shortest_path(pivot, i);
-
-      std::cout << "Pivot: " << pivot << "\n";
-      std::cout << "Shortest path: ";
-      for (auto i : path) 
-        std::cout << i << "->";
-      std::cout << "\n\n";
+      int ctrl = pivot;
 
       // Phase 1: Fill 1's in column i along shortest path to row i
-      for (auto j : path) {
-        if (j != pivot && mat[j][i] == false) {
-          mat[j] ^= mat[pivot];
-          init.push_back(std::make_pair(pivot, j));
-          if (j < i) crossing_point = pivot;
+      for (auto tgt : path) {
+        if (tgt != ctrl && mat[tgt][i] == false) {
+          mat[tgt] ^= mat[ctrl];
+          swap.push_back(std::make_pair(ctrl, tgt));
+          if (ctrl < i) crossed_diag = true;
+          above_diagonal_dep[tgt] = above_diagonal_dep[tgt] 
+                                    || above_diagonal_dep[ctrl] 
+                                    || (ctrl < i);
         }
-        pivot = j;
+
+        ctrl = tgt;
       }
 
       // Phase 2: If the path crossed the diagonal, corrections needed
-      if (crossing_point != -1) {
+      if (crossed_diag) {
         // First zero out column i along the path
+        auto tgt = i;
         for (auto it = std::next(path.rbegin()); it != path.rend(); it++) {
-
-          if (j != pivot && mat[j][i] == false) {
-          mat[j] ^= mat[pivot];
-          init.push_back(std::make_pair(pivot, j));
-          if (j < i) crossing_point = pivot;
-        }
-        pivot = j;
-      }
-
-      // Phase 2: If the path crossed the diagonal, zero-fill
-      int tmp = -1;
-      if (crossing_point != -1) {
-        for (auto j : path) {
-          if (tmp != -1) {
-            mat[j] ^= mat[tmp];
-            init.push_back(std::make_pair(tmp, j));
+          auto ctrl = *it;
+          if (tgt != i) {
+            mat[tgt] ^= mat[ctrl];
+            swap.push_back(std::make_pair(ctrl, tgt));
+            above_diagonal_dep[tgt] = above_diagonal_dep[tgt] 
+                                      || above_diagonal_dep[ctrl] 
+                                      || (ctrl < i);
           }
+          tgt = ctrl;
+        }
 
-          // We start adding CNOTs on the next iteration after the crossing point
-          if (tmp != -1 || j == crossing_point) tmp = j;
+        // Now repeat the computation to remove above diagonals
+        for (auto it = swap.rbegin(); it != swap.rend(); it++) {
+          auto ctrl = it->first;
+          auto tgt = it->second;
+          if (above_diagonal_dep[tgt] && it->first != pivot) {
+            mat[tgt] ^= mat[ctrl];
+            uncompute_swap.push_back(std::make_pair(ctrl, tgt));
+          }
         }
       }
 
-      std::list<std::pair<int, int> > uncompute_swap;
-
+      // Our pivot is now necessarily row i
+      pivot = i;
       std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
       // Phase 3: Compute steiner tree covering the 1's in column i

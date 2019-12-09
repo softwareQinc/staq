@@ -248,6 +248,10 @@ int main(int argc, char** argv) {
               break;
             }
 
+            /* (Optional) optimize the layout */
+            if (mapper == Mapper::steiner)
+              optimize_steiner_layout(dev, initial_layout, *prog);
+
             /* Apply the layout */
             mapping::apply_layout(initial_layout, *prog);
             
