@@ -85,10 +85,10 @@ namespace mapping {
       single_qubit_fidelities_.resize(n);
       coupling_fidelities_.resize(n);
       for (auto i = 0; i < n; i++) {
-        single_qubit_fidelities_[i] = 1.0;
+        single_qubit_fidelities_[i] = 0.99;
         coupling_fidelities_[i].resize(n);
         for (auto j = 0; j < n; j++) {
-          coupling_fidelities_[i][j] = 1.0;
+          coupling_fidelities_[i][j] = 0.99;
         }
       }
     }

@@ -27,6 +27,7 @@
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
 #include "utils/angle.hpp"
+#include "utils/templates.hpp"
 
 #include <vector>
 #include <list>
@@ -116,10 +117,8 @@ namespace synthesis {
       stack.pop_front();
 
       // Debug
-      /*
-      std::cout << "Processing partition:\n  ";
-      print_partition(part);
-      */
+      //std::cout << "Processing partition:\n  ";
+      //print_partition(part);
 
       if (part.terms.size() == 0) continue;
       else if (part.terms.size() == 1 && part.target) {
@@ -184,6 +183,8 @@ namespace synthesis {
       stack.pop_front();
 
       // Debug
+      //std::cout << "Processing partition:\n  ";
+      //print_partition(part);
 
       if (part.terms.size() == 0) continue;
       else if (part.terms.size() == 1 && part.target) {

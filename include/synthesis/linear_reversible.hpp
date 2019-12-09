@@ -44,6 +44,15 @@ namespace synthesis {
     return A;
   }
 
+  static void print_linop(const linear_op<bool>& mat) {
+    for (auto i = 0; i < mat.size(); i++) {
+      for (auto j = 0; j < mat[i].size(); j++) {
+        std::cout << (mat[i][j] ? "1" : "0");
+      }
+      std::cout << "\n";
+    }
+  }
+
   static std::list<std::pair<int, int> > gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int> > ret;
 
@@ -166,6 +175,14 @@ namespace synthesis {
     std::vector<bool> above_diagonal_dep(mat.size(), false);
 
     for (auto i = 0; i < mat[0].size(); i++) {
+
+      std::cout << "Doing column " << i << ":\n";
+      print_linop(mat);
+      for (auto& [i,j] : ret) {
+        std::cout << "CNOT(" << i << "," << j << ")";
+      }
+      std::cout << "\n";
+
       std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
       // Phase 0: Find a pivot
@@ -184,34 +201,56 @@ namespace synthesis {
         return ret;
       }
 
-      std::list<std::pair<int, int> > init;
+      std::list<std::pair<int, int> > swap;
       int crossing_point = -1;
       auto path = d.shortest_path(pivot, i);
-      // Phase 1: Propagate 1's in column i along shortest path to row i
+
+      std::cout << "Pivot: " << pivot << "\n";
+      std::cout << "Shortest path: ";
+      for (auto i : path) 
+        std::cout << i << "->";
+      std::cout << "\n\n";
+
+      // Phase 1: Fill 1's in column i along shortest path to row i
       for (auto j : path) {
         if (j != pivot && mat[j][i] == false) {
           mat[j] ^= mat[pivot];
           init.push_back(std::make_pair(pivot, j));
           if (j < i) crossing_point = pivot;
-          pivot = j;
         }
+        pivot = j;
       }
 
-      // Phase 2: If the path crossed the diagonal, backtrack to the point of
-      // crossing and uncompute the above the diagonal additions
+      // Phase 2: If the path crossed the diagonal, corrections needed
+      if (crossing_point != -1) {
+        // First zero out column i along the path
+        for (auto it = std::next(path.rbegin()); it != path.rend(); it++) {
+
+          if (j != pivot && mat[j][i] == false) {
+          mat[j] ^= mat[pivot];
+          init.push_back(std::make_pair(pivot, j));
+          if (j < i) crossing_point = pivot;
+        }
+        pivot = j;
+      }
+
+      // Phase 2: If the path crossed the diagonal, zero-fill
       int tmp = -1;
       if (crossing_point != -1) {
         for (auto j : path) {
           if (tmp != -1) {
             mat[j] ^= mat[tmp];
             init.push_back(std::make_pair(tmp, j));
-            std::cout << "CNOT(" << tmp << "," << j << ")\n";
           }
 
           // We start adding CNOTs on the next iteration after the crossing point
           if (tmp != -1 || j == crossing_point) tmp = j;
         }
       }
+
+      std::list<std::pair<int, int> > uncompute_swap;
+
+      std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
       // Phase 3: Compute steiner tree covering the 1's in column i
       std::list<int> pivots;
@@ -258,7 +297,8 @@ namespace synthesis {
         }
       }
 
-      ret.splice(ret.end(), init);
+      ret.splice(ret.end(), swap);
+      ret.splice(ret.end(), uncompute_swap);
       ret.splice(ret.end(), compute);
       ret.splice(ret.end(), uncompute);
     }
