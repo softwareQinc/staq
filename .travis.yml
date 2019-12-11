@@ -34,7 +34,7 @@ matrix:
         #  compiler: dotnet
         #  before_install:
         #      - export CXX="dotnet" CC="dotnet"
-        #      - export BUILD="dotnet build synthewareQ.sln"
+        #      - export BUILD="dotnet build staq.sln"
 
 notifications:
   email: false
