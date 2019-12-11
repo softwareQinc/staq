@@ -33,27 +33,26 @@
 namespace staq {
 namespace transformations {
 
-  /**
-   * \brief Inlines gate calls
-   *
-   * Traverses an AST and inlines all gate calls. By default qelib calls are NOT
-   * inlined, but optionally can be. Local ancillas are hoisted to the global
-   * level and reused
-   */
+/**
+ * \brief Inlines gate calls
+ *
+ * Traverses an AST and inlines all gate calls. By default qelib calls are NOT
+ * inlined, but optionally can be. Local ancillas are hoisted to the global
+ * level and reused
+ */
 
-  /* \brief Default overrides */
-  static const std::set<std::string_view> default_overrides {
-    "x", "y", "z", "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
-    "cz", "cy", "swap", "cx"
-  };
+/* \brief Default overrides */
+static const std::set<std::string_view> default_overrides{
+    "x",  "y",  "z",  "h",  "s",  "sdg",  "t", "tdg",
+    "rx", "ry", "rz", "cz", "cy", "swap", "cx"};
 
-  /* Implementation */
-  class Inliner final : public ast::Replacer {
+/* Implementation */
+class Inliner final : public ast::Replacer {
   public:
     struct config {
-      bool keep_declarations = true;
-      std::set<std::string_view> overrides = default_overrides;
-      std::string ancilla_name = "anc";
+        bool keep_declarations = true;
+        std::set<std::string_view> overrides = default_overrides;
+        std::string ancilla_name = "anc";
     };
 
     Inliner() = default;
@@ -61,153 +60,164 @@ namespace transformations {
     ~Inliner() = default;
 
     void visit(ast::Program& prog) override {
-      ast::Replacer::visit(prog);
+        ast::Replacer::visit(prog);
 
-      // Max ancillas needed are now known
-      if (max_ancilla > 0) {
-        auto decl = std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
-          prog.pos(), config_.ancilla_name, true, max_ancilla));
-        prog.body().emplace_front(std::move(decl));
-      }
+        // Max ancillas needed are now known
+        if (max_ancilla > 0) {
+            auto decl = std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
+                prog.pos(), config_.ancilla_name, true, max_ancilla));
+            prog.body().emplace_front(std::move(decl));
+        }
 
-      // Final cleanup to remove ancilla declarations outside of function bodies
-      cleaner_.set_config(&config_);
-      prog.accept(cleaner_);
+        // Final cleanup to remove ancilla declarations outside of function
+        // bodies
+        cleaner_.set_config(&config_);
+        prog.accept(cleaner_);
     }
 
-    std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::GateDecl& decl) override {
-      // Replacement is post-order, so body should already be inlined
+    std::optional<std::list<ast::ptr<ast::Stmt>>>
+    replace(ast::GateDecl& decl) override {
+        // Replacement is post-order, so body should already be inlined
 
-      if (decl.is_opaque()) {
-        // Opaque decl, don't inline
-        return std::nullopt;
-      } else {
-        // Record the gate declaration
-        auto& tmp = gate_decls_[decl.id()];
-        tmp.c_params = decl.c_params();
-        tmp.q_params = decl.q_params();
-        decl.foreach_stmt([this, &tmp](auto& gate){ tmp.body.push_back(&gate); });
-        tmp.ancillas.swap(current_ancillas);
+        if (decl.is_opaque()) {
+            // Opaque decl, don't inline
+            return std::nullopt;
+        } else {
+            // Record the gate declaration
+            auto& tmp = gate_decls_[decl.id()];
+            tmp.c_params = decl.c_params();
+            tmp.q_params = decl.q_params();
+            decl.foreach_stmt(
+                [this, &tmp](auto& gate) { tmp.body.push_back(&gate); });
+            tmp.ancillas.swap(current_ancillas);
 
-        // Retrieve and reset the local ancilla counter
-        if (num_ancilla > max_ancilla) {
-          max_ancilla = num_ancilla;
+            // Retrieve and reset the local ancilla counter
+            if (num_ancilla > max_ancilla) {
+                max_ancilla = num_ancilla;
+            }
+            num_ancilla = 0;
+
+            return std::nullopt;
         }
-        num_ancilla = 0;
-
-        return std::nullopt;
-      }
     }
 
-    std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::AncillaDecl& decl) override {
-      if (decl.is_dirty()) {
-        std::cerr << "Error: dirty ancillas not currently supported by inliner\n";
-      } else {
-        current_ancillas.push_back(std::make_pair(decl.id(), decl.size()));
-        num_ancilla += decl.size();
-      }
-      return std::nullopt;
+    std::optional<std::list<ast::ptr<ast::Gate>>>
+    replace(ast::AncillaDecl& decl) override {
+        if (decl.is_dirty()) {
+            std::cerr
+                << "Error: dirty ancillas not currently supported by inliner\n";
+        } else {
+            current_ancillas.push_back(std::make_pair(decl.id(), decl.size()));
+            num_ancilla += decl.size();
+        }
+        return std::nullopt;
     }
 
-    std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::DeclaredGate& gate) override {
-      if (config_.overrides.find(gate.name()) != config_.overrides.end()) {
-        return std::nullopt;
-      }
-      
-      if (auto it = gate_decls_.find(gate.name()); it != gate_decls_.end()) {
-        // Substitute classical arguments
-        std::unordered_map<std::string_view, ast::Expr*> c_subst;
-        for (auto i = 0; i < gate.num_cargs(); i++) {
-          c_subst[it->second.c_params[i]] = &gate.carg(i);
-        }
-        SubstVar var_subst(c_subst);
-
-        // Substitute quantum arguments
-        std::unordered_map<ast::VarAccess, ast::VarAccess> q_subst;
-        for (auto i = 0; i < gate.num_qargs(); i++) {
-          q_subst.insert({ast::VarAccess(gate.pos(), it->second.q_params[i]), gate.qarg(i)});
-        }
-        // For local ancillas
-        auto offset = 0;
-        for (auto& [id, num] : it->second.ancillas) {
-          q_subst.insert({ast::VarAccess(gate.pos(), id),
-                          ast::VarAccess(gate.pos(), config_.ancilla_name, offset)});
-          offset += num;
-        }
-        SubstAP ap_subst(q_subst);
-
-        // Clone & substitute the gate body
-        std::list<ast::ptr<ast::Gate> > body;
-
-        for (auto gate : it->second.body) {
-          auto new_gate = gate->clone();
-          new_gate->accept(var_subst);
-          new_gate->accept(ap_subst);
-          body.emplace_back(ast::ptr<ast::Gate>(new_gate));
+    std::optional<std::list<ast::ptr<ast::Gate>>>
+    replace(ast::DeclaredGate& gate) override {
+        if (config_.overrides.find(gate.name()) != config_.overrides.end()) {
+            return std::nullopt;
         }
 
-        return std::move(body);
-      } else {
-        return std::nullopt;
-      }
+        if (auto it = gate_decls_.find(gate.name()); it != gate_decls_.end()) {
+            // Substitute classical arguments
+            std::unordered_map<std::string_view, ast::Expr*> c_subst;
+            for (auto i = 0; i < gate.num_cargs(); i++) {
+                c_subst[it->second.c_params[i]] = &gate.carg(i);
+            }
+            SubstVar var_subst(c_subst);
+
+            // Substitute quantum arguments
+            std::unordered_map<ast::VarAccess, ast::VarAccess> q_subst;
+            for (auto i = 0; i < gate.num_qargs(); i++) {
+                q_subst.insert(
+                    {ast::VarAccess(gate.pos(), it->second.q_params[i]),
+                     gate.qarg(i)});
+            }
+            // For local ancillas
+            auto offset = 0;
+            for (auto& [id, num] : it->second.ancillas) {
+                q_subst.insert(
+                    {ast::VarAccess(gate.pos(), id),
+                     ast::VarAccess(gate.pos(), config_.ancilla_name, offset)});
+                offset += num;
+            }
+            SubstAP ap_subst(q_subst);
+
+            // Clone & substitute the gate body
+            std::list<ast::ptr<ast::Gate>> body;
+
+            for (auto gate : it->second.body) {
+                auto new_gate = gate->clone();
+                new_gate->accept(var_subst);
+                new_gate->accept(ap_subst);
+                body.emplace_back(ast::ptr<ast::Gate>(new_gate));
+            }
+
+            return std::move(body);
+        } else {
+            return std::nullopt;
+        }
     }
 
   private:
     /* Helper class */
     class Cleaner final : public Replacer {
-      bool in_decl_ = false;
-      config* conf_; // An annoying hack to give access to the inliner's configs
+        bool in_decl_ = false;
+        config*
+            conf_; // An annoying hack to give access to the inliner's configs
 
-    public:
-      void set_config(config* conf) {
-        conf_ = conf;
-      }
+      public:
+        void set_config(config* conf) { conf_ = conf; }
 
-      void visit(ast::GateDecl& decl) override {
-        in_decl_ = true;
-        Replacer::visit(decl);
-        in_decl_ = false;
-      }
-      std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::GateDecl& decl) override {
-        if (!conf_->keep_declarations && conf_->overrides.find(decl.id()) == conf_->overrides.end())
-          return std::list<ast::ptr<ast::Stmt> >();
-        else
-          return std::nullopt;
-      }
-      std::optional<std::list<ast::ptr<ast::Gate> > > replace(ast::AncillaDecl&) override {
-        if (!in_decl_)
-          return std::list<ast::ptr<ast::Gate> >();
-        else 
-          return std::nullopt;
-      }
+        void visit(ast::GateDecl& decl) override {
+            in_decl_ = true;
+            Replacer::visit(decl);
+            in_decl_ = false;
+        }
+        std::optional<std::list<ast::ptr<ast::Stmt>>>
+        replace(ast::GateDecl& decl) override {
+            if (!conf_->keep_declarations &&
+                conf_->overrides.find(decl.id()) == conf_->overrides.end())
+                return std::list<ast::ptr<ast::Stmt>>();
+            else
+                return std::nullopt;
+        }
+        std::optional<std::list<ast::ptr<ast::Gate>>>
+        replace(ast::AncillaDecl&) override {
+            if (!in_decl_)
+                return std::list<ast::ptr<ast::Gate>>();
+            else
+                return std::nullopt;
+        }
     };
 
     struct gate_info {
-      std::vector<ast::symbol> c_params;
-      std::vector<ast::symbol> q_params;
-      std::list<ast::Gate*> body;
-      std::list<std::pair<ast::symbol, int> > ancillas;
+        std::vector<ast::symbol> c_params;
+        std::vector<ast::symbol> q_params;
+        std::list<ast::Gate*> body;
+        std::list<std::pair<ast::symbol, int>> ancillas;
     };
-    
+
     config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
     Cleaner cleaner_;
     int max_ancilla = 0;
 
     // Gate-local accumulating values
-    std::list<std::pair<ast::symbol, int> > current_ancillas;
+    std::list<std::pair<ast::symbol, int>> current_ancillas;
     int num_ancilla = 0;
-  };
+};
 
-  void inline_ast(ast::ASTNode& node) {
+void inline_ast(ast::ASTNode& node) {
     Inliner alg;
     node.accept(alg);
-  }
+}
 
-  void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
+void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
     Inliner alg(params);
     node.accept(alg);
-  }
+}
 
-}
-}
+} // namespace transformations
+} // namespace staq

@@ -37,24 +37,27 @@
 namespace staq {
 namespace ast {
 
-  template <typename T>
-  using ptr = std::unique_ptr<T>;
+template <typename T>
+using ptr = std::unique_ptr<T>;
 
-  using symbol = std::string;
+using symbol = std::string;
 
-  /**
-   * \class staq::ast::ASTNode
-   * \brief Base class for AST nodes
-   */
-  class ASTNode {
-    static int& max_uid_() { static int v; return v; } ///< the maximum uid that has been assigned
+/**
+ * \class staq::ast::ASTNode
+ * \brief Base class for AST nodes
+ */
+class ASTNode {
+    static int& max_uid_() {
+        static int v;
+        return v;
+    } ///< the maximum uid that has been assigned
 
   protected:
     const int uid_;              ///< the node's unique ID
     const parser::Position pos_; ///< the node's source code position
 
   public:
-    ASTNode(parser::Position pos) : uid_(++max_uid_()), pos_(pos) { }
+    ASTNode(parser::Position pos) : uid_(++max_uid_()), pos_(pos) {}
     virtual ~ASTNode() = default;
 
     /**
@@ -97,9 +100,9 @@ namespace ast {
      * \param node Node to print
      */
     friend std::ostream& operator<<(std::ostream& os, const ASTNode& node) {
-      return node.pretty_print(os);
+        return node.pretty_print(os);
     }
-  };
+};
 
-}
-}
+} // namespace ast
+} // namespace staq

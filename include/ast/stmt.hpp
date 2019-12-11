@@ -38,34 +38,36 @@
 namespace staq {
 namespace ast {
 
-  /**
-   * \class staq::ast::Stmt
-   * \brief Base class for openQASM statements
-   */
-  class Stmt : public ASTNode {
+/**
+ * \class staq::ast::Stmt
+ * \brief Base class for openQASM statements
+ */
+class Stmt : public ASTNode {
   public:
     Stmt(parser::Position pos) : ASTNode(pos) {}
     virtual ~Stmt() = default;
     virtual Stmt* clone() const override = 0;
 
     /**
-     * \brief Internal pretty-printer which can suppress the output of the stdlib
+     * \brief Internal pretty-printer which can suppress the output of the
+     * stdlib
      *
      * \param suppress_std Whether to suppress output of the standard library
      */
-    virtual std::ostream& pretty_print(std::ostream& os, bool suppress_std) const = 0;
+    virtual std::ostream& pretty_print(std::ostream& os,
+                                       bool suppress_std) const = 0;
 
     std::ostream& pretty_print(std::ostream& os) const override {
-      return pretty_print(os, false);
+        return pretty_print(os, false);
     }
-  };
+};
 
-  /**
-   * \class staq::ast::MeasureStmt
-   * \brief Class for measurement statements
-   * \see staq::ast::Stmt
-   */
-  class MeasureStmt final : public Stmt {
+/**
+ * \class staq::ast::MeasureStmt
+ * \brief Class for measurement statements
+ * \see staq::ast::Stmt
+ */
+class MeasureStmt final : public Stmt {
     VarAccess q_arg_; ///< the quantum bit|register
     VarAccess c_arg_; ///< the classical bit|register
 
@@ -78,16 +80,15 @@ namespace ast {
      * \param c_arg Rvalue reference to the classical argument
      */
     MeasureStmt(parser::Position pos, VarAccess&& q_arg, VarAccess&& c_arg)
-      : Stmt(pos)
-      , q_arg_(std::move(q_arg))
-      , c_arg_(std::move(c_arg))
-    {}
+        : Stmt(pos), q_arg_(std::move(q_arg)), c_arg_(std::move(c_arg)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<MeasureStmt> create(parser::Position pos, VarAccess&& q_arg, VarAccess&& c_arg) {
-      return std::make_unique<MeasureStmt>(pos, std::move(q_arg), std::move(c_arg));
+    static ptr<MeasureStmt> create(parser::Position pos, VarAccess&& q_arg,
+                                   VarAccess&& c_arg) {
+        return std::make_unique<MeasureStmt>(pos, std::move(q_arg),
+                                             std::move(c_arg));
     }
 
     /**
@@ -120,20 +121,20 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "measure " << q_arg_ << " -> " << c_arg_ << ";\n";
-      return os;
+        os << "measure " << q_arg_ << " -> " << c_arg_ << ";\n";
+        return os;
     }
     MeasureStmt* clone() const override {
-      return new MeasureStmt(pos_, VarAccess(q_arg_), VarAccess(c_arg_));
+        return new MeasureStmt(pos_, VarAccess(q_arg_), VarAccess(c_arg_));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::ResetStmt
-   * \brief Class for reset statements
-   * \see staq::ast::Stmt
-   */
-  class ResetStmt final : public Stmt {
+/**
+ * \class staq::ast::ResetStmt
+ * \brief Class for reset statements
+ * \see staq::ast::Stmt
+ */
+class ResetStmt final : public Stmt {
     VarAccess arg_; ///< the qbit|qreg
 
   public:
@@ -143,13 +144,14 @@ namespace ast {
      * \param pos The source position
      * \param arg Rvalue reference to the argument
      */
-    ResetStmt(parser::Position pos, VarAccess&& arg) : Stmt(pos), arg_(std::move(arg)) {}
+    ResetStmt(parser::Position pos, VarAccess&& arg)
+        : Stmt(pos), arg_(std::move(arg)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
     static ptr<ResetStmt> create(parser::Position pos, VarAccess&& arg) {
-      return std::make_unique<ResetStmt>(pos, std::move(arg));
+        return std::make_unique<ResetStmt>(pos, std::move(arg));
     }
 
     /**
@@ -168,20 +170,20 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "reset " << arg_ << ";\n";
-      return os;
+        os << "reset " << arg_ << ";\n";
+        return os;
     }
     ResetStmt* clone() const override {
-      return new ResetStmt(pos_, VarAccess(arg_));
+        return new ResetStmt(pos_, VarAccess(arg_));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::IfStmt
-   * \brief Class for if statements
-   * \see staq::ast::Stmt
-   */
-  class IfStmt final : public Stmt {
+/**
+ * \class staq::ast::IfStmt
+ * \brief Class for if statements
+ * \see staq::ast::Stmt
+ */
+class IfStmt final : public Stmt {
     symbol var_;     ///< classical register name
     int cond_;       ///< value to check against
     ptr<Stmt> then_; ///< statement to be executed if true
@@ -196,17 +198,14 @@ namespace ast {
      * \param then The statement to execute in the then branch
      */
     IfStmt(parser::Position pos, symbol var, int cond, ptr<Stmt> then)
-      : Stmt(pos)
-      , var_(var)
-      , cond_(cond)
-      , then_(std::move(then))
-    {}
+        : Stmt(pos), var_(var), cond_(cond), then_(std::move(then)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<IfStmt> create(parser::Position pos, symbol var, int cond, ptr<Stmt> then) {
-      return std::make_unique<IfStmt>(pos, var, cond, std::move(then));
+    static ptr<IfStmt> create(parser::Position pos, symbol var, int cond,
+                              ptr<Stmt> then) {
+        return std::make_unique<IfStmt>(pos, var, cond, std::move(then));
     }
 
     /**
@@ -239,36 +238,36 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "if (" << var_ << "==" << cond_ << ") " << *then_;
-      return os;
+        os << "if (" << var_ << "==" << cond_ << ") " << *then_;
+        return os;
     }
     IfStmt* clone() const override {
-      return new IfStmt(pos_, var_, cond_, ptr<Stmt>(then_->clone()));
+        return new IfStmt(pos_, var_, cond_, ptr<Stmt>(then_->clone()));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::Gate
-   * \brief Statement sub-class for gate
-   */
-  class Gate : public Stmt {
+/**
+ * \class staq::ast::Gate
+ * \brief Statement sub-class for gate
+ */
+class Gate : public Stmt {
   public:
     Gate(parser::Position pos) : Stmt(pos) {}
     virtual ~Gate() = default;
     virtual Gate* clone() const = 0;
-  };
+};
 
-  /**
-   * \class staq::ast::UGate
-   * \brief Class for U gates
-   * \see staq::ast::Gate
-   */
-  class UGate final : public Gate {
+/**
+ * \class staq::ast::UGate
+ * \brief Class for U gates
+ * \see staq::ast::Gate
+ */
+class UGate final : public Gate {
     ptr<Expr> theta_;  ///< theta angle
     ptr<Expr> phi_;    ///< phi angle
     ptr<Expr> lambda_; ///< lambda angle
 
-    VarAccess arg_;    ///< quantum bit|register
+    VarAccess arg_; ///< quantum bit|register
 
   public:
     /**
@@ -280,19 +279,18 @@ namespace ast {
      * \param lambda The lambda angle
      * \param arg Rvalue reference to the quantum argument
      */
-    UGate(parser::Position pos, ptr<Expr> theta, ptr<Expr> phi, ptr<Expr> lambda, VarAccess&& arg)
-      : Gate(pos)
-      , theta_(std::move(theta))
-      , phi_(std::move(phi))
-      , lambda_(std::move(lambda))
-      , arg_(std::move(arg))
-    {}
+    UGate(parser::Position pos, ptr<Expr> theta, ptr<Expr> phi,
+          ptr<Expr> lambda, VarAccess&& arg)
+        : Gate(pos), theta_(std::move(theta)), phi_(std::move(phi)),
+          lambda_(std::move(lambda)), arg_(std::move(arg)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<UGate> create(parser::Position pos, ptr<Expr> theta, ptr<Expr> phi, ptr<Expr> lambda, VarAccess&& arg) {
-      return std::make_unique<UGate>(pos, std::move(theta), std::move(phi), std::move(lambda), std::move(arg));
+    static ptr<UGate> create(parser::Position pos, ptr<Expr> theta,
+                             ptr<Expr> phi, ptr<Expr> lambda, VarAccess&& arg) {
+        return std::make_unique<UGate>(pos, std::move(theta), std::move(phi),
+                                       std::move(lambda), std::move(arg));
     }
 
     /**
@@ -353,24 +351,23 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "U(" << *theta_ << "," << *phi_ << "," << *lambda_ << ") " << arg_ << ";\n";
-      return os;
+        os << "U(" << *theta_ << "," << *phi_ << "," << *lambda_ << ") " << arg_
+           << ";\n";
+        return os;
     }
     UGate* clone() const override {
-      return new UGate(pos_,
-                       ptr<Expr>(theta_->clone()),
-                       ptr<Expr>(phi_->clone()),
-                       ptr<Expr>(lambda_->clone()),
-                       VarAccess(arg_));
+        return new UGate(pos_, ptr<Expr>(theta_->clone()),
+                         ptr<Expr>(phi_->clone()), ptr<Expr>(lambda_->clone()),
+                         VarAccess(arg_));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::CNOTGate
-   * \brief Class for CX gates
-   * \see staq::ast::Gate
-   */
-  class CNOTGate final : public Gate {
+/**
+ * \class staq::ast::CNOTGate
+ * \brief Class for CX gates
+ * \see staq::ast::Gate
+ */
+class CNOTGate final : public Gate {
     VarAccess ctrl_; ///< control qubit|qreg
     VarAccess tgt_;  ///< target qubit|qreg
 
@@ -383,16 +380,14 @@ namespace ast {
      * \param tgt Rvalue reference to the target argument
      */
     CNOTGate(parser::Position pos, VarAccess&& ctrl, VarAccess&& tgt)
-      : Gate(pos)
-      , ctrl_(std::move(ctrl))
-      , tgt_(std::move(tgt))
-    {}
+        : Gate(pos), ctrl_(std::move(ctrl)), tgt_(std::move(tgt)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<CNOTGate> create(parser::Position pos, VarAccess&& ctrl, VarAccess&& tgt) {
-      return std::make_unique<CNOTGate>(pos, std::move(ctrl), std::move(tgt));
+    static ptr<CNOTGate> create(parser::Position pos, VarAccess&& ctrl,
+                                VarAccess&& tgt) {
+        return std::make_unique<CNOTGate>(pos, std::move(ctrl), std::move(tgt));
     }
 
     /**
@@ -425,20 +420,20 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "CX " << ctrl_ << "," << tgt_ << ";\n";
-      return os;
+        os << "CX " << ctrl_ << "," << tgt_ << ";\n";
+        return os;
     }
     CNOTGate* clone() const override {
-      return new CNOTGate(pos_, VarAccess(ctrl_), VarAccess(tgt_));
+        return new CNOTGate(pos_, VarAccess(ctrl_), VarAccess(tgt_));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::BarrierGate
-   * \brief Class for barrier gates
-   * \see staq::ast::Gate
-   */
-  class BarrierGate final : public Gate {
+/**
+ * \class staq::ast::BarrierGate
+ * \brief Class for barrier gates
+ * \see staq::ast::Gate
+ */
+class BarrierGate final : public Gate {
     std::vector<VarAccess> args_; ///< list of quantum bits|registers
 
   public:
@@ -449,15 +444,14 @@ namespace ast {
      * \param args Rvalue reference to a list of arguments
      */
     BarrierGate(parser::Position pos, std::vector<VarAccess>&& args)
-      : Gate(pos)
-      , args_(std::move(args))
-    {}
+        : Gate(pos), args_(std::move(args)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<BarrierGate> create(parser::Position pos, std::vector<VarAccess>&& args) {
-      return std::make_unique<BarrierGate>(pos, std::move(args));
+    static ptr<BarrierGate> create(parser::Position pos,
+                                   std::vector<VarAccess>&& args) {
+        return std::make_unique<BarrierGate>(pos, std::move(args));
     }
 
     /**
@@ -488,7 +482,8 @@ namespace ast {
      * \param f Void function accepting a reference to the argument
      */
     void foreach_arg(std::function<void(VarAccess&)> f) {
-      for (auto it = args_.begin(); it != args_.end(); it++) f(*it);
+        for (auto it = args_.begin(); it != args_.end(); it++)
+            f(*it);
     }
 
     /**
@@ -501,27 +496,27 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "barrier ";
-      for (auto it = args_.begin(); it != args_.end(); it++) {
-        os << (it == args_.begin() ? "" : ",") << *it;
-      }
-      os << ";\n";
-      return os;
+        os << "barrier ";
+        for (auto it = args_.begin(); it != args_.end(); it++) {
+            os << (it == args_.begin() ? "" : ",") << *it;
+        }
+        os << ";\n";
+        return os;
     }
     BarrierGate* clone() const override {
-      return new BarrierGate(pos_, std::vector<VarAccess>(args_));
+        return new BarrierGate(pos_, std::vector<VarAccess>(args_));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::DeclaredGate
-   * \brief Class for declared gate applications
-   * \see staq::ast::Gate
-   */
-  class DeclaredGate final : public Gate {
-    symbol name_;                    ///< gate identifier
-    std::vector<ptr<Expr> > c_args_; ///< list of classical arguments
-    std::vector<VarAccess> q_args_;  ///< list of quantum arguments
+/**
+ * \class staq::ast::DeclaredGate
+ * \brief Class for declared gate applications
+ * \see staq::ast::Gate
+ */
+class DeclaredGate final : public Gate {
+    symbol name_;                   ///< gate identifier
+    std::vector<ptr<Expr>> c_args_; ///< list of classical arguments
+    std::vector<VarAccess> q_args_; ///< list of quantum arguments
 
   public:
     /**
@@ -532,25 +527,20 @@ namespace ast {
      * \param c_args Rvalue reference to a list of classical arguments
      * \param q_args Rvalue reference to a list of quantum arguments
      */
-    DeclaredGate(parser::Position pos,
-                 symbol name,
-                 std::vector<ptr<Expr> >&& c_args,
+    DeclaredGate(parser::Position pos, symbol name,
+                 std::vector<ptr<Expr>>&& c_args,
                  std::vector<VarAccess>&& q_args)
-      : Gate(pos)
-      , name_(name)
-      , c_args_(std::move(c_args))
-      , q_args_(std::move(q_args))
-    {}
+        : Gate(pos), name_(name), c_args_(std::move(c_args)),
+          q_args_(std::move(q_args)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<DeclaredGate> create(parser::Position pos,
-                             symbol name,
-                             std::vector<ptr<Expr> >&& c_args,
-                             std::vector<VarAccess>&& q_args)
-    {
-      return std::make_unique<DeclaredGate>(pos, name, std::move(c_args), std::move(q_args));
+    static ptr<DeclaredGate> create(parser::Position pos, symbol name,
+                                    std::vector<ptr<Expr>>&& c_args,
+                                    std::vector<VarAccess>&& q_args) {
+        return std::make_unique<DeclaredGate>(pos, name, std::move(c_args),
+                                              std::move(q_args));
     }
 
     /**
@@ -603,7 +593,8 @@ namespace ast {
      * \param f Void function accepting an expression reference
      */
     void foreach_carg(std::function<void(Expr&)> f) {
-      for (auto it = c_args_.begin(); it != c_args_.end(); it++) f(**it);
+        for (auto it = c_args_.begin(); it != c_args_.end(); it++)
+            f(**it);
     }
 
     /**
@@ -612,7 +603,8 @@ namespace ast {
      * \param f Void function accepting a reference to an argument
      */
     void foreach_qarg(std::function<void(VarAccess&)> f) {
-      for (auto it = q_args_.begin(); it != q_args_.end(); it++) f(*it);
+        for (auto it = q_args_.begin(); it != q_args_.end(); it++)
+            f(*it);
     }
 
     /**
@@ -633,30 +625,31 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << name_;
-      if (c_args_.size() > 0) {
-        os << "(";
-        for (auto it = c_args_.begin(); it != c_args_.end(); it++) {
-          os << (it == c_args_.begin() ? "" : ",") << **it;
+        os << name_;
+        if (c_args_.size() > 0) {
+            os << "(";
+            for (auto it = c_args_.begin(); it != c_args_.end(); it++) {
+                os << (it == c_args_.begin() ? "" : ",") << **it;
+            }
+            os << ")";
         }
-        os << ")";
-      }
-      os << " ";
-      for (auto it = q_args_.begin(); it != q_args_.end(); it++) {
-        os << (it == q_args_.begin() ? "" : ",") << *it;
-      }
-      os << ";\n";
-      return os;
+        os << " ";
+        for (auto it = q_args_.begin(); it != q_args_.end(); it++) {
+            os << (it == q_args_.begin() ? "" : ",") << *it;
+        }
+        os << ";\n";
+        return os;
     }
     DeclaredGate* clone() const override {
-      std::vector<ptr<Expr> > c_tmp;
-      for (auto it = c_args_.begin(); it != c_args_.end(); it++) {
-        c_tmp.emplace_back(ptr<Expr>((*it)->clone()));
-      }
+        std::vector<ptr<Expr>> c_tmp;
+        for (auto it = c_args_.begin(); it != c_args_.end(); it++) {
+            c_tmp.emplace_back(ptr<Expr>((*it)->clone()));
+        }
 
-      return new DeclaredGate(pos_, name_, std::move(c_tmp), std::vector<VarAccess>(q_args_));
+        return new DeclaredGate(pos_, name_, std::move(c_tmp),
+                                std::vector<VarAccess>(q_args_));
     }
-  };
+};
 
-}
-}
+} // namespace ast
+} // namespace staq

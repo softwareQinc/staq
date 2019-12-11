@@ -31,41 +31,41 @@
 namespace staq {
 namespace ast {
 
-  /* Forward declarations */
-  class VarAccess;
-  class BExpr;
-  class UExpr;
-  class PiExpr;
-  class IntExpr;
-  class RealExpr;
-  class VarExpr;
-  class MeasureStmt;
-  class ResetStmt;
-  class IfStmt;
-  class UGate;
-  class CNOTGate;
-  class BarrierGate;
-  class DeclaredGate;
-  class GateDecl;
-  class OracleDecl;
-  class RegisterDecl;
-  class AncillaDecl;
-  class Program;
+/* Forward declarations */
+class VarAccess;
+class BExpr;
+class UExpr;
+class PiExpr;
+class IntExpr;
+class RealExpr;
+class VarExpr;
+class MeasureStmt;
+class ResetStmt;
+class IfStmt;
+class UGate;
+class CNOTGate;
+class BarrierGate;
+class DeclaredGate;
+class GateDecl;
+class OracleDecl;
+class RegisterDecl;
+class AncillaDecl;
+class Program;
 
-  /** 
-   * \class staq::ast::Visitor
-   * \brief Base visitor interface 
-   *  
-   * Classic visitor via (virtual) double dispatch. Standard usage is to
-   * derive from this class and provide implementations of visit for **every**
-   * node type.
-   *
-   * Traversal to sub-nodes is handled by the particular visitor, not the
-   * node class. For a visitor that automatically handles traversal and also
-   * allows picking and choosing the particular visit overloads, see
-   * staq::ast::Traverse.
-   */
-  class Visitor {
+/**
+ * \class staq::ast::Visitor
+ * \brief Base visitor interface
+ *
+ * Classic visitor via (virtual) double dispatch. Standard usage is to
+ * derive from this class and provide implementations of visit for **every**
+ * node type.
+ *
+ * Traversal to sub-nodes is handled by the particular visitor, not the
+ * node class. For a visitor that automatically handles traversal and also
+ * allows picking and choosing the particular visit overloads, see
+ * staq::ast::Traverse.
+ */
+class Visitor {
   public:
     // Variables
     virtual void visit(VarAccess&) = 0;
@@ -92,7 +92,7 @@ namespace ast {
     virtual void visit(AncillaDecl&) = 0;
     // Program
     virtual void visit(Program&) = 0;
-  };
+};
 
-}
-}
+} // namespace ast
+} // namespace staq

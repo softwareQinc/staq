@@ -36,11 +36,11 @@
 namespace staq {
 namespace parser {
 
-  /**
-   * \class staq::parser::Position
-   * \brief Positions in source code
-   */
-  class Position {
+/**
+ * \class staq::parser::Position
+ * \brief Positions in source code
+ */
+class Position {
     std::string fname_ = ""; ///< name of the containing file
     int line_ = 1;           ///< line number
     int column_ = 1;         ///< column number
@@ -59,7 +59,7 @@ namespace parser {
      * \param column Column number
      */
     Position(const std::string& fname, int line, int column)
-      : fname_(fname), line_(line), column_(column) {}
+        : fname_(fname), line_(line), column_(column) {}
 
     /**
      * \brief Copy constructor
@@ -67,7 +67,7 @@ namespace parser {
      * \param pos Position to be copied
      */
     Position(const Position& pos)
-      : fname_(pos.fname_), line_(pos.line_), column_(pos.column_) {}
+        : fname_(pos.fname_), line_(pos.line_), column_(pos.column_) {}
 
     /**
      * \brief Extraction operator overload
@@ -77,8 +77,8 @@ namespace parser {
      * \return Reference to the output stream
      */
     friend std::ostream& operator<<(std::ostream& os, const Position& pos) {
-      os << pos.fname_ << ":" << pos.line_ << ":" << pos.column_;
-      return os;
+        os << pos.fname_ << ":" << pos.line_ << ":" << pos.column_;
+        return os;
     }
 
     /**
@@ -110,8 +110,8 @@ namespace parser {
      * \param num Number of lines to advance (optional, default is 1)
      */
     void advance_line(int num = 1) {
-      line_ += num;
-      column_ = 1;
+        line_ += num;
+        column_ = 1;
     }
 
     /**
@@ -120,7 +120,7 @@ namespace parser {
      * \param num Number of columns to advance (optional, default is 1)
      */
     void advance_column(int num = 1) { column_ += num; }
-  };
+};
 
-}
-}
+} // namespace parser
+} // namespace staq

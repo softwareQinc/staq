@@ -29,302 +29,290 @@
 namespace staq {
 namespace output {
 
-  /** \brief Equivalent quil standard gates for qasm standard gates */
-  std::unordered_map<std::string, std::string> qasmstd_to_quilstd {
-    { "id", "I" },
-    { "x", "X" },
-    { "y", "Y" },
-    { "z", "Z" },
-    { "h", "H" },
-    { "s", "S" },
-    { "sdg", "DAGGER S" },
-    { "t", "T" },
-    { "tdg", "DAGGER T" },
-    { "cx", "CNOT" },
-    { "ccx", "CCNOT" },
-    { "rx", "RX" },
-    { "ry", "RY" },
-    { "rz", "RZ" },
-    { "u1", "RZ" },
-    { "crz", "CPHASE" },
-    { "cu1", "CPHASE" } };
+/** \brief Equivalent quil standard gates for qasm standard gates */
+std::unordered_map<std::string, std::string> qasmstd_to_quilstd{
+    {"id", "I"},         {"x", "X"},     {"y", "Y"},          {"z", "Z"},
+    {"h", "H"},          {"s", "S"},     {"sdg", "DAGGER S"}, {"t", "T"},
+    {"tdg", "DAGGER T"}, {"cx", "CNOT"}, {"ccx", "CCNOT"},    {"rx", "RX"},
+    {"ry", "RY"},        {"rz", "RZ"},   {"u1", "RZ"},        {"crz", "CPHASE"},
+    {"cu1", "CPHASE"}};
 
-  class QuilOutputter final : public ast::Visitor {
+class QuilOutputter final : public ast::Visitor {
   public:
-
     struct config {
-      bool std_includes = false; // stdgates.quil is not supported natively by quilc
+        bool std_includes =
+            false; // stdgates.quil is not supported natively by quilc
     };
 
     QuilOutputter(std::ostream& os) : Visitor(), os_(os) {}
-    QuilOutputter(std::ostream& os, const config& params) : Visitor(), os_(os), config_(params) {}
+    QuilOutputter(std::ostream& os, const config& params)
+        : Visitor(), os_(os), config_(params) {}
     ~QuilOutputter() = default;
 
     void run(ast::Program& prog) {
-      circuit_local_ = false;
-      ambiguous_ = false;
-      max_qbit_ = 0;
-      max_cbit_ = 0;
-      globals_.clear();
+        circuit_local_ = false;
+        ambiguous_ = false;
+        max_qbit_ = 0;
+        max_cbit_ = 0;
+        globals_.clear();
 
-      prog.accept(*this);
+        prog.accept(*this);
     }
-      
+
     // Variables
     void visit(ast::VarAccess& ap) {
-      // Assumes the program has been fully desugared, and so plain variable
-      // accesses refer to circuit parameters while dereferences refer to
-      // qubit addresses
-      if (ap.offset()) {
-        // Need to determine if it's a qubit address or classical bit
-        if (globals_.find(ap.var()) != globals_.end()) {
-          auto [r, length] = globals_[ap.var()];
-          os_ << r + *(ap.offset());
+        // Assumes the program has been fully desugared, and so plain variable
+        // accesses refer to circuit parameters while dereferences refer to
+        // qubit addresses
+        if (ap.offset()) {
+            // Need to determine if it's a qubit address or classical bit
+            if (globals_.find(ap.var()) != globals_.end()) {
+                auto [r, length] = globals_[ap.var()];
+                os_ << r + *(ap.offset());
+            } else {
+                os_ << ap.var() << "[" << *(ap.offset()) << "]";
+            }
         } else {
-          os_ << ap.var() << "[" << *(ap.offset()) << "]";
+            os_ << ap.var();
         }
-      } else {
-        os_ << ap.var();
-      }
     }
 
     // Expressions
     void visit(ast::BExpr& expr) {
-      auto tmp = ambiguous_;
-      ambiguous_ = true;
-      if (tmp) {
-        os_ << "(";
-        expr.lexp().accept(*this);
-        os_ << expr.op();
-        expr.rexp().accept(*this);
-        os_ << ")";
-      } else {
-        expr.lexp().accept(*this);
-        os_ << expr.op();
-        expr.rexp().accept(*this);
-      }
-      ambiguous_ = tmp;
-    }
-    
-    void visit(ast::UExpr& expr) {
-      switch(expr.op()) {
-      case ast::UnaryOp::Neg: {
         auto tmp = ambiguous_;
         ambiguous_ = true;
-        os_ << "-";
-        expr.subexp().accept(*this);
+        if (tmp) {
+            os_ << "(";
+            expr.lexp().accept(*this);
+            os_ << expr.op();
+            expr.rexp().accept(*this);
+            os_ << ")";
+        } else {
+            expr.lexp().accept(*this);
+            os_ << expr.op();
+            expr.rexp().accept(*this);
+        }
         ambiguous_ = tmp;
-        break;
-      }
-      case ast::UnaryOp::Tan:
-        std::cerr << "Error: tan not supported by quil\n";
-        break;
-      case ast::UnaryOp::Ln:
-        std::cerr << "Error: ln not supported by quil\n";
-        break;
-      default:
-        os_ << expr.op();
-        os_ << "(";
-        expr.subexp().accept(*this);
-        os_ << ")";
-        break;
-      }
     }
 
-    void visit(ast::PiExpr&) {
-      os_ << "pi";
+    void visit(ast::UExpr& expr) {
+        switch (expr.op()) {
+            case ast::UnaryOp::Neg: {
+                auto tmp = ambiguous_;
+                ambiguous_ = true;
+                os_ << "-";
+                expr.subexp().accept(*this);
+                ambiguous_ = tmp;
+                break;
+            }
+            case ast::UnaryOp::Tan:
+                std::cerr << "Error: tan not supported by quil\n";
+                break;
+            case ast::UnaryOp::Ln:
+                std::cerr << "Error: ln not supported by quil\n";
+                break;
+            default:
+                os_ << expr.op();
+                os_ << "(";
+                expr.subexp().accept(*this);
+                os_ << ")";
+                break;
+        }
     }
 
-    void visit(ast::IntExpr& expr) {
-      os_ << expr.value();
-    }
+    void visit(ast::PiExpr&) { os_ << "pi"; }
 
-    void visit(ast::RealExpr& expr) {
-      os_ << expr.value();
-    }
+    void visit(ast::IntExpr& expr) { os_ << expr.value(); }
 
-    void visit(ast::VarExpr& expr) {
-      os_ << "%" << expr.var();
-    }
+    void visit(ast::RealExpr& expr) { os_ << expr.value(); }
+
+    void visit(ast::VarExpr& expr) { os_ << "%" << expr.var(); }
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
-      os_ << "MEASURE ";
-      stmt.q_arg().accept(*this);
-      os_ << " ";
-      stmt.c_arg().accept(*this);
-      os_ << "\n";
+        os_ << "MEASURE ";
+        stmt.q_arg().accept(*this);
+        os_ << " ";
+        stmt.c_arg().accept(*this);
+        os_ << "\n";
     }
 
     void visit(ast::ResetStmt& stmt) {
-      os_ << "CLEAR ";
-      stmt.arg().accept(*this);
-      os_ << " [" << max_cbit_ << "]\n";
+        os_ << "CLEAR ";
+        stmt.arg().accept(*this);
+        os_ << " [" << max_cbit_ << "]\n";
     }
 
     void visit(ast::IfStmt& stmt) {
-      auto [r, length] = globals_[stmt.var()];
+        auto [r, length] = globals_[stmt.var()];
 
-      // Checking each bit separately avoids allocating
-      // a garbage cbit for the result of an EQ. That
-      // and the EQ instruction is not well-documented
-      auto tmp = stmt.cond();
-      for (auto i = 0; i < length; i++) {
-        if (tmp % 2 == 1)
-          os_ << "JUMP-UNLESS";
-        else
-          os_ << "JUMP-WHEN";
+        // Checking each bit separately avoids allocating
+        // a garbage cbit for the result of an EQ. That
+        // and the EQ instruction is not well-documented
+        auto tmp = stmt.cond();
+        for (auto i = 0; i < length; i++) {
+            if (tmp % 2 == 1)
+                os_ << "JUMP-UNLESS";
+            else
+                os_ << "JUMP-WHEN";
 
-        os_ << " @end" << stmt.uid() << " " 
-            << stmt.var() << "[" << r << "]\n";
-      }
+            os_ << " @end" << stmt.uid() << " " << stmt.var() << "[" << r
+                << "]\n";
+        }
 
-      stmt.then().accept(*this);
-      
-      os_ << "LABEL @end" << stmt.uid() << "\n";
+        stmt.then().accept(*this);
+
+        os_ << "LABEL @end" << stmt.uid() << "\n";
     }
 
     // Gates
     void visit(ast::UGate& gate) {
-      if (circuit_local_)
-        os_ << "    ";
+        if (circuit_local_)
+            os_ << "    ";
 
-      os_ << "U(";
-      gate.theta().accept(*this);
-      os_ << ", ";
-      gate.phi().accept(*this);
-      os_ << ", ";
-      gate.lambda().accept(*this);
-      os_ << ")";
+        os_ << "U(";
+        gate.theta().accept(*this);
+        os_ << ", ";
+        gate.phi().accept(*this);
+        os_ << ", ";
+        gate.lambda().accept(*this);
+        os_ << ")";
 
-      os_ << " ";
-      gate.arg().accept(*this);
-      os_ << "\n";
+        os_ << " ";
+        gate.arg().accept(*this);
+        os_ << "\n";
     }
 
     void visit(ast::CNOTGate& gate) {
-      if (circuit_local_)
-        os_ << "    ";
+        if (circuit_local_)
+            os_ << "    ";
 
-      os_ << "CNOT ";
-      gate.ctrl().accept(*this);
-      os_ << " ";
-      gate.tgt().accept(*this);
-      os_ << "\n";
+        os_ << "CNOT ";
+        gate.ctrl().accept(*this);
+        os_ << " ";
+        gate.tgt().accept(*this);
+        os_ << "\n";
     }
 
     void visit(ast::BarrierGate& gate) {
-      if (circuit_local_)
-        os_ << "    ";
+        if (circuit_local_)
+            os_ << "    ";
 
-      // An approximation to openQASM's barrier
-      os_ << "PRAGMA parallelization_barrier\n";
+        // An approximation to openQASM's barrier
+        os_ << "PRAGMA parallelization_barrier\n";
     }
 
     void visit(ast::DeclaredGate& gate) {
-      if (circuit_local_)
-        os_ << "    ";
+        if (circuit_local_)
+            os_ << "    ";
 
-      if (auto it = qasmstd_to_quilstd.find(gate.name()); it != qasmstd_to_quilstd.end())
-        os_ << it->second;
-      else 
-        os_ << gate.name();
+        if (auto it = qasmstd_to_quilstd.find(gate.name());
+            it != qasmstd_to_quilstd.end())
+            os_ << it->second;
+        else
+            os_ << gate.name();
 
-      if (gate.num_cargs() > 0) {
-        os_ << "(";
-        for (int i = 0; i < gate.num_cargs(); i++) {
-          if (i != 0)
-            os_ << ", ";
-          gate.carg(i).accept(*this);
+        if (gate.num_cargs() > 0) {
+            os_ << "(";
+            for (int i = 0; i < gate.num_cargs(); i++) {
+                if (i != 0)
+                    os_ << ", ";
+                gate.carg(i).accept(*this);
+            }
+            os_ << ")";
         }
-        os_ << ")";
-      }
 
-      for (int i = 0; i < gate.num_qargs(); i++) {
-        os_ << " ";
-        gate.qarg(i).accept(*this);
-      }
+        for (int i = 0; i < gate.num_qargs(); i++) {
+            os_ << " ";
+            gate.qarg(i).accept(*this);
+        }
 
-      os_ << "\n";
+        os_ << "\n";
     }
 
     // Declarations
     void visit(ast::GateDecl& decl) {
-      if (decl.is_opaque())
-        throw std::logic_error("Quil instruction set has no support for opaque declarations");
-      
-      if (!config_.std_includes || qasmstd_to_quilstd.find(decl.id()) != qasmstd_to_quilstd.end()) {
-        os_ << "DEFCIRCUIT " << decl.id();
+        if (decl.is_opaque())
+            throw std::logic_error(
+                "Quil instruction set has no support for opaque declarations");
 
-        if (decl.c_params().size() > 0) {
-          os_ << "(";
-          for (auto i = 0; i < decl.c_params().size(); i++) {
-            if (i != 0)
-              os_ << ", ";
-            os_ << "%" << decl.c_params()[i];
-          }
-          os_ << ")";
+        if (!config_.std_includes ||
+            qasmstd_to_quilstd.find(decl.id()) != qasmstd_to_quilstd.end()) {
+            os_ << "DEFCIRCUIT " << decl.id();
+
+            if (decl.c_params().size() > 0) {
+                os_ << "(";
+                for (auto i = 0; i < decl.c_params().size(); i++) {
+                    if (i != 0)
+                        os_ << ", ";
+                    os_ << "%" << decl.c_params()[i];
+                }
+                os_ << ")";
+            }
+
+            for (auto i = 0; i < decl.q_params().size(); i++) {
+                os_ << " " << decl.q_params()[i];
+            }
+
+            os_ << ":\n";
+
+            circuit_local_ = true;
+            decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
+            circuit_local_ = false;
+            os_ << "\n";
         }
-
-        for (auto i = 0; i < decl.q_params().size(); i++) {
-          os_ << " " << decl.q_params()[i];
-        }
-
-        os_ << ":\n";
-
-        circuit_local_ = true;
-        decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
-        circuit_local_ = false;
-        os_ << "\n";
-      }
     }
 
     void visit(ast::OracleDecl& decl) {
-      throw std::logic_error("Quil instruction set has no support for oracle declarations");
+        throw std::logic_error(
+            "Quil instruction set has no support for oracle declarations");
     }
 
     void visit(ast::RegisterDecl& decl) {
-      if (decl.is_quantum()) {
-        globals_[decl.id()] = std::make_pair(max_qbit_, decl.size());
-        max_qbit_ += decl.size();
-      } else {
-        os_ << "DECLARE " << decl.id() << " BIT[" << decl.size() << "]\n";
-      }
+        if (decl.is_quantum()) {
+            globals_[decl.id()] = std::make_pair(max_qbit_, decl.size());
+            max_qbit_ += decl.size();
+        } else {
+            os_ << "DECLARE " << decl.id() << " BIT[" << decl.size() << "]\n";
+        }
     }
 
     void visit(ast::AncillaDecl& decl) {
-      throw std::logic_error("Quil instruction set has no support for local ancillas");
+        throw std::logic_error(
+            "Quil instruction set has no support for local ancillas");
     }
-    
+
     // Program
     void visit(ast::Program& prog) {
-      if (!config_.std_includes) {
-        os_ << "DEFGATE X:\n";
-        os_ << "    0, 1\n";
-        os_ << "    1, 0\n\n";
-        os_ << "DEFGATE CNOT:\n";
-        os_ << "    1, 0, 0, 0\n";
-        os_ << "    0, 1, 0, 0\n";
-        os_ << "    0, 0, 0, 1\n";
-        os_ << "    0, 0, 1, 0\n\n";
-      } else {
-        os_ << "INCLUDE \"stdgates.quil\"\n\n";
-      }
+        if (!config_.std_includes) {
+            os_ << "DEFGATE X:\n";
+            os_ << "    0, 1\n";
+            os_ << "    1, 0\n\n";
+            os_ << "DEFGATE CNOT:\n";
+            os_ << "    1, 0, 0, 0\n";
+            os_ << "    0, 1, 0, 0\n";
+            os_ << "    0, 0, 0, 1\n";
+            os_ << "    0, 0, 1, 0\n\n";
+        } else {
+            os_ << "INCLUDE \"stdgates.quil\"\n\n";
+        }
 
-      // QASM U gate
-      os_ << "DEFGATE U(%theta, %phi, %lambda):\n";
-      os_ << "    EXP(-i*(%phi+%lambda)/2)*COS(%theta/2), -EXP(-i*(%phi-%lambda)/2)*SIN(%theta/2)\n";
-      os_ << "    EXP(i*(%phi-%lambda)/2)*SIN(%theta/2), EXP(i*(%phi+%lambda)/2)*COS(%theta/2)\n\n";
+        // QASM U gate
+        os_ << "DEFGATE U(%theta, %phi, %lambda):\n";
+        os_ << "    EXP(-i*(%phi+%lambda)/2)*COS(%theta/2), "
+               "-EXP(-i*(%phi-%lambda)/2)*SIN(%theta/2)\n";
+        os_ << "    EXP(i*(%phi-%lambda)/2)*SIN(%theta/2), "
+               "EXP(i*(%phi+%lambda)/2)*COS(%theta/2)\n\n";
 
-      // QASM reset statement
-      os_ << "DEFCIRCUIT CLEAR q scratch_bit:\n";
-      os_ << "    MEASURE q scratch_bit\n";
-      os_ << "    JUMP-UNLESS @end scratch_bit\n";
-      os_ << "    X q\n";
-      os_ << "    LABEL @end\n\n";
+        // QASM reset statement
+        os_ << "DEFCIRCUIT CLEAR q scratch_bit:\n";
+        os_ << "    MEASURE q scratch_bit\n";
+        os_ << "    JUMP-UNLESS @end scratch_bit\n";
+        os_ << "    X q\n";
+        os_ << "    LABEL @end\n\n";
 
-      // Program body
-      prog.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
+        // Program body
+        prog.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
     }
 
   private:
@@ -335,28 +323,27 @@ namespace output {
     bool ambiguous_ = false;
     int max_qbit_ = 0;
     int max_cbit_ = 0;
-    std::unordered_map<ast::symbol, std::pair<int, int> > globals_{};
+    std::unordered_map<ast::symbol, std::pair<int, int>> globals_{};
+};
 
-  };
-
-  void output_quil(ast::Program& prog) {
+void output_quil(ast::Program& prog) {
     QuilOutputter outputter(std::cout);
     outputter.run(prog);
-  }
+}
 
-  void write_quil(ast::Program& prog, std::string fname) {
+void write_quil(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);
 
     if (!ofs.good()) {
-      std::cerr << "Error: failed to open output file " << fname << "\n";
+        std::cerr << "Error: failed to open output file " << fname << "\n";
     } else {
-      QuilOutputter outputter(ofs);
-      outputter.run(prog);
+        QuilOutputter outputter(ofs);
+        outputter.run(prog);
     }
 
     ofs.close();
-  }
+}
 
-}
-}
+} // namespace output
+} // namespace staq

@@ -40,70 +40,72 @@ using namespace staq;
 // and have this tool accept a machine definition as input for mapping
 
 int main(int argc, char** argv) {
-  std::string device_name = "tokyo";
-  std::string layout = "linear";
-  std::string mapper = "swap";
+    std::string device_name = "tokyo";
+    std::string layout = "linear";
+    std::string mapper = "swap";
 
-  CLI::App app{ "QASM physical mapper" };
+    CLI::App app{"QASM physical mapper"};
 
-  app.add_option("-d", device_name, "Device to map onto (tokyo|agave|aspen-4|square|fullycon)");
-  app.add_option("-l", layout, "Layout algorithm to use (linear|eager|bestfit)");
-  app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");
+    app.add_option("-d", device_name,
+                   "Device to map onto (tokyo|agave|aspen-4|square|fullycon)");
+    app.add_option("-l", layout,
+                   "Layout algorithm to use (linear|eager|bestfit)");
+    app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");
 
-  CLI11_PARSE(app, argc, argv);
+    CLI11_PARSE(app, argc, argv);
 
-  auto program = parser::parse_stdin();
-  if (program) {
+    auto program = parser::parse_stdin();
+    if (program) {
 
-    // Inline fully first
-    transformations::inline_ast(*program, { false, {}, "anc" });
+        // Inline fully first
+        transformations::inline_ast(*program, {false, {}, "anc"});
 
-    // Physical device
-    mapping::Device dev;
-    if (device_name == "tokyo") {
-      dev = mapping::tokyo;
-    } else if (device_name == "agave") {
-      dev = mapping::agave;
-    } else if (device_name == "aspen-4") {
-      dev = mapping::aspen4;
-    } else if (device_name == "square") {
-      dev = mapping::square_9q;
-    } else if (device_name == "fullycon") {
-      dev = mapping::fully_connected(9);
+        // Physical device
+        mapping::Device dev;
+        if (device_name == "tokyo") {
+            dev = mapping::tokyo;
+        } else if (device_name == "agave") {
+            dev = mapping::agave;
+        } else if (device_name == "aspen-4") {
+            dev = mapping::aspen4;
+        } else if (device_name == "square") {
+            dev = mapping::square_9q;
+        } else if (device_name == "fullycon") {
+            dev = mapping::fully_connected(9);
+        } else {
+            std::cerr << "Error: invalid device name\n";
+            return 0;
+        }
+
+        // Initial layout
+        mapping::layout physical_layout;
+        if (layout == "linear") {
+            physical_layout = mapping::compute_basic_layout(dev, *program);
+        } else if (layout == "eager") {
+            physical_layout = mapping::compute_eager_layout(dev, *program);
+        } else if (layout == "bestfit") {
+            physical_layout = mapping::compute_bestfit_layout(dev, *program);
+        } else {
+            std::cerr << "Error: invalid layout algorithm\n";
+            return 0;
+        }
+        mapping::apply_layout(physical_layout, *program);
+
+        // Mapping
+        if (mapper == "swap") {
+            mapping::map_onto_device(dev, *program);
+        } else if (mapper == "steiner") {
+            mapping::steiner_mapping(dev, *program);
+        } else {
+            std::cerr << "Error: invalid mapping algorithm\n";
+            return 0;
+        }
+
+        // Print result
+        std::cout << *program;
     } else {
-      std::cerr << "Error: invalid device name\n";
-      return 0;
+        std::cerr << "Parsing failed\n";
     }
 
-    // Initial layout
-    mapping::layout physical_layout;
-    if (layout == "linear") {
-      physical_layout = mapping::compute_basic_layout(dev, *program);
-    } else if (layout == "eager") {
-      physical_layout = mapping::compute_eager_layout(dev, *program);
-    } else if (layout == "bestfit") {
-      physical_layout = mapping::compute_bestfit_layout(dev, *program);
-    } else {
-      std::cerr << "Error: invalid layout algorithm\n";
-      return 0;
-    }
-    mapping::apply_layout(physical_layout, *program);
-
-    // Mapping
-    if (mapper == "swap") {
-      mapping::map_onto_device(dev, *program);
-    } else if (mapper == "steiner") {
-      mapping::steiner_mapping(dev, *program);
-    } else {
-      std::cerr << "Error: invalid mapping algorithm\n";
-      return 0;
-    }
-
-    // Print result
-    std::cout << *program;
-  } else {
-    std::cerr << "Parsing failed\n";
-  }
-
-  return 1;
+    return 1;
 }

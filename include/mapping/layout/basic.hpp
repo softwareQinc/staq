@@ -34,11 +34,11 @@
 namespace staq {
 namespace mapping {
 
-  /** \brief Applies a layout to a circuit */
-  class LayoutTransformer final : public ast::Replacer {
+/** \brief Applies a layout to a circuit */
+class LayoutTransformer final : public ast::Replacer {
   public:
     struct config {
-      std::string register_name = "q";
+        std::string register_name = "q";
     };
 
     LayoutTransformer() = default;
@@ -46,74 +46,81 @@ namespace mapping {
     ~LayoutTransformer() = default;
 
     void run(ast::Program& prog, const layout& l) {
-      // Visit entire program, removing register declarations, then
-      // add the physical register & apply substitutions
-      prog.accept(*this);
+        // Visit entire program, removing register declarations, then
+        // add the physical register & apply substitutions
+        prog.accept(*this);
 
-      // Physical register declaration
-      prog.body().emplace_front(std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
-        prog.pos(), config_.register_name, true, l.size())));
+        // Physical register declaration
+        prog.body().emplace_front(
+            std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
+                prog.pos(), config_.register_name, true, l.size())));
 
-      // Substitution
-      std::unordered_map<ast::VarAccess, ast::VarAccess> subst;
-      for (auto const& [access, idx] : l) {
-        subst.insert({access, ast::VarAccess(parser::Position(), config_.register_name, idx)});
-      }
-      transformations::subst_ap_ap(subst, prog);
+        // Substitution
+        std::unordered_map<ast::VarAccess, ast::VarAccess> subst;
+        for (auto const& [access, idx] : l) {
+            subst.insert({access, ast::VarAccess(parser::Position(),
+                                                 config_.register_name, idx)});
+        }
+        transformations::subst_ap_ap(subst, prog);
     }
 
-    std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::RegisterDecl& decl) override {
-      if (decl.is_quantum()) return std::list<ast::ptr<ast::Stmt> >();
-      else return std::nullopt;
+    std::optional<std::list<ast::ptr<ast::Stmt>>>
+    replace(ast::RegisterDecl& decl) override {
+        if (decl.is_quantum())
+            return std::list<ast::ptr<ast::Stmt>>();
+        else
+            return std::nullopt;
     }
 
   private:
     config config_;
-  };
+};
 
-  /** \brief A basic qubit layout algorithm */
-  class BasicLayout final : public ast::Traverse {
+/** \brief A basic qubit layout algorithm */
+class BasicLayout final : public ast::Traverse {
   public:
     BasicLayout(Device& device) : Traverse(), device_(device) {}
     ~BasicLayout() = default;
 
     layout generate(ast::Program& prog) {
-      current_ = layout();
-      n_ = 0;
+        current_ = layout();
+        n_ = 0;
 
-      prog.accept(*this);
+        prog.accept(*this);
 
-      return current_;
+        return current_;
     }
 
     void visit(ast::RegisterDecl& decl) override {
-      if (decl.is_quantum()) {
-        if (n_ + decl.size() <= device_.qubits_) {
-          for (auto i = 0; i < decl.size(); i++) {
-            current_[ast::VarAccess(parser::Position(), decl.id(), i)] = n_ + i;
-          }
-          n_ += decl.size();
-        } else {
-          std::cerr << "Error: can't fit program onto device " << device_.name_ << "\n";
+        if (decl.is_quantum()) {
+            if (n_ + decl.size() <= device_.qubits_) {
+                for (auto i = 0; i < decl.size(); i++) {
+                    current_[ast::VarAccess(parser::Position(), decl.id(), i)] =
+                        n_ + i;
+                }
+                n_ += decl.size();
+            } else {
+                std::cerr << "Error: can't fit program onto device "
+                          << device_.name_ << "\n";
+            }
         }
-      }
     }
 
   private:
     Device device_;
     layout current_;
     size_t n_;
-  };
+};
 
-  inline void apply_layout(const layout& l, ast::Program& prog) {
+inline void apply_layout(const layout& l, ast::Program& prog) {
     LayoutTransformer alg;
     alg.run(prog, l);
-  }
+}
 
-  inline layout compute_basic_layout(Device& device, ast::Program& prog) {
+inline layout compute_basic_layout(Device& device, ast::Program& prog) {
     BasicLayout gen(device);
     return gen.generate(prog);
-  }
+}
 
-}
-}
+} // namespace mapping
+} // namespace staq

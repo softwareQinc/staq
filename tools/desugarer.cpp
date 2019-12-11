@@ -29,13 +29,13 @@ using namespace staq;
 
 int main() {
 
-  auto program = parser::parse_stdin();
-  if (program) {
-    transformations::desugar(*program);
-    std::cout << *program;
-  } else {
-    std::cerr << "Parsing failed\n";
-  }
+    auto program = parser::parse_stdin();
+    if (program) {
+        transformations::desugar(*program);
+        std::cout << *program;
+    } else {
+        std::cerr << "Parsing failed\n";
+    }
 
-  return 1;
+    return 1;
 }

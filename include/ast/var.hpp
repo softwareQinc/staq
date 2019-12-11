@@ -35,43 +35,43 @@
 namespace staq {
 namespace ast {
 
-  /**
-   * \class staq::ast::VarAccess
-   * \brief Class for variable accesses
-   *
-   * Represents accesses into a register by the register name and an optional 
-   * offset or index into the register. If the offset is empty, the entire register
-   * is the access -- e.g. in gates applied in parallel across registers.
-   *
-   * As leaf nodes that do not usually need to be used in polymorphic contexts,
-   * variable accesses are the only nodes which by convention are **NOT** allocated
-   * on the heap.
-   */
-  class VarAccess final : public ASTNode {
+/**
+ * \class staq::ast::VarAccess
+ * \brief Class for variable accesses
+ *
+ * Represents accesses into a register by the register name and an optional
+ * offset or index into the register. If the offset is empty, the entire
+ * register is the access -- e.g. in gates applied in parallel across registers.
+ *
+ * As leaf nodes that do not usually need to be used in polymorphic contexts,
+ * variable accesses are the only nodes which by convention are **NOT**
+ * allocated on the heap.
+ */
+class VarAccess final : public ASTNode {
     symbol var_;                ///< the identifier
     std::optional<int> offset_; ///< optional offset into a register variable
 
   public:
     friend std::hash<VarAccess>; ///< Hash function
-    
+
     /**
      * \brief Construct a variable access
      *
      * \param pos The source position
      * \param var The register name
-     * \param offset Optional integer offset into the register (default = std::nullopt)
+     * \param offset Optional integer offset into the register (default =
+     * std::nullopt)
      */
-    VarAccess(parser::Position pos, symbol var, std::optional<int> offset = std::nullopt)
-      : ASTNode(pos)
-      , var_(var)
-      , offset_(offset)
-    {}
+    VarAccess(parser::Position pos, symbol var,
+              std::optional<int> offset = std::nullopt)
+        : ASTNode(pos), var_(var), offset_(offset) {}
 
     /**
      * \brief Copy constructor
      */
-    VarAccess(const VarAccess& va) : ASTNode(va.pos_), var_(va.var_), offset_(va.offset_) {}
-    
+    VarAccess(const VarAccess& va)
+        : ASTNode(va.pos_), var_(va.var_), offset_(va.offset_) {}
+
     /**
      * \brief Get the register name
      *
@@ -90,16 +90,16 @@ namespace ast {
      * \brief Copy assignment overload
      */
     VarAccess& operator=(const VarAccess& v) {
-      var_ = v.var_;
-      offset_ = v.offset_;
-      return *this;
+        var_ = v.var_;
+        offset_ = v.offset_;
+        return *this;
     }
 
     /**
      * \brief Equal operator overload
      */
     bool operator==(const VarAccess& v) const {
-      return var_ == v.var_ && offset_ == v.offset_;
+        return var_ == v.var_ && offset_ == v.offset_;
     }
 
     /**
@@ -108,10 +108,10 @@ namespace ast {
      * Used to allow variable accesses as keys in ordered maps
      */
     bool operator<(const VarAccess& v) const {
-      if (var_ == v.var_)
-        return offset_ < v.offset_;
-      else
-        return var_ < v.var_;
+        if (var_ == v.var_)
+            return offset_ < v.offset_;
+        else
+            return var_ < v.var_;
     }
 
     /**
@@ -125,46 +125,48 @@ namespace ast {
      * \return true if the variable access contains v
      */
     bool contains(const VarAccess& v) const {
-      if (offset_)
-        return *this == v;
-      else
-        return v.var_ == var_;
+        if (offset_)
+            return *this == v;
+        else
+            return v.var_ == var_;
     }
 
     friend std::size_t hash_value(const VarAccess& v) {
-      size_t lhs = std::hash<symbol>{}(v.var_);
-      lhs ^= std::hash<std::optional<int> >{}(v.offset_) + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
-      return lhs;
+        size_t lhs = std::hash<symbol>{}(v.var_);
+        lhs ^= std::hash<std::optional<int>>{}(v.offset_) + 0x9e3779b9 +
+               (lhs << 6) + (lhs >> 2);
+        return lhs;
     }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os) const override {
-      os << var_;
-      if (offset_) os << "[" << *offset_ << "]";
-      return os;
+        os << var_;
+        if (offset_)
+            os << "[" << *offset_ << "]";
+        return os;
     }
     VarAccess* clone() const override {
-      return new VarAccess(pos_, var_, offset_);
+        return new VarAccess(pos_, var_, offset_);
     }
-  };
+};
 
-
-}
-}
+} // namespace ast
+} // namespace staq
 
 namespace std {
-  /**
-   * \brief Hash function for variable accesses
-   *
-   * Allows variable accesses to be used as keys in std::unordered_map.
-   * Implementation and magic numbers taken from boost::hash_combine.
-   */
-  template<>
-  struct hash<staq::ast::VarAccess> {
+/**
+ * \brief Hash function for variable accesses
+ *
+ * Allows variable accesses to be used as keys in std::unordered_map.
+ * Implementation and magic numbers taken from boost::hash_combine.
+ */
+template <>
+struct hash<staq::ast::VarAccess> {
     size_t operator()(const staq::ast::VarAccess& v) const {
-      size_t lhs = std::hash<std::string>{}(v.var_);
-      lhs ^= std::hash<std::optional<int> >{}(v.offset_) + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
-      return lhs;
+        size_t lhs = std::hash<std::string>{}(v.var_);
+        lhs ^= std::hash<std::optional<int>>{}(v.offset_) + 0x9e3779b9 +
+               (lhs << 6) + (lhs >> 2);
+        return lhs;
     }
-  };
-}
+};
+} // namespace std

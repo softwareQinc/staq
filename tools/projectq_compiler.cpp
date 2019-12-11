@@ -31,23 +31,23 @@
 using namespace staq;
 
 int main(int argc, char** argv) {
-  std::string filename = "";
-    
-  CLI::App app{ "QASM to projectQ transpiler" };
+    std::string filename = "";
 
-  app.add_option("-o", filename, "Output to a file");
+    CLI::App app{"QASM to projectQ transpiler"};
 
-  CLI11_PARSE(app, argc, argv);
-  auto program = parser::parse_stdin();
-  if (program) {
-    transformations::desugar(*program);
-    if (filename == "")
-      output::output_projectq(*program);
-    else
-      output::write_projectq(*program, filename);
-  } else {
-    std::cerr << "Parsing failed\n";
-  }
+    app.add_option("-o", filename, "Output to a file");
 
-  return 1;
+    CLI11_PARSE(app, argc, argv);
+    auto program = parser::parse_stdin();
+    if (program) {
+        transformations::desugar(*program);
+        if (filename == "")
+            output::output_projectq(*program);
+        else
+            output::write_projectq(*program, filename);
+    } else {
+        std::cerr << "Parsing failed\n";
+    }
+
+    return 1;
 }

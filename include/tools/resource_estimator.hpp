@@ -33,19 +33,19 @@
 namespace staq {
 namespace tools {
 
-  using resource_count = std::unordered_map<std::string, int>;
+using resource_count = std::unordered_map<std::string, int>;
 
-  void add_counts(resource_count& A, const resource_count& B) {
-    for (auto& [gate, num] : B) A[gate] += num;
-  }
+void add_counts(resource_count& A, const resource_count& B) {
+    for (auto& [gate, num] : B)
+        A[gate] += num;
+}
 
-  class ResourceEstimator final : public ast::Visitor {
+class ResourceEstimator final : public ast::Visitor {
   public:
-
     struct config {
-      bool unbox = true;
-      bool merge_dagger = true;
-      std::set<std::string_view> overrides = ast::qelib_defs;
+        bool unbox = true;
+        bool merge_dagger = true;
+        std::set<std::string_view> overrides = ast::qelib_defs;
     };
 
     ResourceEstimator() = default;
@@ -53,22 +53,23 @@ namespace tools {
     ~ResourceEstimator() = default;
 
     resource_count run(ast::ASTNode& node) {
-      reset();
+        reset();
 
-      node.accept(*this);
+        node.accept(*this);
 
-      // Unboxing the running estimate
-      auto& [counts, depths] = running_estimate_;
+        // Unboxing the running estimate
+        auto& [counts, depths] = running_estimate_;
 
-      // Get maximum critical path length
-      int depth = 0;
-      for (auto& [id, length] : depths) {
-        if (length > depth) depth = length;
-      }
+        // Get maximum critical path length
+        int depth = 0;
+        for (auto& [id, length] : depths) {
+            if (length > depth)
+                depth = length;
+        }
 
-      // Set depth and return
-      counts["depth"] = depth;
-      return counts;
+        // Set depth and return
+        counts["depth"] = depth;
+        return counts;
     }
 
     /* Variables */
@@ -84,173 +85,173 @@ namespace tools {
 
     /* Statements */
     void visit(ast::MeasureStmt& stmt) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      // Gate count
-      counts["measurement"] += 1;
+        // Gate count
+        counts["measurement"] += 1;
 
-      // Depth
-      int in_depth = std::max(depths[stmt.c_arg()], depths[stmt.q_arg()]);
-      depths[stmt.c_arg()] = in_depth + 1;
-      depths[stmt.q_arg()] = in_depth + 1;
+        // Depth
+        int in_depth = std::max(depths[stmt.c_arg()], depths[stmt.q_arg()]);
+        depths[stmt.c_arg()] = in_depth + 1;
+        depths[stmt.q_arg()] = in_depth + 1;
     }
     void visit(ast::ResetStmt& stmt) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      // Gate count
-      counts["reset"] += 1;
+        // Gate count
+        counts["reset"] += 1;
 
-      // Depth
-      depths[stmt.arg()] += 1;
+        // Depth
+        depths[stmt.arg()] += 1;
     }
-    void visit(ast::IfStmt& stmt) {
-      stmt.then().accept(*this);
-    }
+    void visit(ast::IfStmt& stmt) { stmt.then().accept(*this); }
 
     /* Gates */
     void visit(ast::UGate& gate) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      // Gate count
-      std::stringstream ss;
-      auto theta = gate.theta().constant_eval();
-      auto phi = gate.phi().constant_eval();
-      auto lambda = gate.lambda().constant_eval();
+        // Gate count
+        std::stringstream ss;
+        auto theta = gate.theta().constant_eval();
+        auto phi = gate.phi().constant_eval();
+        auto lambda = gate.lambda().constant_eval();
 
-      if (theta && phi && lambda)
-        ss << "U(" << *theta << "," << *phi << "," << *lambda << ")";
-      else
-        ss << "U";
+        if (theta && phi && lambda)
+            ss << "U(" << *theta << "," << *phi << "," << *lambda << ")";
+        else
+            ss << "U";
 
-      counts[ss.str()] += 1;
+        counts[ss.str()] += 1;
 
-      // Depth
-      depths[gate.arg()] += 1;
+        // Depth
+        depths[gate.arg()] += 1;
     }
     void visit(ast::CNOTGate& gate) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      // Gate count
-      counts["CX"] += 1;
+        // Gate count
+        counts["CX"] += 1;
 
-      // Depth
-      int in_depth = std::max(depths[gate.ctrl()], depths[gate.tgt()]);
-      depths[gate.ctrl()] = in_depth + 1;
-      depths[gate.tgt()] = in_depth + 1;
+        // Depth
+        int in_depth = std::max(depths[gate.ctrl()], depths[gate.tgt()]);
+        depths[gate.ctrl()] = in_depth + 1;
+        depths[gate.tgt()] = in_depth + 1;
     }
     void visit(ast::BarrierGate& gate) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      // Gate count
-      counts["barrier"] += 1;
+        // Gate count
+        counts["barrier"] += 1;
 
-      // Depth
-      int in_depth = -1;
-      gate.foreach_arg([&in_depth, this](auto& arg){
-          in_depth = std::max(in_depth, running_estimate_.second[arg]);
-      });
-      gate.foreach_arg([in_depth, this](auto& arg){
-          running_estimate_.second[arg] = in_depth + 1;
-      });
+        // Depth
+        int in_depth = -1;
+        gate.foreach_arg([&in_depth, this](auto& arg) {
+            in_depth = std::max(in_depth, running_estimate_.second[arg]);
+        });
+        gate.foreach_arg([in_depth, this](auto& arg) {
+            running_estimate_.second[arg] = in_depth + 1;
+        });
     }
     void visit(ast::DeclaredGate& gate) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      // Gate count
-      auto tmp = gate.name();
-      if (config_.merge_dagger) strip_dagger(tmp);
+        // Gate count
+        auto tmp = gate.name();
+        if (config_.merge_dagger)
+            strip_dagger(tmp);
 
-      std::stringstream ss;
-      bool all_constant = true;
-      if (gate.num_cargs() > 0) {
-        bool flag = true;
-        ss << "(";
-        gate.foreach_carg([&ss,&flag,&all_constant](auto& arg) {
-            auto val = arg.constant_eval();
+        std::stringstream ss;
+        bool all_constant = true;
+        if (gate.num_cargs() > 0) {
+            bool flag = true;
+            ss << "(";
+            gate.foreach_carg([&ss, &flag, &all_constant](auto& arg) {
+                auto val = arg.constant_eval();
 
-            // Correct commas
-            if (flag)
-              flag = false;
-            else
-              ss << ",";
+                // Correct commas
+                if (flag)
+                    flag = false;
+                else
+                    ss << ",";
 
-            if (val)
-              ss << *val;
-            else
-              all_constant = false;
-          });
-        ss << ")";
-      }
+                if (val)
+                    ss << *val;
+                else
+                    all_constant = false;
+            });
+            ss << ")";
+        }
 
-      std::string name;
-      if (all_constant)
-        name = tmp + ss.str();
-      else
-        name = tmp;
+        std::string name;
+        if (all_constant)
+            name = tmp + ss.str();
+        else
+            name = tmp;
 
-      auto& [gate_counts, depth_counts] = resource_map_[name];
-      if (config_.unbox
-          && (config_.overrides.find(name) == config_.overrides.end())
-          && (gate.num_cargs() == 0))
-      {
-        add_counts(counts, gate_counts);
+        auto& [gate_counts, depth_counts] = resource_map_[name];
+        if (config_.unbox &&
+            (config_.overrides.find(name) == config_.overrides.end()) &&
+            (gate.num_cargs() == 0)) {
+            add_counts(counts, gate_counts);
 
-        // Note that this gives the "boxed" depth, which is not really optimal
-        // In the future this should be changed
-        int in_depth = -1;
-        int gate_depth = gate_counts["depth"];
-        gate.foreach_qarg([&in_depth, this](auto& arg){
-          in_depth = std::max(in_depth, running_estimate_.second[arg]);
-        });
-        gate.foreach_qarg([in_depth, this, gate_depth](auto& arg){
-          running_estimate_.second[arg] = in_depth + gate_depth;
-        });
-      } else {
-        counts[name] += 1;
-        gate.foreach_qarg([this](auto& arg){running_estimate_.second[arg] += 1;});
-      }
+            // Note that this gives the "boxed" depth, which is not really
+            // optimal In the future this should be changed
+            int in_depth = -1;
+            int gate_depth = gate_counts["depth"];
+            gate.foreach_qarg([&in_depth, this](auto& arg) {
+                in_depth = std::max(in_depth, running_estimate_.second[arg]);
+            });
+            gate.foreach_qarg([in_depth, this, gate_depth](auto& arg) {
+                running_estimate_.second[arg] = in_depth + gate_depth;
+            });
+        } else {
+            counts[name] += 1;
+            gate.foreach_qarg(
+                [this](auto& arg) { running_estimate_.second[arg] += 1; });
+        }
     }
 
     /* Declarations */
     void visit(ast::GateDecl& decl) {
-      // Initialize a new resource count
-      auto& local_state = resource_map_[decl.id()];
-      std::swap(running_estimate_, local_state);
+        // Initialize a new resource count
+        auto& local_state = resource_map_[decl.id()];
+        std::swap(running_estimate_, local_state);
 
-      decl.foreach_stmt([this](auto& gate){ gate.accept(*this); });
+        decl.foreach_stmt([this](auto& gate) { gate.accept(*this); });
 
-      // Get maximum critical path length
-      auto& [counts, depths] = running_estimate_;
-      int depth = 0;
-      for (auto& [id, length] : depths) {
-        if (length > depth) depth = length;
-      }
+        // Get maximum critical path length
+        auto& [counts, depths] = running_estimate_;
+        int depth = 0;
+        for (auto& [id, length] : depths) {
+            if (length > depth)
+                depth = length;
+        }
 
-      // Set depth and return
-      counts["depth"] = depth;
+        // Set depth and return
+        counts["depth"] = depth;
 
-      std::swap(running_estimate_, local_state);
+        std::swap(running_estimate_, local_state);
     }
     void visit(ast::OracleDecl&) {}
     void visit(ast::RegisterDecl& decl) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      if (decl.is_quantum()) {
-        counts["qubits"] += decl.size();
-      } else {
-        counts["cbits"] += decl.size();
-      }
+        if (decl.is_quantum()) {
+            counts["qubits"] += decl.size();
+        } else {
+            counts["cbits"] += decl.size();
+        }
     }
     void visit(ast::AncillaDecl& decl) {
-      auto& [counts, depths] = running_estimate_;
+        auto& [counts, depths] = running_estimate_;
 
-      if (!decl.is_dirty())
-        counts["ancillas"] += decl.size();
+        if (!decl.is_dirty())
+            counts["ancillas"] += decl.size();
     }
 
     /* Program */
     void visit(ast::Program& prog) {
-      prog.foreach_stmt([this](auto& stmt){ stmt.accept(*this); });
+        prog.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
     }
 
   private:
@@ -263,29 +264,30 @@ namespace tools {
     resource_state running_estimate_;
 
     void reset() {
-      resource_map_.clear();
-      running_estimate_.first.clear();
-      running_estimate_.second.clear();
+        resource_map_.clear();
+        running_estimate_.first.clear();
+        running_estimate_.second.clear();
     }
 
     void strip_dagger(std::string& str) {
-      auto len = str.size();
-      
-      if (len > 2 && str[len - 2] == 'd' && str[len - 1] == 'g') {
-        str.resize(len-2);
-      }
-    }
-  };
+        auto len = str.size();
 
-  resource_count estimate_resources(ast::ASTNode& node) {
+        if (len > 2 && str[len - 2] == 'd' && str[len - 1] == 'g') {
+            str.resize(len - 2);
+        }
+    }
+};
+
+resource_count estimate_resources(ast::ASTNode& node) {
     ResourceEstimator estimator;
     return estimator.run(node);
-  }
+}
 
-  resource_count estimate_resources(ast::ASTNode& node, const ResourceEstimator::config& params) {
+resource_count estimate_resources(ast::ASTNode& node,
+                                  const ResourceEstimator::config& params) {
     ResourceEstimator estimator(params);
     return estimator.run(node);
-  }
+}
 
-}
-}
+} // namespace tools
+} // namespace staq

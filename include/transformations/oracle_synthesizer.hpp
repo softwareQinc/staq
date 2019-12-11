@@ -30,36 +30,36 @@
 namespace staq {
 namespace transformations {
 
-  /** 
-   * \brief Synthesizes all declared oracles over standard library gates
-   *
-   * Visits an AST and synthesizes any declared oracles,
-   * replacing them with regular gate declarations which may
-   * optionally declare local ancillas 
-   */
+/**
+ * \brief Synthesizes all declared oracles over standard library gates
+ *
+ * Visits an AST and synthesizes any declared oracles,
+ * replacing them with regular gate declarations which may
+ * optionally declare local ancillas
+ */
 
-  /* Implementation */
-  class OracleSynthesizer final : public ast::Replacer {
+/* Implementation */
+class OracleSynthesizer final : public ast::Replacer {
   public:
-    
     OracleSynthesizer() = default;
     ~OracleSynthesizer() = default;
 
-    std::optional<std::list<ast::ptr<ast::Stmt> > > replace(ast::OracleDecl& decl) {
-      auto l_net = synthesis::read_network(decl.fname());
-      auto body = synthesis::synthesize_net(decl.pos(), l_net, decl.params());
+    std::optional<std::list<ast::ptr<ast::Stmt>>>
+    replace(ast::OracleDecl& decl) {
+        auto l_net = synthesis::read_network(decl.fname());
+        auto body = synthesis::synthesize_net(decl.pos(), l_net, decl.params());
 
-      std::list<ast::ptr<ast::Stmt> > ret;
-      ret.emplace_back(std::make_unique<ast::GateDecl>(ast::GateDecl(
-        decl.pos(), decl.id(), false, {}, decl.params(), std::move(body))));
-      return std::move(ret);
+        std::list<ast::ptr<ast::Stmt>> ret;
+        ret.emplace_back(std::make_unique<ast::GateDecl>(ast::GateDecl(
+            decl.pos(), decl.id(), false, {}, decl.params(), std::move(body))));
+        return std::move(ret);
     }
-  };
+};
 
-  void synthesize_oracles(ast::ASTNode& node) {
+void synthesize_oracles(ast::ASTNode& node) {
     OracleSynthesizer alg;
     node.accept(alg);
-  }
-    
 }
-}
+
+} // namespace transformations
+} // namespace staq

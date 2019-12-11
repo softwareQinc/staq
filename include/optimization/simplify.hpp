@@ -36,17 +36,17 @@
 namespace staq {
 namespace optimization {
 
-  /** 
-   * \brief Basic adjacent gate cancellation algorithm
-   *
-   *  Returns a replacement list giving the nodes to the be erased
-   */
+/**
+ * \brief Basic adjacent gate cancellation algorithm
+ *
+ *  Returns a replacement list giving the nodes to the be erased
+ */
 
-  // TODO: Add option for global phase correction
-  class Simplifier final : public ast::Visitor {
+// TODO: Add option for global phase correction
+class Simplifier final : public ast::Visitor {
   public:
     struct config {
-      bool fixpoint = true;
+        bool fixpoint = true;
     };
 
     Simplifier() = default;
@@ -54,11 +54,11 @@ namespace optimization {
     ~Simplifier() = default;
 
     void run(ast::ASTNode& node) {
-      do {
-        replace_gates(node, std::move(erasures_));
-        reset();
-        node.accept(*this);
-      } while(!erasures_.empty());
+        do {
+            replace_gates(node, std::move(erasures_));
+            reset();
+            node.accept(*this);
+        } while (!erasures_.empty());
     }
 
     /* Variables */
@@ -74,178 +74,208 @@ namespace optimization {
 
     /* Statements */
     void visit(ast::MeasureStmt& stmt) {
-      last_[stmt.q_arg()] = { "measure", { stmt.q_arg() }, stmt.uid() };
+        last_[stmt.q_arg()] = {"measure", {stmt.q_arg()}, stmt.uid()};
     }
     void visit(ast::ResetStmt& stmt) {
-      last_[stmt.arg()] = { "reset", { stmt.arg() }, stmt.uid() };
+        last_[stmt.arg()] = {"reset", {stmt.arg()}, stmt.uid()};
     }
     void visit(ast::IfStmt& stmt) {
-      mergeable_ = false;
-      stmt.then().accept(*this);
-      mergeable_ = true;
+        mergeable_ = false;
+        stmt.then().accept(*this);
+        mergeable_ = true;
     }
 
     /* Gates */
     void visit(ast::UGate& gate) {
-      last_[gate.arg()] = { "U", { gate.arg() }, gate.uid() };
+        last_[gate.arg()] = {"U", {gate.arg()}, gate.uid()};
     }
     void visit(ast::CNOTGate& gate) {
-      auto ctrl = gate.ctrl();
-      auto tgt = gate.tgt();
+        auto ctrl = gate.ctrl();
+        auto tgt = gate.tgt();
 
-      if (mergeable_) {
-        auto [ name1, args1, uid1 ] = last_[ctrl];
-        auto [ name2, args2, uid2 ] = last_[tgt];
+        if (mergeable_) {
+            auto [name1, args1, uid1] = last_[ctrl];
+            auto [name2, args2, uid2] = last_[tgt];
 
-        if (uid1 == uid2 && name1 == "cx" && args1 == std::vector<ast::VarAccess>({ ctrl, tgt })) {
-          erasures_[uid1] = std::move(std::list<ast::ptr<ast::Gate> >());         
-          erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+            if (uid1 == uid2 && name1 == "cx" &&
+                args1 == std::vector<ast::VarAccess>({ctrl, tgt})) {
+                erasures_[uid1] = std::move(std::list<ast::ptr<ast::Gate>>());
+                erasures_[gate.uid()] =
+                    std::move(std::list<ast::ptr<ast::Gate>>());
 
-          last_.erase(ctrl);
-          last_.erase(tgt);
+                last_.erase(ctrl);
+                last_.erase(tgt);
 
-          return;
+                return;
+            }
         }
-      }
 
-      last_[ctrl] = { "cx", { ctrl, tgt }, gate.uid() };
-      last_[tgt] = { "cx", { ctrl, tgt }, gate.uid() };
+        last_[ctrl] = {"cx", {ctrl, tgt}, gate.uid()};
+        last_[tgt] = {"cx", {ctrl, tgt}, gate.uid()};
     }
     void visit(ast::BarrierGate& gate) {
-      gate.foreach_arg([this, &gate](auto& arg){ last_[arg] = { "barrier", gate.args(), gate.uid() }; });
+        gate.foreach_arg([this, &gate](auto& arg) {
+            last_[arg] = {"barrier", gate.args(), gate.uid()};
+        });
     }
     void visit(ast::DeclaredGate& gate) {
-      auto name = gate.name();
+        auto name = gate.name();
 
-      if (mergeable_) {
-        if (name == "cx") {
-          auto ctrl = gate.qarg(0);
-          auto tgt = gate.qarg(1);
-          auto [ name1, args1, uid1 ] = last_[ctrl];
-          auto [ name2, args2, uid2 ] = last_[tgt];
+        if (mergeable_) {
+            if (name == "cx") {
+                auto ctrl = gate.qarg(0);
+                auto tgt = gate.qarg(1);
+                auto [name1, args1, uid1] = last_[ctrl];
+                auto [name2, args2, uid2] = last_[tgt];
 
-          if (uid1 == uid2 && name1 == "cx" && args1 == std::vector<ast::VarAccess>({ ctrl, tgt })) {
-            erasures_[uid1] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (uid1 == uid2 && name1 == "cx" &&
+                    args1 == std::vector<ast::VarAccess>({ctrl, tgt})) {
+                    erasures_[uid1] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(ctrl);
-            last_.erase(tgt);
+                    last_.erase(ctrl);
+                    last_.erase(tgt);
 
-            return;
-          }
-        } else if (name == "h") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "h") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "h" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "h" && args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "x") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "x") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "x" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "x" && args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "y") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "y") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "y" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "y" && args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "z") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "z") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "z" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "z" && args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "s") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "s") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "sdg" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "sdg" &&
+                    args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "sdg") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "sdg") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "s" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "s" && args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "t") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "t") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "tdg" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "tdg" &&
+                    args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
-        } else if (name == "tdg") {
-          auto arg = gate.qarg(0);
-          auto [ name, args, uid ] = last_[arg];
+                    return;
+                }
+            } else if (name == "tdg") {
+                auto arg = gate.qarg(0);
+                auto [name, args, uid] = last_[arg];
 
-          if (name == "t" && args == std::vector<ast::VarAccess>({ arg })) {
-            erasures_[uid] = std::move(std::list<ast::ptr<ast::Gate> >());         
-            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate> >());
+                if (name == "t" && args == std::vector<ast::VarAccess>({arg})) {
+                    erasures_[uid] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
 
-            last_.erase(arg);
+                    last_.erase(arg);
 
-            return;
-          }
+                    return;
+                }
+            }
         }
-      }
 
-      gate.foreach_qarg([this, &gate, &name](auto& arg){ last_[arg] = { name, gate.qargs(), gate.uid() }; });
+        gate.foreach_qarg([this, &gate, &name](auto& arg) {
+            last_[arg] = {name, gate.qargs(), gate.uid()};
+        });
     }
 
     /* Declarations */
     void visit(ast::GateDecl& decl) {
-      // Initialize a new local state
-      std::unordered_map<ast::VarAccess, std::tuple<std::string, std::vector<ast::VarAccess>, int> > local_state;
-      std::swap(last_, local_state);
+        // Initialize a new local state
+        std::unordered_map<
+            ast::VarAccess,
+            std::tuple<std::string, std::vector<ast::VarAccess>, int>>
+            local_state;
+        std::swap(last_, local_state);
 
-      // Process gate body
-      decl.foreach_stmt([this](auto& stmt){ stmt.accept(*this); });
+        // Process gate body
+        decl.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
 
-      // Reset the state
-      std::swap(last_, local_state);
+        // Reset the state
+        std::swap(last_, local_state);
     }
     void visit(ast::OracleDecl&) {}
     void visit(ast::RegisterDecl&) {}
@@ -253,31 +283,34 @@ namespace optimization {
 
     /* Program */
     void visit(ast::Program& prog) {
-      prog.foreach_stmt([this](auto& stmt){ stmt.accept(*this); });
+        prog.foreach_stmt([this](auto& stmt) { stmt.accept(*this); });
     }
 
   private:
     config config_;
     bool mergeable_;
-    std::unordered_map<int, std::list<ast::ptr<ast::Gate> > > erasures_;
-    std::unordered_map<ast::VarAccess, std::tuple<std::string, std::vector<ast::VarAccess>, int> > last_;
+    std::unordered_map<int, std::list<ast::ptr<ast::Gate>>> erasures_;
+    std::unordered_map<
+        ast::VarAccess,
+        std::tuple<std::string, std::vector<ast::VarAccess>, int>>
+        last_;
 
     void reset() {
-      erasures_.clear();
-      last_.clear();
-      mergeable_ = true;
+        erasures_.clear();
+        last_.clear();
+        mergeable_ = true;
     }
-  };
+};
 
-  inline void simplify(ast::ASTNode& node) {
+inline void simplify(ast::ASTNode& node) {
     Simplifier optimizer;
     optimizer.run(node);
-  }
+}
 
-  inline void simplify(ast::ASTNode& node, const Simplifier::config& params) {
+inline void simplify(ast::ASTNode& node, const Simplifier::config& params) {
     Simplifier optimizer(params);
     optimizer.run(node);
-  }
+}
 
-}
-}
+} // namespace optimization
+} // namespace staq

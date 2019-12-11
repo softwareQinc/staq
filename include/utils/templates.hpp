@@ -30,11 +30,15 @@
 
 namespace staq {
 namespace utils {
-  /**
-   * \brief Convenience template for variant visitors
-   */
-  template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-  template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+/**
+ * \brief Convenience template for variant visitors
+ */
+template <class... Ts>
+struct overloaded : Ts... {
+    using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...)->overloaded<Ts...>;
 
-}
-}
+} // namespace utils
+} // namespace staq

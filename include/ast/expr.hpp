@@ -36,43 +36,67 @@
 namespace staq {
 namespace ast {
 
-  /**
-   * \brief Enum of binary operators
-   */
-  enum class BinaryOp { Plus, Minus, Times, Divide, Pow };
-  inline std::ostream& operator<<(std::ostream& os, const BinaryOp& bop) {
-      switch (bop) {
-      case BinaryOp::Plus: os << "+"; break;
-      case BinaryOp::Minus: os << "-"; break;
-      case BinaryOp::Times: os << "*"; break;
-      case BinaryOp::Divide: os << "/"; break;
-      case BinaryOp::Pow: os << "^"; break;
-      }
-      return os;
-  }
-
-  /**
-   * \brief Enum of unary operators
-   */
-  enum class UnaryOp { Neg, Sin, Cos, Tan, Ln, Sqrt, Exp };
-  inline std::ostream& operator<<(std::ostream& os, const UnaryOp& uop) {
-    switch (uop) {
-    case UnaryOp::Neg: os << "-"; break;
-    case UnaryOp::Sin: os << "sin"; break;
-    case UnaryOp::Cos: os << "cos"; break;
-    case UnaryOp::Tan: os << "tan"; break;
-    case UnaryOp::Ln: os << "ln"; break;
-    case UnaryOp::Sqrt: os << "sqrt"; break;
-    case UnaryOp::Exp: os << "exp"; break;
+/**
+ * \brief Enum of binary operators
+ */
+enum class BinaryOp { Plus, Minus, Times, Divide, Pow };
+inline std::ostream& operator<<(std::ostream& os, const BinaryOp& bop) {
+    switch (bop) {
+        case BinaryOp::Plus:
+            os << "+";
+            break;
+        case BinaryOp::Minus:
+            os << "-";
+            break;
+        case BinaryOp::Times:
+            os << "*";
+            break;
+        case BinaryOp::Divide:
+            os << "/";
+            break;
+        case BinaryOp::Pow:
+            os << "^";
+            break;
     }
     return os;
-  }
+}
 
-  /**
-   * \class staq::ast::Expr
-   * \brief Base class for openQASM expressions
-   */
-  class Expr : public ASTNode {
+/**
+ * \brief Enum of unary operators
+ */
+enum class UnaryOp { Neg, Sin, Cos, Tan, Ln, Sqrt, Exp };
+inline std::ostream& operator<<(std::ostream& os, const UnaryOp& uop) {
+    switch (uop) {
+        case UnaryOp::Neg:
+            os << "-";
+            break;
+        case UnaryOp::Sin:
+            os << "sin";
+            break;
+        case UnaryOp::Cos:
+            os << "cos";
+            break;
+        case UnaryOp::Tan:
+            os << "tan";
+            break;
+        case UnaryOp::Ln:
+            os << "ln";
+            break;
+        case UnaryOp::Sqrt:
+            os << "sqrt";
+            break;
+        case UnaryOp::Exp:
+            os << "exp";
+            break;
+    }
+    return os;
+}
+
+/**
+ * \class staq::ast::Expr
+ * \brief Base class for openQASM expressions
+ */
+class Expr : public ASTNode {
   public:
     Expr(parser::Position pos) : ASTNode(pos) {}
     virtual ~Expr() = default;
@@ -89,22 +113,22 @@ namespace ast {
     virtual std::optional<double> constant_eval() const = 0;
 
     /**
-     * \brief Internal pretty-printer with associative context 
+     * \brief Internal pretty-printer with associative context
      *
      * \param ctx Whether the current associative context is ambiguous
      */
     virtual std::ostream& pretty_print(std::ostream& os, bool ctx) const = 0;
     std::ostream& pretty_print(std::ostream& os) const override {
-      return pretty_print(os, false);
+        return pretty_print(os, false);
     }
-  };
+};
 
-  /**
-   * \class staq::ast::BExpr
-   * \brief Class for binary operator expressions
-   * \see staq::ast::Expr
-   */
-  class BExpr final : public Expr {
+/**
+ * \class staq::ast::BExpr
+ * \brief Class for binary operator expressions
+ * \see staq::ast::Expr
+ */
+class BExpr final : public Expr {
     ptr<Expr> lexp_; ///< the left sub-expression
     BinaryOp op_;    ///< the binary operator
     ptr<Expr> rexp_; ///< the right sub-expression
@@ -119,17 +143,15 @@ namespace ast {
      * \param rexp The right sub-expression
      */
     BExpr(parser::Position pos, ptr<Expr> lexp, BinaryOp op, ptr<Expr> rexp)
-      : Expr(pos)
-      , lexp_(std::move(lexp))
-      , op_(op)
-      , rexp_(std::move(rexp))
-    {}
+        : Expr(pos), lexp_(std::move(lexp)), op_(op), rexp_(std::move(rexp)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<BExpr> create(parser::Position pos, ptr<Expr> lexp, BinaryOp op, ptr<Expr> rexp) {
-      return std::make_unique<BExpr>(pos, std::move(lexp), op, std::move(rexp));
+    static ptr<BExpr> create(parser::Position pos, ptr<Expr> lexp, BinaryOp op,
+                             ptr<Expr> rexp) {
+        return std::make_unique<BExpr>(pos, std::move(lexp), op,
+                                       std::move(rexp));
     }
 
     /**
@@ -168,50 +190,56 @@ namespace ast {
     void set_rexp(ptr<Expr> exp) { rexp_ = std::move(exp); }
 
     std::optional<double> constant_eval() const override {
-      auto lexp = lexp_->constant_eval();
-      auto rexp = rexp_->constant_eval();
+        auto lexp = lexp_->constant_eval();
+        auto rexp = rexp_->constant_eval();
 
-      if (!lexp || !rexp) return std::nullopt;
+        if (!lexp || !rexp)
+            return std::nullopt;
 
-      switch(op_) {
-      case BinaryOp::Plus: return *lexp + *rexp;
-      case BinaryOp::Minus: return *lexp - *rexp;
-      case BinaryOp::Times: return *lexp * *rexp;
-      case BinaryOp::Divide: return *lexp / *rexp;
-      case BinaryOp::Pow: return pow(*lexp, *rexp);
-	  default: return 0; // inaccessible
-      }
+        switch (op_) {
+            case BinaryOp::Plus:
+                return *lexp + *rexp;
+            case BinaryOp::Minus:
+                return *lexp - *rexp;
+            case BinaryOp::Times:
+                return *lexp * *rexp;
+            case BinaryOp::Divide:
+                return *lexp / *rexp;
+            case BinaryOp::Pow:
+                return pow(*lexp, *rexp);
+            default:
+                return 0; // inaccessible
+        }
     }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
-      if (ctx) {
-        os << "(";
-        lexp_->pretty_print(os, true);
-        os << op_;
-        rexp_->pretty_print(os, true);
-        os << ")";
-      } else {
-        lexp_->pretty_print(os, true);
-        os << op_;
-        rexp_->pretty_print(os, true);
-      }
+        if (ctx) {
+            os << "(";
+            lexp_->pretty_print(os, true);
+            os << op_;
+            rexp_->pretty_print(os, true);
+            os << ")";
+        } else {
+            lexp_->pretty_print(os, true);
+            os << op_;
+            rexp_->pretty_print(os, true);
+        }
 
-      return os;
+        return os;
     }
     BExpr* clone() const override {
-      return new BExpr(pos_, ptr<Expr>(lexp_->clone()), op_, ptr<Expr>(rexp_->clone()));
+        return new BExpr(pos_, ptr<Expr>(lexp_->clone()), op_,
+                         ptr<Expr>(rexp_->clone()));
     }
+};
 
-  };
-
-
-  /**
-   * \class staq::ast::UExpr
-   * \brief Class for unary operator expressions
-   * \see staq::ast::Expr
-   */
-  class UExpr final : public Expr {
-    UnaryOp op_; ///< the unary operator
+/**
+ * \class staq::ast::UExpr
+ * \brief Class for unary operator expressions
+ * \see staq::ast::Expr
+ */
+class UExpr final : public Expr {
+    UnaryOp op_;    ///< the unary operator
     ptr<Expr> exp_; ///< the sub-expression
 
   public:
@@ -223,16 +251,13 @@ namespace ast {
      * \param exp The sub-expression
      */
     UExpr(parser::Position pos, UnaryOp op, ptr<Expr> exp)
-      : Expr(pos)
-      , op_(op)
-      , exp_(std::move(exp))
-    {}
+        : Expr(pos), op_(op), exp_(std::move(exp)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
     static ptr<UExpr> create(parser::Position pos, UnaryOp op, ptr<Expr> exp) {
-      return std::make_unique<UExpr>(pos, op, std::move(exp));
+        return std::make_unique<UExpr>(pos, op, std::move(exp));
     }
 
     /**
@@ -240,7 +265,7 @@ namespace ast {
      *
      * \return A unary operator enum
      */
-	UnaryOp op() const { return op_; }
+    UnaryOp op() const { return op_; }
 
     /**
      * \brief Get the sub-expression
@@ -257,49 +282,57 @@ namespace ast {
     void set_subexp(ptr<Expr> exp) { exp_ = std::move(exp); }
 
     std::optional<double> constant_eval() const override {
-      auto expr = exp_->constant_eval();
+        auto expr = exp_->constant_eval();
 
-      if (!expr) return std::nullopt;
+        if (!expr)
+            return std::nullopt;
 
-      switch(op_) {
-      case UnaryOp::Neg: return -(*expr);
-      case UnaryOp::Sin: return sin(*expr);
-      case UnaryOp::Cos: return cos(*expr);
-      case UnaryOp::Tan: return tan(*expr);
-      case UnaryOp::Sqrt: return sqrt(*expr);
-      case UnaryOp::Ln: return log(*expr);
-      case UnaryOp::Exp: return exp(*expr);
-	  default: return 0; // inaccessible
-      }
+        switch (op_) {
+            case UnaryOp::Neg:
+                return -(*expr);
+            case UnaryOp::Sin:
+                return sin(*expr);
+            case UnaryOp::Cos:
+                return cos(*expr);
+            case UnaryOp::Tan:
+                return tan(*expr);
+            case UnaryOp::Sqrt:
+                return sqrt(*expr);
+            case UnaryOp::Ln:
+                return log(*expr);
+            case UnaryOp::Exp:
+                return exp(*expr);
+            default:
+                return 0; // inaccessible
+        }
     }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
-      (void)ctx;
-      
-      os << op_;
-      if (op_ == UnaryOp::Neg)
-        exp_->pretty_print(os, true);
-      else {
-        os << "(";
-        exp_->pretty_print(os, false);
-        os << ")";
-      }
+        (void) ctx;
 
-      return os;
+        os << op_;
+        if (op_ == UnaryOp::Neg)
+            exp_->pretty_print(os, true);
+        else {
+            os << "(";
+            exp_->pretty_print(os, false);
+            os << ")";
+        }
+
+        return os;
     }
     UExpr* clone() const override {
-      return new UExpr(pos_, op_, ptr<Expr>(exp_->clone()));
+        return new UExpr(pos_, op_, ptr<Expr>(exp_->clone()));
     }
-  };
+};
 
+/**
+ * \class staq::ast::PiExpr
+ * \brief Class for pi constants
+ * \see staq::ast::Expr
+ */
+class PiExpr final : public Expr {
 
-  /**
-   * \class staq::ast::PiExpr
-   * \brief Class for pi constants
-   * \see staq::ast::Expr
-   */
-  class PiExpr final : public Expr {
-    
   public:
     /**
      * \brief Construct a Pi expression
@@ -312,31 +345,28 @@ namespace ast {
      * \brief Protected heap-allocated construction
      */
     static ptr<PiExpr> create(parser::Position pos) {
-      return std::make_unique<PiExpr>(pos);
+        return std::make_unique<PiExpr>(pos);
     }
 
     std::optional<double> constant_eval() const override {
-      return 3.14159265359;
+        return 3.14159265359;
     }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
-      (void)ctx;
-      
-      os << "pi";
-      return os;
-    }
-    PiExpr* clone() const override {
-      return new PiExpr(pos_);
-    }
-  };
+        (void) ctx;
 
+        os << "pi";
+        return os;
+    }
+    PiExpr* clone() const override { return new PiExpr(pos_); }
+};
 
-  /**
-   * \class staq::ast::IntExpr
-   * \brief Class for integer literal expressions
-   * \see staq::ast::Expr
-   */
-  class IntExpr final : public Expr {
+/**
+ * \class staq::ast::IntExpr
+ * \brief Class for integer literal expressions
+ * \see staq::ast::Expr
+ */
+class IntExpr final : public Expr {
     int value_; ///< the integer value
 
   public:
@@ -352,10 +382,10 @@ namespace ast {
      * \brief Protected heap-allocated construction
      */
     static ptr<IntExpr> create(parser::Position pos, int value) {
-      return std::make_unique<IntExpr>(pos, value);
+        return std::make_unique<IntExpr>(pos, value);
     }
 
-    /** 
+    /**
      * \brief Get the integer value
      *
      * \return The integer value
@@ -363,27 +393,24 @@ namespace ast {
     int value() const { return value_; }
 
     std::optional<double> constant_eval() const override {
-      return (double)value_;
+        return (double) value_;
     }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
-      (void)ctx;
-      
-      os << value_;
-      return os;
-    }
-    IntExpr* clone() const override {
-      return new IntExpr(pos_, value_);
-    }
-  };
+        (void) ctx;
 
+        os << value_;
+        return os;
+    }
+    IntExpr* clone() const override { return new IntExpr(pos_, value_); }
+};
 
-  /**
-   * \class staq::ast::RealExpr
-   * \brief Class for floating point literal expressions
-   * \see staq::ast::Expr
-   */
-  class RealExpr final : public Expr {
+/**
+ * \class staq::ast::RealExpr
+ * \brief Class for floating point literal expressions
+ * \see staq::ast::Expr
+ */
+class RealExpr final : public Expr {
     double value_; ///< the floating point value
 
   public:
@@ -399,37 +426,33 @@ namespace ast {
      * \brief Protected heap-allocated construction
      */
     static ptr<RealExpr> create(parser::Position pos, double value) {
-      return std::make_unique<RealExpr>(pos, value);
+        return std::make_unique<RealExpr>(pos, value);
     }
 
-    /** 
+    /**
      * \brief Get the real value
      *
      * \return The floating point value
      */
     double value() const { return value_; }
 
-    std::optional<double> constant_eval() const override {
-      return value_;
-    }
+    std::optional<double> constant_eval() const override { return value_; }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
-      (void)ctx;
-      
-      os << value_;
-      return os;
-    }
-    RealExpr* clone() const override {
-      return new RealExpr(pos_, value_);
-    }
-  };
+        (void) ctx;
 
-  /**
-   * \class staq::ast::VarExpr
-   * \brief Class for variable expressions
-   * \see staq::ast::Expr
-   */
-  class VarExpr final : public Expr {
+        os << value_;
+        return os;
+    }
+    RealExpr* clone() const override { return new RealExpr(pos_, value_); }
+};
+
+/**
+ * \class staq::ast::VarExpr
+ * \brief Class for variable expressions
+ * \see staq::ast::Expr
+ */
+class VarExpr final : public Expr {
     symbol var_; ///< the identifier
 
   public:
@@ -440,15 +463,15 @@ namespace ast {
      * \param var The variable name
      */
     VarExpr(parser::Position pos, symbol var) : Expr(pos), var_(var) {}
-    
+
     /**
      * \brief Protected heap-allocated construction
      */
     static ptr<VarExpr> create(parser::Position pos, symbol var) {
-      return std::make_unique<VarExpr>(pos, var);
+        return std::make_unique<VarExpr>(pos, var);
     }
 
-    /** 
+    /**
      * \brief Get the variable name
      *
      * \return Constant reference to the name
@@ -456,58 +479,51 @@ namespace ast {
     const symbol& var() const { return var_; }
 
     std::optional<double> constant_eval() const override {
-      return std::nullopt;
+        return std::nullopt;
     }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
-      (void)ctx;
-      os << var_;
-      return os;
+        (void) ctx;
+        os << var_;
+        return os;
     }
-    VarExpr* clone() const override {
-      return new VarExpr(pos_, var_);
-    }
-  };
+    VarExpr* clone() const override { return new VarExpr(pos_, var_); }
+};
 
-  /** 
-   * \brief Returns an Expr representing the given angle
-   *
-   * \param theta The angle
-   * \return The equivalent QASM expression
-   */
-  inline ptr<Expr> angle_to_expr(const utils::Angle& theta) {
+/**
+ * \brief Returns an Expr representing the given angle
+ *
+ * \param theta The angle
+ * \return The equivalent QASM expression
+ */
+inline ptr<Expr> angle_to_expr(const utils::Angle& theta) {
     parser::Position pos;
-    
+
     if (theta.is_symbolic()) {
-      // Angle is of the form pi*(a/b) for a & b integers
-      auto [a, b] = *(theta.symbolic_value());
+        // Angle is of the form pi*(a/b) for a & b integers
+        auto [a, b] = *(theta.symbolic_value());
 
-      if (a == 0) {
-        return std::make_unique<IntExpr>(IntExpr(pos, 0));
-      } else if (a == 1) {
-        return std::make_unique<BExpr>(
-          pos,
-          std::make_unique<PiExpr>(PiExpr(pos)),
-          BinaryOp::Divide,
-          std::make_unique<IntExpr>(IntExpr(pos, b)));
-      } else {
-        auto subexpr = std::make_unique<BExpr>(
-          pos,
-          std::make_unique<PiExpr>(PiExpr(pos)),
-          BinaryOp::Times,
-          std::make_unique<IntExpr>(IntExpr(pos, a)));
+        if (a == 0) {
+            return std::make_unique<IntExpr>(IntExpr(pos, 0));
+        } else if (a == 1) {
+            return std::make_unique<BExpr>(
+                pos, std::make_unique<PiExpr>(PiExpr(pos)), BinaryOp::Divide,
+                std::make_unique<IntExpr>(IntExpr(pos, b)));
+        } else {
+            auto subexpr = std::make_unique<BExpr>(
+                pos, std::make_unique<PiExpr>(PiExpr(pos)), BinaryOp::Times,
+                std::make_unique<IntExpr>(IntExpr(pos, a)));
 
-        return std::make_unique<BExpr>(
-          pos,
-          std::move(subexpr),
-          BinaryOp::Divide,
-          std::make_unique<IntExpr>(IntExpr(pos, b)));
-      }
+            return std::make_unique<BExpr>(
+                pos, std::move(subexpr), BinaryOp::Divide,
+                std::make_unique<IntExpr>(IntExpr(pos, b)));
+        }
     } else {
-      // Angle is real-valued
-      return std::make_unique<RealExpr>(RealExpr(parser::Position(), theta.numeric_value()));
+        // Angle is real-valued
+        return std::make_unique<RealExpr>(
+            RealExpr(parser::Position(), theta.numeric_value()));
     }
-  }
+}
 
-}
-}
+} // namespace ast
+} // namespace staq

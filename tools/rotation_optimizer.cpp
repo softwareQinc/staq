@@ -30,21 +30,22 @@
 using namespace staq;
 
 int main(int argc, char** argv) {
-  bool no_correction = false;
+    bool no_correction = false;
 
-  CLI::App app{ "QASM rotation optimizer" };
+    CLI::App app{"QASM rotation optimizer"};
 
-  app.add_flag("--no-phase-correction", no_correction, "Turns off global phase corrections");
+    app.add_flag("--no-phase-correction", no_correction,
+                 "Turns off global phase corrections");
 
-  CLI11_PARSE(app, argc, argv);
+    CLI11_PARSE(app, argc, argv);
 
-  auto program = parser::parse_stdin();
-  if (program) {
-    optimization::fold_rotations(*program, {!no_correction});
-    std::cout << *program;
-  } else {
-    std::cerr << "Parsing failed\n";
-  }
+    auto program = parser::parse_stdin();
+    if (program) {
+        optimization::fold_rotations(*program, {!no_correction});
+        std::cout << *program;
+    } else {
+        std::cerr << "Parsing failed\n";
+    }
 
-  return 1;
+    return 1;
 }

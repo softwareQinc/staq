@@ -35,22 +35,20 @@
 namespace staq {
 namespace ast {
 
-  static const std::set<std::string_view> qelib_defs {
-    "u3", "u2", "u1", "cx", "id", "u0", "x", "y", "z",
-    "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz",
-    "cz", "cy", "swap", "ch", "ccx", "crz", "cu1",
-    "cu3"
-  };
+static const std::set<std::string_view> qelib_defs{
+    "u3", "u2",   "u1",  "cx",  "id",  "u0",  "x",  "y",  "z",
+    "h",  "s",    "sdg", "t",   "tdg", "rx",  "ry", "rz", "cz",
+    "cy", "swap", "ch",  "ccx", "crz", "cu1", "cu3"};
 
-  /**
-   * \class staq::ast::Decl
-   * \brief Base class for openQASM declarations
-   *
-   * Declarations are attribute classes as they can occur in different
-   * statement contexts. To avoid diamond inheritance, any derived declaration
-   * should also inherit from a statement class
-   */
-  class Decl {
+/**
+ * \class staq::ast::Decl
+ * \brief Base class for openQASM declarations
+ *
+ * Declarations are attribute classes as they can occur in different
+ * statement contexts. To avoid diamond inheritance, any derived declaration
+ * should also inherit from a statement class
+ */
+class Decl {
   protected:
     symbol id_; ///< the name of the declaration
 
@@ -64,19 +62,19 @@ namespace ast {
      * \return Constant reference to the identifier
      */
     const symbol& id() { return id_; }
-  };
+};
 
-  /**
-   * \class staq::ast::GateDecl
-   * \brief Class for gate declarations
-   * \see staq::ast::Stmt
-   * \see staq::ast::Decl
-   */
-  class GateDecl final : public Stmt, public Decl {
+/**
+ * \class staq::ast::GateDecl
+ * \brief Class for gate declarations
+ * \see staq::ast::Stmt
+ * \see staq::ast::Decl
+ */
+class GateDecl final : public Stmt, public Decl {
     bool opaque_;                  ///< whether the declaration is opaque
     std::vector<symbol> c_params_; ///< classical parameters
     std::vector<symbol> q_params_; ///< quantum parameters
-    std::list<ptr<Gate> > body_;   ///< gate body
+    std::list<ptr<Gate>> body_;    ///< gate body
 
   public:
     /**
@@ -88,22 +86,21 @@ namespace ast {
      * \param q_params List of quantum parameters
      * \param body List of gate statements
      */
-    GateDecl(parser::Position pos, symbol id, bool opaque, std::vector<symbol> c_params,
-             std::vector<symbol> q_params, std::list<ptr<Gate> >&& body)
-      : Stmt(pos), Decl(id)
-      , opaque_(opaque)
-      , c_params_(c_params)
-      , q_params_(q_params)
-      , body_(std::move(body))
-    {}
+    GateDecl(parser::Position pos, symbol id, bool opaque,
+             std::vector<symbol> c_params, std::vector<symbol> q_params,
+             std::list<ptr<Gate>>&& body)
+        : Stmt(pos), Decl(id), opaque_(opaque), c_params_(c_params),
+          q_params_(q_params), body_(std::move(body)) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<GateDecl> create(parser::Position pos, symbol id, bool opaque, std::vector<symbol> c_params,
-                                std::vector<symbol> q_params, std::list<ptr<Gate> >&& body)
-    {
-      return std::make_unique<GateDecl>(pos, id, opaque, c_params, q_params, std::move(body));
+    static ptr<GateDecl> create(parser::Position pos, symbol id, bool opaque,
+                                std::vector<symbol> c_params,
+                                std::vector<symbol> q_params,
+                                std::list<ptr<Gate>>&& body) {
+        return std::make_unique<GateDecl>(pos, id, opaque, c_params, q_params,
+                                          std::move(body));
     }
 
     /**
@@ -132,7 +129,7 @@ namespace ast {
      *
      * \return Reference to the body of the gate as a list of gate statements
      */
-    std::list<ptr<Gate> >& body() { return body_; }
+    std::list<ptr<Gate>>& body() { return body_; }
 
     /**
      * \brief Apply a function to each statement of the gate
@@ -140,7 +137,8 @@ namespace ast {
      * \param f A void function taking a reference to a Gate
      */
     void foreach_stmt(std::function<void(Gate&)> f) {
-      for (auto it = body_.begin(); it != body_.end(); it++) f(**it);
+        for (auto it = body_.begin(); it != body_.end(); it++)
+            f(**it);
     }
 
     /**
@@ -148,58 +146,60 @@ namespace ast {
      *
      * \return std::list iterator
      */
-    std::list<ptr<Gate> >::iterator begin() { return body_.begin(); }
+    std::list<ptr<Gate>>::iterator begin() { return body_.begin(); }
 
     /**
      * \brief Get an iterator to the end of the body
      *
      * \return std::list iterator
      */
-    std::list<ptr<Gate> >::iterator end() { return body_.end(); }
+    std::list<ptr<Gate>>::iterator end() { return body_.end(); }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
-    std::ostream& pretty_print(std::ostream& os, bool suppress_std) const override {
-      if (suppress_std && qelib_defs.find(id_) != qelib_defs.end())
+    std::ostream& pretty_print(std::ostream& os,
+                               bool suppress_std) const override {
+        if (suppress_std && qelib_defs.find(id_) != qelib_defs.end())
+            return os;
+
+        os << (opaque_ ? "opaque " : "gate ") << id_;
+        if (c_params_.size() > 0) {
+            os << "(";
+            for (auto it = c_params_.begin(); it != c_params_.end(); it++) {
+                os << (it == c_params_.begin() ? "" : ",") << *it;
+            }
+            os << ")";
+        }
+        os << " ";
+        for (auto it = q_params_.begin(); it != q_params_.end(); it++) {
+            os << (it == q_params_.begin() ? "" : ",") << *it;
+        }
+        if (opaque_) {
+            os << ";\n";
+        } else {
+            os << " {\n";
+            for (auto it = body_.begin(); it != body_.end(); it++) {
+                os << "\t" << **it;
+            }
+            os << "}\n";
+        }
         return os;
-      
-      os << (opaque_ ? "opaque " : "gate ") << id_;
-      if (c_params_.size() > 0) {
-        os << "(";
-        for (auto it = c_params_.begin(); it != c_params_.end(); it++) {
-          os << (it == c_params_.begin() ? "" : ",") << *it;
-        }
-        os << ")";
-      }
-      os << " ";
-      for (auto it = q_params_.begin(); it != q_params_.end(); it++) {
-        os << (it == q_params_.begin() ? "" : ",") << *it;
-      }
-      if (opaque_) {
-        os << ";\n";
-      } else {
-        os << " {\n";
-        for (auto it = body_.begin(); it != body_.end(); it++) {
-          os << "\t" << **it;
-        }
-        os << "}\n";
-      }
-	  return os;
     }
     GateDecl* clone() const override {
-      std::list<ptr<Gate> > tmp;
-      for (auto it = body_.begin(); it != body_.end(); it++) {
-        tmp.emplace_back(ptr<Gate>((*it)->clone()));
-      }
-      return new GateDecl(pos_, id_, opaque_, c_params_, q_params_, std::move(tmp));
+        std::list<ptr<Gate>> tmp;
+        for (auto it = body_.begin(); it != body_.end(); it++) {
+            tmp.emplace_back(ptr<Gate>((*it)->clone()));
+        }
+        return new GateDecl(pos_, id_, opaque_, c_params_, q_params_,
+                            std::move(tmp));
     }
-  };
+};
 
-  /**
-   * \class staq::ast::OracleDecl
-   * \brief Class for oracle declarations
-   * \see staq::ast::Decl
-   */
-  class OracleDecl final : public Stmt, public Decl {
+/**
+ * \class staq::ast::OracleDecl
+ * \brief Class for oracle declarations
+ * \see staq::ast::Decl
+ */
+class OracleDecl final : public Stmt, public Decl {
     std::vector<symbol> params_; ///< quantum parameters
     symbol fname_;               ///< filename of external declaration
 
@@ -212,17 +212,16 @@ namespace ast {
      * \param params List of quantum parameters
      * \param fname Filename defining the classical logic
      */
-    OracleDecl(parser::Position pos, symbol id, std::vector<symbol> params, symbol fname)
-      : Stmt(pos), Decl(id)
-      , params_(params)
-      , fname_(fname)
-    {}
+    OracleDecl(parser::Position pos, symbol id, std::vector<symbol> params,
+               symbol fname)
+        : Stmt(pos), Decl(id), params_(params), fname_(fname) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<OracleDecl> create(parser::Position pos, symbol id, std::vector<symbol> params, symbol fname) {
-      return std::make_unique<OracleDecl>(pos, id, params, fname);
+    static ptr<OracleDecl> create(parser::Position pos, symbol id,
+                                  std::vector<symbol> params, symbol fname) {
+        return std::make_unique<OracleDecl>(pos, id, params, fname);
     }
 
     /**
@@ -241,26 +240,26 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << "oracle " << id_ << " ";
-      for (auto it = params_.begin(); it != params_.end(); it++) {
-        os << (it == params_.begin() ? "" : ",") << *it;
-      }
-      os << " { \"" << fname_ << "\" }\n";
-	  return os;
+        os << "oracle " << id_ << " ";
+        for (auto it = params_.begin(); it != params_.end(); it++) {
+            os << (it == params_.begin() ? "" : ",") << *it;
+        }
+        os << " { \"" << fname_ << "\" }\n";
+        return os;
     }
     OracleDecl* clone() const override {
-      return new OracleDecl(pos_, id_, params_, fname_);
+        return new OracleDecl(pos_, id_, params_, fname_);
     }
-  };
+};
 
-  /**
-   * \class staq::ast::RegisterDecl
-   * \brief Class for register declarations
-   * \see staq::ast::Decl
-   */
-  class RegisterDecl final : public Stmt, public Decl {
+/**
+ * \class staq::ast::RegisterDecl
+ * \brief Class for register declarations
+ * \see staq::ast::Decl
+ */
+class RegisterDecl final : public Stmt, public Decl {
     bool quantum_; ///< whether the register is quantum
-    int size_;   ///< the size of the register
+    int size_;     ///< the size of the register
 
   public:
     /**
@@ -272,13 +271,14 @@ namespace ast {
      * \param size the size of the register
      */
     RegisterDecl(parser::Position pos, symbol id, bool quantum, int size)
-      : Stmt(pos), Decl(id), quantum_(quantum), size_(size) {}
+        : Stmt(pos), Decl(id), quantum_(quantum), size_(size) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<RegisterDecl> create(parser::Position pos, symbol id, bool quantum, int size) {
-      return std::make_unique<RegisterDecl>(pos, id, quantum, size);
+    static ptr<RegisterDecl> create(parser::Position pos, symbol id,
+                                    bool quantum, int size) {
+        return std::make_unique<RegisterDecl>(pos, id, quantum, size);
     }
 
     /**
@@ -297,20 +297,20 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      os << (quantum_ ? "qreg " : "creg ") << id_ << "[" << size_ << "];\n";
-      return os;
+        os << (quantum_ ? "qreg " : "creg ") << id_ << "[" << size_ << "];\n";
+        return os;
     }
     RegisterDecl* clone() const override {
-      return new RegisterDecl(pos_, id_, quantum_, size_);
+        return new RegisterDecl(pos_, id_, quantum_, size_);
     }
-  };
-  
-  /**
-   * \class staq::ast::AncillaDecl
-   * \brief Class for local register declarations
-   * \see staq::ast::Decl
-   */
-  class AncillaDecl final : public Gate, public Decl {
+};
+
+/**
+ * \class staq::ast::AncillaDecl
+ * \brief Class for local register declarations
+ * \see staq::ast::Decl
+ */
+class AncillaDecl final : public Gate, public Decl {
     bool dirty_; ///< whether the register can be dirty
     int size_;   ///< the size of the register
 
@@ -324,13 +324,14 @@ namespace ast {
      * \param size The size of the register
      */
     AncillaDecl(parser::Position pos, symbol id, bool dirty, int size)
-      : Gate(pos), Decl(id), dirty_(dirty), size_(size) {}
+        : Gate(pos), Decl(id), dirty_(dirty), size_(size) {}
 
     /**
      * \brief Protected heap-allocated construction
      */
-    static ptr<AncillaDecl> create(parser::Position pos, symbol id, bool dirty, int size) {
-      return std::make_unique<AncillaDecl>(pos, id, dirty, size);
+    static ptr<AncillaDecl> create(parser::Position pos, symbol id, bool dirty,
+                                   int size) {
+        return std::make_unique<AncillaDecl>(pos, id, dirty, size);
     }
 
     /**
@@ -349,14 +350,15 @@ namespace ast {
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool) const override {
-      if (dirty_) os << "dirty ";
-      os << "ancilla " << id_ << "[" << size_ << "];\n";
-      return os;
+        if (dirty_)
+            os << "dirty ";
+        os << "ancilla " << id_ << "[" << size_ << "];\n";
+        return os;
     }
     AncillaDecl* clone() const override {
-      return new AncillaDecl(pos_, id_, dirty_, size_);
+        return new AncillaDecl(pos_, id_, dirty_, size_);
     }
-  };
+};
 
-}
-}
+} // namespace ast
+} // namespace staq
