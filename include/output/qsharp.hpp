@@ -58,7 +58,7 @@ class QSharpOutputter final : public ast::Visitor {
   public:
     struct config {
         bool driver = false;
-        std::string ns = "Quantum.SynthewareQ";
+        std::string ns = "Quantum.staq";
         std::string opname = "Circuit";
     };
 
