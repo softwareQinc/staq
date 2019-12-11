@@ -109,19 +109,19 @@ void print_help() {
               << "Standard heavy optimization pass\n\n";
     std::cout << "Options:\n";
     std::cout << std::setw(width) << std::left << "-o,--output FILE"
-              << "Output filename. Otherwise prints to stdout\n";
+              << "Output filename. Otherwise prints to stdout.\n";
     std::cout << std::setw(width) << std::left
-              << "-f,--format (qasm|quil|projectq|qsharp|cirq|resources)"
-              << "Output format. Default=qasm\n";
+              << "-f,--format (qasm|quil|projectq|qsharp|cirq|resources) "
+              << "Output format. Default=qasm.\n";
     std::cout << std::setw(width) << std::left
-              << "-d,--device (tokyo|agave|aspen-4|square|fullycon)"
-              << "Device for physical mapping. Default=tokyo\n";
+              << "-d,--device (tokyo|agave|aspen-4|square|fullycon) "
+              << "Device for physical mapping. Default=tokyo.\n";
     std::cout << std::setw(width) << std::left
               << "-l,--layout (linear|eager|bestfit)"
-              << "Initial device layout algorithm. Default=linear\n";
+              << "Initial device layout algorithm. Default=linear.\n";
     std::cout << std::setw(width) << std::left
               << "-M,--mapping-alg (swap|steiner)"
-              << "Algorithm to use for mapping CNOT gates. Default=swap\n";
+              << "Algorithm to use for mapping CNOT gates. Default=swap.\n";
     std::cout
         << std::setw(width) << std::left << "--no-expand-registers"
         << "Disables expanding gates applied to registers rather than qubits\n";

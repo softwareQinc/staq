@@ -2,7 +2,8 @@
 ## Version 1.0
 
 **Build status:**
-[![Build Status](https://travis-ci.com/meamy/synthewareQ.svg?token=csCkgudbmX5jejx5vM8V&branch=master)](https://travis-ci.com/meamy/synthewareQ)
+
+[![Build Status](https://travis-ci.com/softwareQinc/staq.svg?branch=master)](https://travis-ci.com/softwareQinc/staq)
 
 ---
 ## About
@@ -23,7 +24,7 @@ source-to-source tranformations, where only specific changes are desired.
 Likewise, this allows translations to other common circuit description languages
 and libraries to closely follow the openQASM source.
 
-Check out the [wiki](https://github.com/softwareQinc/staq/wiki) for
+Check out the [Wiki](https://github.com/softwareQinc/staq/wiki) for
 more information about the library and included tools.
 
 ---
@@ -43,7 +44,7 @@ To build the **staq** tool suite, from the `build` directory, enter
 `make tools`. Unit tests can be built with the command `make unit_tests`.
 
 ### Windows
-Building on windows requires [Visual Studio](https://www.visualstudio.com) 2017 
+Building on Windows requires [Visual Studio](https://www.visualstudio.com) 2017 
 or later for cmake support. In Visual Studio, open
 [CMakeLists.txt](https://github.com/softwareQinc/staq/blob/master/CMakeLists.txt)
 as a cmake project, then simply build as a regular Visual Studio project.
