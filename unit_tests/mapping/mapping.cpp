@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -29,7 +29,7 @@
 #include "mapping/mapping/swap.hpp"
 #include "mapping/mapping/steiner.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 
 static mapping::Device test_device(
 	"Test device",

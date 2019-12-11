@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -31,7 +31,7 @@
 #include <vector>
 #include <set>
 
-namespace synthewareQ {
+namespace staq {
 namespace mapping {
 
   /** \brief Allocates qubits on demand prioritizing coupling fidelity */

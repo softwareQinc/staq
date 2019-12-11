@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -27,7 +27,7 @@
 #include "ast/replacer.hpp"
 #include "synthesis/logic_synthesis.hpp"
 
-namespace synthewareQ {
+namespace staq {
 namespace transformations {
 
   /** 

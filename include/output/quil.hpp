@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -26,7 +26,7 @@
 
 #include "ast/ast.hpp"
 
-namespace synthewareQ {
+namespace staq {
 namespace output {
 
   /** \brief Equivalent quil standard gates for qasm standard gates */

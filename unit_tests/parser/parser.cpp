@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -32,7 +32,7 @@
 
 #include <sstream>
 
-using namespace synthewareQ;
+using namespace staq;
 
 // Parsing & semantic analysis unit tests
 /******************************************************************************/

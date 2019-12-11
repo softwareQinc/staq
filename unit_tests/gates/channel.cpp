@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -25,7 +25,7 @@
 #include "gtest/gtest.h"
 #include "gates/channel.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 
 // Testing channel gates
 using Gates = gates::ChannelRepr<std::string>;

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -33,7 +33,7 @@
 
 #include <cmath>
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /**
@@ -69,7 +69,7 @@ namespace ast {
   }
 
   /**
-   * \class synthewareQ::ast::Expr
+   * \class staq::ast::Expr
    * \brief Base class for openQASM expressions
    */
   class Expr : public ASTNode {
@@ -100,9 +100,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::BExpr
+   * \class staq::ast::BExpr
    * \brief Class for binary operator expressions
-   * \see synthewareQ::ast::Expr
+   * \see staq::ast::Expr
    */
   class BExpr final : public Expr {
     ptr<Expr> lexp_; ///< the left sub-expression
@@ -206,9 +206,9 @@ namespace ast {
 
 
   /**
-   * \class synthewareQ::ast::UExpr
+   * \class staq::ast::UExpr
    * \brief Class for unary operator expressions
-   * \see synthewareQ::ast::Expr
+   * \see staq::ast::Expr
    */
   class UExpr final : public Expr {
     UnaryOp op_; ///< the unary operator
@@ -294,9 +294,9 @@ namespace ast {
 
 
   /**
-   * \class synthewareQ::ast::PiExpr
+   * \class staq::ast::PiExpr
    * \brief Class for pi constants
-   * \see synthewareQ::ast::Expr
+   * \see staq::ast::Expr
    */
   class PiExpr final : public Expr {
     
@@ -332,9 +332,9 @@ namespace ast {
 
 
   /**
-   * \class synthewareQ::ast::IntExpr
+   * \class staq::ast::IntExpr
    * \brief Class for integer literal expressions
-   * \see synthewareQ::ast::Expr
+   * \see staq::ast::Expr
    */
   class IntExpr final : public Expr {
     int value_; ///< the integer value
@@ -379,9 +379,9 @@ namespace ast {
 
 
   /**
-   * \class synthewareQ::ast::RealExpr
+   * \class staq::ast::RealExpr
    * \brief Class for floating point literal expressions
-   * \see synthewareQ::ast::Expr
+   * \see staq::ast::Expr
    */
   class RealExpr final : public Expr {
     double value_; ///< the floating point value
@@ -425,9 +425,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::VarExpr
+   * \class staq::ast::VarExpr
    * \brief Class for variable expressions
-   * \see synthewareQ::ast::Expr
+   * \see staq::ast::Expr
    */
   class VarExpr final : public Expr {
     symbol var_; ///< the identifier

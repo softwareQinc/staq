@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -45,7 +45,7 @@
 #include "output/quil.hpp"
 #include "output/cirq.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 
 /** 
  * \brief Compiler passes
@@ -91,8 +91,8 @@ enum class Format { qasm, quil, projectq, qsharp, cirq, resources };
 void print_help() {
   int width = 40;
 
-  std::cout << "synthewareQ -- copyright softwareQ 2019\n";
-  std::cout << "Usage: ./synthewareq [PASSES/OPTIONS] FILE.qasm\n\n";
+  std::cout << "staq -- copyright softwareQ 2019\n";
+  std::cout << "Usage: ./staq [PASSES/OPTIONS] FILE.qasm\n\n";
   std::cout << "Compiler passes:\n";
   std::cout << std::setw(width) << std::left << "-i,--inline"
             << "Inline all gates\n";

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -26,7 +26,7 @@
 #include "parser/parser.hpp"
 #include "transformations/inline.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 
 // Testing inlining
 /******************************************************************************/

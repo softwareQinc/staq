@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -32,11 +32,11 @@
 
 #include <optional>
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /**
-   * \class synthewareQ::ast::VarAccess
+   * \class staq::ast::VarAccess
    * \brief Class for variable accesses
    *
    * Represents accesses into a register by the register name and an optional 
@@ -160,8 +160,8 @@ namespace std {
    * Implementation and magic numbers taken from boost::hash_combine.
    */
   template<>
-  struct hash<synthewareQ::ast::VarAccess> {
-    size_t operator()(const synthewareQ::ast::VarAccess& v) const {
+  struct hash<staq::ast::VarAccess> {
+    size_t operator()(const staq::ast::VarAccess& v) const {
       size_t lhs = std::hash<std::string>{}(v.var_);
       lhs ^= std::hash<std::optional<int> >{}(v.offset_) + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
       return lhs;

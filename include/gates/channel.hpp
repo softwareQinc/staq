@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -44,11 +44,11 @@
 #include <variant>
 #include <iostream>
 
-namespace synthewareQ {
+namespace staq {
 namespace gates {
 
   /**
-   * \struct synthewareQ::gates::ChannelRepr
+   * \struct staq::gates::ChannelRepr
    * \brief Gates in the channel representation parameterized by an argument type
    *
    * Decouples the gates and gate logic from the representation of their arguments.
@@ -59,13 +59,13 @@ namespace gates {
   struct ChannelRepr {
 
     /**
-     * \class synthewareQ::gates::ChannelRepr::PauliOp
+     * \class staq::gates::ChannelRepr::PauliOp
      * \brief The single qubit Pauli group
      */
     enum class PauliOp  : unsigned short { i = 0, x = 1, z = 2, y = 3 };
 
     /**
-     * \class synthewareQ::gates::ChannelRepr::IPhase
+     * \class staq::gates::ChannelRepr::IPhase
      * \brief Pauli global phases (powers of i)
      */
     enum class IPhase : unsigned short { zero = 0, one = 1, two = 2, three = 3 };
@@ -188,7 +188,7 @@ namespace gates {
     }
 
     /** 
-     * \class synthewareQ::gates::ChannelRepr::Pauli
+     * \class staq::gates::ChannelRepr::Pauli
      * \brief Class representing an multi-qubit pauli operator 
      */
     class Pauli {
@@ -359,7 +359,7 @@ namespace gates {
 
 
     /** 
-     * \classs synthewareQ::gates::ChannelRepr::Clifford
+     * \classs staq::gates::ChannelRepr::Clifford
      * \brief Class representing an n-qubit Clifford operator as the normalizer of the Pauli group
      *
      * Cliffords are represented via a sparse mapping from a (non-minimal) set of generators of 
@@ -490,7 +490,7 @@ namespace gates {
 
 
     /** 
-     * \class synthewareQ::gates::ChannelRepr::Uninterp
+     * \class staq::gates::ChannelRepr::Uninterp
      * \brief Class storing an uninterpreted operation on some set of qubits 
      *
      * Uninterpreted gates are gates that do not correspond to a Pauli,
@@ -534,7 +534,7 @@ namespace gates {
     friend std::ostream& operator<<(std::ostream& os, const Uninterp& P) { return P.print(os); }
 
     /** 
-     * \class synthewareQ::gates::ChannelRepr::Rotation
+     * \class staq::gates::ChannelRepr::Rotation
      * \brief Class storing a rotation of some angle around a pauli
      *
      * A rotation with angle \f$\theta\f$ and Pauli \f$P\f$ represents the unitary

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -32,7 +32,7 @@
 
 #include <list>
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   static const std::set<std::string_view> qelib_defs {
@@ -43,7 +43,7 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::Decl
+   * \class staq::ast::Decl
    * \brief Base class for openQASM declarations
    *
    * Declarations are attribute classes as they can occur in different
@@ -67,10 +67,10 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::GateDecl
+   * \class staq::ast::GateDecl
    * \brief Class for gate declarations
-   * \see synthewareQ::ast::Stmt
-   * \see synthewareQ::ast::Decl
+   * \see staq::ast::Stmt
+   * \see staq::ast::Decl
    */
   class GateDecl final : public Stmt, public Decl {
     bool opaque_;                  ///< whether the declaration is opaque
@@ -195,9 +195,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::OracleDecl
+   * \class staq::ast::OracleDecl
    * \brief Class for oracle declarations
-   * \see synthewareQ::ast::Decl
+   * \see staq::ast::Decl
    */
   class OracleDecl final : public Stmt, public Decl {
     std::vector<symbol> params_; ///< quantum parameters
@@ -254,9 +254,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::RegisterDecl
+   * \class staq::ast::RegisterDecl
    * \brief Class for register declarations
-   * \see synthewareQ::ast::Decl
+   * \see staq::ast::Decl
    */
   class RegisterDecl final : public Stmt, public Decl {
     bool quantum_; ///< whether the register is quantum
@@ -306,9 +306,9 @@ namespace ast {
   };
   
   /**
-   * \class synthewareQ::ast::AncillaDecl
+   * \class staq::ast::AncillaDecl
    * \brief Class for local register declarations
-   * \see synthewareQ::ast::Decl
+   * \see staq::ast::Decl
    */
   class AncillaDecl final : public Gate, public Decl {
     bool dirty_; ///< whether the register can be dirty

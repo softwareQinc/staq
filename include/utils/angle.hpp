@@ -33,7 +33,7 @@
 #include <iostream>
 #include <numeric>
 
-namespace synthewareQ {
+namespace staq {
 namespace utils {
 
   /**

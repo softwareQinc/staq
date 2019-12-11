@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -30,11 +30,11 @@
 
 #include "decl.hpp"
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /**
-   * \class synthewareQ::ast::Program
+   * \class staq::ast::Program
    * \brief Program class
    */
   class Program : public ASTNode {

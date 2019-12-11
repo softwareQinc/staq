@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -28,7 +28,7 @@
  */
 #pragma once
 
-namespace synthewareQ {
+namespace staq {
 namespace utils {
   /**
    * \brief Convenience template for variant visitors

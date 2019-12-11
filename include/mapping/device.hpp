@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -41,7 +41,7 @@
 
 #include <iostream>
 
-namespace synthewareQ {
+namespace staq {
 namespace mapping {
 
   using layout        = std::unordered_map<ast::VarAccess, int>;
@@ -51,7 +51,7 @@ namespace mapping {
   using spanning_tree = std::list<std::pair<int, int> >;
 
   /** 
-   * \class synthewareQ::mapping::Device
+   * \class staq::mapping::Device
    * \brief Class representing physical devices with restricted topologies & gate fidelities
    *
    * A device is used to store information about the number and arrangement of qubits

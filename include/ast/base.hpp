@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -34,7 +34,7 @@
 #include <set>
 #include <memory>
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   template <typename T>
@@ -43,7 +43,7 @@ namespace ast {
   using symbol = std::string;
 
   /**
-   * \class synthewareQ::ast::ASTNode
+   * \class staq::ast::ASTNode
    * \brief Base class for AST nodes
    */
   class ASTNode {

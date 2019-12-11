@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -31,12 +31,12 @@
 #include "visitor.hpp"
 #include "program.hpp"
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
   /** 
-   * \class synthewareQ::ast::Replacer
+   * \class staq::ast::Replacer
    * \brief Generic complete traversal with post-order node replacement
-   * \see synthewareQ::ast::Visitor
+   * \see staq::ast::Visitor
    *
    * The replacer provides a visitor-style interface where the visitor
    * of a node optionally returns a node of the same base type (in the
@@ -276,12 +276,12 @@ namespace ast {
   };
 
   /** 
-   * \class synthewareQ::ast::GateReplacer
+   * \class staq::ast::GateReplacer
    * \brief Bulk gate replacement
-   * \see synthewareQ::ast::Replacer
+   * \see staq::ast::Replacer
    *
    * Implements bulk replacement of gates given by a hash map. Use the
-   * functional interface synthewareQ::ast::replace_gates rather than
+   * functional interface staq::ast::replace_gates rather than
    * the class.
    */
   class GateReplacer final : public Replacer {

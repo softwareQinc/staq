@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -30,7 +30,7 @@
 #include <unordered_map>
 #include <variant>
 
-namespace synthewareQ {
+namespace staq {
 namespace transformations {
 
   /** 

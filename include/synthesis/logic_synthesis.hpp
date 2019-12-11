@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -38,7 +38,7 @@
 #include "ast/stmt.hpp"
 #include "utils/angle.hpp"
 
-namespace synthewareQ {
+namespace staq {
 namespace synthesis {
 
   enum class Format { 

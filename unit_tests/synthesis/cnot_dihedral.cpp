@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -27,7 +27,7 @@
 #include "synthesis/cnot_dihedral.hpp"
 #include "utils/templates.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 using namespace utils;
 
 // Testing linear reversible (cnot) synthesis

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -35,11 +35,11 @@
 #include <functional>
 #include <vector>
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /**
-   * \class synthewareQ::ast::Stmt
+   * \class staq::ast::Stmt
    * \brief Base class for openQASM statements
    */
   class Stmt : public ASTNode {
@@ -61,9 +61,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::MeasureStmt
+   * \class staq::ast::MeasureStmt
    * \brief Class for measurement statements
-   * \see synthewareQ::ast::Stmt
+   * \see staq::ast::Stmt
    */
   class MeasureStmt final : public Stmt {
     VarAccess q_arg_; ///< the quantum bit|register
@@ -129,9 +129,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::ResetStmt
+   * \class staq::ast::ResetStmt
    * \brief Class for reset statements
-   * \see synthewareQ::ast::Stmt
+   * \see staq::ast::Stmt
    */
   class ResetStmt final : public Stmt {
     VarAccess arg_; ///< the qbit|qreg
@@ -177,9 +177,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::IfStmt
+   * \class staq::ast::IfStmt
    * \brief Class for if statements
-   * \see synthewareQ::ast::Stmt
+   * \see staq::ast::Stmt
    */
   class IfStmt final : public Stmt {
     symbol var_;     ///< classical register name
@@ -248,7 +248,7 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::Gate
+   * \class staq::ast::Gate
    * \brief Statement sub-class for gate
    */
   class Gate : public Stmt {
@@ -259,9 +259,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::UGate
+   * \class staq::ast::UGate
    * \brief Class for U gates
-   * \see synthewareQ::ast::Gate
+   * \see staq::ast::Gate
    */
   class UGate final : public Gate {
     ptr<Expr> theta_;  ///< theta angle
@@ -366,9 +366,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::CNOTGate
+   * \class staq::ast::CNOTGate
    * \brief Class for CX gates
-   * \see synthewareQ::ast::Gate
+   * \see staq::ast::Gate
    */
   class CNOTGate final : public Gate {
     VarAccess ctrl_; ///< control qubit|qreg
@@ -434,9 +434,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::BarrierGate
+   * \class staq::ast::BarrierGate
    * \brief Class for barrier gates
-   * \see synthewareQ::ast::Gate
+   * \see staq::ast::Gate
    */
   class BarrierGate final : public Gate {
     std::vector<VarAccess> args_; ///< list of quantum bits|registers
@@ -514,9 +514,9 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::DeclaredGate
+   * \class staq::ast::DeclaredGate
    * \brief Class for declared gate applications
-   * \see synthewareQ::ast::Gate
+   * \see staq::ast::Gate
    */
   class DeclaredGate final : public Gate {
     symbol name_;                    ///< gate identifier

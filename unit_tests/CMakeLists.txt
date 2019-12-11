@@ -20,4 +20,4 @@ foreach(filename ${FILES})
 endforeach()
 
 target_link_libraries(${target} PUBLIC gmock)
-target_link_libraries(${target} PUBLIC libsynthewareQ)
+target_link_libraries(${target} PUBLIC libstaq)

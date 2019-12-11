@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -29,7 +29,7 @@
 #include <typeinfo>
 #include <iomanip>
 
-namespace synthewareQ {
+namespace staq {
 namespace output {
 
   /** \brief Equivalent Q# standard gates for qasm standard gates */

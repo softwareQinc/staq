@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -27,7 +27,7 @@
 
 #include <CLI/CLI.hpp>
 
-using namespace synthewareQ;
+using namespace staq;
 
 int main(int argc, char** argv) {
   bool clear_decls = false;

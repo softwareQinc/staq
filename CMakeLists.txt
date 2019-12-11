@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required (VERSION 3.8)
-project(synthewareQ LANGUAGES CXX)
+project(staq LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -20,13 +20,13 @@ ADD_DEFINITIONS(-DPATH="${CMAKE_SOURCE_DIR}")
 include_directories(libs)
 
 #### Library
-add_library(libsynthewareQ INTERFACE)
-target_include_directories(libsynthewareQ INTERFACE ${PROJECT_SOURCE_DIR}/include)
+add_library(libstaq INTERFACE)
+target_include_directories(libstaq INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
 #### Compiler
-set(compiler "synthewareQ")
-add_executable(${compiler} ${PROJECT_SOURCE_DIR}/synthewareQ/main.cpp)
-target_link_libraries(${compiler} PUBLIC libsynthewareQ)
+set(compiler "staq")
+add_executable(${compiler} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
+target_link_libraries(${compiler} PUBLIC libstaq)
 
 #### Additional command line tools
 add_subdirectory(tools)

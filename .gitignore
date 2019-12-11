@@ -34,5 +34,10 @@
 # CMake build directory
 build/*
 
+# CLion
+.idea/
+build/
+cmake-build*/ 
+
 # Documentation source files 
 doc/

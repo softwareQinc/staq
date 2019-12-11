@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -34,11 +34,11 @@
  * \brief Semantic analysis for syntax trees
  */
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /**
-   * \class synthewareQ::ast::SemanticError
+   * \class staq::ast::SemanticError
    * \brief Exception class for semantic errors
    */
   class SemanticError : public std::exception {
@@ -51,13 +51,13 @@ namespace ast {
   };
 
   /**
-   * \class synthewareQ::ast::BitType
+   * \class staq::ast::BitType
    * \brief Enum for types of bits
    */
   enum class BitType { Cbit, Qubit };
 
   /**
-   * \struct synthewareQ::ast::GateType
+   * \struct staq::ast::GateType
    * \brief Data struct for gate types
    */
   struct GateType {
@@ -66,7 +66,7 @@ namespace ast {
   };
 
   /**
-   * \struct synthewareQ::ast::RegisterType
+   * \struct staq::ast::RegisterType
    * \brief Data struct for register types
    */
   struct RegisterType {
@@ -75,7 +75,7 @@ namespace ast {
   };
 
   /**
-   * \struct synthewareQ::ast::RealType
+   * \struct staq::ast::RealType
    * \brief Empty structure denoting a real type
    */
   struct RealType {};
@@ -89,13 +89,13 @@ namespace ast {
   using Type = std::variant<BitType, GateType, RegisterType, RealType>;
 
   /** 
-   * \class synthewareQ::ast::SemanticChecker
+   * \class staq::ast::SemanticChecker
    * \brief Implementation of the semantic analysis compiler phase
-   * \see synthewareQ::ast::Visitor
+   * \see staq::ast::Visitor
    *  
    * Checks for anything that could cause a run-time error -- notably, 
    * type errors, invalid uniform gates, etc. Use the functional
-   * interface synthewareQ::ast::check_source instead.
+   * interface staq::ast::check_source instead.
    */
   class SemanticChecker final : public Visitor {
   public:

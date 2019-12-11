@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -37,7 +37,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace synthewareQ {
+namespace staq {
 namespace parser {
 
 /**
@@ -73,9 +73,9 @@ static const std::string std_include =
   "u3(-theta/2,0,-(phi+lambda)/2) t;  cx c,t;  u3(theta/2,phi,0) t;}\n";
 
   /**
-   * \class synthewareQ::parser::Preprocessor
+   * \class staq::parser::Preprocessor
    * \brief openQASM preprocessor class
-   * \see synthewareQ::parser::Lexer
+   * \see staq::parser::Lexer
    * 
    * The preprocessor acts as a wrapper around the lexer, providing a token stream
    * that matches the stream produced by explicitly inserting included code.

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -32,7 +32,7 @@
 
 // TODO: figure out what to do with if statements
 
-namespace synthewareQ {
+namespace staq {
 namespace mapping {
 
   /** 

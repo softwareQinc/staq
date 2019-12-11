@@ -36,11 +36,11 @@
 
 #include <list>
 
-namespace synthewareQ {
+namespace staq {
 namespace parser {
 
   /**
-   * \class synthewareQ::parser::ParseError
+   * \class staq::parser::ParseError
    * \brief Exception class for parse errors
    */
   class ParseError : public std::exception {
@@ -53,9 +53,9 @@ namespace parser {
   };
 
   /**
-   * \class synthewareQ::parser::Parser
+   * \class staq::parser::Parser
    * \brief openQASM parser class
-   * \see synthewareQ::parser::Preprocessor
+   * \see staq::parser::Preprocessor
    */
   class Parser {
     Preprocessor& pp_lexer_; ///< preprocessed, tokenized input stream

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -26,7 +26,7 @@
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 using circuit = std::list<std::pair<int, int> >;
 
 static mapping::Device test_device(

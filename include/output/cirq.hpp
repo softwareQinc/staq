@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -28,7 +28,7 @@
 
 #include <typeinfo>
 
-namespace synthewareQ {
+namespace staq {
 namespace output {
 
   /** \brief Equivalent cirq standard gates for qasm standard gates */

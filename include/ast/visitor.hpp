@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -28,7 +28,7 @@
  */
 #pragma once
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /* Forward declarations */
@@ -53,7 +53,7 @@ namespace ast {
   class Program;
 
   /** 
-   * \class synthewareQ::ast::Visitor
+   * \class staq::ast::Visitor
    * \brief Base visitor interface 
    *  
    * Classic visitor via (virtual) double dispatch. Standard usage is to
@@ -63,7 +63,7 @@ namespace ast {
    * Traversal to sub-nodes is handled by the particular visitor, not the
    * node class. For a visitor that automatically handles traversal and also
    * allows picking and choosing the particular visit overloads, see
-   * synthewareQ::ast::Traverse.
+   * staq::ast::Traverse.
    */
   class Visitor {
   public:

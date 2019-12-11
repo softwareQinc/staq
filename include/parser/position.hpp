@@ -1,5 +1,5 @@
 /*
- * This file is part of synthwareQ
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -33,11 +33,11 @@
 #include <string>
 #include <iostream>
 
-namespace synthewareQ {
+namespace staq {
 namespace parser {
 
   /**
-   * \class synthewareQ::parser::Position
+   * \class staq::parser::Position
    * \brief Positions in source code
    */
   class Position {
@@ -73,7 +73,7 @@ namespace parser {
      * \brief Extraction operator overload
      *
      * \param os Output stream
-     * \param pos synthewareQ::parser::Position
+     * \param pos staq::parser::Position
      * \return Reference to the output stream
      */
     friend std::ostream& operator<<(std::ostream& os, const Position& pos) {

@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -31,13 +31,13 @@
 #include "visitor.hpp"
 #include "program.hpp"
 
-namespace synthewareQ {
+namespace staq {
 namespace ast {
 
   /** 
-   * \class synthewareQ::ast::Traverse
+   * \class staq::ast::Traverse
    * \brief Generic complete traversal of ASTs
-   * \see synthewareQ::ast::Visitor
+   * \see staq::ast::Visitor
    *
    * Implements a generic, pass-through traversal of the entire
    * AST. Standard usage is to derive from this class and override only

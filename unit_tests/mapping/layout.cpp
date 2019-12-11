@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -30,7 +30,7 @@
 #include "mapping/layout/eager.hpp"
 #include "mapping/layout/bestfit.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 
 static mapping::Device test_device(
 	"Test device",

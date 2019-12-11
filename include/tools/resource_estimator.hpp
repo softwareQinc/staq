@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -30,7 +30,7 @@
 
 #include <algorithm>
 
-namespace synthewareQ {
+namespace staq {
 namespace tools {
 
   using resource_count = std::unordered_map<std::string, int>;

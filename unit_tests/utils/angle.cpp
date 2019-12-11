@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -25,7 +25,7 @@
 #include "gtest/gtest.h"
 #include "utils/angle.hpp"
 
-using namespace synthewareQ::utils;
+using namespace staq::utils;
 
 // Tiny unit tests for angles
 

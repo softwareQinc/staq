@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -34,7 +34,7 @@
 
 #include <CLI/CLI.hpp>
 
-using namespace synthewareQ;
+using namespace staq;
 
 // TODO: Find or create a format for reading machine definitions
 // and have this tool accept a machine definition as input for mapping

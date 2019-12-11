@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -25,7 +25,7 @@
 #include "parser/parser.hpp"
 #include "transformations/oracle_synthesizer.hpp"
 
-using namespace synthewareQ;
+using namespace staq;
 
 int main() {
   auto program = parser::parse_stdin();

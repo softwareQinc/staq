@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -35,11 +35,11 @@
 
 #include <memory>
 
-namespace synthewareQ {
+namespace staq {
 namespace parser {
 
   /**
-   * \class synthewareQ::parser::Lexer
+   * \class staq::parser::Lexer
    * \brief openPARSER lexer class
    *
    * The Lexer reads from (a shared_ptr to) an istream object given during

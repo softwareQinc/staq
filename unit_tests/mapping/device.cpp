@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -26,7 +26,7 @@
 #include "mapping/device.hpp"
 #include <set>
 
-using namespace synthewareQ;
+using namespace staq;
 
 // Testing devices
 using steiner_edges = std::set<std::pair<int, int> >;

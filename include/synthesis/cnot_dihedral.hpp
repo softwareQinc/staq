@@ -1,5 +1,5 @@
 /*
- * This file is part of synthewareQ.
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -33,7 +33,7 @@
 #include <list>
 #include <variant>
 
-namespace synthewareQ {
+namespace staq {
 namespace synthesis {
 
   using namespace mapping;

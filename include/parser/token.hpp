@@ -1,5 +1,5 @@
 /*
- * This file is part of synthwareQ
+ * This file is part of staq.
  *
  * MIT License
  *
@@ -36,13 +36,13 @@
 #include <unordered_map>
 #include <variant>
 
-namespace synthewareQ {
+namespace staq {
 namespace parser {
 
   /**
-   * \class synthewareQ::parser::Token
+   * \class staq::parser::Token
    * \brief openQASM token class
-   * \see synthewareQ::parser::Lexer
+   * \see staq::parser::Lexer
    */
   class Token {
   public: 
@@ -102,7 +102,7 @@ namespace parser {
      * \brief Extraction operator overload
      *
      * \param os Output stream passed by reference
-     * \param k synthewareQ::parser::Kind enum class
+     * \param k staq::parser::Kind enum class
      * \return Reference to the output stream
      */
     friend std::ostream& operator<<(std::ostream& os, const Kind& k) {
