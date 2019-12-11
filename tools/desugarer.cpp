@@ -36,6 +36,4 @@ int main() {
     } else {
         std::cerr << "Parsing failed\n";
     }
-
-    return 1;
 }

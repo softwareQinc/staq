@@ -55,6 +55,4 @@ int main(int argc, char** argv) {
     } else {
         std::cerr << "Parsing failed\n";
     }
-
-    return 1;
 }
