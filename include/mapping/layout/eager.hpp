@@ -24,6 +24,11 @@
 
 #pragma once
 
+/**
+ * \file mapping/layout/eager.hpp
+ * \brief Eager hardware layout generation
+ */
+
 #include "ast/traversal.hpp"
 #include "mapping/device.hpp"
 
@@ -34,13 +39,21 @@
 namespace staq {
 namespace mapping {
 
-/** \brief Allocates qubits on demand prioritizing coupling fidelity */
+/** 
+ * \class staq::mapping::LayoutTransformer
+ * \brief Allocates qubits on demand prioritizing coupling fidelity 
+ *
+ * Generates a hardware layout by assigning CNOT gates to available
+ * high-fidelity couplings in the physical device as they occur
+ * sequentially in the circuit.
+ */
 class EagerLayout final : public ast::Traverse {
   public:
     EagerLayout(Device& device) : Traverse(), device_(device) {
         couplings_ = device_.couplings();
     }
 
+    /** \brief Main generation method */
     layout generate(ast::Program& prog) {
         layout_ = layout();
         allocated_ = std::vector<bool>(device_.qubits_, false);
@@ -126,6 +139,7 @@ class EagerLayout final : public ast::Traverse {
     std::set<std::pair<coupling, double>, cmp_couplings> couplings_;
 };
 
+/** \brief Generates an eager layout for a program on a physical device */
 layout compute_eager_layout(Device& device, ast::Program& prog) {
     EagerLayout gen(device);
     return gen.generate(prog);

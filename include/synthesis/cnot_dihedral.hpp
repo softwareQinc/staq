@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file synthesis/cnot_dihedral.hpp
+ * \brief Synthesis of CNOT-dihedral circuits
+ */
 #pragma once
 
 #include "mapping/device.hpp"
@@ -66,6 +70,9 @@ static void print_partition(partition& part) {
     std::cout << "}}\n";
 }
 
+/**
+ * \brief Adjusts a list of partitions according to a CNOT between ctrl and tgt
+ */
 static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
     for (auto& part : stack) {
         for (auto& [vec, angle] : part.terms) {
@@ -74,6 +81,9 @@ static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
     }
 }
 
+/**
+ * \brief Finds the best index to split on given a list of phase terms
+ */
 static int find_best_split(const std::list<phase_term>& terms,
                            const std::set<int>& indices) {
     int max = -1;
@@ -98,6 +108,10 @@ static int find_best_split(const std::list<phase_term>& terms,
     return max_i;
 }
 
+/**
+ * \brief Splits a list of phase terms into those which are 0 and 1 in
+ * entry i, respectively
+ */
 static std::pair<std::list<phase_term>, std::list<phase_term>>
 split(std::list<phase_term>& terms, int i) {
     std::list<phase_term> zeros;
@@ -113,6 +127,9 @@ split(std::list<phase_term>& terms, int i) {
     return std::make_pair(zeros, ones);
 }
 
+/**
+ * \brief The gray-synth algorith of arXiv:1712.01859
+ */
 static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
                                          linear_op<bool> A) {
     // Initialize
@@ -183,6 +200,9 @@ static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
     return ret;
 }
 
+/**
+ * \brief Gray-synth with topological constraints
+ */
 static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
                                            linear_op<bool> A, Device& d) {
     // Initialize

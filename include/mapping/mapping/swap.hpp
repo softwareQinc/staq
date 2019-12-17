@@ -24,6 +24,11 @@
 
 #pragma once
 
+/**
+ * \file mapping/mapping/swap.hpp
+ * \brief Local swapping hardware mapper
+ */
+
 #include "ast/replacer.hpp"
 #include "transformations/substitution.hpp"
 #include "mapping/device.hpp"
@@ -36,14 +41,14 @@ namespace staq {
 namespace mapping {
 
 /**
+ * \class staq::mapping::SwapMapper
  * \brief Simple swap-inserting mapping algorithm
+ * \note Assumes the circuit has a single global register with the configured name
  *
- * Assumes the circuit has already been laid out onto a single register
- * with name given in the configuration
+ * Maps an AST to a given device by inserting swap gates along a shortest path
+ * before each non-local CNOT gate. The mapper keeps track of the current qubit
+ * permutation, rather than "swapping back" after each non-local gate.
  */
-void map_onto_device(Device&, ast::Program&);
-
-/* Implementation */
 class SwapMapper final : public ast::Replacer {
   public:
     struct config {
@@ -161,6 +166,7 @@ class SwapMapper final : public ast::Replacer {
     }
 };
 
+/** \brief Applies the swap mapper to an AST given a physical device */
 void map_onto_device(Device& device, ast::Program& prog) {
     SwapMapper mapper(device);
     prog.accept(mapper);

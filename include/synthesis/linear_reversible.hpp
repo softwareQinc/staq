@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file synthesis/linear_reversible.hpp
+ * \brief Synthesis of CNOT circuits
+ */
 #pragma once
 
 #include "mapping/device.hpp"
@@ -54,6 +58,9 @@ static void print_linop(const linear_op<bool>& mat) {
     }
 }
 
+/**
+ * \brief Linear reversible synthesis from Gauss-Jordan elimination
+ */
 static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
 
@@ -93,6 +100,9 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     return ret;
 }
 
+/**
+ * \brief Linear reversible synthesis from Gaussian elimination
+ */
 static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
 
@@ -141,7 +151,8 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
     return ret;
 }
 
-/*! \brief Steiner tree based device constrained CNOT synthesis
+/** 
+ * \brief Steiner tree based device constrained CNOT synthesis
  *
  * Our version of steiner-gauss (see arXiv:1904.01972 and arXiv:1904.00633)
  * works a little differently from either of those. We follow arXiv:1904.00633
@@ -152,24 +163,24 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
  * the diagonal -- we adopt a different approach. In particular, the path
  * 2-->1-->0-->3 has the effect of adding 1's to the left of column 3 in the
  * following:
- *
- * 10100            10100             11010
- * 01000  one-fill  01110  zero-fill  01000
- * 00110  ------->  00110  -------->  00110
- * 00101            00101             10001
- * 00010            00010             00010
- *
+   \verbatim
+   10100            10100             11010
+   01000    fill    01110    flush    01000
+   00110  ------->  00110  -------->  00110
+   00101            00101             10001
+   00010            00010             00010
+   \endverbatim
  * Our solution is to keep track of the transitive dependencies on rows above
  * the diagonal. Then to uncompute 1's to the left of the diagonal we reverse
  * the sequence of CNOTs, restricted to just those CNOTs with targets in the
  * transitive dependencies. E.g.,
- *
- * 10100            10100             11010             10010
- * 01000  one-fill  01110  zero-fill  01000  uncompute  01000
- * 00110  ------->  00110  -------->  00110  -------->  00110
- * 00101            00101             10001             00011
- * 00010            00010             00010             00010
- *
+   \verbatim
+   10100            10100             11010             10010
+   01000    fill    01110    flush    01000  uncompute  01000
+   00110  ------->  00110  -------->  00110  -------->  00110
+   00101            00101             10001             00011
+   00010            00010             00010             00010
+   \endverbatim
  */
 static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
                                                     mapping::Device& d) {

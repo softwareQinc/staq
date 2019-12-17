@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file transformations/desugar.hpp
+ * \brief AST desugaring
+ */
 #pragma once
 
 #include "ast/replacer.hpp"

@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file transformations/oracle_synthesizer.hpp
+ * \brief Elaboration of oracles into regular gates
+ */
 #pragma once
 
 #include "ast/replacer.hpp"

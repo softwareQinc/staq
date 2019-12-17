@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file tools/resource_estimator.hpp
+ * \brief Resource estimation
+ */
 #pragma once
 
 // TODO: Account for compound gates, i.e. qreg q[n]; reset q;

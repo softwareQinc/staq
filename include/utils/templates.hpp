@@ -23,7 +23,7 @@
  */
 
 /**
- * \file ast/templates.hpp
+ * \file utils/templates.hpp
  * \brief Helper templates
  */
 #pragma once

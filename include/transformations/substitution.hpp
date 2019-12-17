@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file transformations/substitution.hpp
+ * \brief Utilities for performing substitutions
+ */
 #pragma once
 
 #include "ast/replacer.hpp"

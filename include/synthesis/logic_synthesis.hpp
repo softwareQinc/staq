@@ -22,6 +22,12 @@
  * SOFTWARE.
  */
 
+/**
+ * \file synthesis/logic_synthesis.hpp
+ * \brief Synthesis of classical logic
+ */
+#pragma once
+
 #define FMT_HEADER_ONLY = true
 
 #include <lorina/lorina.hpp>

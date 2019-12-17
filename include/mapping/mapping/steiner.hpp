@@ -24,6 +24,11 @@
 
 #pragma once
 
+/**
+ * \file mapping/mapping/steiner.hpp
+ * \brief Steiner tree-based hardware mapping
+ */
+
 #include "ast/traversal.hpp"
 #include "synthesis/linear_reversible.hpp"
 #include "synthesis/cnot_dihedral.hpp"
@@ -36,261 +41,15 @@ namespace staq {
 namespace mapping {
 
 /**
- * \brief Steiner tree based resynthesizing mapper
+ * \class staq::mapping::SteinerMapper
+ * \brief Steiner tree based re-synthesizing mapper
+ * \note Assumes the circuit has a single global register with the configured name
  *
- * Resynthesizes an entire circuit by breaking into cnot-dihedral "chunks"
+ * Re-synthesizes an entire circuit by breaking into cnot-dihedral "chunks"
  * and resynthesizing those using gray-synth (arXiv:1712.01859) extended
  * with a device dependent mapping technique based on Steiner trees
  * (arXiv:1904.01972)
- *
- * Assumes the circuit has already been laid out onto a single register
- * with name given in the configuration
  */
-void steiner_mapping(Device&, ast::Program&);
-
-/**
- * \brief Steiner mapper dry run
- */
-class SteinerDry final : public ast::Traverse {
-  public:
-    SteinerDry(Device& device) : Traverse(), device_(device) {
-        permutation_ = synthesis::linear_op<bool>(
-            device.qubits_, std::vector<bool>(device.qubits_, false));
-        for (auto i = 0; i < device.qubits_; i++) {
-            permutation_[i][i] = true;
-        }
-    }
-
-    int get_cnot_count(ast::Program& prog, const layout& l) {
-        layout_ = l;
-        cnots_ = 0;
-        visit(prog);
-        return cnots_;
-    }
-
-    void visit(ast::GateDecl&) override {}
-    void visit(ast::OracleDecl&) override {}
-
-    void visit(ast::Program& prog) override {
-        Traverse::visit(prog);
-
-        // Synthesize the last leg
-        for (auto& gate :
-             synthesis::gray_steiner(phases_, permutation_, device_)) {
-            std::visit(
-                utils::overloaded{
-                    [this, &prog](std::pair<int, int>& cx) {
-                        if (device_.coupled(cx.first, cx.second) ||
-                            device_.coupled(cx.second, cx.first)) {
-                            cnots_++;
-                        } else {
-                            throw std::logic_error(
-                                "CNOT between non-coupled vertices!");
-                        }
-                    },
-                    [this, &prog](std::pair<utils::Angle, int>& rz) {}},
-                gate);
-        }
-    }
-
-    void visit(ast::CNOTGate& gate) override {
-        auto ctrl = layout_[gate.ctrl()];
-        auto tgt = layout_[gate.tgt()];
-
-        if (in_bounds(ctrl) && in_bounds(tgt)) {
-            synthesis::operator^=(permutation_[tgt], permutation_[ctrl]);
-        } else {
-            throw std::logic_error("CNOT argument(s) out of device bounds!");
-        }
-    }
-
-    void visit(ast::UGate& gate) override {
-        if (is_zero(gate.theta()) && is_zero(gate.phi())) {
-            // It's a z-axis rotation
-            auto angle = gate.lambda().constant_eval();
-            if (!angle) {
-                throw std::logic_error("Rotation angle is not constant!");
-            }
-
-            auto idx = layout_[gate.arg()];
-
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], *angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-
-        } else {
-            flush<ast::Gate>(gate);
-        }
-    }
-
-    void visit(ast::DeclaredGate& gate) override {
-        auto name = gate.name();
-
-        if (name == "rz" || name == "u1") {
-            auto angle = gate.carg(0).constant_eval();
-            if (!angle) {
-                throw std::logic_error("Rotation angle is not constant!");
-            }
-
-            auto idx = layout_[gate.qarg(0)];
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], *angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-        } else if (name == "z") {
-            auto angle = utils::angles::pi;
-            auto idx = layout_[gate.qarg(0)];
-
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-        } else if (name == "s") {
-            auto angle = utils::angles::pi_half;
-            auto idx = layout_[gate.qarg(0)];
-
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-        } else if (name == "sdg") {
-            auto angle = -utils::angles::pi_half;
-            auto idx = layout_[gate.qarg(0)];
-
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-        } else if (name == "t") {
-            auto angle = utils::angles::pi_quarter;
-            auto idx = layout_[gate.qarg(0)];
-
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-        } else if (name == "tdg") {
-            auto angle = -utils::angles::pi_quarter;
-            auto idx = layout_[gate.qarg(0)];
-
-            if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
-            } else {
-                throw std::logic_error(
-                    "Unitary argument out of device bounds!");
-            }
-        } else {
-            flush<ast::Gate>(gate);
-        }
-    }
-
-    // Always generate a synthesis event
-    void visit(ast::IfStmt& stmt) override { return flush<ast::Stmt>(stmt); }
-    void visit(ast::BarrierGate& stmt) override {
-        return flush<ast::Gate>(stmt);
-    }
-    void visit(ast::MeasureStmt& stmt) override {
-        return flush<ast::Stmt>(stmt);
-    }
-    void visit(ast::ResetStmt& stmt) override { return flush<ast::Stmt>(stmt); }
-
-  private:
-    Device device_;
-    layout layout_;
-    int cnots_ = 0;
-
-    // Accumulating data
-    std::list<synthesis::phase_term> phases_;
-    synthesis::linear_op<bool> permutation_;
-
-    void add_phase(std::vector<bool> parity, utils::Angle angle) {
-        for (auto it = phases_.begin(); it != phases_.end(); it++) {
-            if (it->first == parity) {
-                it->second += angle;
-                return;
-            }
-        }
-
-        phases_.push_back(std::make_pair(parity, angle));
-    }
-
-    // Flushes a cnot-dihedral operator (i.e. phases + permutation) to the
-    // circuit before the given node
-    template <typename T>
-    void flush(T& node) {
-        // Synthesize circuit
-        for (auto& gate :
-             synthesis::gray_steiner(phases_, permutation_, device_)) {
-            std::visit(
-                utils::overloaded{
-                    [this, &node](std::pair<int, int>& cx) {
-                        if (device_.coupled(cx.first, cx.second) ||
-                            device_.coupled(cx.second, cx.first)) {
-                            cnots_++;
-                        } else {
-                            throw std::logic_error(
-                                "CNOT between non-coupled vertices!");
-                        }
-                    },
-                    [this, &node](std::pair<utils::Angle, int>& rz) {}},
-                gate);
-        }
-
-        // Reset the cnot-dihedral circuit
-        phases_.clear();
-        for (auto i = 0; i < device_.qubits_; i++) {
-            for (auto j = 0; j < device_.qubits_; j++) {
-                permutation_[i][j] = i == j ? true : false;
-            }
-        }
-    }
-
-    bool in_bounds(int i) { return 0 <= i && i < device_.qubits_; }
-
-    bool is_zero(ast::Expr& expr) {
-        auto val = expr.constant_eval();
-        return val && (*val == 0);
-    }
-};
-
-/**
- * \brief Layout optimization for the Steiner mapper via hill climb
- *
- * Repeatedly performs dry-runs, modifying the qubit mapping with a
- * single swap each time.
- */
-void optimize_steiner_layout(Device& device, layout& init, ast::Program& prog) {
-    SteinerDry alg(device);
-    int current_min = alg.get_cnot_count(prog, init);
-
-outer:
-    for (auto it = init.begin(); it != init.end(); it++) {
-        for (auto ti = std::next(it); ti != init.end(); ti++) {
-            std::swap(it->second, ti->second);
-            auto cnot_count = alg.get_cnot_count(prog, init);
-            if (cnot_count < current_min) {
-                current_min = cnot_count;
-                goto outer;
-            }
-            std::swap(it->second, ti->second);
-        }
-    }
-}
-
-/* Implementation */
 class SteinerMapper final : public ast::Replacer {
   public:
     struct config {
@@ -606,6 +365,255 @@ class SteinerMapper final : public ast::Replacer {
     }
 };
 
+/**
+ * \class staq::mapping::SteinerDry
+ * \brief Steiner mapper dry run
+ * \note Utility class for optimizing over initial layouts
+ *
+ * Does a dry run of the Steiner mapping algorithm (i.e. doesn't actually
+ * change the ast) with a particular layout and collects information about
+ * the number of CNOT gates the synthesized circuit would use.
+ */
+class SteinerDry final : public ast::Traverse {
+  public:
+    SteinerDry(Device& device) : Traverse(), device_(device) {
+        permutation_ = synthesis::linear_op<bool>(
+            device.qubits_, std::vector<bool>(device.qubits_, false));
+        for (auto i = 0; i < device.qubits_; i++) {
+            permutation_[i][i] = true;
+        }
+    }
+
+    int get_cnot_count(ast::Program& prog, const layout& l) {
+        layout_ = l;
+        cnots_ = 0;
+        visit(prog);
+        return cnots_;
+    }
+
+    void visit(ast::GateDecl&) override {}
+    void visit(ast::OracleDecl&) override {}
+
+    void visit(ast::Program& prog) override {
+        Traverse::visit(prog);
+
+        // Synthesize the last leg
+        for (auto& gate :
+             synthesis::gray_steiner(phases_, permutation_, device_)) {
+            std::visit(
+                utils::overloaded{
+                    [this, &prog](std::pair<int, int>& cx) {
+                        if (device_.coupled(cx.first, cx.second) ||
+                            device_.coupled(cx.second, cx.first)) {
+                            cnots_++;
+                        } else {
+                            throw std::logic_error(
+                                "CNOT between non-coupled vertices!");
+                        }
+                    },
+                    [this, &prog](std::pair<utils::Angle, int>& rz) {}},
+                gate);
+        }
+    }
+
+    void visit(ast::CNOTGate& gate) override {
+        auto ctrl = layout_[gate.ctrl()];
+        auto tgt = layout_[gate.tgt()];
+
+        if (in_bounds(ctrl) && in_bounds(tgt)) {
+            synthesis::operator^=(permutation_[tgt], permutation_[ctrl]);
+        } else {
+            throw std::logic_error("CNOT argument(s) out of device bounds!");
+        }
+    }
+
+    void visit(ast::UGate& gate) override {
+        if (is_zero(gate.theta()) && is_zero(gate.phi())) {
+            // It's a z-axis rotation
+            auto angle = gate.lambda().constant_eval();
+            if (!angle) {
+                throw std::logic_error("Rotation angle is not constant!");
+            }
+
+            auto idx = layout_[gate.arg()];
+
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], *angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+
+        } else {
+            flush<ast::Gate>(gate);
+        }
+    }
+
+    void visit(ast::DeclaredGate& gate) override {
+        auto name = gate.name();
+
+        if (name == "rz" || name == "u1") {
+            auto angle = gate.carg(0).constant_eval();
+            if (!angle) {
+                throw std::logic_error("Rotation angle is not constant!");
+            }
+
+            auto idx = layout_[gate.qarg(0)];
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], *angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+        } else if (name == "z") {
+            auto angle = utils::angles::pi;
+            auto idx = layout_[gate.qarg(0)];
+
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+        } else if (name == "s") {
+            auto angle = utils::angles::pi_half;
+            auto idx = layout_[gate.qarg(0)];
+
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+        } else if (name == "sdg") {
+            auto angle = -utils::angles::pi_half;
+            auto idx = layout_[gate.qarg(0)];
+
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+        } else if (name == "t") {
+            auto angle = utils::angles::pi_quarter;
+            auto idx = layout_[gate.qarg(0)];
+
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+        } else if (name == "tdg") {
+            auto angle = -utils::angles::pi_quarter;
+            auto idx = layout_[gate.qarg(0)];
+
+            if (in_bounds(idx)) {
+                add_phase(permutation_[idx], angle);
+            } else {
+                throw std::logic_error(
+                    "Unitary argument out of device bounds!");
+            }
+        } else {
+            flush<ast::Gate>(gate);
+        }
+    }
+
+    // Always generate a synthesis event
+    void visit(ast::IfStmt& stmt) override { return flush<ast::Stmt>(stmt); }
+    void visit(ast::BarrierGate& stmt) override {
+        return flush<ast::Gate>(stmt);
+    }
+    void visit(ast::MeasureStmt& stmt) override {
+        return flush<ast::Stmt>(stmt);
+    }
+    void visit(ast::ResetStmt& stmt) override { return flush<ast::Stmt>(stmt); }
+
+  private:
+    Device device_;
+    layout layout_;
+    int cnots_ = 0;
+
+    // Accumulating data
+    std::list<synthesis::phase_term> phases_;
+    synthesis::linear_op<bool> permutation_;
+
+    void add_phase(std::vector<bool> parity, utils::Angle angle) {
+        for (auto it = phases_.begin(); it != phases_.end(); it++) {
+            if (it->first == parity) {
+                it->second += angle;
+                return;
+            }
+        }
+
+        phases_.push_back(std::make_pair(parity, angle));
+    }
+
+    // Flushes a cnot-dihedral operator (i.e. phases + permutation) to the
+    // circuit before the given node
+    template <typename T>
+    void flush(T& node) {
+        // Synthesize circuit
+        for (auto& gate :
+             synthesis::gray_steiner(phases_, permutation_, device_)) {
+            std::visit(
+                utils::overloaded{
+                    [this, &node](std::pair<int, int>& cx) {
+                        if (device_.coupled(cx.first, cx.second) ||
+                            device_.coupled(cx.second, cx.first)) {
+                            cnots_++;
+                        } else {
+                            throw std::logic_error(
+                                "CNOT between non-coupled vertices!");
+                        }
+                    },
+                    [this, &node](std::pair<utils::Angle, int>& rz) {}},
+                gate);
+        }
+
+        // Reset the cnot-dihedral circuit
+        phases_.clear();
+        for (auto i = 0; i < device_.qubits_; i++) {
+            for (auto j = 0; j < device_.qubits_; j++) {
+                permutation_[i][j] = i == j ? true : false;
+            }
+        }
+    }
+
+    bool in_bounds(int i) { return 0 <= i && i < device_.qubits_; }
+
+    bool is_zero(ast::Expr& expr) {
+        auto val = expr.constant_eval();
+        return val && (*val == 0);
+    }
+};
+
+/**
+ * \brief Layout optimization for the Steiner mapper via hill climb
+ *
+ * Repeatedly performs dry-runs, modifying the qubit mapping with a
+ * single swap each time.
+ */
+void optimize_steiner_layout(Device& device, layout& init, ast::Program& prog) {
+    SteinerDry alg(device);
+    int current_min = alg.get_cnot_count(prog, init);
+
+outer:
+    for (auto it = init.begin(); it != init.end(); it++) {
+        for (auto ti = std::next(it); ti != init.end(); ti++) {
+            std::swap(it->second, ti->second);
+            auto cnot_count = alg.get_cnot_count(prog, init);
+            if (cnot_count < current_min) {
+                current_min = cnot_count;
+                goto outer;
+            }
+            std::swap(it->second, ti->second);
+        }
+    }
+}
+
+/** \brief Applies the Steiner mapper to an AST given a physical device */
 void steiner_mapping(Device& device, ast::Program& prog) {
     SteinerMapper mapper(device);
     prog.accept(mapper);

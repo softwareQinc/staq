@@ -40,12 +40,11 @@ namespace staq {
 namespace optimization {
 
 /**
+ * \class staq::optimization::RotationOptimizer
  * \brief Rotation gate merging algorithm based on arXiv:1903.12456
  *
- *  Returns a replacement list giving the nodes to the be replaced (or erased)
+ * Returns a replacement list giving the nodes to the be replaced (or erased)
  */
-
-// TODO: Add option for global phase correction
 class RotationOptimizer final : public ast::Visitor {
     using Gatelib = gates::ChannelRepr<ast::VarAccess>;
 
@@ -500,6 +499,7 @@ class RotationOptimizer final : public ast::Visitor {
     }
 };
 
+/** \brief Performs the rotation folding optimization */
 inline void fold_rotations(ast::ASTNode& node) {
     RotationOptimizer optimizer;
 
@@ -507,6 +507,7 @@ inline void fold_rotations(ast::ASTNode& node) {
     replace_gates(node, std::move(res));
 }
 
+/** \brief Performs the rotation folding optimization with configuration */
 inline void fold_rotations(ast::ASTNode& node,
                            const RotationOptimizer::config& params) {
     RotationOptimizer optimizer(params);

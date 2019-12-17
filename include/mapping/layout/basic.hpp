@@ -24,6 +24,11 @@
 
 #pragma once
 
+/**
+ * \file mapping/layout/basic.hpp
+ * \brief Simple hardware layout generation
+ */
+
 #include "ast/replacer.hpp"
 #include "ast/traversal.hpp"
 #include "transformations/substitution.hpp"
@@ -34,9 +39,23 @@
 namespace staq {
 namespace mapping {
 
-/** \brief Applies a layout to a circuit */
+/** 
+ * \class staq::mapping::LayoutTransformer
+ * \brief Applies a hardware layout to a circuit
+ *
+ * Accepts a layout -- that is, a mapping from variable
+ * accesses to addresses of physical qubits -- and rewrites
+ * the AST so that all variable accesses refer to the
+ * relevant address of a global register representing
+ * the physical qubits
+ */
 class LayoutTransformer final : public ast::Replacer {
   public:
+
+    /**
+     * \class staq::mapping::LayoutTransformer::config
+     * \brief Holds configuration options
+     */
     struct config {
         std::string register_name = "q";
     };
@@ -45,6 +64,7 @@ class LayoutTransformer final : public ast::Replacer {
     LayoutTransformer(const config& params) : Replacer(), config_(params) {}
     ~LayoutTransformer() = default;
 
+    /** \brief Main transformation method */
     void run(ast::Program& prog, const layout& l) {
         // Visit entire program, removing register declarations, then
         // add the physical register & apply substitutions
@@ -76,12 +96,18 @@ class LayoutTransformer final : public ast::Replacer {
     config config_;
 };
 
-/** \brief A basic qubit layout algorithm */
+/** 
+ * \class staq::mapping::BasicLayout
+ * \brief A simple layout generation algorithm
+ *
+ * Allocates physical qubits on a first-come, first-serve basis
+ */
 class BasicLayout final : public ast::Traverse {
   public:
     BasicLayout(Device& device) : Traverse(), device_(device) {}
     ~BasicLayout() = default;
 
+    /** \brief Main generation method */
     layout generate(ast::Program& prog) {
         current_ = layout();
         n_ = 0;
@@ -112,11 +138,13 @@ class BasicLayout final : public ast::Traverse {
     size_t n_;
 };
 
+/** \brief Rewrites an AST according to a physical layout */
 inline void apply_layout(const layout& l, ast::Program& prog) {
     LayoutTransformer alg;
     alg.run(prog, l);
 }
 
+/** \brief Generates a layout for a program on a physical device */
 inline layout compute_basic_layout(Device& device, ast::Program& prog) {
     BasicLayout gen(device);
     return gen.generate(prog);

@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file output/qsharp.hpp
+ * \brief Q# outputter
+ */
 #pragma once
 
 #include "ast/ast.hpp"
@@ -54,6 +58,10 @@ std::unordered_map<std::string, std::string> qasmstd_to_qsharp{
     {"crz", "(Controlled Rz)"},
     {"cu1", "(Controlled Rz)"}};
 
+/** 
+ * \class staq::output::QSharpOutputter
+ * \brief Visitor for converting a QASM AST to Q#
+ */
 class QSharpOutputter final : public ast::Visitor {
   public:
     struct config {
@@ -358,11 +366,13 @@ class QSharpOutputter final : public ast::Visitor {
     bool ambiguous_ = false;
 };
 
+/** \brief Writes an AST in Q# format to a stdout */
 void output_qsharp(ast::Program& prog) {
     QSharpOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
+/** \brief Writes an AST in Q# format to a given output stream */
 void write_qsharp(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

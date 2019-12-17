@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file output/quil.hpp
+ * \brief Quil outputter
+ */
 #pragma once
 
 #include "ast/ast.hpp"
@@ -37,6 +41,10 @@ std::unordered_map<std::string, std::string> qasmstd_to_quilstd{
     {"ry", "RY"},        {"rz", "RZ"},   {"u1", "RZ"},        {"crz", "CPHASE"},
     {"cu1", "CPHASE"}};
 
+/** 
+ * \class staq::output::QuilOutputter
+ * \brief Visitor for converting a QASM AST to Quil
+ */
 class QuilOutputter final : public ast::Visitor {
   public:
     struct config {
@@ -326,11 +334,13 @@ class QuilOutputter final : public ast::Visitor {
     std::unordered_map<ast::symbol, std::pair<int, int>> globals_{};
 };
 
+/** \brief Writes an AST in Quil format to a stdout */
 void output_quil(ast::Program& prog) {
     QuilOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
+/** \brief Writes an AST in Quil format to a given output stream */
 void write_quil(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

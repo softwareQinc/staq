@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file transformations/inline.hpp
+ * \brief AST inlining
+ */
 #pragma once
 
 #include "ast/replacer.hpp"

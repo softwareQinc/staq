@@ -23,6 +23,11 @@
  *
  * Adapted from Bruno Schmitt's Tweedledum library
  */
+
+/**
+ * \file utils/angle.hpp
+ * \brief Either symbolic or concrete representation of rotation angles
+ */
 #pragma once
 
 #include "utils/templates.hpp"

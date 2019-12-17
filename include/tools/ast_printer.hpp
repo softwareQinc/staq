@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+/**
+ * \file tools/ast_printer.hpp
+ * \brief Direct AST printer for debugging
+ */
 #pragma once
 
 #include "ast/ast.hpp"
