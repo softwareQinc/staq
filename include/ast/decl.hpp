@@ -41,6 +41,16 @@ static const std::set<std::string_view> qelib_defs{
     "cy", "swap", "ch",  "ccx", "crz", "cu1", "cu3"};
 
 /**
+ * \brief Tests whether identifier is part of the standard openQASM qelib or not
+ *
+ * \param id Identifier
+ * \return True if \a id is part of the standard openQASM qelib, false otherwise
+ */
+inline bool is_std_qelib(const std::string& id) {
+    return qelib_defs.find(id) != qelib_defs.end();
+}
+
+/**
  * \class staq::ast::Decl
  * \brief Base class for openQASM declarations
  *
@@ -158,7 +168,7 @@ class GateDecl final : public Stmt, public Decl {
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os,
                                bool suppress_std) const override {
-        if (suppress_std && qelib_defs.find(id_) != qelib_defs.end())
+        if (suppress_std && is_std_qelib(id_))
             return os;
 
         os << (opaque_ ? "opaque " : "gate ") << id_;
