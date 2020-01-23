@@ -44,7 +44,7 @@ std::unordered_map<std::string, std::string> qasmstd_to_cirq{
     {"rx", "cirq.Rx"},         {"ry", "cirq.Ry"}, {"rz", "cirq.Rz"},
     {"u1", "cirq.Rz"}};
 
-/** 
+/**
  * \class staq::output::CirqOutputter
  * \brief Visitor for converting a QASM AST to Cirq
  */
@@ -270,7 +270,7 @@ class CirqOutputter final : public ast::Visitor {
     void visit(ast::RegisterDecl& decl) {
         if (decl.is_quantum()) {
             os_ << prefix_ << decl.id() << " = [cirq.NamedQubit(\"" << decl.id()
-                << "[i]\") for i in range(";
+                << "[{}]\".format(i)) for i in range(";
             os_ << decl.size() << ")]\n";
         }
     }
