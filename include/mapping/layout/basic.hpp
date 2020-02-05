@@ -126,8 +126,7 @@ class BasicLayout final : public ast::Traverse {
                 }
                 n_ += decl.size();
             } else {
-                std::cerr << "Error: can't fit program onto device "
-                          << device_.name_ << "\n";
+                throw std::logic_error("Not enough physical qubits");
             }
         }
     }

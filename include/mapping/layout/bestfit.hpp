@@ -140,9 +140,7 @@ class BestFit final : public ast::Traverse {
             bool cont = ret.find(ap) == ret.end();
             while (cont) {
                 if (i >= device_.qubits_) {
-                    std::cerr << "Error: can't fit program onto device "
-                              << device_.name_ << "\n";
-                    return ret;
+                    throw std::logic_error("Not enough physical qubits");
                 } else if (!allocated_[i]) {
                     ret[ap] = i;
                     allocated_[i] = true;

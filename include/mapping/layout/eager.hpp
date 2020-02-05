@@ -66,9 +66,7 @@ class EagerLayout final : public ast::Traverse {
             bool cont = layout_.find(ap) == layout_.end();
             while (cont) {
                 if (i >= device_.qubits_) {
-                    std::cerr << "Error: can't fit program onto device "
-                              << device_.name_ << "\n";
-                    return layout_;
+                    throw std::logic_error("Not enough physical qubits");
                 } else if (!allocated_[i]) {
                     layout_[ap] = i;
                     allocated_[i] = true;
