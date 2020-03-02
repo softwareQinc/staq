@@ -271,7 +271,7 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
             for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
                 ret.push_back(
                     std::make_pair((int) (it->second), (int) (it->first)));
-                adjust_vectors_and_indices(it->second, it->first, stack);
+                adjust_vectors(it->second, it->first, stack);
                 for (auto i = 0; i < A.size(); i++) {
                     A[i][it->second] = A[i][it->second] ^ A[i][it->first];
                 }
@@ -294,8 +294,11 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
             }
             stack.push_front({part.target, part.remaining_indices, zeros});
         } else {
-            throw std::logic_error(
-                "No indices left to pivot on, but multiple vectors remain!\n");
+            // The previously partitioned rows have gotten mangled. Start
+            // again from scratch for this partition
+            for (auto i = 0; i < A.size(); i++)
+                part.remaining_indices.insert(i);
+            stack.push_front(part);
         }
     }
 
