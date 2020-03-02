@@ -82,6 +82,26 @@ static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
 }
 
 /**
+ * \brief Alternate adjustment to deal with depencies on non-partitioned
+ *        indicies, necessary for steiner synthesis
+ */
+static void adjust_vectors_and_indices(int ctrl, 
+                                        int tgt, 
+                                        std::list<partition>& stack) 
+{
+    for (auto& part : stack) {
+        for (auto& [vec, angle] : part.terms) {
+            vec[ctrl] = vec[ctrl] ^ vec[tgt];
+        }
+    
+        // Index adjustment
+        if (part.remaining_indices.find(tgt) != part.remaining_indices.end())
+          part.remaining_indices.insert(ctrl);
+    }
+
+}
+
+/**
  * \brief Finds the best index to split on given a list of phase terms
  */
 static int find_best_split(const std::list<phase_term>& terms,
@@ -219,10 +239,6 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
         auto part = stack.front();
         stack.pop_front();
 
-        // Debug
-        // std::cout << "Processing partition:\n  ";
-        // print_partition(part);
-
         if (part.terms.size() == 0)
             continue;
         else if (part.terms.size() == 1 && part.target) {
@@ -255,7 +271,7 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
             for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
                 ret.push_back(
                     std::make_pair((int) (it->second), (int) (it->first)));
-                adjust_vectors(it->second, it->first, stack);
+                adjust_vectors_and_indices(it->second, it->first, stack);
                 for (auto i = 0; i < A.size(); i++) {
                     A[i][it->second] = A[i][it->second] ^ A[i][it->first];
                 }
