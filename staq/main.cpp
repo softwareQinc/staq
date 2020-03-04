@@ -55,7 +55,8 @@ enum class Pass { desugar, inln, synth, rotfold, simplify, map };
 /**
  * \brief Command-line options
  */
-enum class Option { no_op, i, S, r, s, m, O1, O2, d, l, M, o, f, h, no_expand };
+enum class Option { no_op, i, S, r, s, m, O1, O2, d, l, M, o, f, h, no_expand,
+                    disable_lo };
 std::unordered_map<std::string_view, Option> cli_map{
     {"-i", Option::i},
     {"--inline", Option::i},
@@ -81,7 +82,8 @@ std::unordered_map<std::string_view, Option> cli_map{
     {"--format", Option::f},
     {"-h", Option::h},
     {"--help", Option::h},
-    {"--no-expand-registers", Option::no_expand}};
+    {"--no-expand-registers", Option::no_expand},
+    {"--disable-layout-optimization", Option::disable_lo}};
 
 enum class Layout { linear, eager, bestfit };
 enum class Mapper { swap, steiner };
@@ -118,10 +120,13 @@ void print_help() {
               << "Device for physical mapping. Default=tokyo.\n";
     std::cout << std::setw(width) << std::left
               << "-l,--layout (linear|eager|bestfit)"
-              << "Initial device layout algorithm. Default=linear.\n";
+              << "Initial device layout algorithm. Default=bestfit.\n";
     std::cout << std::setw(width) << std::left
               << "-M,--mapping-alg (swap|steiner)"
-              << "Algorithm to use for mapping CNOT gates. Default=swap.\n";
+              << "Algorithm to use for mapping CNOT gates. Default=steiner.\n";
+    std::cout << std::setw(width) << std::left
+              << "--disable_layout_optimization"
+              << "Disables an expensive layout optimization pass when using the steiner mapper.\n";
     std::cout
         << std::setw(width) << std::left << "--no-expand-registers"
         << "Disables expanding gates applied to registers rather than qubits\n";
@@ -131,10 +136,11 @@ int main(int argc, char** argv) {
     std::list<Pass> passes{Pass::desugar};
 
     mapping::Device dev = mapping::tokyo;
-    Layout layout_alg = Layout::linear;
-    Mapper mapper = Mapper::swap;
+    Layout layout_alg = Layout::bestfit;
+    Mapper mapper = Mapper::steiner;
     std::string ofile = "";
     Format format = Format::qasm;
+    bool do_lo = true;
 
     for (int i = 1; i < argc; i++) {
         switch (cli_map[std::string_view(argv[i])]) {
@@ -233,6 +239,9 @@ int main(int argc, char** argv) {
             case Option::no_expand:
                 passes.pop_front();
                 break;
+            case Option::disable_lo:
+                do_lo = false;
+                break;
             /* Help */
             case Option::h:
                 print_help();
@@ -297,7 +306,7 @@ int main(int argc, char** argv) {
                                 }
 
                                 /* (Optional) optimize the layout */
-                                if (mapper == Mapper::steiner)
+                                if (mapper == Mapper::steiner && do_lo)
                                     optimize_steiner_layout(dev, initial_layout,
                                                             *prog);
 
