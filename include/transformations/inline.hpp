@@ -67,9 +67,9 @@ class Inliner final : public ast::Replacer {
         ast::Replacer::visit(prog);
 
         // Max ancillas needed are now known
-        if (max_ancilla > 0) {
+        if (max_ancilla_ > 0) {
             auto decl = std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
-                prog.pos(), config_.ancilla_name, true, max_ancilla));
+                prog.pos(), config_.ancilla_name, true, max_ancilla_));
             prog.body().emplace_front(std::move(decl));
         }
 
@@ -95,25 +95,21 @@ class Inliner final : public ast::Replacer {
                 [this, &tmp](auto& gate) { tmp.body.push_back(&gate); });
             tmp.ancillas.swap(current_ancillas);
 
-            // Retrieve and reset the local ancilla counter
-            if (num_ancilla > max_ancilla) {
-                max_ancilla = num_ancilla;
-            }
-            num_ancilla = 0;
-
             return std::nullopt;
         }
     }
 
+    std::optional<std::list<ast::ptr<ast::Stmt>>>
+    replace(ast::RegisterDecl& decl) override {
+        if (decl.is_quantum()) {
+            registers_.push_back(std::make_pair(decl.id(), decl.size()));
+        }
+        return std::nullopt;
+    }
+
     std::optional<std::list<ast::ptr<ast::Gate>>>
     replace(ast::AncillaDecl& decl) override {
-        if (decl.is_dirty()) {
-            std::cerr
-                << "Error: dirty ancillas not currently supported by inliner\n";
-        } else {
-            current_ancillas.push_back(std::make_pair(decl.id(), decl.size()));
-            num_ancilla += decl.size();
-        }
+        current_ancillas.push_back({decl.id(), decl.size(), decl.is_dirty()});
         return std::nullopt;
     }
 
@@ -138,15 +134,62 @@ class Inliner final : public ast::Replacer {
                     {ast::VarAccess(gate.pos(), it->second.q_params[i]),
                      gate.qarg(i)});
             }
+
             // For local ancillas
-            auto offset = 0;
-            for (auto& [id, num] : it->second.ancillas) {
+            auto anc_offset = 0;
+            auto reg = registers_.begin();
+            auto reg_offset = 0;
+            for (auto& anc : it->second.ancillas) {
+              if (anc.dirty) {
+                // Try to find an unused qubit to use as a dirty ancilla
+                auto i = 0;
+
+                while (i < anc.size) {
+                  if (reg == registers_.end()) {
+                    // Switch to clean ancillas
+                    q_subst.insert(
+                        {ast::VarAccess(gate.pos(), anc.name, i++),
+                         ast::VarAccess(gate.pos(),
+                                        config_.ancilla_name,
+                                        anc_offset++)});
+
+                  } else if (reg_offset >= reg->second) {
+                    // Move to the next register
+                    reg++;
+                    reg_offset = 0;
+
+                  } else {
+                    // Check whether this qubit is used in the gate
+                    bool used = false;
+                    gate.foreach_qarg([&used,&reg,&reg_offset](auto& arg){
+                        used = used || (arg.var() == reg->first &&
+                                        arg.offset() == reg_offset);
+                      });
+
+                    if (!used) {
+                      q_subst.insert(
+                          {ast::VarAccess(gate.pos(), anc.name, i++),
+                           ast::VarAccess(gate.pos(), reg->first, reg_offset)});
+                    }
+
+                    reg_offset++;
+                  }
+                }
+              } else {
                 q_subst.insert(
-                    {ast::VarAccess(gate.pos(), id),
-                     ast::VarAccess(gate.pos(), config_.ancilla_name, offset)});
-                offset += num;
+                    {ast::VarAccess(gate.pos(), anc.name),
+                     ast::VarAccess(gate.pos(),
+                                    config_.ancilla_name,
+                                    anc_offset)});
+                anc_offset += anc.size;
+              }
             }
             SubstAP ap_subst(q_subst);
+
+            // Adjust the number of ancillas used
+            if (anc_offset > max_ancilla_) {
+                max_ancilla_ = anc_offset;
+            }
 
             // Clone & substitute the gate body
             std::list<ast::ptr<ast::Gate>> body;
@@ -196,20 +239,27 @@ class Inliner final : public ast::Replacer {
         }
     };
 
+    struct ancilla_info {
+        ast::symbol name;
+        int size;
+        bool dirty;
+    };
+
     struct gate_info {
         std::vector<ast::symbol> c_params;
         std::vector<ast::symbol> q_params;
         std::list<ast::Gate*> body;
-        std::list<std::pair<ast::symbol, int>> ancillas;
+        std::list<ancilla_info> ancillas;
     };
 
     config config_;
     std::unordered_map<std::string_view, gate_info> gate_decls_;
     Cleaner cleaner_;
-    int max_ancilla = 0;
+    int max_ancilla_ = 0;
+    std::list<std::pair<ast::symbol, int>> registers_;
 
     // Gate-local accumulating values
-    std::list<std::pair<ast::symbol, int>> current_ancillas;
+    std::list<ancilla_info> current_ancillas;
     int num_ancilla = 0;
 };
 
