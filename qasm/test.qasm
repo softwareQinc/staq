@@ -1,25 +1,16 @@
 OPENQASM 2.0;
 include "qelib1.inc";
 
-qreg a[2];
-qreg b[2];
-creg c[2];
+gate tof3 a,b,c,d {
+  dirty ancilla e[1];
+  ccx a,b,e;
+  ccx c,e,d;
+  ccx a,b,e;
+  ccx c,e,d;
+}
 
-t a[0];
-x a[0];
-tdg a[0]; 
-x a[0];
 
-h a[1];
-t a[1];
-h a[1];
-h a[1];
-t a[1];
-h a[1];
+qreg q[4];
+qreg r[1];
 
-U(sin(pi),pi,pi) a;
-CX a,b;
-//reset a;
-measure a -> c;
-barrier b, a[0];
-cx a[1],b;
+tof3 q[0],q[1],q[2],q[3];
