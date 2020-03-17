@@ -207,3 +207,14 @@ TEST(Parsing, Idempotence) {
     EXPECT_EQ(ss.str(), src);
 }
 /******************************************************************************/
+
+/******************************************************************************/
+TEST(Parsing, Trailing_Comment) {
+    std::string src = "OPENQASM 2.0;\n"
+                      "include \"qelib1.inc\";\n"
+                      "//";
+
+
+    EXPECT_NO_THROW(parser::parse_string(src, "trailing_comment.qasm"));
+}
+/******************************************************************************/
