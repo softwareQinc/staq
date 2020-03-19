@@ -51,13 +51,13 @@ using namespace staq;
 /**
  * \brief Compiler passes
  */
-enum class Pass { desugar, inln, synth, rotfold, simplify, map };
+enum class Pass { desugar, inln, synth, rotfold, cnotsynth, simplify, map };
 
 /**
  * \brief Command-line options
  */
-enum class Option { no_op, i, S, r, s, m, O1, O2, d, l, M, o, f, h, no_expand,
-                    disable_lo };
+enum class Option { no_op, i, S, r, c, s, m, O1, O2, O3, d, l, M,
+                    o, f, h, no_expand, disable_lo };
 std::unordered_map<std::string_view, Option> cli_map{
     {"-i", Option::i},
     {"--inline", Option::i},
@@ -65,12 +65,15 @@ std::unordered_map<std::string_view, Option> cli_map{
     {"--synthesize", Option::S},
     {"-r", Option::r},
     {"--rotation-fold", Option::r},
+    {"-c", Option::c},
+    {"--cnot-resynth", Option::c},
     {"-s", Option::s},
     {"--simplify", Option::s},
     {"-m", Option::m},
     {"--map-to-device", Option::m},
     {"-O1", Option::O1},
     {"-O2", Option::O2},
+    {"-O3", Option::O3},
     {"-d", Option::d},
     {"--device", Option::d},
     {"-l", Option::l},
@@ -101,7 +104,9 @@ void print_help() {
     std::cout << std::setw(width) << std::left << "-S,--synthesize"
               << "Synthesize oracles defined by logic files\n";
     std::cout << std::setw(width) << std::left << "-r,--rotation-fold"
-              << "Apply a rotation folding pass\n";
+              << "Apply a rotation optimization pass\n";
+    std::cout << std::setw(width) << std::left << "-c,--cnot-resynth"
+              << "Apply a CNOT optimization pass\n";
     std::cout << std::setw(width) << std::left << "-s,--simplify"
               << "Apply a simplification pass\n";
     std::cout << std::setw(width) << std::left << "-m,--map-to-device"
@@ -110,6 +115,8 @@ void print_help() {
               << "Standard light optimization pass\n";
     std::cout << std::setw(width) << std::left << "-O2"
               << "Standard heavy optimization pass\n\n";
+    std::cout << std::setw(width) << std::left << "-O3"
+              << "Non-monotonic optimization pass\n\n";
     std::cout << "Options:\n";
     std::cout << std::setw(width) << std::left << "-o,--output FILE"
               << "Output filename. Otherwise prints to stdout.\n";
@@ -155,6 +162,9 @@ int main(int argc, char** argv) {
             case Option::r:
                 passes.push_back(Pass::rotfold);
                 break;
+            case Option::c:
+                passes.push_back(Pass::cnotsynth);
+                break;
             case Option::s:
                 passes.push_back(Pass::simplify);
                 break;
@@ -169,6 +179,14 @@ int main(int argc, char** argv) {
                 passes.push_back(Pass::inln);
                 passes.push_back(Pass::simplify);
                 passes.push_back(Pass::rotfold);
+                passes.push_back(Pass::simplify);
+                break;
+            case Option::O3:
+                passes.push_back(Pass::inln);
+                passes.push_back(Pass::simplify);
+                passes.push_back(Pass::rotfold);
+                passes.push_back(Pass::simplify);
+                passes.push_back(Pass::cnotsynth);
                 passes.push_back(Pass::simplify);
                 break;
             /* Device configuration */
@@ -277,6 +295,9 @@ int main(int argc, char** argv) {
                                 break;
                             case Pass::rotfold:
                                 optimization::fold_rotations(*prog);
+                                break;
+                            case Pass::cnotsynth:
+                                optimization::optimize_CNOT(*prog);
                                 break;
                             case Pass::simplify:
                                 optimization::simplify(*prog);
