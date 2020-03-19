@@ -349,7 +349,7 @@ class PiExpr final : public Expr {
     }
 
     std::optional<double> constant_eval() const override {
-        return 3.14159265359;
+        return utils::pi;
     }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {

@@ -64,6 +64,9 @@ static void print_linop(const linear_op<bool>& mat) {
 static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
 
+    if (mat.size() == 0)
+      return ret;
+
     for (auto i = 0; i < mat[0].size(); i++) {
 
         // Find pivot

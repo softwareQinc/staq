@@ -174,10 +174,6 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
         auto part = std::move(stack.front());
         stack.pop_front();
 
-        // Debug
-        // std::cout << "Processing partition:\n  ";
-        // print_partition(part);
-
         if (part.terms.size() == 0)
             continue;
         else if (part.terms.size() == 1 && part.target) {

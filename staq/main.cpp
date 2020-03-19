@@ -30,6 +30,7 @@
 
 #include "optimization/simplify.hpp"
 #include "optimization/rotation_folding.hpp"
+#include "optimization/cnot_resynthesis.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"

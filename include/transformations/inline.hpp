@@ -263,12 +263,12 @@ class Inliner final : public ast::Replacer {
     int num_ancilla = 0;
 };
 
-void inline_ast(ast::ASTNode& node) {
+static void inline_ast(ast::ASTNode& node) {
     Inliner alg;
     node.accept(alg);
 }
 
-void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
+static void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
     Inliner alg(params);
     node.accept(alg);
 }
