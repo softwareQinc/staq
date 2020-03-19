@@ -162,7 +162,7 @@ TEST(Steiner_Mapper, Swap) {
     std::string post = "OPENQASM 2.0;\n"
                        "\n"
                        "qreg q[9];\n"
-                       "U(0,0,0.785398) q[7];\n";
+                       "U(0,0,pi/4) q[7];\n";
 
     auto program = parser::parse_string(pre, "steiner_swap.qasm");
     mapping::steiner_mapping(test_device, *program);

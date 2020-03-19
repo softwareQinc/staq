@@ -96,9 +96,10 @@ class SteinerMapper final : public ast::Replacer {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [this, &prog](std::pair<utils::Angle, int>& rz) {
-                        prog.body().emplace_back(
-                            generate_rz(rz.first, rz.second, prog.pos()));
+                    [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& rz) {
+                        prog.body().emplace_back(generate_rz(std::move(rz.first),
+                                                             rz.second,
+                                                             prog.pos()));
                     }},
                 gate);
         }
@@ -123,15 +124,11 @@ class SteinerMapper final : public ast::Replacer {
     replace(ast::UGate& gate) override {
         if (is_zero(gate.theta()) && is_zero(gate.phi())) {
             // It's a z-axis rotation
-            auto angle = gate.lambda().constant_eval();
-            if (!angle) {
-                throw std::logic_error("Rotation angle is not constant!");
-            }
-
+            auto angle = ast::ptr<ast::Expr>(gate.lambda().clone());
             auto idx = get_index(gate.arg());
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], *angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -147,14 +144,10 @@ class SteinerMapper final : public ast::Replacer {
         auto name = gate.name();
 
         if (name == "rz" || name == "u1") {
-            auto angle = gate.carg(0).constant_eval();
-            if (!angle) {
-                throw std::logic_error("Rotation angle is not constant!");
-            }
-
+            auto angle = ast::ptr<ast::Expr>(gate.carg(0).clone());
             auto idx = get_index(gate.qarg(0));
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], *angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -162,11 +155,11 @@ class SteinerMapper final : public ast::Replacer {
 
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "z") {
-            auto angle = utils::angles::pi;
+            auto angle = ast::angle_to_expr(utils::angles::pi);
             auto idx = get_index(gate.qarg(0));
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -174,11 +167,11 @@ class SteinerMapper final : public ast::Replacer {
 
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "s") {
-            auto angle = utils::angles::pi_half;
+            auto angle = ast::angle_to_expr(utils::angles::pi_half);
             auto idx = get_index(gate.qarg(0));
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -186,11 +179,11 @@ class SteinerMapper final : public ast::Replacer {
 
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "sdg") {
-            auto angle = -utils::angles::pi_half;
+            auto angle = ast::angle_to_expr(-utils::angles::pi_half);
             auto idx = get_index(gate.qarg(0));
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -198,11 +191,11 @@ class SteinerMapper final : public ast::Replacer {
 
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "t") {
-            auto angle = utils::angles::pi_quarter;
+            auto angle = ast::angle_to_expr(utils::angles::pi_quarter);
             auto idx = get_index(gate.qarg(0));
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -210,11 +203,11 @@ class SteinerMapper final : public ast::Replacer {
 
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "tdg") {
-            auto angle = -utils::angles::pi_quarter;
+            auto angle = ast::angle_to_expr(-utils::angles::pi_quarter);
             auto idx = get_index(gate.qarg(0));
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], angle);
+                add_phase(permutation_[idx], std::move(angle));
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -252,15 +245,18 @@ class SteinerMapper final : public ast::Replacer {
     std::list<synthesis::phase_term> phases_;
     synthesis::linear_op<bool> permutation_;
 
-    void add_phase(std::vector<bool> parity, utils::Angle angle) {
+    void add_phase(std::vector<bool> parity, ast::ptr<ast::Expr> angle) {
         for (auto it = phases_.begin(); it != phases_.end(); it++) {
             if (it->first == parity) {
-                it->second += angle;
+                it->second = ast::BExpr::create(angle->pos(),
+                                                std::move(it->second),
+                                                ast::BinaryOp::Plus,
+                                                std::move(angle));
                 return;
             }
         }
 
-        phases_.push_back(std::make_pair(parity, angle));
+        phases_.push_back(std::make_pair(parity, std::move(angle)));
     }
 
     // Flushes a cnot-dihedral operator (i.e. phases + permutation) to the
@@ -294,9 +290,10 @@ class SteinerMapper final : public ast::Replacer {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [&ret, this, &node](std::pair<utils::Angle, int>& rz) {
-                        ret.emplace_back(
-                            generate_rz(rz.first, rz.second, node.pos()));
+                    [&ret, this, &node](std::pair<ast::ptr<ast::Expr>, int>& rz) {
+                        ret.emplace_back(generate_rz(std::move(rz.first),
+                                                     rz.second,
+                                                     node.pos()));
                     }},
                 gate);
         }
@@ -351,16 +348,15 @@ class SteinerMapper final : public ast::Replacer {
                        std::move(tgt)));
     }
 
-    ast::ptr<ast::UGate> generate_rz(utils::Angle angle, int i,
+    ast::ptr<ast::UGate> generate_rz(ast::ptr<ast::Expr> angle, int i,
                                      parser::Position pos) {
         auto tgt = ast::VarAccess(pos, config_.register_name, i);
 
         auto theta = std::make_unique<ast::IntExpr>(ast::IntExpr(pos, 0));
         auto phi = std::make_unique<ast::IntExpr>(ast::IntExpr(pos, 0));
-        auto lambda = ast::angle_to_expr(angle);
 
         return std::make_unique<ast::UGate>(
-            ast::UGate(pos, std::move(theta), std::move(phi), std::move(lambda),
+            ast::UGate(pos, std::move(theta), std::move(phi), std::move(angle),
                        std::move(tgt)));
     }
 };
@@ -411,7 +407,7 @@ class SteinerDry final : public ast::Traverse {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [this, &prog](std::pair<utils::Angle, int>& rz) {}},
+                    [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& rz) {}},
                 gate);
         }
     }
@@ -430,15 +426,11 @@ class SteinerDry final : public ast::Traverse {
     void visit(ast::UGate& gate) override {
         if (is_zero(gate.theta()) && is_zero(gate.phi())) {
             // It's a z-axis rotation
-            auto angle = gate.lambda().constant_eval();
-            if (!angle) {
-                throw std::logic_error("Rotation angle is not constant!");
-            }
-
+            auto angle = nullptr;
             auto idx = layout_[gate.arg()];
 
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], *angle);
+                add_phase(permutation_[idx], angle);
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
@@ -453,20 +445,16 @@ class SteinerDry final : public ast::Traverse {
         auto name = gate.name();
 
         if (name == "rz" || name == "u1") {
-            auto angle = gate.carg(0).constant_eval();
-            if (!angle) {
-                throw std::logic_error("Rotation angle is not constant!");
-            }
-
+            auto angle = nullptr;
             auto idx = layout_[gate.qarg(0)];
             if (in_bounds(idx)) {
-                add_phase(permutation_[idx], *angle);
+                add_phase(permutation_[idx], angle);
             } else {
                 throw std::logic_error(
                     "Unitary argument out of device bounds!");
             }
         } else if (name == "z") {
-            auto angle = utils::angles::pi;
+            auto angle = nullptr;
             auto idx = layout_[gate.qarg(0)];
 
             if (in_bounds(idx)) {
@@ -476,7 +464,7 @@ class SteinerDry final : public ast::Traverse {
                     "Unitary argument out of device bounds!");
             }
         } else if (name == "s") {
-            auto angle = utils::angles::pi_half;
+            auto angle = nullptr;
             auto idx = layout_[gate.qarg(0)];
 
             if (in_bounds(idx)) {
@@ -486,7 +474,7 @@ class SteinerDry final : public ast::Traverse {
                     "Unitary argument out of device bounds!");
             }
         } else if (name == "sdg") {
-            auto angle = -utils::angles::pi_half;
+            auto angle = nullptr;
             auto idx = layout_[gate.qarg(0)];
 
             if (in_bounds(idx)) {
@@ -496,7 +484,7 @@ class SteinerDry final : public ast::Traverse {
                     "Unitary argument out of device bounds!");
             }
         } else if (name == "t") {
-            auto angle = utils::angles::pi_quarter;
+            auto angle = nullptr;
             auto idx = layout_[gate.qarg(0)];
 
             if (in_bounds(idx)) {
@@ -506,7 +494,7 @@ class SteinerDry final : public ast::Traverse {
                     "Unitary argument out of device bounds!");
             }
         } else if (name == "tdg") {
-            auto angle = -utils::angles::pi_quarter;
+            auto angle = nullptr;
             auto idx = layout_[gate.qarg(0)];
 
             if (in_bounds(idx)) {
@@ -539,15 +527,14 @@ class SteinerDry final : public ast::Traverse {
     std::list<synthesis::phase_term> phases_;
     synthesis::linear_op<bool> permutation_;
 
-    void add_phase(std::vector<bool> parity, utils::Angle angle) {
+    void add_phase(std::vector<bool> parity, ast::ptr<ast::Expr> angle) {
         for (auto it = phases_.begin(); it != phases_.end(); it++) {
             if (it->first == parity) {
-                it->second += angle;
                 return;
             }
         }
 
-        phases_.push_back(std::make_pair(parity, angle));
+        phases_.push_back(std::make_pair(parity, std::move(angle)));
     }
 
     // Flushes a cnot-dihedral operator (i.e. phases + permutation) to the
@@ -568,7 +555,7 @@ class SteinerDry final : public ast::Traverse {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [this, &node](std::pair<utils::Angle, int>& rz) {}},
+                    [this, &node](std::pair<ast::ptr<ast::Expr>, int>& rz) {}},
                 gate);
         }
 

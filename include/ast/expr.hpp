@@ -520,8 +520,7 @@ inline ptr<Expr> angle_to_expr(const utils::Angle& theta) {
         }
     } else {
         // Angle is real-valued
-        return std::make_unique<RealExpr>(
-            RealExpr(parser::Position(), theta.numeric_value()));
+        return std::make_unique<RealExpr>(RealExpr(pos, theta.numeric_value()));
     }
 }
 

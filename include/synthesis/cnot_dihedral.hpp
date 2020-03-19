@@ -30,7 +30,7 @@
 
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
-#include "utils/angle.hpp"
+#include "ast/expr.hpp"
 #include "utils/templates.hpp"
 
 #include <vector>
@@ -41,17 +41,25 @@ namespace staq {
 namespace synthesis {
 
 using namespace mapping;
-using phase_term = std::pair<std::vector<bool>, utils::Angle>;
-using cx_dihedral =
-    std::variant<std::pair<int, int>, std::pair<utils::Angle, int>>;
+using phase_term = std::pair<std::vector<bool>, ast::ptr<ast::Expr>>;
+using cx_dihedral = std::variant<std::pair<int, int>,
+                                 std::pair<ast::ptr<ast::Expr>, int>>;
 
 struct partition {
     std::optional<int> target;
     std::set<int> remaining_indices;
     std::list<phase_term> terms;
+
+    partition(std::optional<int> t,
+              std::set<int> r,
+              std::list<phase_term>&& tm)
+      : target(t)
+      , remaining_indices(r)
+      , terms(std::move(tm))
+    {}
 };
 
-static void print_partition(partition& part) {
+static void print_partition(const partition& part) {
     std::cout << "{";
     if (part.target)
         std::cout << *(part.target);
@@ -62,7 +70,7 @@ static void print_partition(partition& part) {
         std::cout << i << ",";
     std::cout << "], {";
     for (auto& [vec, angle] : part.terms) {
-        std::cout << angle << "*(";
+        std::cout << *angle << "*(";
         for (auto i = 0; i < vec.size(); i++)
             std::cout << (vec[i] ? "1" : "0");
         std::cout << "), ";
@@ -144,13 +152,13 @@ split(std::list<phase_term>& terms, int i) {
             zeros.splice(zeros.end(), terms, terms.begin());
     }
 
-    return std::make_pair(zeros, ones);
+    return std::make_pair(std::move(zeros), std::move(ones));
 }
 
 /**
  * \brief The gray-synth algorith of arXiv:1712.01859
  */
-static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
+static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
                                          linear_op<bool> A) {
     // Initialize
     std::list<cx_dihedral> ret;
@@ -160,10 +168,10 @@ static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
     for (auto i = 0; i < A.size(); i++)
         indices.insert(i);
 
-    stack.push_front({std::nullopt, indices, f});
+    stack.emplace_front(partition(std::nullopt, indices, std::move(f)));
 
     while (!stack.empty()) {
-        auto part = stack.front();
+        auto part = std::move(stack.front());
         stack.pop_front();
 
         // Debug
@@ -190,7 +198,7 @@ static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
                 }
             }
 
-            ret.push_back(std::make_pair(angle, tgt));
+            ret.push_back(std::make_pair(std::move(angle), tgt));
         } else if (!part.remaining_indices.empty()) {
             // Divide into the zeros and ones of some row
             auto i = find_best_split(part.terms, part.remaining_indices);
@@ -201,11 +209,17 @@ static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
 
             // Add the new partitions on the stack
             if (part.target) {
-                stack.push_front({part.target, part.remaining_indices, ones});
+                stack.emplace_front(partition(part.target,
+                                              part.remaining_indices,
+                                              std::move(ones)));
             } else {
-                stack.push_front({i, part.remaining_indices, ones});
+                stack.emplace_front(partition(i,
+                                              part.remaining_indices,
+                                              std::move(ones)));
             }
-            stack.push_front({part.target, part.remaining_indices, zeros});
+            stack.emplace_front(partition(part.target,
+                                          part.remaining_indices,
+                                          std::move(zeros)));
         } else {
             throw std::logic_error(
                 "No indices left to pivot on, but multiple vectors remain!\n");
@@ -223,7 +237,7 @@ static std::list<cx_dihedral> gray_synth(const std::list<phase_term>& f,
 /**
  * \brief Gray-synth with topological constraints
  */
-static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
+static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
                                            linear_op<bool> A, Device& d) {
     // Initialize
     std::list<cx_dihedral> ret;
@@ -233,10 +247,10 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
     for (auto i = 0; i < A.size(); i++)
         indices.insert(i);
 
-    stack.push_front({std::nullopt, indices, f});
+    stack.emplace_front(partition(std::nullopt, indices, std::move(f)));
 
     while (!stack.empty()) {
-        auto part = stack.front();
+        auto part = std::move(stack.front());
         stack.pop_front();
 
         if (part.terms.size() == 0)
@@ -277,7 +291,7 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
                 }
             }
 
-            ret.push_back(std::make_pair(angle, tgt));
+            ret.push_back(std::make_pair(std::move(angle), tgt));
         } else if (!part.remaining_indices.empty()) {
             // Divide into the zeros and ones of some row
             auto i = find_best_split(part.terms, part.remaining_indices);
@@ -288,17 +302,23 @@ static std::list<cx_dihedral> gray_steiner(const std::list<phase_term>& f,
 
             // Add the new partitions on the stack
             if (part.target) {
-                stack.push_front({part.target, part.remaining_indices, ones});
+                stack.emplace_front(partition(part.target,
+                                              part.remaining_indices,
+                                              std::move(ones)));
             } else {
-                stack.push_front({i, part.remaining_indices, ones});
+                stack.emplace_front(partition(i,
+                                              part.remaining_indices,
+                                              std::move(ones)));
             }
-            stack.push_front({part.target, part.remaining_indices, zeros});
+            stack.emplace_front(partition(part.target,
+                                          part.remaining_indices,
+                                          std::move(zeros)));
         } else {
             // The previously partitioned rows have gotten mangled. Start
             // again from scratch for this partition
             for (auto i = 0; i < A.size(); i++)
                 part.remaining_indices.insert(i);
-            stack.push_front(part);
+            stack.emplace_front(std::move(part));
         }
     }
 
