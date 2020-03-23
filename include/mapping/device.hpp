@@ -447,7 +447,7 @@ static Device aspen4("16-qubit Rigetti lattice", 16,
 
 /**
  * \var Device IBM-Tokyo
- * \brief A 16-qubit Rigetti lattice
+ * \brief A 20-qubit IBM device
  *
  * Qubits are arranged like so:
    \verbatim

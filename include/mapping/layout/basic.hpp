@@ -65,7 +65,7 @@ class LayoutTransformer final : public ast::Replacer {
     ~LayoutTransformer() = default;
 
     /** \brief Main transformation method */
-    void run(ast::Program& prog, const layout& l) {
+    void run(ast::Program& prog, const layout& l, const Device& d) {
         // Visit entire program, removing register declarations, then
         // add the physical register & apply substitutions
         prog.accept(*this);
@@ -73,7 +73,7 @@ class LayoutTransformer final : public ast::Replacer {
         // Physical register declaration
         prog.body().emplace_front(
             std::make_unique<ast::RegisterDecl>(ast::RegisterDecl(
-                prog.pos(), config_.register_name, true, l.size())));
+                prog.pos(), config_.register_name, true, d.qubits_)));
 
         // Substitution
         std::unordered_map<ast::VarAccess, ast::VarAccess> subst;
@@ -138,9 +138,9 @@ class BasicLayout final : public ast::Traverse {
 };
 
 /** \brief Rewrites an AST according to a physical layout */
-inline void apply_layout(const layout& l, ast::Program& prog) {
+inline void apply_layout(const layout& l, const Device& d, ast::Program& prog) {
     LayoutTransformer alg;
-    alg.run(prog, l);
+    alg.run(prog, l, d);
 }
 
 /** \brief Generates a layout for a program on a physical device */

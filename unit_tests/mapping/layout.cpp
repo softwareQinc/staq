@@ -80,7 +80,7 @@ TEST(Layout, Basic) {
 
     auto program = parser::parse_string(pre, "layout_basic.qasm");
     auto layout = mapping::compute_basic_layout(test_device, *program);
-    mapping::apply_layout(layout, *program);
+    mapping::apply_layout(layout, test_device, *program);
     std::stringstream ss;
     ss << *program;
 
@@ -110,7 +110,7 @@ TEST(Layout, Eager) {
 
     auto program = parser::parse_string(pre, "layout_eager.qasm");
     auto layout = mapping::compute_eager_layout(test_device, *program);
-    mapping::apply_layout(layout, *program);
+    mapping::apply_layout(layout, test_device, *program);
     std::stringstream ss;
     ss << *program;
 
@@ -152,7 +152,7 @@ TEST(Layout, Best_Fit) {
 
     auto program = parser::parse_string(pre, "layout_best_fit.qasm");
     auto layout = mapping::compute_bestfit_layout(test_device, *program);
-    mapping::apply_layout(layout, *program);
+    mapping::apply_layout(layout, test_device, *program);
     std::stringstream ss;
     ss << *program;
 

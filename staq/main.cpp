@@ -333,7 +333,8 @@ int main(int argc, char** argv) {
                                                             *prog);
 
                                 /* Apply the layout */
-                                mapping::apply_layout(initial_layout, *prog);
+                                mapping::apply_layout(initial_layout, dev,
+                                                      *prog);
 
                                 /* Apply the mapping algorithm */
                                 switch (mapper) {

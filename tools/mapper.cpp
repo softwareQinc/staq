@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
             std::cerr << "Error: invalid layout algorithm\n";
             return 0;
         }
-        mapping::apply_layout(physical_layout, *program);
+        mapping::apply_layout(physical_layout, dev, *program);
 
         // Mapping
         if (mapper == "swap") {
