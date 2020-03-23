@@ -62,19 +62,19 @@ class CNOTOptimizer final : public ast::Replacer {
     replace(ast::MeasureStmt& stmt) {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
-        return tmp;
+        return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::ResetStmt& stmt) {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
-        return tmp;
+        return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::IfStmt& stmt) {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
-        return tmp;
+        return std::move(tmp);
     }
 
     /* Gates */
@@ -93,7 +93,7 @@ class CNOTOptimizer final : public ast::Replacer {
         } else {
             auto tmp = flush<ast::Gate>();
             tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
-            return tmp;
+            return std::move(tmp);
         }
     }
     std::optional<std::list<ast::ptr<ast::Gate>>>
@@ -111,7 +111,7 @@ class CNOTOptimizer final : public ast::Replacer {
     replace(ast::BarrierGate& gate) {
         auto tmp = flush<ast::Gate>();
         tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
-        return tmp;
+        return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Gate>>>
     replace(ast::DeclaredGate& gate) {
@@ -162,7 +162,7 @@ class CNOTOptimizer final : public ast::Replacer {
         } else {
             auto tmp = flush<ast::Gate>();
             tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
-            return tmp;
+            return std::move(tmp);
         }
     }
 
