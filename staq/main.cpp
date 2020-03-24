@@ -198,6 +198,8 @@ int main(int argc, char** argv) {
                     dev = mapping::agave;
                 else if (arg == "aspen-4")
                     dev = mapping::aspen4;
+                else if (arg == "singapore")
+                    dev = mapping::singapore;
                 else if (arg == "square")
                     dev = mapping::square_9q;
                 else if (arg == "fullycon")
