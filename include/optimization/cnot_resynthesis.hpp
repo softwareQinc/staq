@@ -58,25 +58,27 @@ class CNOTOptimizer final : public ast::Replacer {
 
     /* Statements */
     std::optional<std::list<ast::ptr<ast::Stmt>>>
-    replace(ast::MeasureStmt& stmt) {
+    replace(ast::MeasureStmt& stmt) override {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
         return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Stmt>>>
-    replace(ast::ResetStmt& stmt) {
+    replace(ast::ResetStmt& stmt) override {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
         return std::move(tmp);
     }
-    std::optional<std::list<ast::ptr<ast::Stmt>>> replace(ast::IfStmt& stmt) {
+    std::optional<std::list<ast::ptr<ast::Stmt>>>
+    replace(ast::IfStmt& stmt) override {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
         return std::move(tmp);
     }
 
     /* Gates */
-    std::optional<std::list<ast::ptr<ast::Gate>>> replace(ast::UGate& gate) {
+    std::optional<std::list<ast::ptr<ast::Gate>>>
+    replace(ast::UGate& gate) override {
         if (is_zero(gate.theta()) && is_zero(gate.phi())) {
             // It's a z-axis rotation
             auto idx = get_index(gate.arg());
@@ -93,7 +95,8 @@ class CNOTOptimizer final : public ast::Replacer {
             return std::move(tmp);
         }
     }
-    std::optional<std::list<ast::ptr<ast::Gate>>> replace(ast::CNOTGate& gate) {
+    std::optional<std::list<ast::ptr<ast::Gate>>>
+    replace(ast::CNOTGate& gate) override {
         auto ctrl = get_index(gate.ctrl());
         auto tgt = get_index(gate.tgt());
 
@@ -104,13 +107,13 @@ class CNOTOptimizer final : public ast::Replacer {
         return std::list<ast::ptr<ast::Gate>>();
     }
     std::optional<std::list<ast::ptr<ast::Gate>>>
-    replace(ast::BarrierGate& gate) {
+    replace(ast::BarrierGate& gate) override {
         auto tmp = flush<ast::Gate>();
         tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
         return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Gate>>>
-    replace(ast::DeclaredGate& gate) {
+    replace(ast::DeclaredGate& gate) override {
         auto name = gate.name();
 
         if (name == "rz" || name == "u1") {
@@ -162,7 +165,7 @@ class CNOTOptimizer final : public ast::Replacer {
     }
 
     /* Declarations */
-    void visit(ast::GateDecl& decl) {
+    void visit(ast::GateDecl& decl) override {
         // Initialize a new local state
 
         std::unordered_map<ast::VarAccess, int> local_map;
@@ -191,14 +194,14 @@ class CNOTOptimizer final : public ast::Replacer {
         std::swap(permutation_, local_permutation);
     }
 
-    void visit(ast::OracleDecl&) {}
-    void visit(ast::RegisterDecl& decl) {
+    void visit(ast::OracleDecl&) override {}
+    void visit(ast::RegisterDecl& decl) override {
         if (decl.is_quantum()) {
             for (int i = 0; i < decl.size(); i++)
                 get_index(ast::VarAccess(decl.pos(), decl.id(), i));
         }
     }
-    void visit(ast::AncillaDecl& decl) {
+    void visit(ast::AncillaDecl& decl) override {
         for (int i = 0; i < decl.size(); i++)
             get_index(ast::VarAccess(decl.pos(), decl.id(), i));
 
