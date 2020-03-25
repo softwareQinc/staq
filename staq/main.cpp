@@ -56,8 +56,26 @@ enum class Pass { desugar, inln, synth, rotfold, cnotsynth, simplify, map };
 /**
  * \brief Command-line options
  */
-enum class Option { no_op, i, S, r, c, s, m, O1, O2, O3, d, l, M,
-                    o, f, h, no_expand, disable_lo };
+enum class Option {
+    no_op,
+    i,
+    S,
+    r,
+    c,
+    s,
+    m,
+    O1,
+    O2,
+    O3,
+    d,
+    l,
+    M,
+    o,
+    f,
+    h,
+    no_expand,
+    disable_lo
+};
 std::unordered_map<std::string_view, Option> cli_map{
     {"-i", Option::i},
     {"--inline", Option::i},
@@ -124,7 +142,7 @@ void print_help() {
               << "-f,--format (qasm|quil|projectq|qsharp|cirq|resources) "
               << "Output format. Default=qasm.\n";
     std::cout << std::setw(width) << std::left
-              << "-d,--device (tokyo|agave|aspen-4|square|fullycon) "
+              << "-d,--device (tokyo|agave|aspen-4|singapore|square|fullycon) "
               << "Device for physical mapping. Default=tokyo.\n";
     std::cout << std::setw(width) << std::left
               << "-l,--layout (linear|eager|bestfit)"
@@ -134,13 +152,20 @@ void print_help() {
               << "Algorithm to use for mapping CNOT gates. Default=steiner.\n";
     std::cout << std::setw(width) << std::left
               << "--disable_layout_optimization"
-              << "Disables an expensive layout optimization pass when using the steiner mapper.\n";
+              << "Disables an expensive layout optimization pass when using "
+                 "the steiner mapper.\n";
     std::cout
         << std::setw(width) << std::left << "--no-expand-registers"
         << "Disables expanding gates applied to registers rather than qubits\n";
 }
 
 int main(int argc, char** argv) {
+    if (argc == 1) {
+        std::cout << "staq -- copyright softwareQ 2019\n";
+        std::cout << "Usage: ./staq [PASSES/OPTIONS] FILE.qasm\n";
+        std::cout << "Pass --help for additional help\n";
+    }
+
     std::list<Pass> passes{Pass::desugar};
 
     mapping::Device dev = mapping::tokyo;

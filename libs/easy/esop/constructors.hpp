@@ -36,13 +36,12 @@
 #include <easy/esop/esop_from_pprm.hpp>
 #include <easy/esop/esop_from_pkrm.hpp>
 
-namespace easy::esop
-{
+namespace easy::esop {
 
-template<typename TT, typename Solver, typename Policy>
+template <typename TT, typename Solver, typename Policy>
 class esop_from_tt;
 
-} // easy::esop
+} // namespace easy::esop
 
 #include <easy/esop/helliwell.hpp>
 

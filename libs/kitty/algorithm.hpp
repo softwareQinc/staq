@@ -39,33 +39,31 @@
 #include "detail/constants.hpp"
 #include "static_truth_table.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /*! \brief Perform bitwise unary operation on truth table
 
   \param tt Truth table
-  \param op Unary operation that takes as input a word (`uint64_t`) and returns a word
+  \param op Unary operation that takes as input a word (`uint64_t`) and returns
+  a word
 
   \return new constructed truth table of same type and dimensions
  */
-template<typename TT, typename Fn>
-auto unary_operation( const TT& tt, Fn&& op )
-{
-  auto result = tt.construct();
-  std::transform( tt.cbegin(), tt.cend(), result.begin(), op );
-  result.mask_bits();
-  return result;
+template <typename TT, typename Fn>
+auto unary_operation(const TT& tt, Fn&& op) {
+    auto result = tt.construct();
+    std::transform(tt.cbegin(), tt.cend(), result.begin(), op);
+    result.mask_bits();
+    return result;
 }
 
 /*! \cond PRIVATE */
-template<int NumVars, typename Fn>
-auto unary_operation( const static_truth_table<NumVars, true>& tt, Fn&& op )
-{
-  auto result = tt.construct();
-  result._bits = op( tt._bits );
-  result.mask_bits();
-  return result;
+template <int NumVars, typename Fn>
+auto unary_operation(const static_truth_table<NumVars, true>& tt, Fn&& op) {
+    auto result = tt.construct();
+    result._bits = op(tt._bits);
+    result.mask_bits();
+    return result;
 }
 /*! \endcond */
 
@@ -77,29 +75,31 @@ auto unary_operation( const static_truth_table<NumVars, true>& tt, Fn&& op )
 
   \param first First truth table
   \param second Second truth table
-  \param op Binary operation that takes as input two words (`uint64_t`) and returns a word
+  \param op Binary operation that takes as input two words (`uint64_t`) and
+  returns a word
 
   \return new constructed truth table of same type and dimensions
  */
-template<typename TT, typename Fn>
-auto binary_operation( const TT& first, const TT& second, Fn&& op )
-{
-  assert( first.num_vars() == second.num_vars() );
+template <typename TT, typename Fn>
+auto binary_operation(const TT& first, const TT& second, Fn&& op) {
+    assert(first.num_vars() == second.num_vars());
 
-  auto result = first.construct();
-  std::transform( first.cbegin(), first.cend(), second.cbegin(), result.begin(), op );
-  result.mask_bits();
-  return result;
+    auto result = first.construct();
+    std::transform(first.cbegin(), first.cend(), second.cbegin(),
+                   result.begin(), op);
+    result.mask_bits();
+    return result;
 }
 
 /*! \cond PRIVATE */
-template<int NumVars, typename Fn>
-auto binary_operation( const static_truth_table<NumVars, true>& first, const static_truth_table<NumVars, true>& second, Fn&& op )
-{
-  auto result = first.construct();
-  result._bits = op( first._bits, second._bits );
-  result.mask_bits();
-  return result;
+template <int NumVars, typename Fn>
+auto binary_operation(const static_truth_table<NumVars, true>& first,
+                      const static_truth_table<NumVars, true>& second,
+                      Fn&& op) {
+    auto result = first.construct();
+    result._bits = op(first._bits, second._bits);
+    result.mask_bits();
+    return result;
 }
 /*! \endcond */
 
@@ -112,39 +112,42 @@ auto binary_operation( const static_truth_table<NumVars, true>& first, const sta
   \param first First truth table
   \param second Second truth table
   \param third Third truth table
-  \param op Ternary operation that takes as input two words (`uint64_t`) and returns a word
+  \param op Ternary operation that takes as input two words (`uint64_t`) and
+  returns a word
 
   \return new constructed truth table of same type and dimensions
  */
-template<typename TT, typename Fn>
-auto ternary_operation( const TT& first, const TT& second, const TT& third, Fn&& op )
-{
-  assert( first.num_vars() == second.num_vars() && second.num_vars() == third.num_vars() );
+template <typename TT, typename Fn>
+auto ternary_operation(const TT& first, const TT& second, const TT& third,
+                       Fn&& op) {
+    assert(first.num_vars() == second.num_vars() &&
+           second.num_vars() == third.num_vars());
 
-  auto result = first.construct();
-  auto it1 = first.cbegin();
-  const auto it1_e = first.cend();
-  auto it2 = second.cbegin();
-  auto it3 = third.cbegin();
-  auto it = result.begin();
+    auto result = first.construct();
+    auto it1 = first.cbegin();
+    const auto it1_e = first.cend();
+    auto it2 = second.cbegin();
+    auto it3 = third.cbegin();
+    auto it = result.begin();
 
-  while ( it1 != it1_e )
-  {
-    *it++ = op( *it1++, *it2++, *it3++ );
-  }
+    while (it1 != it1_e) {
+        *it++ = op(*it1++, *it2++, *it3++);
+    }
 
-  result.mask_bits();
-  return result;
+    result.mask_bits();
+    return result;
 }
 
 /*! \cond PRIVATE */
-template<int NumVars, typename Fn>
-auto ternary_operation( const static_truth_table<NumVars, true>& first, const static_truth_table<NumVars, true>& second, const static_truth_table<NumVars, true>& third, Fn&& op )
-{
-  auto result = first.construct();
-  result._bits = op( first._bits, second._bits, third._bits );
-  result.mask_bits();
-  return result;
+template <int NumVars, typename Fn>
+auto ternary_operation(const static_truth_table<NumVars, true>& first,
+                       const static_truth_table<NumVars, true>& second,
+                       const static_truth_table<NumVars, true>& third,
+                       Fn&& op) {
+    auto result = first.construct();
+    result._bits = op(first._bits, second._bits, third._bits);
+    result.mask_bits();
+    return result;
 }
 /*! \endcond */
 
@@ -156,23 +159,24 @@ auto ternary_operation( const static_truth_table<NumVars, true>& first, const st
 
   \param first First truth table
   \param second Second truth table
-  \param op Binary operation that takes as input two words (`uint64_t`) and returns a Boolean
+  \param op Binary operation that takes as input two words (`uint64_t`) and
+  returns a Boolean
 
   \return true or false based on the predicate
  */
-template<typename TT, typename Fn>
-bool binary_predicate( const TT& first, const TT& second, Fn&& op )
-{
-  assert( first.num_vars() == second.num_vars() );
+template <typename TT, typename Fn>
+bool binary_predicate(const TT& first, const TT& second, Fn&& op) {
+    assert(first.num_vars() == second.num_vars());
 
-  return std::equal( first.begin(), first.end(), second.begin(), op );
+    return std::equal(first.begin(), first.end(), second.begin(), op);
 }
 
 /*! \cond PRIVATE */
-template<int NumVars, typename Fn>
-bool binary_predicate( const static_truth_table<NumVars, true>& first, const static_truth_table<NumVars, true>& second, Fn&& op )
-{
-  return op( first._bits, second._bits );
+template <int NumVars, typename Fn>
+bool binary_predicate(const static_truth_table<NumVars, true>& first,
+                      const static_truth_table<NumVars, true>& second,
+                      Fn&& op) {
+    return op(first._bits, second._bits);
 }
 /*! \endcond */
 
@@ -184,19 +188,17 @@ bool binary_predicate( const static_truth_table<NumVars, true>& first, const sta
   \param tt Truth table
   \param op Unary operation that takes no input and returns a word (`uint64_t`)
 */
-template<typename TT, typename Fn>
-void assign_operation( TT& tt, Fn&& op )
-{
-  std::generate( tt.begin(), tt.end(), op );
-  tt.mask_bits();
+template <typename TT, typename Fn>
+void assign_operation(TT& tt, Fn&& op) {
+    std::generate(tt.begin(), tt.end(), op);
+    tt.mask_bits();
 }
 
 /*! \cond PRIVATE */
-template<int NumVars, typename Fn>
-void assign_operation( static_truth_table<NumVars, true>& tt, Fn&& op )
-{
-  tt._bits = op();
-  tt.mask_bits();
+template <int NumVars, typename Fn>
+void assign_operation(static_truth_table<NumVars, true>& tt, Fn&& op) {
+    tt._bits = op();
+    tt.mask_bits();
 }
 /*! \endcond */
 
@@ -205,12 +207,12 @@ void assign_operation( static_truth_table<NumVars, true>& tt, Fn&& op )
  The functor `op` is called for every block of the truth table.
 
  \param tt Truth table
- \param op Unary operation that takes as input a word (`uint64_t`) and returns void
+ \param op Unary operation that takes as input a word (`uint64_t`) and returns
+ void
 */
-template<typename TT, typename Fn>
-void for_each_block( const TT& tt, Fn&& op )
-{
-  std::for_each( tt.cbegin(), tt.cend(), op );
+template <typename TT, typename Fn>
+void for_each_block(const TT& tt, Fn&& op) {
+    std::for_each(tt.cbegin(), tt.cend(), op);
 }
 
 /*! \brief Iterates through each block of a truth table in reverse
@@ -220,74 +222,74 @@ void for_each_block( const TT& tt, Fn&& op )
  reverse order.
 
  \param tt Truth table
- \param op Unary operation that takes as input a word (`uint64_t`) and returns void
+ \param op Unary operation that takes as input a word (`uint64_t`) and returns
+ void
 */
-template<typename TT, typename Fn>
-void for_each_block_reversed( const TT& tt, Fn&& op )
-{
-  std::for_each( tt.crbegin(), tt.crend(), op );
+template <typename TT, typename Fn>
+void for_each_block_reversed(const TT& tt, Fn&& op) {
+    std::for_each(tt.crbegin(), tt.crend(), op);
 }
 
 /*! \cond PRIVATE */
-template<typename TT, typename Fn>
-void for_each_one_bit_naive( const TT& tt, Fn&& op )
-{
-  for ( uint64_t bit = 0u; bit < tt.num_bits(); ++bit )
-  {
-    if ( get_bit( tt, bit ) )
-    {
-      op( bit );
+template <typename TT, typename Fn>
+void for_each_one_bit_naive(const TT& tt, Fn&& op) {
+    for (uint64_t bit = 0u; bit < tt.num_bits(); ++bit) {
+        if (get_bit(tt, bit)) {
+            op(bit);
+        }
     }
-  }
 }
 /*! \endcond */
 
 /*! \cond PRIVATE */
-template<typename TT, typename Fn>
-void for_each_one_bit_jump( const TT& tt, Fn&& op )
-{
-  uint64_t offset = 0, low_bit, value;
+template <typename TT, typename Fn>
+void for_each_one_bit_jump(const TT& tt, Fn&& op) {
+    uint64_t offset = 0, low_bit, value;
 
-  for ( auto block : tt._bits )
-  {
-    while ( block )
-    {
-      low_bit = value = block - ( block & ( block - 1 ) );
+    for (auto block : tt._bits) {
+        while (block) {
+            low_bit = value = block - (block & (block - 1));
 
-      value |= value >> 1;
-      value |= value >> 2;
-      value |= value >> 4;
-      value |= value >> 8;
-      value |= value >> 16;
-      value |= value >> 32;
-      op( offset + detail::de_bruijn64[( static_cast<uint64_t>( ( value - ( value >> 1 ) ) * UINT64_C( 0x07EDD5E59A4E28C2 ) ) ) >> 58] );
+            value |= value >> 1;
+            value |= value >> 2;
+            value |= value >> 4;
+            value |= value >> 8;
+            value |= value >> 16;
+            value |= value >> 32;
+            op(offset +
+               detail::de_bruijn64[(static_cast<uint64_t>(
+                                       (value - (value >> 1)) *
+                                       UINT64_C(0x07EDD5E59A4E28C2))) >>
+                                   58]);
 
-      block ^= low_bit;
+            block ^= low_bit;
+        }
+        offset += 64;
     }
-    offset += 64;
-  }
 }
 
-template<int NumVars, typename Fn>
-void for_each_one_bit_jump( const static_truth_table<NumVars, true>& tt, Fn&& op )
-{
-  uint64_t block = tt._bits;
+template <int NumVars, typename Fn>
+void for_each_one_bit_jump(const static_truth_table<NumVars, true>& tt,
+                           Fn&& op) {
+    uint64_t block = tt._bits;
 
-  while ( block )
-  {
-    uint64_t low_bit = block - ( block & ( block - 1 ) );
-    uint64_t value = low_bit;
+    while (block) {
+        uint64_t low_bit = block - (block & (block - 1));
+        uint64_t value = low_bit;
 
-    value |= value >> 1;
-    value |= value >> 2;
-    value |= value >> 4;
-    value |= value >> 8;
-    value |= value >> 16;
-    value |= value >> 32;
-    op( detail::de_bruijn64[( static_cast<uint64_t>( ( value - ( value >> 1 ) ) * UINT64_C( 0x07EDD5E59A4E28C2 ) ) ) >> 58] );
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        value |= value >> 32;
+        op(detail::de_bruijn64[(static_cast<uint64_t>(
+                                   (value - (value >> 1)) *
+                                   UINT64_C(0x07EDD5E59A4E28C2))) >>
+                               58]);
 
-    block ^= low_bit;
-  }
+        block ^= low_bit;
+    }
 }
 /*! \endcond */
 
@@ -297,11 +299,11 @@ void for_each_one_bit_jump( const static_truth_table<NumVars, true>& tt, Fn&& op
   for which the bit is assigned 1.
 
   \param tt Truth table
-  \param op Unary operation that takes as input a word (`uint64_t`) and returns void
+  \param op Unary operation that takes as input a word (`uint64_t`) and returns
+  void
 */
-template<typename TT, typename Fn>
-inline void for_each_one_bit( const TT& tt, Fn&& op )
-{
-  for_each_one_bit_naive( tt, op );
+template <typename TT, typename Fn>
+inline void for_each_one_bit(const TT& tt, Fn&& op) {
+    for_each_one_bit_naive(tt, op);
 }
 } /* namespace kitty */

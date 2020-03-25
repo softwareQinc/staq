@@ -43,7 +43,8 @@ namespace mapping {
 /**
  * \class staq::mapping::SteinerMapper
  * \brief Steiner tree based re-synthesizing mapper
- * \note Assumes the circuit has a single global register with the configured name
+ * \note Assumes the circuit has a single global register with the configured
+ * name
  *
  * Re-synthesizes an entire circuit by breaking into cnot-dihedral "chunks"
  * and resynthesizing those using gray-synth (arXiv:1712.01859) extended
@@ -97,9 +98,8 @@ class SteinerMapper final : public ast::Replacer {
                         }
                     },
                     [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& rz) {
-                        prog.body().emplace_back(generate_rz(std::move(rz.first),
-                                                             rz.second,
-                                                             prog.pos()));
+                        prog.body().emplace_back(generate_rz(
+                            std::move(rz.first), rz.second, prog.pos()));
                     }},
                 gate);
         }
@@ -248,10 +248,9 @@ class SteinerMapper final : public ast::Replacer {
     void add_phase(std::vector<bool> parity, ast::ptr<ast::Expr> angle) {
         for (auto it = phases_.begin(); it != phases_.end(); it++) {
             if (it->first == parity) {
-                it->second = ast::BExpr::create(angle->pos(),
-                                                std::move(it->second),
-                                                ast::BinaryOp::Plus,
-                                                std::move(angle));
+                it->second =
+                    ast::BExpr::create(angle->pos(), std::move(it->second),
+                                       ast::BinaryOp::Plus, std::move(angle));
                 return;
             }
         }
@@ -290,10 +289,10 @@ class SteinerMapper final : public ast::Replacer {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [&ret, this, &node](std::pair<ast::ptr<ast::Expr>, int>& rz) {
+                    [&ret, this,
+                     &node](std::pair<ast::ptr<ast::Expr>, int>& rz) {
                         ret.emplace_back(generate_rz(std::move(rz.first),
-                                                     rz.second,
-                                                     node.pos()));
+                                                     rz.second, node.pos()));
                     }},
                 gate);
         }

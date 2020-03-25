@@ -65,7 +65,7 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
 
     if (mat.size() == 0)
-      return ret;
+        return ret;
 
     for (auto i = 0; i < mat[0].size(); i++) {
 
@@ -154,7 +154,7 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
     return ret;
 }
 
-/** 
+/**
  * \brief Steiner tree based device constrained CNOT synthesis
  *
  * Our version of steiner-gauss (see arXiv:1904.01972 and arXiv:1904.00633)

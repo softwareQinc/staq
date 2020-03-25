@@ -20,14 +20,16 @@ namespace detail {
 inline std::string ini_join(std::vector<std::string> args) {
     std::ostringstream s;
     size_t start = 0;
-    for(const auto &arg : args) {
-        if(start++ > 0)
+    for (const auto& arg : args) {
+        if (start++ > 0)
             s << " ";
 
-        auto it = std::find_if(arg.begin(), arg.end(), [](char ch) { return std::isspace<char>(ch, std::locale()); });
-        if(it == arg.end())
+        auto it = std::find_if(arg.begin(), arg.end(), [](char ch) {
+            return std::isspace<char>(ch, std::locale());
+        });
+        if (it == arg.end())
             s << arg;
-        else if(arg.find_first_of('\"') == std::string::npos)
+        else if (arg.find_first_of('\"') == std::string::npos)
             s << '\"' << arg << '\"';
         else
             s << '\'' << arg << '\'';
@@ -64,23 +66,25 @@ class Config {
 
   public:
     /// Convert an app into a configuration
-    virtual std::string to_config(const App *, bool, bool, std::string) const = 0;
+    virtual std::string to_config(const App*, bool, bool,
+                                  std::string) const = 0;
 
     /// Convert a configuration into an app
-    virtual std::vector<ConfigItem> from_config(std::istream &) const = 0;
+    virtual std::vector<ConfigItem> from_config(std::istream&) const = 0;
 
     /// Get a flag value
-    virtual std::string to_flag(const ConfigItem &item) const {
-        if(item.inputs.size() == 1) {
+    virtual std::string to_flag(const ConfigItem& item) const {
+        if (item.inputs.size() == 1) {
             return item.inputs.at(0);
         }
         throw ConversionError::TooManyInputsFlag(item.fullname());
     }
 
-    /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
-    std::vector<ConfigItem> from_file(const std::string &name) {
+    /// Parse a config file, throw an error (ParseError:ConfigParseError or
+    /// FileError) on failure
+    std::vector<ConfigItem> from_file(const std::string& name) {
         std::ifstream input{name};
-        if(!input.good())
+        if (!input.good())
             throw FileError::Missing(name);
 
         return from_config(input);
@@ -93,28 +97,29 @@ class Config {
 /// This converter works with INI files
 class ConfigINI : public Config {
   public:
-    std::string to_config(const App *, bool default_also, bool write_description, std::string prefix) const override;
+    std::string to_config(const App*, bool default_also, bool write_description,
+                          std::string prefix) const override;
 
-    std::vector<ConfigItem> from_config(std::istream &input) const override {
+    std::vector<ConfigItem> from_config(std::istream& input) const override {
         std::string line;
         std::string section = "default";
 
         std::vector<ConfigItem> output;
 
-        while(getline(input, line)) {
+        while (getline(input, line)) {
             std::vector<std::string> items_buffer;
 
             detail::trim(line);
             size_t len = line.length();
-            if(len > 1 && line[0] == '[' && line[len - 1] == ']') {
+            if (len > 1 && line[0] == '[' && line[len - 1] == ']') {
                 section = line.substr(1, len - 2);
-            } else if(len > 0 && line[0] != ';') {
+            } else if (len > 0 && line[0] != ';') {
                 output.emplace_back();
-                ConfigItem &out = output.back();
+                ConfigItem& out = output.back();
 
                 // Find = in string, split and recombine
                 auto pos = line.find('=');
-                if(pos != std::string::npos) {
+                if (pos != std::string::npos) {
                     out.name = detail::trim_copy(line.substr(0, pos));
                     std::string item = detail::trim_copy(line.substr(pos + 1));
                     items_buffer = detail::split_up(item);
@@ -123,18 +128,22 @@ class ConfigINI : public Config {
                     items_buffer = {"ON"};
                 }
 
-                if(detail::to_lower(section) != "default") {
+                if (detail::to_lower(section) != "default") {
                     out.parents = {section};
                 }
 
-                if(out.name.find('.') != std::string::npos) {
-                    std::vector<std::string> plist = detail::split(out.name, '.');
+                if (out.name.find('.') != std::string::npos) {
+                    std::vector<std::string> plist =
+                        detail::split(out.name, '.');
                     out.name = plist.back();
                     plist.pop_back();
-                    out.parents.insert(out.parents.end(), plist.begin(), plist.end());
+                    out.parents.insert(out.parents.end(), plist.begin(),
+                                       plist.end());
                 }
 
-                out.inputs.insert(std::end(out.inputs), std::begin(items_buffer), std::end(items_buffer));
+                out.inputs.insert(std::end(out.inputs),
+                                  std::begin(items_buffer),
+                                  std::end(items_buffer));
             }
         }
         return output;

@@ -25,38 +25,34 @@
 
 #include <easy/esop/esop.hpp>
 
-namespace alice
-{
+namespace alice {
 
-struct esop_storee
-{
-  std::string model_name;
-  easy::esop::esop_t esop;
-  std::size_t number_of_inputs;
-  std::size_t number_of_outputs;
+struct esop_storee {
+    std::string model_name;
+    easy::esop::esop_t esop;
+    std::size_t number_of_inputs;
+    std::size_t number_of_outputs;
 }; /* esop_storee */
 
-ALICE_ADD_STORE( esop_storee, "esop", "e", "ESOP", "ESOPs" )
+ALICE_ADD_STORE(esop_storee, "esop", "e", "ESOP", "ESOPs")
 
-ALICE_PRINT_STORE( esop_storee, os, element )
-{
-  auto i = 0;
-  for ( const auto& c : element.esop )
-  {
-    os << ( i++ ) << ". ";
-    c.print( element.number_of_inputs );
-    os << '\n';
-  }
+ALICE_PRINT_STORE(esop_storee, os, element) {
+    auto i = 0;
+    for (const auto& c : element.esop) {
+        os << (i++) << ". ";
+        c.print(element.number_of_inputs);
+        os << '\n';
+    }
 }
 
-ALICE_DESCRIBE_STORE( esop_storee, element )
-{
-  return fmt::format( "[i] esop<{}>: vars={} cubes={}\n", element.model_name, element.number_of_inputs, element.esop.size() );
+ALICE_DESCRIBE_STORE(esop_storee, element) {
+    return fmt::format("[i] esop<{}>: vars={} cubes={}\n", element.model_name,
+                       element.number_of_inputs, element.esop.size());
 }
 
-ALICE_PRINT_STORE_STATISTICS( esop_storee, os, element )
-{
-  os << fmt::format( "[i] esop<{}>: vars={} cubes={}\n", element.model_name, element.number_of_inputs, element.esop.size() );
+ALICE_PRINT_STORE_STATISTICS(esop_storee, os, element) {
+    os << fmt::format("[i] esop<{}>: vars={} cubes={}\n", element.model_name,
+                      element.number_of_inputs, element.esop.size());
 }
 
 } // namespace alice

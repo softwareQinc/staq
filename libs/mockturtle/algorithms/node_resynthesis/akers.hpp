@@ -43,8 +43,7 @@
 
 #include "../../algorithms/akers_synthesis.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Resynthesis function based on Akers synthesis.
  *
@@ -62,15 +61,15 @@ namespace mockturtle
       const auto mig = node_resynthesis<mig_network>( klut, resyn );
    \endverbatim
  */
-template<class Ntk>
-class akers_resynthesis
-{
-public:
-  template<typename LeavesIterator, typename Fn>
-  void operator()( Ntk& ntk, kitty::dynamic_truth_table const& function, LeavesIterator begin, LeavesIterator end, Fn&& fn )
-  {
-    fn( akers_synthesis<Ntk>( ntk, function, ~function.construct(), begin, end ) );
-  }
+template <class Ntk>
+class akers_resynthesis {
+  public:
+    template <typename LeavesIterator, typename Fn>
+    void operator()(Ntk& ntk, kitty::dynamic_truth_table const& function,
+                    LeavesIterator begin, LeavesIterator end, Fn&& fn) {
+        fn(akers_synthesis<Ntk>(ntk, function, ~function.construct(), begin,
+                                end));
+    }
 };
 
 } /* namespace mockturtle */

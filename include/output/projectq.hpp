@@ -44,7 +44,7 @@ std::unordered_map<std::string, std::string> qasmstd_to_projectq{
     {"rx", "ops.Rx"},    {"ry", "ops.Ry"},   {"rz", "ops.Rz"},
     {"u1", "ops.Rz"},    {"crz", "ops.CRz"}, {"cu1", "ops.CRz"}};
 
-/** 
+/**
  * \class staq::output::ProjectQOutputter
  * \brief Visitor for converting a QASM AST to ProjectQ
  */

@@ -37,43 +37,39 @@
 
 #include <unordered_set>
 
-namespace easy::esop::detail
-{
+namespace easy::esop::detail {
 
-inline void add_to_cubes( std::unordered_set<kitty::cube, kitty::hash<kitty::cube>>& pkrm, const kitty::cube& c, bool distance_one_merging = true )
-{
-  /* first check whether cube is already contained; if so, delete it */
-  const auto it = pkrm.find( c );
-  if ( it != pkrm.end() )
-  {
-    pkrm.erase( it );
-    return;
-  }
-
-  /* otherwise, check if there is a distance-1 cube; if so, merge it */
-  if ( distance_one_merging )
-  {
-    for ( auto it = pkrm.begin(); it != pkrm.end(); ++it )
-    {
-      if ( c.distance( *it ) == 1 )
-      {
-        auto new_cube = c.merge( *it );
-        pkrm.erase( it );
-        add_to_cubes( pkrm, new_cube );
+inline void
+add_to_cubes(std::unordered_set<kitty::cube, kitty::hash<kitty::cube>>& pkrm,
+             const kitty::cube& c, bool distance_one_merging = true) {
+    /* first check whether cube is already contained; if so, delete it */
+    const auto it = pkrm.find(c);
+    if (it != pkrm.end()) {
+        pkrm.erase(it);
         return;
-      }
     }
-  }
 
-  /* otherwise, just add the cube */
-  pkrm.insert( c );
+    /* otherwise, check if there is a distance-1 cube; if so, merge it */
+    if (distance_one_merging) {
+        for (auto it = pkrm.begin(); it != pkrm.end(); ++it) {
+            if (c.distance(*it) == 1) {
+                auto new_cube = c.merge(*it);
+                pkrm.erase(it);
+                add_to_cubes(pkrm, new_cube);
+                return;
+            }
+        }
+    }
+
+    /* otherwise, just add the cube */
+    pkrm.insert(c);
 }
 
-inline kitty::cube with_literal( const kitty::cube& c, uint8_t var_index, bool polarity )
-{
-  auto copy = c;
-  copy.add_literal( var_index, polarity );
-  return copy;
+inline kitty::cube with_literal(const kitty::cube& c, uint8_t var_index,
+                                bool polarity) {
+    auto copy = c;
+    copy.add_literal(var_index, polarity);
+    return copy;
 }
 
 } // namespace easy::esop::detail

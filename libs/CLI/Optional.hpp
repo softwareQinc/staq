@@ -53,7 +53,8 @@
 namespace CLI {
 
 #if CLI11_STD_OPTIONAL
-template <typename T> std::istream &operator>>(std::istream &in, std::optional<T> &val) {
+template <typename T>
+std::istream& operator>>(std::istream& in, std::optional<T>& val) {
     T v;
     in >> v;
     val = v;
@@ -62,7 +63,9 @@ template <typename T> std::istream &operator>>(std::istream &in, std::optional<T
 #endif
 
 #if CLI11_EXPERIMENTAL_OPTIONAL
-template <typename T> std::istream &operator>>(std::istream &in, std::experimental::optional<T> &val) {
+template <typename T>
+std::istream& operator>>(std::istream& in,
+                         std::experimental::optional<T>& val) {
     T v;
     in >> v;
     val = v;
@@ -71,7 +74,8 @@ template <typename T> std::istream &operator>>(std::istream &in, std::experiment
 #endif
 
 #if CLI11_BOOST_OPTIONAL
-template <typename T> std::istream &operator>>(std::istream &in, boost::optional<T> &val) {
+template <typename T>
+std::istream& operator>>(std::istream& in, boost::optional<T>& val) {
     T v;
     in >> v;
     val = v;

@@ -28,47 +28,39 @@
 #include <easy/sat/sat_solver.hpp>
 #include <iostream>
 
-namespace easy::sat
-{
+namespace easy::sat {
 
-class cnf_writer
-{
-public:
-  cnf_writer( std::ostream& os = std::cout )
-      : _os( os )
-  {
-  }
+class cnf_writer {
+  public:
+    cnf_writer(std::ostream& os = std::cout) : _os(os) {}
 
-  inline void apply( constraints& constraints )
-  {
-    _os << "p cnf " << constraints.num_variables() << " " << ( constraints.num_clauses() + constraints.num_xor_clauses() ) << std::endl;
-    constraints.foreach_clause( [&]( constraints::clause_t const& cl ){
-        for ( const auto& l : cl )
-        {
-          _os << l << ' ';
-        }
-        _os << '0' << std::endl;
-      });
+    inline void apply(constraints& constraints) {
+        _os << "p cnf " << constraints.num_variables() << " "
+            << (constraints.num_clauses() + constraints.num_xor_clauses())
+            << std::endl;
+        constraints.foreach_clause([&](constraints::clause_t const& cl) {
+            for (const auto& l : cl) {
+                _os << l << ' ';
+            }
+            _os << '0' << std::endl;
+        });
 
-    constraints.foreach_xor_clause( [&]( xor_clause_t const& cl ){
-        if ( cl.clause.size() > 1 )
-        {
-          _os << "x";
-        }
-        for ( auto i = 0u; i < cl.clause.size(); ++i )
-        {
-          if ( !cl.value && i == cl.clause.size() - 1 )
-          {
-            _os << "-";
-          }
-          _os << cl.clause[i] << ' ';
-        }
-        _os << "0" << std::endl;
-      });
-  }
+        constraints.foreach_xor_clause([&](xor_clause_t const& cl) {
+            if (cl.clause.size() > 1) {
+                _os << "x";
+            }
+            for (auto i = 0u; i < cl.clause.size(); ++i) {
+                if (!cl.value && i == cl.clause.size() - 1) {
+                    _os << "-";
+                }
+                _os << cl.clause[i] << ' ';
+            }
+            _os << "0" << std::endl;
+        });
+    }
 
-protected:
-  std::ostream& _os;
+  protected:
+    std::ostream& _os;
 };
 
 } // namespace easy::sat

@@ -37,59 +37,52 @@
 
 #include "static_truth_table.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /*! \brief Hash function for 64-bit word */
-inline std::size_t hash_block( uint64_t word )
-{
-  /* from boost::hash_detail::hash_value_unsigned */
-  return word ^ ( word + ( word << 6 ) + ( word >> 2 ) );
+inline std::size_t hash_block(uint64_t word) {
+    /* from boost::hash_detail::hash_value_unsigned */
+    return word ^ (word + (word << 6) + (word >> 2));
 }
 
 /*! \brief Combines two hash values */
-inline void hash_combine( std::size_t& seed, std::size_t other )
-{
-  /* from boost::hash_detail::hash_combine_impl */
-  const uint64_t m = UINT64_C( 0xc6a4a7935bd1e995 );
-  const int r = 47;
+inline void hash_combine(std::size_t& seed, std::size_t other) {
+    /* from boost::hash_detail::hash_combine_impl */
+    const uint64_t m = UINT64_C(0xc6a4a7935bd1e995);
+    const int r = 47;
 
-  other *= m;
-  other ^= other >> r;
-  other *= m;
+    other *= m;
+    other ^= other >> r;
+    other *= m;
 
-  seed ^= other;
-  seed *= m;
+    seed ^= other;
+    seed *= m;
 
-  seed += 0xe6546b64;
+    seed += 0xe6546b64;
 }
 
 /*! \brief Computes hash values for truth tables */
-template<typename TT>
-struct hash
-{
-  std::size_t operator()( const TT& tt ) const
-  {
-    auto it = std::begin( tt._bits );
-    auto seed = hash_block( *it++ );
+template <typename TT>
+struct hash {
+    std::size_t operator()(const TT& tt) const {
+        auto it = std::begin(tt._bits);
+        auto seed = hash_block(*it++);
 
-    while ( it != std::end( tt._bits ) )
-    {
-      hash_combine( seed, hash_block( *it++ ) );
+        while (it != std::end(tt._bits)) {
+            hash_combine(seed, hash_block(*it++));
+        }
+
+        return seed;
     }
-
-    return seed;
-  }
 };
 
 /*! \cond PRIVATE */
-template<int NumVars>
-struct hash<static_truth_table<NumVars, true>>
-{
-  inline std::size_t operator()( const static_truth_table<NumVars, true>& tt ) const
-  {
-    return hash_block( tt._bits );
-  }
+template <int NumVars>
+struct hash<static_truth_table<NumVars, true>> {
+    inline std::size_t
+    operator()(const static_truth_table<NumVars, true>& tt) const {
+        return hash_block(tt._bits);
+    }
 };
 /*! \endcond */
 } // namespace kitty

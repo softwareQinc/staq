@@ -46,198 +46,144 @@
 #include <vector>
 #include <iostream>
 
-namespace easy::sat
-{
+namespace easy::sat {
 
-struct xor_clause_t
-{
-  std::vector<int> clause;
-  bool value;
+struct xor_clause_t {
+    std::vector<int> clause;
+    bool value;
 };
 
-struct wclause_t
-{
-  std::vector<int> clause;
-  uint32_t weight;
+struct wclause_t {
+    std::vector<int> clause;
+    uint32_t weight;
 };
 
-struct wxor_clause_t
-{
-  xor_clause_t xor_clause;
-  uint32_t weight;
+struct wxor_clause_t {
+    xor_clause_t xor_clause;
+    uint32_t weight;
 };
 
-class constraints
-{
-public:
-  using weight_t = uint32_t;
-  using clause_t = std::vector<int>;
+class constraints {
+  public:
+    using weight_t = uint32_t;
+    using clause_t = std::vector<int>;
 
-public:
-  constraints( weight_t top_weight = 0 )
-    : _top_weight( top_weight )
-  {
-  }
+  public:
+    constraints(weight_t top_weight = 0) : _top_weight(top_weight) {}
 
-  weight_t top_weight() const
-  {
-    return _top_weight;
-  }
+    weight_t top_weight() const { return _top_weight; }
 
-  void set_num_variables( uint32_t nv )
-  {
-    _num_variables = nv;
-  }
-  
-  uint32_t num_variables() const
-  {
-    return _num_variables;
-  }
+    void set_num_variables(uint32_t nv) { _num_variables = nv; }
 
-  uint32_t num_clauses() const
-  {
-    return _clauses.size();
-  }
+    uint32_t num_variables() const { return _num_variables; }
 
-  uint32_t num_xor_clauses() const
-  {
-    return _xor_clauses.size();
-  }
-  
-  void add_clause( const clause_t& clause )
-  {
-    add_weighted_clause( wclause_t{clause, _top_weight} );
-  }
+    uint32_t num_clauses() const { return _clauses.size(); }
 
-  void add_xor_clause( const clause_t& clause, bool value = true )
-  {
-    add_weighted_xor_clause( wclause_t{clause, _top_weight}, value );
-  }
+    uint32_t num_xor_clauses() const { return _xor_clauses.size(); }
 
-  void clear_clauses()
-  {
-    _clauses.clear();
-  }
-
-  void clear_xor_clauses()
-  {
-    _xor_clauses.clear();
-  }
-
-  void add_weighted_clause( const clause_t& cl, uint32_t weight )
-  {
-    add_weighted_clause( {cl, weight} );
-  }
-  
-  void add_weighted_clause( const wclause_t& cl )
-  {
-    for ( const auto& c : cl.clause )
-    {
-      uint32_t v = abs( c );
-      if ( v > _num_variables )
-      {
-        _num_variables = v;
-      }
+    void add_clause(const clause_t& clause) {
+        add_weighted_clause(wclause_t{clause, _top_weight});
     }
-    _clauses.emplace_back( cl );
-  }
 
-  void add_weighted_xor_clause( const clause_t& cl, bool value, uint32_t weight )
-  {
-    add_weighted_xor_clause( {cl, weight}, value );
-  }
-  
-  void add_weighted_xor_clause( const wclause_t& cl, bool value = true )
-  {
-    for ( const auto& c : cl.clause )
-    {
-      uint32_t v = abs( c );
-      if ( v > _num_variables )
-      {
-        _num_variables = v;
-      }
+    void add_xor_clause(const clause_t& clause, bool value = true) {
+        add_weighted_xor_clause(wclause_t{clause, _top_weight}, value);
     }
-    xor_clause_t xor_clause{cl.clause, value};
-    _xor_clauses.emplace_back( wxor_clause_t{xor_clause, cl.weight} );
-  }
 
-  template<typename Fn>
-  void foreach_clause( Fn const& fn )
-  {
-    for ( const auto& c : _clauses )
-    {
-      fn( c.clause );
+    void clear_clauses() { _clauses.clear(); }
+
+    void clear_xor_clauses() { _xor_clauses.clear(); }
+
+    void add_weighted_clause(const clause_t& cl, uint32_t weight) {
+        add_weighted_clause({cl, weight});
     }
-  }
 
-  template<typename Fn>
-  void foreach_clause( Fn const& fn ) const
-  {
-    for ( const auto& c : _clauses )
-    {
-      fn( c.clause );
+    void add_weighted_clause(const wclause_t& cl) {
+        for (const auto& c : cl.clause) {
+            uint32_t v = abs(c);
+            if (v > _num_variables) {
+                _num_variables = v;
+            }
+        }
+        _clauses.emplace_back(cl);
     }
-  }
 
-  template<typename Fn>
-  void foreach_xor_clause( Fn const& fn )
-  {
-    for ( const auto& c : _xor_clauses )
-    {
-      fn( c.xor_clause );
+    void add_weighted_xor_clause(const clause_t& cl, bool value,
+                                 uint32_t weight) {
+        add_weighted_xor_clause({cl, weight}, value);
     }
-  }
 
-  template<typename Fn>
-  void foreach_xor_clause( Fn const& fn ) const
-  {
-    for ( const auto& c : _xor_clauses )
-    {
-      fn( c.xor_clause );
+    void add_weighted_xor_clause(const wclause_t& cl, bool value = true) {
+        for (const auto& c : cl.clause) {
+            uint32_t v = abs(c);
+            if (v > _num_variables) {
+                _num_variables = v;
+            }
+        }
+        xor_clause_t xor_clause{cl.clause, value};
+        _xor_clauses.emplace_back(wxor_clause_t{xor_clause, cl.weight});
     }
-  }
 
-  template<typename Fn>
-  void foreach_weighted_clause( Fn const& fn )
-  {
-    for ( const auto& c : _clauses )
-    {
-      fn( c.clause, c.weight );
+    template <typename Fn>
+    void foreach_clause(Fn const& fn) {
+        for (const auto& c : _clauses) {
+            fn(c.clause);
+        }
     }
-  }
 
-  template<typename Fn>
-  void foreach_weighted_clause( Fn const& fn ) const
-  {
-    for ( const auto& c : _clauses )
-    {
-      fn( c.clause, c.weight );
+    template <typename Fn>
+    void foreach_clause(Fn const& fn) const {
+        for (const auto& c : _clauses) {
+            fn(c.clause);
+        }
     }
-  }
 
-  template<typename Fn>
-  void foreach_weighted_xor_clause( Fn const& fn )
-  {
-    for ( const auto& c : _xor_clauses )
-    {
-      fn( c.xor_clause, c.weight );
+    template <typename Fn>
+    void foreach_xor_clause(Fn const& fn) {
+        for (const auto& c : _xor_clauses) {
+            fn(c.xor_clause);
+        }
     }
-  }
 
-  template<typename Fn>
-  void foreach_weighted_xor_clause( Fn const& fn ) const
-  {
-    for ( const auto& c : _xor_clauses )
-    {
-      fn( c.xor_clause, c.weight );
+    template <typename Fn>
+    void foreach_xor_clause(Fn const& fn) const {
+        for (const auto& c : _xor_clauses) {
+            fn(c.xor_clause);
+        }
     }
-  }
 
-protected:
-  weight_t _top_weight;
-  std::vector<wclause_t> _clauses;
-  std::vector<wxor_clause_t> _xor_clauses;
-  uint32_t _num_variables = 0;
+    template <typename Fn>
+    void foreach_weighted_clause(Fn const& fn) {
+        for (const auto& c : _clauses) {
+            fn(c.clause, c.weight);
+        }
+    }
+
+    template <typename Fn>
+    void foreach_weighted_clause(Fn const& fn) const {
+        for (const auto& c : _clauses) {
+            fn(c.clause, c.weight);
+        }
+    }
+
+    template <typename Fn>
+    void foreach_weighted_xor_clause(Fn const& fn) {
+        for (const auto& c : _xor_clauses) {
+            fn(c.xor_clause, c.weight);
+        }
+    }
+
+    template <typename Fn>
+    void foreach_weighted_xor_clause(Fn const& fn) const {
+        for (const auto& c : _xor_clauses) {
+            fn(c.xor_clause, c.weight);
+        }
+    }
+
+  protected:
+    weight_t _top_weight;
+    std::vector<wclause_t> _clauses;
+    std::vector<wxor_clause_t> _xor_clauses;
+    uint32_t _num_variables = 0;
 }; /* constraints */
 
 } // namespace easy::sat

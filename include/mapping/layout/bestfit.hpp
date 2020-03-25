@@ -41,8 +41,8 @@ namespace mapping {
  * \class staq::mapping::BestFit
  * \brief An initial layout based on the histogram of connections in the circuit
  *
- * Chooses a layout where the most often coupled virtual qubits are assigned to the
- * highest fidelity couplings. Should perform well for devices with a high
+ * Chooses a layout where the most often coupled virtual qubits are assigned to
+ * the highest fidelity couplings. Should perform well for devices with a high
  * degree of connectivity.
  */
 class BestFit final : public ast::Traverse {
@@ -82,7 +82,8 @@ class BestFit final : public ast::Traverse {
     std::map<std::pair<ast::VarAccess, ast::VarAccess>, int> histogram_;
 
     /**
-     * \brief Assigns physical qubits based on the computed histogram of connections
+     * \brief Assigns physical qubits based on the computed histogram of
+     * connections
      */
     layout fit_histogram() {
         layout ret;

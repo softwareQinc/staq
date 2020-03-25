@@ -44,8 +44,7 @@
 #include <kitty/bit_operations.hpp>
 #include <kitty/dynamic_truth_table.hpp>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Computes satisfiability don't cares of a set of nodes.
  *
@@ -57,31 +56,33 @@ namespace mockturtle
  * \param leaves Set of nodes
  * \param max_tfi_inputs Maximum number of inputs in the transitive fanin.
  */
-template<class Ntk>
-kitty::dynamic_truth_table satisfiability_dont_cares( Ntk const& ntk, std::vector<node<Ntk>> const& leaves, uint32_t max_tfi_inputs = 10u )
-{
-  auto extended_leaves = reconv_cut( reconv_cut_params{max_tfi_inputs} )( ntk, leaves );
+template <class Ntk>
+kitty::dynamic_truth_table
+satisfiability_dont_cares(Ntk const& ntk, std::vector<node<Ntk>> const& leaves,
+                          uint32_t max_tfi_inputs = 10u) {
+    auto extended_leaves =
+        reconv_cut(reconv_cut_params{max_tfi_inputs})(ntk, leaves);
 
-  fanout_view<Ntk> fanout_ntk{ntk};
-  fanout_ntk.clear_visited();
+    fanout_view<Ntk> fanout_ntk{ntk};
+    fanout_ntk.clear_visited();
 
-  window_view<fanout_view<Ntk>> window_ntk{fanout_ntk, extended_leaves, leaves, false};
+    window_view<fanout_view<Ntk>> window_ntk{fanout_ntk, extended_leaves,
+                                             leaves, false};
 
-  default_simulator<kitty::dynamic_truth_table> sim( window_ntk.num_pis() );
-  const auto tts = simulate_nodes<kitty::dynamic_truth_table>( window_ntk, sim );
+    default_simulator<kitty::dynamic_truth_table> sim(window_ntk.num_pis());
+    const auto tts =
+        simulate_nodes<kitty::dynamic_truth_table>(window_ntk, sim);
 
-  /* first create care and then invert */
-  kitty::dynamic_truth_table care( leaves.size() );
-  for ( auto i = 0u; i < ( 1u << window_ntk.num_pis() ); ++i )
-  {
-    uint32_t entry{0u};
-    for ( auto j = 0u; j < leaves.size(); ++j )
-    {
-      entry |= kitty::get_bit( tts[leaves[j]], i ) << j;
+    /* first create care and then invert */
+    kitty::dynamic_truth_table care(leaves.size());
+    for (auto i = 0u; i < (1u << window_ntk.num_pis()); ++i) {
+        uint32_t entry{0u};
+        for (auto j = 0u; j < leaves.size(); ++j) {
+            entry |= kitty::get_bit(tts[leaves[j]], i) << j;
+        }
+        kitty::set_bit(care, entry);
     }
-    kitty::set_bit( care, entry );
-  }
-  return ~care;
+    return ~care;
 }
 
 /*! \brief Computes observability don't cares of a node.
@@ -95,30 +96,33 @@ kitty::dynamic_truth_table satisfiability_dont_cares( Ntk const& ntk, std::vecto
  * \param leaves Set of leave nodes
  * \param roots Set of root nodes
  */
-template<class Ntk>
-kitty::dynamic_truth_table observability_dont_cares( Ntk const& ntk, node<Ntk> const& n, std::vector<node<Ntk>> const& leaves, std::vector<node<Ntk>> const& roots )
-{
-  fanout_view<Ntk> fanout_ntk{ntk};
-  fanout_ntk.clear_visited();
+template <class Ntk>
+kitty::dynamic_truth_table
+observability_dont_cares(Ntk const& ntk, node<Ntk> const& n,
+                         std::vector<node<Ntk>> const& leaves,
+                         std::vector<node<Ntk>> const& roots) {
+    fanout_view<Ntk> fanout_ntk{ntk};
+    fanout_ntk.clear_visited();
 
-  window_view<fanout_view<Ntk>> window_ntk{fanout_ntk, leaves, roots, false};
+    window_view<fanout_view<Ntk>> window_ntk{fanout_ntk, leaves, roots, false};
 
-  default_simulator<kitty::dynamic_truth_table> sim( window_ntk.num_pis() );
-  unordered_node_map<kitty::dynamic_truth_table, Ntk> node_to_value0( ntk );
-  unordered_node_map<kitty::dynamic_truth_table, Ntk> node_to_value1( ntk );
+    default_simulator<kitty::dynamic_truth_table> sim(window_ntk.num_pis());
+    unordered_node_map<kitty::dynamic_truth_table, Ntk> node_to_value0(ntk);
+    unordered_node_map<kitty::dynamic_truth_table, Ntk> node_to_value1(ntk);
 
-  node_to_value0[n] = sim.compute_constant( ntk.constant_value( ntk.get_node( ntk.get_constant( false ) ) ) );
-  simulate_nodes( ntk, node_to_value0, sim );
+    node_to_value0[n] = sim.compute_constant(
+        ntk.constant_value(ntk.get_node(ntk.get_constant(false))));
+    simulate_nodes(ntk, node_to_value0, sim);
 
-  node_to_value1[n] = ~sim.compute_constant( ntk.constant_value( ntk.get_node( ntk.get_constant( false ) ) ) );
-  simulate_nodes( ntk, node_to_value1, sim );
+    node_to_value1[n] = ~sim.compute_constant(
+        ntk.constant_value(ntk.get_node(ntk.get_constant(false))));
+    simulate_nodes(ntk, node_to_value1, sim);
 
-  kitty::dynamic_truth_table care( leaves.size() );
-  for ( const auto& r : roots )
-  {
-    care |= node_to_value0[r] ^ node_to_value1[r];
-  }
-  return ~care;
+    kitty::dynamic_truth_table care(leaves.size());
+    for (const auto& r : roots) {
+        care |= node_to_value0[r] ^ node_to_value1[r];
+    }
+    return ~care;
 }
 
 } /* namespace mockturtle */

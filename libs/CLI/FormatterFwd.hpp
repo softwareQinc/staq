@@ -47,14 +47,15 @@ class FormatterBase {
 
   public:
     FormatterBase() = default;
-    FormatterBase(const FormatterBase &) = default;
-    FormatterBase(FormatterBase &&) = default;
+    FormatterBase(const FormatterBase&) = default;
+    FormatterBase(FormatterBase&&) = default;
 
     /// Adding a destructor in this form to work around bug in GCC 4.7
     virtual ~FormatterBase() noexcept {} // NOLINT(modernize-use-equals-default)
 
     /// This is the key method that puts together help
-    virtual std::string make_help(const App *, std::string, AppFormatMode) const = 0;
+    virtual std::string make_help(const App*, std::string,
+                                  AppFormatMode) const = 0;
 
     ///@}
     /// @name Setters
@@ -72,7 +73,7 @@ class FormatterBase {
 
     /// Get the current value of a name (REQUIRED, etc.)
     std::string get_label(std::string key) const {
-        if(labels_.find(key) == labels_.end())
+        if (labels_.find(key) == labels_.end())
             return key;
         else
             return labels_.at(key);
@@ -86,7 +87,8 @@ class FormatterBase {
 
 /// This is a specialty override for lambda functions
 class FormatterLambda final : public FormatterBase {
-    using funct_t = std::function<std::string(const App *, std::string, AppFormatMode)>;
+    using funct_t =
+        std::function<std::string(const App*, std::string, AppFormatMode)>;
 
     /// The lambda to hold and run
     funct_t lambda_;
@@ -96,79 +98,89 @@ class FormatterLambda final : public FormatterBase {
     explicit FormatterLambda(funct_t funct) : lambda_(std::move(funct)) {}
 
     /// Adding a destructor (mostly to make GCC 4.7 happy)
-    ~FormatterLambda() noexcept override {} // NOLINT(modernize-use-equals-default)
+    ~FormatterLambda() noexcept override {
+    } // NOLINT(modernize-use-equals-default)
 
     /// This will simply call the lambda function
-    std::string make_help(const App *app, std::string name, AppFormatMode mode) const override {
+    std::string make_help(const App* app, std::string name,
+                          AppFormatMode mode) const override {
         return lambda_(app, name, mode);
     }
 };
 
-/// This is the default Formatter for CLI11. It pretty prints help output, and is broken into quite a few
-/// overridable methods, to be highly customizable with minimal effort.
+/// This is the default Formatter for CLI11. It pretty prints help output, and
+/// is broken into quite a few overridable methods, to be highly customizable
+/// with minimal effort.
 class Formatter : public FormatterBase {
   public:
     Formatter() = default;
-    Formatter(const Formatter &) = default;
-    Formatter(Formatter &&) = default;
+    Formatter(const Formatter&) = default;
+    Formatter(Formatter&&) = default;
 
     /// @name Overridables
     ///@{
 
     /// This prints out a group of options with title
     ///
-    virtual std::string make_group(std::string group, bool is_positional, std::vector<const Option *> opts) const;
+    virtual std::string make_group(std::string group, bool is_positional,
+                                   std::vector<const Option*> opts) const;
 
     /// This prints out just the positionals "group"
-    virtual std::string make_positionals(const App *app) const;
+    virtual std::string make_positionals(const App* app) const;
 
     /// This prints out all the groups of options
-    std::string make_groups(const App *app, AppFormatMode mode) const;
+    std::string make_groups(const App* app, AppFormatMode mode) const;
 
     /// This prints out all the subcommands
-    virtual std::string make_subcommands(const App *app, AppFormatMode mode) const;
+    virtual std::string make_subcommands(const App* app,
+                                         AppFormatMode mode) const;
 
     /// This prints out a subcommand
-    virtual std::string make_subcommand(const App *sub) const;
+    virtual std::string make_subcommand(const App* sub) const;
 
     /// This prints out a subcommand in help-all
-    virtual std::string make_expanded(const App *sub) const;
+    virtual std::string make_expanded(const App* sub) const;
 
     /// This prints out all the groups of options
-    virtual std::string make_footer(const App *app) const;
+    virtual std::string make_footer(const App* app) const;
 
     /// This displays the description line
-    virtual std::string make_description(const App *app) const;
+    virtual std::string make_description(const App* app) const;
 
     /// This displays the usage line
-    virtual std::string make_usage(const App *app, std::string name) const;
+    virtual std::string make_usage(const App* app, std::string name) const;
 
     /// This puts everything together
-    std::string make_help(const App *, std::string, AppFormatMode) const override;
+    std::string make_help(const App*, std::string,
+                          AppFormatMode) const override;
 
     ///@}
     /// @name Options
     ///@{
 
     /// This prints out an option help line, either positional or optional form
-    virtual std::string make_option(const Option *opt, bool is_positional) const {
+    virtual std::string make_option(const Option* opt,
+                                    bool is_positional) const {
         std::stringstream out;
         detail::format_help(
-            out, make_option_name(opt, is_positional) + make_option_opts(opt), make_option_desc(opt), column_width_);
+            out, make_option_name(opt, is_positional) + make_option_opts(opt),
+            make_option_desc(opt), column_width_);
         return out.str();
     }
 
     /// @brief This is the name part of an option, Default: left column
-    virtual std::string make_option_name(const Option *, bool) const;
+    virtual std::string make_option_name(const Option*, bool) const;
 
-    /// @brief This is the options part of the name, Default: combined into left column
-    virtual std::string make_option_opts(const Option *) const;
+    /// @brief This is the options part of the name, Default: combined into left
+    /// column
+    virtual std::string make_option_opts(const Option*) const;
 
-    /// @brief This is the description. Default: Right column, on new line if left column too large
-    virtual std::string make_option_desc(const Option *) const;
+    /// @brief This is the description. Default: Right column, on new line if
+    /// left column too large
+    virtual std::string make_option_desc(const Option*) const;
 
     /// @brief This is used to print the name on the USAGE line
-    virtual std::string make_option_usage(const Option *opt) const;
+    virtual std::string make_option_usage(const Option* opt) const;
 
     ///@}
 };

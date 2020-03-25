@@ -39,8 +39,7 @@
 #include <kitty/operations.hpp>
 #include <kitty/operators.hpp>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Truth table cache.
  *
@@ -76,81 +75,75 @@ namespace mockturtle
       auto s = cache.size(); // size is 1
    \endverbatim
  */
-template<typename TT>
-class truth_table_cache
-{
-public:
-  /*! \brief Creates a truth table cache and reserves memory. */
-  truth_table_cache( uint32_t capacity = 1000u );
+template <typename TT>
+class truth_table_cache {
+  public:
+    /*! \brief Creates a truth table cache and reserves memory. */
+    truth_table_cache(uint32_t capacity = 1000u);
 
-  /*! \brief Inserts a truth table and returns a literal.
-   *
-   * To save space, only normal functions are stored in the truth table cache.
-   * A function is normal, if the input pattern \f$0, \dots, 0\f$ maps to
-   * \f$0\f$.  If a function is not normal, its complement is inserted into the
-   * cache and a negative literal is returned.
-   *
-   * The default convention for literals is assumed.  That is an index \f$i\f$
-   * (starting) from \f$0\f$ has positive literal \f$2i\f$ and negative literal
-   * \f$2i + 1\f$.
-   *
-   * \param tt Truth table to insert
-   * \return Literal of position in cache
-   */
-  uint32_t insert( TT tt );
+    /*! \brief Inserts a truth table and returns a literal.
+     *
+     * To save space, only normal functions are stored in the truth table cache.
+     * A function is normal, if the input pattern \f$0, \dots, 0\f$ maps to
+     * \f$0\f$.  If a function is not normal, its complement is inserted into
+     * the cache and a negative literal is returned.
+     *
+     * The default convention for literals is assumed.  That is an index \f$i\f$
+     * (starting) from \f$0\f$ has positive literal \f$2i\f$ and negative
+     * literal \f$2i + 1\f$.
+     *
+     * \param tt Truth table to insert
+     * \return Literal of position in cache
+     */
+    uint32_t insert(TT tt);
 
-  /*! \brief Returns truth table for a given literal.
-   *
-   * The funtion requires that `lit` is smaller than `size()`.
-   */
-  TT operator[]( uint32_t lit ) const;
+    /*! \brief Returns truth table for a given literal.
+     *
+     * The funtion requires that `lit` is smaller than `size()`.
+     */
+    TT operator[](uint32_t lit) const;
 
-  /*! \brief Returns number of normalized truth tables in the cache. */
-  auto size() const { return _data.size(); }
+    /*! \brief Returns number of normalized truth tables in the cache. */
+    auto size() const { return _data.size(); }
 
-private:
-  std::unordered_map<TT, uint32_t, kitty::hash<TT>> _indexes;
-  std::vector<TT> _data;
+  private:
+    std::unordered_map<TT, uint32_t, kitty::hash<TT>> _indexes;
+    std::vector<TT> _data;
 };
 
-template<typename TT>
-truth_table_cache<TT>::truth_table_cache( uint32_t capacity )
-{
-  _indexes.reserve( capacity );
-  _data.reserve( capacity );
+template <typename TT>
+truth_table_cache<TT>::truth_table_cache(uint32_t capacity) {
+    _indexes.reserve(capacity);
+    _data.reserve(capacity);
 }
 
-template<typename TT>
-uint32_t truth_table_cache<TT>::insert( TT tt )
-{
-  uint32_t is_compl{0};
+template <typename TT>
+uint32_t truth_table_cache<TT>::insert(TT tt) {
+    uint32_t is_compl{0};
 
-  if ( kitty::get_bit( tt, 0 ) )
-  {
-    is_compl = 1;
-    tt = ~tt;
-  }
+    if (kitty::get_bit(tt, 0)) {
+        is_compl = 1;
+        tt = ~tt;
+    }
 
-  /* is truth table already in cache? */
-  const auto it = _indexes.find( tt );
-  if ( it != _indexes.end() )
-  {
-    return static_cast<uint32_t>( 2 * it->second + is_compl );
-  }
+    /* is truth table already in cache? */
+    const auto it = _indexes.find(tt);
+    if (it != _indexes.end()) {
+        return static_cast<uint32_t>(2 * it->second + is_compl);
+    }
 
-  /* add truth table to end of cache */
-  const auto size = _data.size();
-  const auto index = static_cast<uint32_t>( 2 * size + is_compl );
-  _data.push_back( tt );
-  _indexes[tt] = size;
-  return index;
+    /* add truth table to end of cache */
+    const auto size = _data.size();
+    const auto index = static_cast<uint32_t>(2 * size + is_compl);
+    _data.push_back(tt);
+    _indexes[tt] = size;
+    return index;
 }
 
-template<typename TT>
-TT truth_table_cache<TT>::operator[]( uint32_t index ) const
-{
-  auto& entry = _data[index >> 1];
-  return ( index & 1 ) ? ~entry : entry;
+template <typename TT>
+TT truth_table_cache<TT>::operator[](uint32_t index) const {
+    auto& entry = _data[index >> 1];
+    return (index & 1) ? ~entry : entry;
 }
 
 } /* namespace mockturtle */

@@ -348,9 +348,7 @@ class PiExpr final : public Expr {
         return std::make_unique<PiExpr>(pos);
     }
 
-    std::optional<double> constant_eval() const override {
-        return utils::pi;
-    }
+    std::optional<double> constant_eval() const override { return utils::pi; }
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         (void) ctx;

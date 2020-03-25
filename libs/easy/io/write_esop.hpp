@@ -30,8 +30,7 @@
 #include <ostream>
 #include <sstream>
 
-namespace easy
-{
+namespace easy {
 
 /*! \brief Writes ESOP form in PLA format to output stream
  *
@@ -39,20 +38,19 @@ namespace easy
  * \param esop ESOP form
  * \param num_vars Number of variables
  */
-inline void write_esop( std::ostream& os, esop::esop_t const& esop, unsigned num_vars )
-{
-  lorina::pla_writer writer( os );
-  writer.on_number_of_inputs( num_vars );
-  writer.on_number_of_outputs( 1 );
-  writer.on_number_of_terms( esop.size() );
-  writer.on_keyword( "type", "esop" );
-  for ( const auto& e : esop )
-  {
-    std::stringstream ss;
-    e.print( num_vars, ss );
-    writer.on_term( ss.str(), "1" );
-  }
-  writer.on_end();
+inline void write_esop(std::ostream& os, esop::esop_t const& esop,
+                       unsigned num_vars) {
+    lorina::pla_writer writer(os);
+    writer.on_number_of_inputs(num_vars);
+    writer.on_number_of_outputs(1);
+    writer.on_number_of_terms(esop.size());
+    writer.on_keyword("type", "esop");
+    for (const auto& e : esop) {
+        std::stringstream ss;
+        e.print(num_vars, ss);
+        writer.on_term(ss.str(), "1");
+    }
+    writer.on_end();
 }
 
 /*! \brief Writes ESOP form in PLA format to a file
@@ -61,11 +59,11 @@ inline void write_esop( std::ostream& os, esop::esop_t const& esop, unsigned num
  * \param esop ESOP form
  * \param num_vars Number of variables
  */
-inline void write_esop( std::string const& filename, esop::esop_t const& esop, unsigned num_vars )
-{
-  std::ofstream os( filename.c_str(), std::ofstream::out );
-  write_esop( os, esop, num_vars );
-  os.close();
+inline void write_esop(std::string const& filename, esop::esop_t const& esop,
+                       unsigned num_vars) {
+    std::ofstream os(filename.c_str(), std::ofstream::out);
+    write_esop(os, esop, num_vars);
+    os.close();
 }
 
 } /* namespace easy */

@@ -39,9 +39,9 @@
 namespace staq {
 namespace mapping {
 
-/** 
+/**
  * \class staq::mapping::LayoutTransformer
- * \brief Allocates qubits on demand prioritizing coupling fidelity 
+ * \brief Allocates qubits on demand prioritizing coupling fidelity
  *
  * Generates a hardware layout by assigning CNOT gates to available
  * high-fidelity couplings in the physical device as they occur

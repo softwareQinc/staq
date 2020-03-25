@@ -46,23 +46,22 @@
 #include "../utils/string_utils.hpp"
 #include "../views/topo_view.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 using namespace std::string_literals;
 
-namespace detail
-{
+namespace detail {
 
-template<class Ntk>
+template <class Ntk>
 std::vector<std::pair<bool, std::string>>
-format_fanin( Ntk const& ntk, node<Ntk> const& n, node_map<std::string, Ntk>& node_names )
-{
-  std::vector<std::pair<bool, std::string>> children;
-  ntk.foreach_fanin( n, [&]( auto const& f ) {
-      children.emplace_back( std::make_pair( ntk.is_complemented( f ), node_names[f] ) );
+format_fanin(Ntk const& ntk, node<Ntk> const& n,
+             node_map<std::string, Ntk>& node_names) {
+    std::vector<std::pair<bool, std::string>> children;
+    ntk.foreach_fanin(n, [&](auto const& f) {
+        children.emplace_back(
+            std::make_pair(ntk.is_complemented(f), node_names[f]));
     });
-  return children;
+    return children;
 }
 
 } // namespace detail
@@ -91,115 +90,126 @@ format_fanin( Ntk const& ntk, node<Ntk> const& n, node_map<std::string, Ntk>& no
  * \param ntk Network
  * \param os Output stream
  */
-template<class Ntk>
-void write_verilog( Ntk const& ntk, std::ostream& os )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-  static_assert( has_num_pis_v<Ntk>, "Ntk does not implement the num_pis method" );
-  static_assert( has_num_pos_v<Ntk>, "Ntk does not implement the num_pos method" );
-  static_assert( has_foreach_pi_v<Ntk>, "Ntk does not implement the foreach_pi method" );
-  static_assert( has_foreach_node_v<Ntk>, "Ntk does not implement the foreach_node method" );
-  static_assert( has_foreach_fanin_v<Ntk>, "Ntk does not implement the foreach_fanin method" );
-  static_assert( has_get_node_v<Ntk>, "Ntk does not implement the get_node method" );
-  static_assert( has_get_constant_v<Ntk>, "Ntk does not implement the get_constant method" );
-  static_assert( has_is_constant_v<Ntk>, "Ntk does not implement the is_constant method" );
-  static_assert( has_is_pi_v<Ntk>, "Ntk does not implement the is_pi method" );
-  static_assert( has_is_and_v<Ntk>, "Ntk does not implement the is_and method" );
-  static_assert( has_is_or_v<Ntk>, "Ntk does not implement the is_or method" );
-  static_assert( has_is_xor_v<Ntk>, "Ntk does not implement the is_xor method" );
-  static_assert( has_is_xor3_v<Ntk>, "Ntk does not implement the is_xor3 method" );
-  static_assert( has_is_maj_v<Ntk>, "Ntk does not implement the is_maj method" );
-  static_assert( has_node_to_index_v<Ntk>, "Ntk does not implement the node_to_index method" );
+template <class Ntk>
+void write_verilog(Ntk const& ntk, std::ostream& os) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+    static_assert(has_num_pis_v<Ntk>,
+                  "Ntk does not implement the num_pis method");
+    static_assert(has_num_pos_v<Ntk>,
+                  "Ntk does not implement the num_pos method");
+    static_assert(has_foreach_pi_v<Ntk>,
+                  "Ntk does not implement the foreach_pi method");
+    static_assert(has_foreach_node_v<Ntk>,
+                  "Ntk does not implement the foreach_node method");
+    static_assert(has_foreach_fanin_v<Ntk>,
+                  "Ntk does not implement the foreach_fanin method");
+    static_assert(has_get_node_v<Ntk>,
+                  "Ntk does not implement the get_node method");
+    static_assert(has_get_constant_v<Ntk>,
+                  "Ntk does not implement the get_constant method");
+    static_assert(has_is_constant_v<Ntk>,
+                  "Ntk does not implement the is_constant method");
+    static_assert(has_is_pi_v<Ntk>, "Ntk does not implement the is_pi method");
+    static_assert(has_is_and_v<Ntk>,
+                  "Ntk does not implement the is_and method");
+    static_assert(has_is_or_v<Ntk>, "Ntk does not implement the is_or method");
+    static_assert(has_is_xor_v<Ntk>,
+                  "Ntk does not implement the is_xor method");
+    static_assert(has_is_xor3_v<Ntk>,
+                  "Ntk does not implement the is_xor3 method");
+    static_assert(has_is_maj_v<Ntk>,
+                  "Ntk does not implement the is_maj method");
+    static_assert(has_node_to_index_v<Ntk>,
+                  "Ntk does not implement the node_to_index method");
 
-  assert( ntk.is_combinational() && "Network has to be combinational" );
+    assert(ntk.is_combinational() && "Network has to be combinational");
 
-  std::vector<std::string> xs;
-  for ( auto i = 0u; i < ntk.num_pis(); ++i )
-    xs.emplace_back( fmt::format( "x{}", i ) );
+    std::vector<std::string> xs;
+    for (auto i = 0u; i < ntk.num_pis(); ++i)
+        xs.emplace_back(fmt::format("x{}", i));
 
-  std::vector<std::string> ys;
-  for ( auto i = 0u; i < ntk.num_pos(); ++i )
-    ys.emplace_back( fmt::format( "y{}", i ) );
+    std::vector<std::string> ys;
+    for (auto i = 0u; i < ntk.num_pos(); ++i)
+        ys.emplace_back(fmt::format("y{}", i));
 
-  std::vector<std::string> ws;
-  ntk.foreach_gate( [&]( auto const& n ){
-      ws.emplace_back( fmt::format( "n{}", ntk.node_to_index( n ) ) );
+    std::vector<std::string> ws;
+    ntk.foreach_gate([&](auto const& n) {
+        ws.emplace_back(fmt::format("n{}", ntk.node_to_index(n)));
     });
 
-  lorina::verilog_writer writer( os );
-  writer.on_module_begin( "top", xs, ys, ws );
+    lorina::verilog_writer writer(os);
+    writer.on_module_begin("top", xs, ys, ws);
 
-  node_map<std::string, Ntk> node_names( ntk );
-  node_names[ntk.get_constant( false )] = "1'b0";
-  if ( ntk.get_node( ntk.get_constant( false ) ) != ntk.get_node( ntk.get_constant( true ) ) )
-    node_names[ntk.get_constant( true )] = "1'b1";
+    node_map<std::string, Ntk> node_names(ntk);
+    node_names[ntk.get_constant(false)] = "1'b0";
+    if (ntk.get_node(ntk.get_constant(false)) !=
+        ntk.get_node(ntk.get_constant(true)))
+        node_names[ntk.get_constant(true)] = "1'b1";
 
-  ntk.foreach_pi( [&]( auto const& n, auto i ) {
-    node_names[n] = fmt::format( "x{}", i );
-  } );
+    ntk.foreach_pi(
+        [&](auto const& n, auto i) { node_names[n] = fmt::format("x{}", i); });
 
-  topo_view ntk_topo{ntk};
+    topo_view ntk_topo{ntk};
 
-  ntk_topo.foreach_node( [&]( auto const& n ) {
-    if ( ntk.is_constant( n ) || ntk.is_pi( n ) )
-      return true;
+    ntk_topo.foreach_node([&](auto const& n) {
+        if (ntk.is_constant(n) || ntk.is_pi(n))
+            return true;
 
-    /* assign a name */
-    node_names[n] = fmt::format( "n{}", ntk.node_to_index( n ) );
+        /* assign a name */
+        node_names[n] = fmt::format("n{}", ntk.node_to_index(n));
 
-    if ( ntk.is_and( n ) )
-    {
-      writer.on_assign( node_names[n], detail::format_fanin<Ntk>( ntk, n, node_names ), "&" );
-    }
-    else if ( ntk.is_or( n ) )
-    {
-      writer.on_assign( node_names[n], detail::format_fanin<Ntk>( ntk, n, node_names ), "|" );
-    }
-    else if ( ntk.is_xor( n ) || ntk.is_xor3( n ) )
-    {
-      writer.on_assign( node_names[n], detail::format_fanin<Ntk>( ntk, n, node_names ), "^" );
-    }
-    else if ( ntk.is_maj( n ) )
-    {
-      std::array<signal<Ntk>, 3> children;
-      ntk.foreach_fanin( n, [&]( auto const& f, auto i ) { children[i] = f; } );
+        if (ntk.is_and(n)) {
+            writer.on_assign(node_names[n],
+                             detail::format_fanin<Ntk>(ntk, n, node_names),
+                             "&");
+        } else if (ntk.is_or(n)) {
+            writer.on_assign(node_names[n],
+                             detail::format_fanin<Ntk>(ntk, n, node_names),
+                             "|");
+        } else if (ntk.is_xor(n) || ntk.is_xor3(n)) {
+            writer.on_assign(node_names[n],
+                             detail::format_fanin<Ntk>(ntk, n, node_names),
+                             "^");
+        } else if (ntk.is_maj(n)) {
+            std::array<signal<Ntk>, 3> children;
+            ntk.foreach_fanin(n,
+                              [&](auto const& f, auto i) { children[i] = f; });
 
-      if ( ntk.is_constant( ntk.get_node( children[0u] ) ) )
-      {
-        std::vector<std::pair<bool,std::string>> vs;
-        vs.emplace_back( std::make_pair( ntk.is_complemented( children[1u] ), node_names[ntk.get_node( children[1u] )] ) );
-        vs.emplace_back( std::make_pair( ntk.is_complemented( children[2u] ), node_names[ntk.get_node( children[2u] )] ) );
+            if (ntk.is_constant(ntk.get_node(children[0u]))) {
+                std::vector<std::pair<bool, std::string>> vs;
+                vs.emplace_back(
+                    std::make_pair(ntk.is_complemented(children[1u]),
+                                   node_names[ntk.get_node(children[1u])]));
+                vs.emplace_back(
+                    std::make_pair(ntk.is_complemented(children[2u]),
+                                   node_names[ntk.get_node(children[2u])]));
 
-        if ( ntk.is_complemented( children[0u] ) )
-        {
-          // or
-          writer.on_assign( node_names[n], {vs[0u], vs[1u]}, "|" );
+                if (ntk.is_complemented(children[0u])) {
+                    // or
+                    writer.on_assign(node_names[n], {vs[0u], vs[1u]}, "|");
+                } else {
+                    // and
+                    writer.on_assign(node_names[n], {vs[0u], vs[1u]}, "&");
+                }
+            } else {
+                writer.on_assign_maj3(node_names[n], detail::format_fanin<Ntk>(
+                                                         ntk, n, node_names));
+            }
+
+        } else {
+            writer.on_assign_unknown_gate(node_names[n]);
         }
-        else
-        {
-          // and
-          writer.on_assign( node_names[n], {vs[0u], vs[1u]}, "&" );
-        }
-      }
-      else
-      {
-        writer.on_assign_maj3( node_names[n], detail::format_fanin<Ntk>( ntk, n, node_names ) );
-      }
 
-    }
-    else
-    {
-      writer.on_assign_unknown_gate( node_names[ n ] );
-    }
+        return true;
+    });
 
-    return true;
-  } );
+    ntk.foreach_po([&](auto const& f, auto i) {
+        writer.on_assign_po(
+            fmt::format("y{}", i),
+            std::make_pair(ntk.is_complemented(f), node_names[f]));
+    });
 
-  ntk.foreach_po( [&]( auto const& f, auto i ) {
-      writer.on_assign_po( fmt::format( "y{}", i ), std::make_pair( ntk.is_complemented( f ), node_names[f] ) );
-  } );
-
-  writer.on_module_end();
+    writer.on_module_end();
 }
 
 /*! \brief Writes network in structural Verilog format into a file
@@ -224,12 +234,11 @@ void write_verilog( Ntk const& ntk, std::ostream& os )
  * \param ntk Network
  * \param filename Filename
  */
-template<class Ntk>
-void write_verilog( Ntk const& ntk, std::string const& filename )
-{
-  std::ofstream os( filename.c_str(), std::ofstream::out );
-  write_verilog( ntk, os );
-  os.close();
+template <class Ntk>
+void write_verilog(Ntk const& ntk, std::string const& filename) {
+    std::ofstream os(filename.c_str(), std::ofstream::out);
+    write_verilog(ntk, os);
+    os.close();
 }
 
 } /* namespace mockturtle */

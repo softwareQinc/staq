@@ -39,36 +39,33 @@
 
 #include <unordered_set>
 
-namespace easy
-{
+namespace easy {
 
-namespace esop
-{
+namespace esop {
 
 /*! \cond PRIVATE */
-namespace detail
-{
+namespace detail {
 
-template<typename TT>
-inline void esop_from_pprm_rec( std::unordered_set<kitty::cube, kitty::hash<kitty::cube>>& cubes, const TT& tt, uint8_t var_index, const kitty::cube& c )
-{
-  /* terminal cases */
-  if ( is_const0( tt ) )
-  {
-    return;
-  }
-  if ( is_const0( ~tt ) )
-  {
-    /* add to cubes, but do not apply distance-1 merging */
-    add_to_cubes( cubes, c, false );
-    return;
-  }
+template <typename TT>
+inline void esop_from_pprm_rec(
+    std::unordered_set<kitty::cube, kitty::hash<kitty::cube>>& cubes,
+    const TT& tt, uint8_t var_index, const kitty::cube& c) {
+    /* terminal cases */
+    if (is_const0(tt)) {
+        return;
+    }
+    if (is_const0(~tt)) {
+        /* add to cubes, but do not apply distance-1 merging */
+        add_to_cubes(cubes, c, false);
+        return;
+    }
 
-  const auto tt0 = cofactor0( tt, var_index );
-  const auto tt1 = cofactor1( tt, var_index );
+    const auto tt0 = cofactor0(tt, var_index);
+    const auto tt1 = cofactor1(tt, var_index);
 
-  esop_from_pprm_rec( cubes, tt0, var_index + 1, c );
-  esop_from_pprm_rec( cubes, tt0 ^ tt1, var_index + 1, with_literal( c, var_index, true ) );
+    esop_from_pprm_rec(cubes, tt0, var_index + 1, c);
+    esop_from_pprm_rec(cubes, tt0 ^ tt1, var_index + 1,
+                       with_literal(c, var_index, true));
 }
 
 } // namespace detail
@@ -81,15 +78,14 @@ inline void esop_from_pprm_rec( std::unordered_set<kitty::cube, kitty::hash<kitt
 
   \param tt Truth table
 */
-template<typename TT>
-inline esop_t esop_from_pprm( const TT& tt )
-{
-  std::unordered_set<kitty::cube, kitty::hash<kitty::cube>> cubes;
-  detail::esop_from_pprm_rec( cubes, tt, 0, kitty::cube() );
+template <typename TT>
+inline esop_t esop_from_pprm(const TT& tt) {
+    std::unordered_set<kitty::cube, kitty::hash<kitty::cube>> cubes;
+    detail::esop_from_pprm_rec(cubes, tt, 0, kitty::cube());
 
-  return esop_t( cubes.begin(), cubes.end() );
+    return esop_t(cubes.begin(), cubes.end());
 }
 
 } // namespace esop
 
-}
+} // namespace easy

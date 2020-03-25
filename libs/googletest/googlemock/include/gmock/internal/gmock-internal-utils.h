@@ -27,7 +27,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 // Google Mock - a framework for writing C++ mock classes.
 //
 // This file defines some utilities useful for implementing Google
@@ -56,9 +55,9 @@ namespace internal {
 // Silence MSVC C4100 (unreferenced formal parameter) and
 // C4805('==': unsafe mix of type 'const int' and type 'const bool')
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4100)
-# pragma warning(disable:4805)
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4805)
 #endif
 
 // Joins a vector of strings as if they are fields of a tuple; returns
@@ -83,7 +82,9 @@ struct PointeeOf {
 };
 // This specialization is for the raw pointer case.
 template <typename T>
-struct PointeeOf<T*> { typedef T type; };  // NOLINT
+struct PointeeOf<T*> {
+  typedef T type;
+};  // NOLINT
 
 // GetRawPointer(p) returns the raw pointer underlying p when p is a
 // smart pointer, or returns p itself when p is already a raw pointer.
@@ -94,7 +95,9 @@ inline const typename Pointer::element_type* GetRawPointer(const Pointer& p) {
 }
 // This overloaded version is for the raw pointer case.
 template <typename Element>
-inline Element* GetRawPointer(Element* p) { return p; }
+inline Element* GetRawPointer(Element* p) {
+  return p;
+}
 
 // MSVC treats wchar_t as a native type usually, but treats it as the
 // same as unsigned short when the compiler option /Zc:wchar_t- is
@@ -103,7 +106,7 @@ inline Element* GetRawPointer(Element* p) { return p; }
 #if defined(_MSC_VER) && !defined(_NATIVE_WCHAR_T_DEFINED)
 // wchar_t is a typedef.
 #else
-# define GMOCK_WCHAR_T_IS_NATIVE_ 1
+#define GMOCK_WCHAR_T_IS_NATIVE_ 1
 #endif
 
 // In what follows, we use the term "kind" to indicate whether a type
@@ -111,18 +114,20 @@ inline Element* GetRawPointer(Element* p) { return p; }
 // or none of them.  This categorization is useful for determining
 // when a matcher argument type can be safely converted to another
 // type in the implementation of SafeMatcherCast.
-enum TypeKind {
-  kBool, kInteger, kFloatingPoint, kOther
-};
+enum TypeKind { kBool, kInteger, kFloatingPoint, kOther };
 
 // KindOf<T>::value is the kind of type T.
-template <typename T> struct KindOf {
+template <typename T>
+struct KindOf {
   enum { value = kOther };  // The default kind.
 };
 
 // This macro declares that the kind of 'type' is 'kind'.
 #define GMOCK_DECLARE_KIND_(type, kind) \
-  template <> struct KindOf<type> { enum { value = kind }; }
+  template <>                           \
+  struct KindOf<type> {                 \
+    enum { value = kind };              \
+  }
 
 GMOCK_DECLARE_KIND_(bool, kBool);
 
@@ -130,11 +135,11 @@ GMOCK_DECLARE_KIND_(bool, kBool);
 GMOCK_DECLARE_KIND_(char, kInteger);
 GMOCK_DECLARE_KIND_(signed char, kInteger);
 GMOCK_DECLARE_KIND_(unsigned char, kInteger);
-GMOCK_DECLARE_KIND_(short, kInteger);  // NOLINT
+GMOCK_DECLARE_KIND_(short, kInteger);           // NOLINT
 GMOCK_DECLARE_KIND_(unsigned short, kInteger);  // NOLINT
 GMOCK_DECLARE_KIND_(int, kInteger);
 GMOCK_DECLARE_KIND_(unsigned int, kInteger);
-GMOCK_DECLARE_KIND_(long, kInteger);  // NOLINT
+GMOCK_DECLARE_KIND_(long, kInteger);           // NOLINT
 GMOCK_DECLARE_KIND_(unsigned long, kInteger);  // NOLINT
 
 #if GMOCK_WCHAR_T_IS_NATIVE_
@@ -153,7 +158,7 @@ GMOCK_DECLARE_KIND_(long double, kFloatingPoint);
 #undef GMOCK_DECLARE_KIND_
 
 // Evaluates to the kind of 'type'.
-#define GMOCK_KIND_OF_(type) \
+#define GMOCK_KIND_OF_(type)                   \
   static_cast< ::testing::internal::TypeKind>( \
       ::testing::internal::KindOf<type>::value)
 
@@ -197,13 +202,13 @@ struct LosslessArithmeticConvertibleImpl<kInteger, From, kBool, bool>
 template <typename From, typename To>
 struct LosslessArithmeticConvertibleImpl<kInteger, From, kInteger, To>
     : public bool_constant<
-      // When converting from a smaller size to a larger size, we are
-      // fine as long as we are not converting from signed to unsigned.
-      ((sizeof(From) < sizeof(To)) &&
-       (!GMOCK_IS_SIGNED_(From) || GMOCK_IS_SIGNED_(To))) ||
-      // When converting between the same size, the signedness must match.
-      ((sizeof(From) == sizeof(To)) &&
-       (GMOCK_IS_SIGNED_(From) == GMOCK_IS_SIGNED_(To)))> {};  // NOLINT
+          // When converting from a smaller size to a larger size, we are
+          // fine as long as we are not converting from signed to unsigned.
+          ((sizeof(From) < sizeof(To)) &&
+           (!GMOCK_IS_SIGNED_(From) || GMOCK_IS_SIGNED_(To))) ||
+          // When converting between the same size, the signedness must match.
+          ((sizeof(From) == sizeof(To)) &&
+           (GMOCK_IS_SIGNED_(From) == GMOCK_IS_SIGNED_(To)))> {};  // NOLINT
 
 #undef GMOCK_IS_SIGNED_
 
@@ -226,8 +231,8 @@ struct LosslessArithmeticConvertibleImpl<kFloatingPoint, From, kInteger, To>
 // Converting a floating-point to another floating-point is lossless
 // if and only if the target type is at least as big as the source type.
 template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<
-  kFloatingPoint, From, kFloatingPoint, To>
+struct LosslessArithmeticConvertibleImpl<kFloatingPoint, From, kFloatingPoint,
+                                         To>
     : public bool_constant<sizeof(From) <= sizeof(To)> {};  // NOLINT
 
 // LosslessArithmeticConvertible<From, To>::value is true if and only if
@@ -239,17 +244,16 @@ struct LosslessArithmeticConvertibleImpl<
 // implementation-defined when the above pre-condition is violated.
 template <typename From, typename To>
 struct LosslessArithmeticConvertible
-    : public LosslessArithmeticConvertibleImpl<
-  GMOCK_KIND_OF_(From), From, GMOCK_KIND_OF_(To), To> {};  // NOLINT
+    : public LosslessArithmeticConvertibleImpl<GMOCK_KIND_OF_(From), From,
+                                               GMOCK_KIND_OF_(To), To> {
+};  // NOLINT
 
 // This interface knows how to report a Google Mock failure (either
 // non-fatal or fatal).
 class FailureReporterInterface {
  public:
   // The type of a failure (either non-fatal or fatal).
-  enum FailureType {
-    kNonfatal, kFatal
-  };
+  enum FailureType { kNonfatal, kFatal };
 
   virtual ~FailureReporterInterface() {}
 
@@ -269,8 +273,8 @@ GTEST_API_ FailureReporterInterface* GetFailureReporter();
 inline void Assert(bool condition, const char* file, int line,
                    const std::string& msg) {
   if (!condition) {
-    GetFailureReporter()->ReportFailure(FailureReporterInterface::kFatal,
-                                        file, line, msg);
+    GetFailureReporter()->ReportFailure(FailureReporterInterface::kFatal, file,
+                                        line, msg);
   }
 }
 inline void Assert(bool condition, const char* file, int line) {
@@ -291,10 +295,7 @@ inline void Expect(bool condition, const char* file, int line) {
 }
 
 // Severity level of a log.
-enum LogSeverity {
-  kInfo = 0,
-  kWarning = 1
-};
+enum LogSeverity { kInfo = 0, kWarning = 1 };
 
 // Valid values for the --gmock_verbose flag.
 
@@ -339,8 +340,8 @@ GTEST_API_ WithoutMatchers GetWithoutMatchers();
 // Disable MSVC warnings for infinite recursion, since in this case the
 // the recursion is unreachable.
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4717)
+#pragma warning(push)
+#pragma warning(disable : 4717)
 #endif
 
 // Invalid<T>() is usable as an expression of type T, but will terminate
@@ -358,7 +359,7 @@ inline T Invalid() {
 }
 
 #ifdef _MSC_VER
-# pragma warning(pop)
+#pragma warning(pop)
 #endif
 
 // Given a raw type (i.e. having no top-level reference or const
@@ -436,7 +437,8 @@ class StlContainerView< ::std::tuple<ElementPointer, Size> > {
 
 // The following specialization prevents the user from instantiating
 // StlContainer with a reference type.
-template <typename T> class StlContainerView<T&>;
+template <typename T>
+class StlContainerView<T&>;
 
 // A type transform to remove constness from the first part of a pair.
 // Pairs like that are used as the value_type of associative containers,
@@ -504,7 +506,7 @@ template <typename R, typename... Args>
 constexpr size_t Function<R(Args...)>::ArgumentCount;
 
 #ifdef _MSC_VER
-# pragma warning(pop)
+#pragma warning(pop)
 #endif
 
 }  // namespace internal

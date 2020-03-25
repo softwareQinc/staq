@@ -40,8 +40,7 @@
 #include "operations.hpp"
 #include "operators.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /*! \brief Returns the Chow parameter of a function
 
@@ -52,62 +51,53 @@ namespace kitty
 
   \param tt Truth table
 */
-template<typename TT>
-std::pair<uint32_t, std::vector<uint32_t>> chow_parameters( const TT& tt )
-{
-  assert( tt.num_vars() <= 32 );
+template <typename TT>
+std::pair<uint32_t, std::vector<uint32_t>> chow_parameters(const TT& tt) {
+    assert(tt.num_vars() <= 32);
 
-  const auto n = tt.num_vars();
-  const auto nf = count_ones( tt );
+    const auto n = tt.num_vars();
+    const auto nf = count_ones(tt);
 
-  std::vector<uint32_t> sf( n, 0u );
-  for_each_one_bit( tt, [&sf]( auto minterm ) {
-    for ( auto i = 0u; minterm; ++i )
-    {
-      if ( minterm & 1 )
-      {
-        ++sf[i];
-      }
-      minterm >>= 1;
-    }
-  } );
+    std::vector<uint32_t> sf(n, 0u);
+    for_each_one_bit(tt, [&sf](auto minterm) {
+        for (auto i = 0u; minterm; ++i) {
+            if (minterm & 1) {
+                ++sf[i];
+            }
+            minterm >>= 1;
+        }
+    });
 
-  return {nf, sf};
+    return {nf, sf};
 }
 
 /*! \brief Checks whether a function is canalizing
 
   \param tt Truth table
 */
-template<typename TT>
-bool is_canalizing( const TT& tt )
-{
-  uint32_t f1or{}, f0or{};
-  uint32_t f1and, f0and;
+template <typename TT>
+bool is_canalizing(const TT& tt) {
+    uint32_t f1or{}, f0or{};
+    uint32_t f1and, f0and;
 
-  uint32_t max = static_cast<uint32_t>( ( uint64_t( 1 ) << tt.num_vars() ) - 1 );
-  f1and = f0and = max;
+    uint32_t max = static_cast<uint32_t>((uint64_t(1) << tt.num_vars()) - 1);
+    f1and = f0and = max;
 
-  for ( uint32_t i = 0u; i < tt.num_bits(); ++i )
-  {
-    if ( get_bit( tt, i ) == 0 )
-    {
-      f0and &= i;
-      f0or |= i;
+    for (uint32_t i = 0u; i < tt.num_bits(); ++i) {
+        if (get_bit(tt, i) == 0) {
+            f0and &= i;
+            f0or |= i;
+        } else {
+            f1and &= i;
+            f1or |= i;
+        }
+
+        if (f0and == 0 && f1and == 0 && f0or == max && f1or == max) {
+            return false;
+        }
     }
-    else
-    {
-      f1and &= i;
-      f1or |= i;
-    }
 
-    if ( f0and == 0 && f1and == 0 && f0or == max && f1or == max )
-    {
-      return false;
-    }
-  }
-
-  return true;
+    return true;
 }
 
 /*! \brief Checks whether a function is Horn
@@ -116,21 +106,17 @@ bool is_canalizing( const TT& tt )
 
   \param tt Truth table
 */
-template<typename TT>
-bool is_horn( const TT& tt )
-{
-  for ( uint32_t i = 1u; i < tt.num_bits(); ++i )
-  {
-    for ( uint32_t j = 0u; j < i; ++j )
-    {
-      if ( get_bit( tt, j ) && get_bit( tt, i ) && !get_bit( tt, i & j ) )
-      {
-        return false;
-      }
+template <typename TT>
+bool is_horn(const TT& tt) {
+    for (uint32_t i = 1u; i < tt.num_bits(); ++i) {
+        for (uint32_t j = 0u; j < i; ++j) {
+            if (get_bit(tt, j) && get_bit(tt, i) && !get_bit(tt, i & j)) {
+                return false;
+            }
+        }
     }
-  }
 
-  return true;
+    return true;
 }
 
 /*! \brief Checks whether a function is Krom
@@ -139,25 +125,21 @@ bool is_horn( const TT& tt )
 
   \param tt Truth table
 */
-template<typename TT>
-bool is_krom( const TT& tt )
-{
-  for ( uint32_t i = 2u; i < tt.num_bits(); ++i )
-  {
-    for ( uint32_t j = 1u; j < i; ++j )
-    {
-      for ( uint32_t k = 0u; k < j; ++k )
-      {
-        const auto maj = ( i & j ) | ( i & k ) | ( j & k );
-        if ( get_bit( tt, k ) && get_bit( tt, j ) && get_bit( tt, i ) && !get_bit( tt, maj ) )
-        {
-          return false;
+template <typename TT>
+bool is_krom(const TT& tt) {
+    for (uint32_t i = 2u; i < tt.num_bits(); ++i) {
+        for (uint32_t j = 1u; j < i; ++j) {
+            for (uint32_t k = 0u; k < j; ++k) {
+                const auto maj = (i & j) | (i & k) | (j & k);
+                if (get_bit(tt, k) && get_bit(tt, j) && get_bit(tt, i) &&
+                    !get_bit(tt, maj)) {
+                    return false;
+                }
+            }
         }
-      }
     }
-  }
 
-  return true;
+    return true;
 }
 
 /*! \brief Checks whether a function is symmetric in a pair of variables
@@ -168,10 +150,9 @@ bool is_krom( const TT& tt )
   \param var_index1 Index of first variable
   \param var_index2 Index of second variable
 */
-template<typename TT>
-bool is_symmetric_in( const TT& tt, uint8_t var_index1, uint8_t var_index2 )
-{
-  return tt == swap( tt, var_index1, var_index2 );
+template <typename TT>
+bool is_symmetric_in(const TT& tt, uint8_t var_index1, uint8_t var_index2) {
+    return tt == swap(tt, var_index1, var_index2);
 }
 
 /*! \brief Checks whether a function is monotone
@@ -180,28 +161,22 @@ bool is_symmetric_in( const TT& tt, uint8_t var_index1, uint8_t var_index2 )
 
   \param tt Truth table
 */
-template<typename TT>
-bool is_monotone( const TT& tt )
-{
-  auto numvars = tt.num_vars();
+template <typename TT>
+bool is_monotone(const TT& tt) {
+    auto numvars = tt.num_vars();
 
-  for ( auto i = 0; i < numvars; i++ )
-  {
-    auto const tt1 = cofactor0( tt, i );
-    auto const tt2 = cofactor1( tt, i );
-    for ( auto bit = 0; bit < ( 2 << ( numvars - 1 ) ); bit++ )
-    {
-      if ( get_bit( tt1, bit ) <= get_bit( tt2, bit ) )
-      {
-        continue;
-      }
-      else
-      {
-        return false;
-      }
+    for (auto i = 0; i < numvars; i++) {
+        auto const tt1 = cofactor0(tt, i);
+        auto const tt2 = cofactor1(tt, i);
+        for (auto bit = 0; bit < (2 << (numvars - 1)); bit++) {
+            if (get_bit(tt1, bit) <= get_bit(tt2, bit)) {
+                continue;
+            } else {
+                return false;
+            }
+        }
     }
-  }
-  return true;
+    return true;
 }
 
 /*! \brief Checks whether a function is selfdual
@@ -210,18 +185,16 @@ bool is_monotone( const TT& tt )
 
   \param tt Truth table
 */
-template<typename TT>
-bool is_selfdual( const TT& tt )
-{
-  auto numvars = tt.num_vars();
-  auto tt1 = tt;
-  auto tt2 = ~tt1;
-  for ( auto i = 0; i < numvars; i++ )
-  {
-    tt1 = flip( tt1, i );
-  }
+template <typename TT>
+bool is_selfdual(const TT& tt) {
+    auto numvars = tt.num_vars();
+    auto tt1 = tt;
+    auto tt2 = ~tt1;
+    for (auto i = 0; i < numvars; i++) {
+        tt1 = flip(tt1, i);
+    }
 
-  return tt2 == tt1;
+    return tt2 == tt1;
 }
 
 /*! \brief Generate runlength encoding of a function
@@ -234,27 +207,22 @@ bool is_selfdual( const TT& tt )
   \param tt Truth table
   \param fn Function of signature `void(bool, uint32_t)`
 */
-template<typename TT, typename Fn>
-void foreach_runlength( const TT& tt, Fn&& fn )
-{
-  bool current = get_bit( tt, 0 );
-  uint32_t length{1u};
+template <typename TT, typename Fn>
+void foreach_runlength(const TT& tt, Fn&& fn) {
+    bool current = get_bit(tt, 0);
+    uint32_t length{1u};
 
-  for ( auto i = 1ull; i < tt.num_bits(); ++i )
-  {
-    if ( get_bit( tt, i ) != current )
-    {
-      fn( current, length );
-      current = !current;
-      length = 1u;
+    for (auto i = 1ull; i < tt.num_bits(); ++i) {
+        if (get_bit(tt, i) != current) {
+            fn(current, length);
+            current = !current;
+            length = 1u;
+        } else {
+            ++length;
+        }
     }
-    else
-    {
-      ++length;
-    }
-  }
 
-  fn( current, length );
+    fn(current, length);
 }
 
 /*! \brief Returns the runlength encoding pattern of a function
@@ -264,14 +232,12 @@ void foreach_runlength( const TT& tt, Fn&& fn )
 
   \param tt Truth table
 */
-template<typename TT>
-std::vector<uint32_t> runlength_pattern( const TT& tt )
-{
-  std::vector<uint32_t> pattern;
-  foreach_runlength( tt, [&]( bool, uint32_t length ) {
-    pattern.push_back( length );
-  } );
-  return pattern;
+template <typename TT>
+std::vector<uint32_t> runlength_pattern(const TT& tt) {
+    std::vector<uint32_t> pattern;
+    foreach_runlength(
+        tt, [&](bool, uint32_t length) { pattern.push_back(length); });
+    return pattern;
 }
 
 } // namespace kitty

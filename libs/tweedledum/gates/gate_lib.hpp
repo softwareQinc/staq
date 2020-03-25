@@ -12,16 +12,16 @@ namespace tweedledum {
 enum class gate_lib : uint8_t {
 #define GATE(X, Y, Z, V, W) X,
 #include "gate_lib.def"
-	num_defined_ops,
+    num_defined_ops,
 };
 
 namespace detail {
 
 struct table_entry {
-	gate_lib adjoint;
-	uint8_t rotation_axis;
-	char const* symbol;
-	char const* name;
+    gate_lib adjoint;
+    uint8_t rotation_axis;
+    char const* symbol;
+    char const* name;
 };
 
 constexpr table_entry gates_info[] = {

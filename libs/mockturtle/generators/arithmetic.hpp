@@ -41,8 +41,7 @@
 #include "../traits.hpp"
 #include "control.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Inserts a full adder into a network.
  *
@@ -59,39 +58,40 @@ namespace mockturtle
  * \param c Carry
  * \return Pair of sum (`first`) and carry (`second`)
  */
-template<typename Ntk>
-inline std::pair<signal<Ntk>, signal<Ntk>> full_adder( Ntk& ntk, const signal<Ntk>& a, const signal<Ntk>& b, const signal<Ntk>& c )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
+template <typename Ntk>
+inline std::pair<signal<Ntk>, signal<Ntk>>
+full_adder(Ntk& ntk, const signal<Ntk>& a, const signal<Ntk>& b,
+           const signal<Ntk>& c) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
 
-  /* specialization for LUT-ish networks */
-  if constexpr ( has_create_node_v<Ntk> )
-  {
-    kitty::dynamic_truth_table tt_maj( 3u ), tt_xor( 3u );
-    kitty::create_from_hex_string( tt_maj, "e8" );
-    kitty::create_from_hex_string( tt_xor, "96" );
+    /* specialization for LUT-ish networks */
+    if constexpr (has_create_node_v<Ntk>) {
+        kitty::dynamic_truth_table tt_maj(3u), tt_xor(3u);
+        kitty::create_from_hex_string(tt_maj, "e8");
+        kitty::create_from_hex_string(tt_xor, "96");
 
-    const auto sum = ntk.create_node( {a, b, c}, tt_xor );
-    const auto carry = ntk.create_node( {a, b, c}, tt_maj );
+        const auto sum = ntk.create_node({a, b, c}, tt_xor);
+        const auto carry = ntk.create_node({a, b, c}, tt_maj);
 
-    return {sum, carry};
-  }
-  else
-  {
-    static_assert( has_create_and_v<Ntk>, "Ntk does not implement the create_and method" );
-    static_assert( has_create_nor_v<Ntk>, "Ntk does not implement the create_nor method" );
-    static_assert( has_create_or_v<Ntk>, "Ntk does not implement the create_or method" );
+        return {sum, carry};
+    } else {
+        static_assert(has_create_and_v<Ntk>,
+                      "Ntk does not implement the create_and method");
+        static_assert(has_create_nor_v<Ntk>,
+                      "Ntk does not implement the create_nor method");
+        static_assert(has_create_or_v<Ntk>,
+                      "Ntk does not implement the create_or method");
 
-    const auto w1 = ntk.create_and( a, b );
-    const auto w2 = ntk.create_nor( a, b );
-    const auto w3 = ntk.create_nor( w1, w2 );
-    const auto w4 = ntk.create_and( c, w3 );
-    const auto w5 = ntk.create_nor( c, w3 );
-    const auto sum = ntk.create_nor( w4, w5 );
-    const auto carry = ntk.create_or( w1, w4 );
+        const auto w1 = ntk.create_and(a, b);
+        const auto w2 = ntk.create_nor(a, b);
+        const auto w3 = ntk.create_nor(w1, w2);
+        const auto w4 = ntk.create_and(c, w3);
+        const auto w5 = ntk.create_nor(c, w3);
+        const auto sum = ntk.create_nor(w4, w5);
+        const auto carry = ntk.create_or(w1, w4);
 
-    return {sum, carry};
-  }
+        return {sum, carry};
+    }
 }
 
 /*! \brief Creates carry ripple adder structure.
@@ -105,18 +105,18 @@ inline std::pair<signal<Ntk>, signal<Ntk>> full_adder( Ntk& ntk, const signal<Nt
  * \param b Second input operand
  * \param carry Carry bit, will also have the output carry after the call
  */
-template<typename Ntk>
-inline void carry_ripple_adder_inplace( Ntk& ntk, std::vector<signal<Ntk>>& a, std::vector<signal<Ntk>> const& b, signal<Ntk>& carry )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
+template <typename Ntk>
+inline void carry_ripple_adder_inplace(Ntk& ntk, std::vector<signal<Ntk>>& a,
+                                       std::vector<signal<Ntk>> const& b,
+                                       signal<Ntk>& carry) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
 
-  assert( a.size() == b.size() );
+    assert(a.size() == b.size());
 
-  auto pa = a.begin();
-  for ( auto pb = b.begin(); pa != a.end(); ++pa, ++pb )
-  {
-    std::tie( *pa, carry ) = full_adder( ntk, *pa, *pb, carry );
-  }
+    auto pa = a.begin();
+    for (auto pb = b.begin(); pa != a.end(); ++pa, ++pb) {
+        std::tie(*pa, carry) = full_adder(ntk, *pa, *pb, carry);
+    }
 }
 
 /*! \brief Creates carry ripple subtractor structure.
@@ -131,19 +131,21 @@ inline void carry_ripple_adder_inplace( Ntk& ntk, std::vector<signal<Ntk>>& a, s
  * \param b Second input operand
  * \param carry Carry bit, will also have the output carry after the call
  */
-template<typename Ntk>
-inline void carry_ripple_subtractor_inplace( Ntk& ntk, std::vector<signal<Ntk>>& a, const std::vector<signal<Ntk>>& b, signal<Ntk>& carry )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-  static_assert( has_create_not_v<Ntk>, "Ntk does not implement the create_not method" );
+template <typename Ntk>
+inline void carry_ripple_subtractor_inplace(Ntk& ntk,
+                                            std::vector<signal<Ntk>>& a,
+                                            const std::vector<signal<Ntk>>& b,
+                                            signal<Ntk>& carry) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+    static_assert(has_create_not_v<Ntk>,
+                  "Ntk does not implement the create_not method");
 
-  assert( a.size() == b.size() );
+    assert(a.size() == b.size());
 
-  auto pa = a.begin();
-  for ( auto pb = b.begin(); pa != a.end(); ++pa, ++pb )
-  {
-    std::tie( *pa, carry ) = full_adder( ntk, *pa, ntk.create_not( *pb ), carry );
-  }
+    auto pa = a.begin();
+    for (auto pb = b.begin(); pa != a.end(); ++pa, ++pb) {
+        std::tie(*pa, carry) = full_adder(ntk, *pa, ntk.create_not(*pb), carry);
+    }
 }
 
 /*! \brief Creates a classical multiplier using full adders.
@@ -156,31 +158,33 @@ inline void carry_ripple_subtractor_inplace( Ntk& ntk, std::vector<signal<Ntk>>&
  * \param a First input operand
  * \param b Second input operand
  */
-template<typename Ntk>
-inline std::vector<signal<Ntk>> carry_ripple_multiplier( Ntk& ntk, std::vector<signal<Ntk>> const& a, std::vector<signal<Ntk>> const& b )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-  static_assert( has_create_and_v<Ntk>, "Ntk does not implement the create_and method" );
-  static_assert( has_get_constant_v<Ntk>, "Ntk does not implement the get_constant method" );
+template <typename Ntk>
+inline std::vector<signal<Ntk>>
+carry_ripple_multiplier(Ntk& ntk, std::vector<signal<Ntk>> const& a,
+                        std::vector<signal<Ntk>> const& b) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+    static_assert(has_create_and_v<Ntk>,
+                  "Ntk does not implement the create_and method");
+    static_assert(has_get_constant_v<Ntk>,
+                  "Ntk does not implement the get_constant method");
 
-  auto res = constant_word( ntk, 0, a.size() + b.size() );
-  auto tmp = constant_word( ntk, 0, a.size() * 2 );
+    auto res = constant_word(ntk, 0, a.size() + b.size());
+    auto tmp = constant_word(ntk, 0, a.size() * 2);
 
-  for ( auto j = 0u; j < b.size(); ++j )
-  {
-    for ( auto i = 0u; i < a.size(); ++i )
-    {
-      std::tie( i ? tmp[a.size() + i - 1] : res[j], tmp[i] ) = full_adder( ntk, ntk.create_and( a[i], b[j] ), tmp[a.size() + i], tmp[i] );
+    for (auto j = 0u; j < b.size(); ++j) {
+        for (auto i = 0u; i < a.size(); ++i) {
+            std::tie(i ? tmp[a.size() + i - 1] : res[j], tmp[i]) = full_adder(
+                ntk, ntk.create_and(a[i], b[j]), tmp[a.size() + i], tmp[i]);
+        }
     }
-  }
 
-  auto carry = tmp.back() = ntk.get_constant( false );
-  for ( auto i = 0u; i < a.size(); ++i )
-  {
-    std::tie( res[b.size() + i], carry ) = full_adder( ntk, tmp[i], tmp[a.size() + i], carry );
-  }
+    auto carry = tmp.back() = ntk.get_constant(false);
+    for (auto i = 0u; i < a.size(); ++i) {
+        std::tie(res[b.size() + i], carry) =
+            full_adder(ntk, tmp[i], tmp[a.size() + i], carry);
+    }
 
-  return res;
+    return res;
 }
 
 } // namespace mockturtle

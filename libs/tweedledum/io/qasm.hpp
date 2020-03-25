@@ -25,7 +25,7 @@ namespace tweedledum {
  * - `foreach_control`
  * - `foreach_target`
  * - `op`
- * 
+ *
  * **Required network functions:**
  * - `foreach_node`
  * - `num_qubits`
@@ -33,147 +33,163 @@ namespace tweedledum {
  * \param network A quantum network
  * \param os Output stream
  */
-template<typename Network>
-void write_qasm(Network const& network, std::ostream& os)
-{
-	// header
-	os << "OPENQASM 2.0;\n";
-	os << "include \"qelib1.inc\";\n";
-	os << fmt::format("qreg q[{}];\n", network.num_qubits());
-	if (network.num_cbits()) {
-		os << fmt::format("creg c[{}];\n", network.num_cbits());
-	}
+template <typename Network>
+void write_qasm(Network const& network, std::ostream& os) {
+    // header
+    os << "OPENQASM 2.0;\n";
+    os << "include \"qelib1.inc\";\n";
+    os << fmt::format("qreg q[{}];\n", network.num_qubits());
+    if (network.num_cbits()) {
+        os << fmt::format("creg c[{}];\n", network.num_cbits());
+    }
 
-	network.foreach_gate([&](auto const& node) {
-		auto const& gate = node.gate;
-		switch (gate.operation()) {
-		default:
-			std::cerr << "[w] unsupported gate type\n";
-			assert(0);
-			return true;
+    network.foreach_gate([&](auto const& node) {
+        auto const& gate = node.gate;
+        switch (gate.operation()) {
+            default:
+                std::cerr << "[w] unsupported gate type\n";
+                assert(0);
+                return true;
 
-		case gate_lib::hadamard:
-			gate.foreach_target([&](auto target) { os << fmt::format("h q[{}];\n", target); });
-			break;
+            case gate_lib::hadamard:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("h q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::pauli_x:
-			gate.foreach_target([&](auto target) { os << fmt::format("x q[{}];\n", target); });
-			break;
+            case gate_lib::pauli_x:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("x q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::pauli_z:
-			gate.foreach_target([&](auto target) { os << fmt::format("z q[{}];\n", target); });
-			break;
+            case gate_lib::pauli_z:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("z q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::phase:
-			gate.foreach_target([&](auto target) { os << fmt::format("s q[{}];\n", target); });
-			break;
+            case gate_lib::phase:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("s q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::phase_dagger:
-			gate.foreach_target([&](auto target) { os << fmt::format("sdg q[{}];\n", target); });
-			break;
+            case gate_lib::phase_dagger:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("sdg q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::t:
-			gate.foreach_target([&](auto target) { os << fmt::format("t q[{}];\n", target); });
-			break;
+            case gate_lib::t:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("t q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::t_dagger:
-			gate.foreach_target([&](auto target) { os << fmt::format("tdg q[{}];\n", target); });
-			break;
+            case gate_lib::t_dagger:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("tdg q[{}];\n", target);
+                });
+                break;
 
-		case gate_lib::rotation_z:
-			gate.foreach_target([&](auto target) {
-				os << fmt::format("rz({}) q[{}];\n", gate.rotation_angle(), target);
-			});
-			break;
+            case gate_lib::rotation_z:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("rz({}) q[{}];\n", gate.rotation_angle(),
+                                      target);
+                });
+                break;
 
-		case gate_lib::rotation_y:
-			gate.foreach_target([&](auto target) {
-				os << fmt::format("ry({}) q[{}];\n", gate.rotation_angle(), target);
-			});
-			break;
+            case gate_lib::rotation_y:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("ry({}) q[{}];\n", gate.rotation_angle(),
+                                      target);
+                });
+                break;
 
-		case gate_lib::rotation_x:
-			gate.foreach_target([&](auto target) {
-				os << fmt::format("rx({}) q[{}];\n", gate.rotation_angle(), target);
-			});
-			break;
+            case gate_lib::rotation_x:
+                gate.foreach_target([&](auto target) {
+                    os << fmt::format("rx({}) q[{}];\n", gate.rotation_angle(),
+                                      target);
+                });
+                break;
 
-		case gate_lib::cx:
-			gate.foreach_control([&](auto control) {
-				if (control.is_complemented()) {
-					os << fmt::format("x q[{}];\n", control.index());
-				}
-				gate.foreach_target([&](auto target) {
-					os << fmt::format("cx q[{}], q[{}];\n", control.index(), target);
-				});
-				if (control.is_complemented()) {
-					os << fmt::format("x q[{}];\n", control.index());
-				}
-			});
-			break;
+            case gate_lib::cx:
+                gate.foreach_control([&](auto control) {
+                    if (control.is_complemented()) {
+                        os << fmt::format("x q[{}];\n", control.index());
+                    }
+                    gate.foreach_target([&](auto target) {
+                        os << fmt::format("cx q[{}], q[{}];\n", control.index(),
+                                          target);
+                    });
+                    if (control.is_complemented()) {
+                        os << fmt::format("x q[{}];\n", control.index());
+                    }
+                });
+                break;
 
-		case gate_lib::swap: {
-			std::vector<io_id> targets;
-			gate.foreach_target([&](auto target) {
-				targets.push_back(target);
-			});
-			os << fmt::format("cx q[{}], q[{}];\n", targets[0], targets[1]);
-			os << fmt::format("cx q[{}], q[{}];\n", targets[1], targets[0]);
-			os << fmt::format("cx q[{}], q[{}];\n", targets[0], targets[1]);
-		} break;
+            case gate_lib::swap: {
+                std::vector<io_id> targets;
+                gate.foreach_target(
+                    [&](auto target) { targets.push_back(target); });
+                os << fmt::format("cx q[{}], q[{}];\n", targets[0], targets[1]);
+                os << fmt::format("cx q[{}], q[{}];\n", targets[1], targets[0]);
+                os << fmt::format("cx q[{}], q[{}];\n", targets[0], targets[1]);
+            } break;
 
-		case gate_lib::mcx: {
-			std::vector<io_id> controls;
-			std::vector<io_id> targets;
-			gate.foreach_control([&](auto control) {
-				if (control.is_complemented()) {
-					os << fmt::format("x q[{}];\n", control.index());
-				}
-				controls.push_back(control.id()); 
-			});
-			gate.foreach_target([&](auto target) {
-				targets.push_back(target);
-			});
-			switch (controls.size()) {
-			default:
-				std::cerr << "[w] unsupported control size\n";
-				assert(0);
-				return true;
+            case gate_lib::mcx: {
+                std::vector<io_id> controls;
+                std::vector<io_id> targets;
+                gate.foreach_control([&](auto control) {
+                    if (control.is_complemented()) {
+                        os << fmt::format("x q[{}];\n", control.index());
+                    }
+                    controls.push_back(control.id());
+                });
+                gate.foreach_target(
+                    [&](auto target) { targets.push_back(target); });
+                switch (controls.size()) {
+                    default:
+                        std::cerr << "[w] unsupported control size\n";
+                        assert(0);
+                        return true;
 
-			case 0u:
-				for (auto q : targets) {
-					os << fmt::format("x q[{}];\n", q);
-				}
-				break;
+                    case 0u:
+                        for (auto q : targets) {
+                            os << fmt::format("x q[{}];\n", q);
+                        }
+                        break;
 
-			case 1u:
-				for (auto q : targets) {
-					os << fmt::format("cx q[{}],q[{}];\n", controls[0], q);
-				}
-				break;
+                    case 1u:
+                        for (auto q : targets) {
+                            os << fmt::format("cx q[{}],q[{}];\n", controls[0],
+                                              q);
+                        }
+                        break;
 
-			case 2u:
-				for (auto i = 1u; i < targets.size(); ++i) {
-					os << fmt::format("cx q[{}], q[{}];\n", targets[0],
-					                   targets[i]);
-				}
-				os << fmt::format("ccx q[{}], q[{}], q[{}];\n", controls[0],
-				                   controls[1], targets[0]);
-				for (auto i = 1u; i < targets.size(); ++i) {
-					os << fmt::format("cx q[{}], q[{}];\n", targets[0],
-					                   targets[i]);
-				}
-				break;
-			}
-			gate.foreach_control([&](auto control) {
-				if (control.is_complemented()) {
-					os << fmt::format("x q[{}];\n", control.index());
-				}
-			});
-		} break;
-		}
-		return true;
-	});
+                    case 2u:
+                        for (auto i = 1u; i < targets.size(); ++i) {
+                            os << fmt::format("cx q[{}], q[{}];\n", targets[0],
+                                              targets[i]);
+                        }
+                        os << fmt::format("ccx q[{}], q[{}], q[{}];\n",
+                                          controls[0], controls[1], targets[0]);
+                        for (auto i = 1u; i < targets.size(); ++i) {
+                            os << fmt::format("cx q[{}], q[{}];\n", targets[0],
+                                              targets[i]);
+                        }
+                        break;
+                }
+                gate.foreach_control([&](auto control) {
+                    if (control.is_complemented()) {
+                        os << fmt::format("x q[{}];\n", control.index());
+                    }
+                });
+            } break;
+        }
+        return true;
+    });
 }
 
 /*! \brief Writes network in OPENQASM 2.0 format into a file
@@ -182,7 +198,7 @@ void write_qasm(Network const& network, std::ostream& os)
  * - `foreach_control`
  * - `foreach_target`
  * - `op`
- * 
+ *
  * **Required network functions:**
  * - `num_qubits`
  * - `foreach_node`
@@ -190,11 +206,10 @@ void write_qasm(Network const& network, std::ostream& os)
  * \param network A quantum network
  * \param filename Filename
  */
-template<typename Network>
-void write_qasm(Network const& network, std::string const& filename)
-{
-	std::ofstream os(filename.c_str(), std::ofstream::out);
-	write_qasm(network, os);
+template <typename Network>
+void write_qasm(Network const& network, std::string const& filename) {
+    std::ofstream os(filename.c_str(), std::ofstream::out);
+    write_qasm(network, os);
 }
 
 } // namespace tweedledum

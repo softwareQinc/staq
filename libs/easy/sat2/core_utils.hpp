@@ -39,19 +39,17 @@
 
 #include <easy/sat2/sat_solver.hpp>
 
-namespace easy::sat2
-{
+namespace easy::sat2 {
 
-namespace detail
-{
+namespace detail {
 
-template<typename T>
-inline std::vector<T> copy_vector_without_index( std::vector<T> const& vs, uint64_t index )
-{
-  assert( index < vs.size() );
-  std::vector<T> copy( vs );
-  copy.erase( std::begin( copy ) + index );
-  return copy;
+template <typename T>
+inline std::vector<T> copy_vector_without_index(std::vector<T> const& vs,
+                                                uint64_t index) {
+    assert(index < vs.size());
+    std::vector<T> copy(vs);
+    copy.erase(std::begin(copy) + index);
+    return copy;
 }
 
 } /* namespace detail */
@@ -69,25 +67,22 @@ inline std::vector<T> copy_vector_without_index( std::vector<T> const& vs, uint6
  *
  * Returns the trimmed core.
  */
-inline core<> trim_core_copy( sat_solver& solver, core<> const& cs, uint32_t num_tries = 8u )
-{
-  auto current = cs;
+inline core<> trim_core_copy(sat_solver& solver, core<> const& cs,
+                             uint32_t num_tries = 8u) {
+    auto current = cs;
 
-  uint32_t counter = 0;
-  while ( counter++ < num_tries && solver.solve( current ) == sat_solver::state::unsat )
-  {
-    auto const new_core = solver.get_core();
-    if ( new_core.size() == current.size() )
-    {
-      break;
+    uint32_t counter = 0;
+    while (counter++ < num_tries &&
+           solver.solve(current) == sat_solver::state::unsat) {
+        auto const new_core = solver.get_core();
+        if (new_core.size() == current.size()) {
+            break;
+        } else {
+            current = new_core;
+        }
     }
-    else
-    {
-      current = new_core;
-    }
-  }
 
-  return current;
+    return current;
 }
 
 /* \brief Trim unsatisfiable core
@@ -101,9 +96,8 @@ inline core<> trim_core_copy( sat_solver& solver, core<> const& cs, uint32_t num
  * \param cs An unsatisfiable core
  * \param num_tries Maximal number of tries to trim core
  */
-inline void trim_core( sat_solver& solver, core<>& cs, uint32_t num_tries = 8u )
-{
-  cs = trim_core_copy( solver, cs, num_tries );
+inline void trim_core(sat_solver& solver, core<>& cs, uint32_t num_tries = 8u) {
+    cs = trim_core_copy(solver, cs, num_tries);
 }
 
 /* \brief Deletion-based unsatisfiable core minimization
@@ -119,38 +113,32 @@ inline void trim_core( sat_solver& solver, core<>& cs, uint32_t num_tries = 8u )
  *
  * Returns a potentially minimized unsatisfiable core.
  */
-inline core<> minimize_core_copy( sat_solver& solver, core<> const& cs, int64_t budget = 1000 )
-{
-  solver.set_budget( budget );
+inline core<> minimize_core_copy(sat_solver& solver, core<> const& cs,
+                                 int64_t budget = 1000) {
+    solver.set_budget(budget);
 
-  auto pos = 0u;
-  auto current = cs;
+    auto pos = 0u;
+    auto current = cs;
 
-  while ( pos < current.size() )
-  {
-    auto temp = core<>( detail::copy_vector_without_index( std::vector<int>( current ), pos ) );
-    solver.solve_limited( temp );
+    while (pos < current.size()) {
+        auto temp = core<>(
+            detail::copy_vector_without_index(std::vector<int>(current), pos));
+        solver.solve_limited(temp);
 
-    if ( solver.is_unsat() )
-    {
-      current = temp;
+        if (solver.is_unsat()) {
+            current = temp;
+        } else {
+            ++pos;
+        }
     }
-    else
-    {
-      ++pos;
+
+    solver.reset_budget();
+
+    if (current.size() < cs.size()) {
+        return current;
+    } else {
+        return cs;
     }
-  }
-
-  solver.reset_budget();
-
-  if ( current.size() < cs.size() )
-  {
-    return current;
-  }
-  else
-  {
-    return cs;
-  }
 }
 
 /* \brief Deletion-based unsatisfiable core minimization
@@ -165,9 +153,9 @@ inline core<> minimize_core_copy( sat_solver& solver, core<> const& cs, int64_t 
  * \param budget A budget limit for SAT-solving
  *
  */
-inline void minimize_core( sat_solver& solver, core<>& cs, int64_t budget = 1000 )
-{
-  cs = minimize_core_copy( solver, cs, budget );
+inline void minimize_core(sat_solver& solver, core<>& cs,
+                          int64_t budget = 1000) {
+    cs = minimize_core_copy(solver, cs, budget);
 }
 
-} /* easy::sat2 */
+} // namespace easy::sat2

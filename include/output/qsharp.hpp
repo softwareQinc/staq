@@ -58,7 +58,7 @@ std::unordered_map<std::string, std::string> qasmstd_to_qsharp{
     {"crz", "(Controlled Rz)"},
     {"cu1", "(Controlled Rz)"}};
 
-/** 
+/**
  * \class staq::output::QSharpOutputter
  * \brief Visitor for converting a QASM AST to Q#
  */

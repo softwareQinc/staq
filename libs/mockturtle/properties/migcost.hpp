@@ -37,8 +37,7 @@
 
 #include "../traits.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Counts number of inverters.
  *
@@ -47,70 +46,73 @@ namespace mockturtle
  *
  * \param ntk Network
  */
-template<class Ntk>
-uint32_t num_inverters( Ntk const& ntk )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-  static_assert( has_foreach_gate_v<Ntk>, "Ntk does not implement the foreach_gate method" );
-  static_assert( has_foreach_fanin_v<Ntk>, "Ntk does not implement the foreach_fanin method" );
-  static_assert( has_foreach_po_v<Ntk>, "Ntk does not implement the foreach_po method" );
-  static_assert( has_is_complemented_v<Ntk>, "Ntk does not implement the is_complemented method" );
-  static_assert( has_get_node_v<Ntk>, "Ntk does not implement the get_node method" );
+template <class Ntk>
+uint32_t num_inverters(Ntk const& ntk) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+    static_assert(has_foreach_gate_v<Ntk>,
+                  "Ntk does not implement the foreach_gate method");
+    static_assert(has_foreach_fanin_v<Ntk>,
+                  "Ntk does not implement the foreach_fanin method");
+    static_assert(has_foreach_po_v<Ntk>,
+                  "Ntk does not implement the foreach_po method");
+    static_assert(has_is_complemented_v<Ntk>,
+                  "Ntk does not implement the is_complemented method");
+    static_assert(has_get_node_v<Ntk>,
+                  "Ntk does not implement the get_node method");
 
-  std::unordered_set<node<Ntk>> inverted_nodes;
+    std::unordered_set<node<Ntk>> inverted_nodes;
 
-  ntk.foreach_gate( [&]( auto const& n ) {
-    ntk.foreach_fanin( n, [&]( auto const& f ) {
-      if ( ntk.is_complemented( f ) )
-      {
-        inverted_nodes.insert( ntk.get_node( f ) );
-      }
-    } );
-  } );
+    ntk.foreach_gate([&](auto const& n) {
+        ntk.foreach_fanin(n, [&](auto const& f) {
+            if (ntk.is_complemented(f)) {
+                inverted_nodes.insert(ntk.get_node(f));
+            }
+        });
+    });
 
-  ntk.foreach_po( [&]( auto const& f ) {
-    if ( ntk.is_complemented( f ) )
-    {
-      inverted_nodes.insert( ntk.get_node( f ) );
-    }
-  } );
+    ntk.foreach_po([&](auto const& f) {
+        if (ntk.is_complemented(f)) {
+            inverted_nodes.insert(ntk.get_node(f));
+        }
+    });
 
-  return inverted_nodes.size();
+    return inverted_nodes.size();
 }
 
 /*! \brief Counts fanins which are primary inputs.
  *
  * \param ntk Network
  */
-template<class Ntk>
-uint32_t num_dangling_inputs( Ntk const& ntk )
-{
-  static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-  static_assert( has_foreach_gate_v<Ntk>, "Ntk does not implement the foreach_gate method" );
-  static_assert( has_foreach_fanin_v<Ntk>, "Ntk does not implement the foreach_fanin method" );
-  static_assert( has_foreach_po_v<Ntk>, "Ntk does not implement the foreach_po method" );
-  static_assert( has_is_pi_v<Ntk>, "Ntk does not implement the is_pi method" );
-  static_assert( has_get_node_v<Ntk>, "Ntk does not implement the get_node method" );
+template <class Ntk>
+uint32_t num_dangling_inputs(Ntk const& ntk) {
+    static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+    static_assert(has_foreach_gate_v<Ntk>,
+                  "Ntk does not implement the foreach_gate method");
+    static_assert(has_foreach_fanin_v<Ntk>,
+                  "Ntk does not implement the foreach_fanin method");
+    static_assert(has_foreach_po_v<Ntk>,
+                  "Ntk does not implement the foreach_po method");
+    static_assert(has_is_pi_v<Ntk>, "Ntk does not implement the is_pi method");
+    static_assert(has_get_node_v<Ntk>,
+                  "Ntk does not implement the get_node method");
 
-  uint32_t costs{0u};
+    uint32_t costs{0u};
 
-  ntk.foreach_gate( [&]( auto const& n ) {
-    ntk.foreach_fanin( n, [&]( auto const& f ) {
-      if ( ntk.is_pi( ntk.get_node( f ) ) )
-      {
-        costs++;
-      }
-    } );
-  } );
+    ntk.foreach_gate([&](auto const& n) {
+        ntk.foreach_fanin(n, [&](auto const& f) {
+            if (ntk.is_pi(ntk.get_node(f))) {
+                costs++;
+            }
+        });
+    });
 
-  ntk.foreach_po( [&]( auto const& f ) {
-    if ( ntk.is_pi( ntk.get_node( f ) ) )
-    {
-      costs++;
-    }
-  } );
+    ntk.foreach_po([&](auto const& f) {
+        if (ntk.is_pi(ntk.get_node(f))) {
+            costs++;
+        }
+    });
 
-  return costs;
+    return costs;
 }
 
 } // namespace mockturtle

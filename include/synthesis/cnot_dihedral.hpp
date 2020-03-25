@@ -42,21 +42,16 @@ namespace synthesis {
 
 using namespace mapping;
 using phase_term = std::pair<std::vector<bool>, ast::ptr<ast::Expr>>;
-using cx_dihedral = std::variant<std::pair<int, int>,
-                                 std::pair<ast::ptr<ast::Expr>, int>>;
+using cx_dihedral =
+    std::variant<std::pair<int, int>, std::pair<ast::ptr<ast::Expr>, int>>;
 
 struct partition {
     std::optional<int> target;
     std::set<int> remaining_indices;
     std::list<phase_term> terms;
 
-    partition(std::optional<int> t,
-              std::set<int> r,
-              std::list<phase_term>&& tm)
-      : target(t)
-      , remaining_indices(r)
-      , terms(std::move(tm))
-    {}
+    partition(std::optional<int> t, std::set<int> r, std::list<phase_term>&& tm)
+        : target(t), remaining_indices(r), terms(std::move(tm)) {}
 };
 
 static void print_partition(const partition& part) {
@@ -93,20 +88,17 @@ static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
  * \brief Alternate adjustment to deal with depencies on non-partitioned
  *        indicies, necessary for steiner synthesis
  */
-static void adjust_vectors_and_indices(int ctrl, 
-                                        int tgt, 
-                                        std::list<partition>& stack) 
-{
+static void adjust_vectors_and_indices(int ctrl, int tgt,
+                                       std::list<partition>& stack) {
     for (auto& part : stack) {
         for (auto& [vec, angle] : part.terms) {
             vec[ctrl] = vec[ctrl] ^ vec[tgt];
         }
-    
+
         // Index adjustment
         if (part.remaining_indices.find(tgt) != part.remaining_indices.end())
-          part.remaining_indices.insert(ctrl);
+            part.remaining_indices.insert(ctrl);
     }
-
 }
 
 /**
@@ -205,16 +197,13 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
 
             // Add the new partitions on the stack
             if (part.target) {
-                stack.emplace_front(partition(part.target,
-                                              part.remaining_indices,
-                                              std::move(ones)));
+                stack.emplace_front(partition(
+                    part.target, part.remaining_indices, std::move(ones)));
             } else {
-                stack.emplace_front(partition(i,
-                                              part.remaining_indices,
-                                              std::move(ones)));
+                stack.emplace_front(
+                    partition(i, part.remaining_indices, std::move(ones)));
             }
-            stack.emplace_front(partition(part.target,
-                                          part.remaining_indices,
+            stack.emplace_front(partition(part.target, part.remaining_indices,
                                           std::move(zeros)));
         } else {
             throw std::logic_error(
@@ -298,16 +287,13 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
 
             // Add the new partitions on the stack
             if (part.target) {
-                stack.emplace_front(partition(part.target,
-                                              part.remaining_indices,
-                                              std::move(ones)));
+                stack.emplace_front(partition(
+                    part.target, part.remaining_indices, std::move(ones)));
             } else {
-                stack.emplace_front(partition(i,
-                                              part.remaining_indices,
-                                              std::move(ones)));
+                stack.emplace_front(
+                    partition(i, part.remaining_indices, std::move(ones)));
             }
-            stack.emplace_front(partition(part.target,
-                                          part.remaining_indices,
+            stack.emplace_front(partition(part.target, part.remaining_indices,
                                           std::move(zeros)));
         } else {
             // The previously partitioned rows have gotten mangled. Start

@@ -15,7 +15,7 @@
 
 namespace tweedledum::detail {
 
-/*! \brief 
+/*! \brief
  *                                                                ┌───┐
  *  ───────────────────●───────────────────●─────────●─────────●──┤ T ├─────
  *                     │                   │         │         │  └───┘
@@ -26,34 +26,31 @@ namespace tweedledum::detail {
  *  ──┤ H ├┤ X ├┤ ┴ ├┤ X ├┤ T ├┤ X ├┤ ┴ ├┤ X ├────────────────────┤ T ├┤ H ├
  *    └───┘└───┘└───┘└───┘└───┘└───┘└───┘└───┘                    └───┘└───┘
  */
-template<typename Network>
-void ccx_(Network& network, io_id x, io_id y, io_id z)
-{
-	network.add_gate(gate::hadamard, z);
-	ccz_(network, x, y, z);
-	network.add_gate(gate::hadamard, z);
+template <typename Network>
+void ccx_(Network& network, io_id x, io_id y, io_id z) {
+    network.add_gate(gate::hadamard, z);
+    ccz_(network, x, y, z);
+    network.add_gate(gate::hadamard, z);
 }
 
-/*! \brief 
+/*! \brief
  */
-template<typename Network>
-void ccx_tpar(Network& network, io_id x, io_id y, io_id z)
-{
-	network.add_gate(gate::hadamard, z);
-	ccz_tpar(network, x, y, z);
-	network.add_gate(gate::hadamard, z);
+template <typename Network>
+void ccx_tpar(Network& network, io_id x, io_id y, io_id z) {
+    network.add_gate(gate::hadamard, z);
+    ccz_tpar(network, x, y, z);
+    network.add_gate(gate::hadamard, z);
 }
 
-/*! \brief 
+/*! \brief
  */
-template<typename Network>
-void ccx(Network& network, io_id x, io_id y, io_id z, bool use_t_par)
-{
-	if (use_t_par) {
-		ccx_tpar(network, x, y, z);
-	} else {
-		ccx_(network, x, y, z);
-	}
+template <typename Network>
+void ccx(Network& network, io_id x, io_id y, io_id z, bool use_t_par) {
+    if (use_t_par) {
+        ccx_tpar(network, x, y, z);
+    } else {
+        ccx_(network, x, y, z);
+    }
 }
 
 } // namespace tweedledum::detail

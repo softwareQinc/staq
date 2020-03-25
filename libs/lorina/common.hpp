@@ -32,13 +32,11 @@
 
 #pragma once
 
-namespace lorina
-{
+namespace lorina {
 
-enum class return_code
-{
-  success = 0,
-  parse_error,
+enum class return_code {
+    success = 0,
+    parse_error,
 };
 
 } // namespace lorina

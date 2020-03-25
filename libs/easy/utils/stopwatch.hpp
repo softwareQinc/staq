@@ -35,8 +35,7 @@
 #include <chrono>
 #include <type_traits>
 
-namespace easy::utils
-{
+namespace easy::utils {
 
 /*! \brief Stopwatch interface
  *
@@ -47,11 +46,11 @@ namespace easy::utils
  * to the durationr reference.
  *
    \verbatim embed:rst
-  
+
    Example
-   
+
    .. code-block:: c++
-   
+
       stopwatch<>::duration time{0};
 
       { // some block
@@ -60,39 +59,31 @@ namespace easy::utils
         // do some work
       } // stopwatch is stopped here
 
-      std::cout << fmt::format( "{:5.2f} seconds passed\n", to_seconds( time ) );
-   \endverbatim
+      std::cout << fmt::format( "{:5.2f} seconds passed\n", to_seconds( time )
+ ); \endverbatim
  */
-template<class Clock = std::chrono::steady_clock>
-class stopwatch
-{
-public:
-  using clock = Clock;
-  using duration = typename Clock::duration;
-  using time_point = typename Clock::time_point;
+template <class Clock = std::chrono::steady_clock>
+class stopwatch {
+  public:
+    using clock = Clock;
+    using duration = typename Clock::duration;
+    using time_point = typename Clock::time_point;
 
-  /*! \brief Default constructor.
-   *
-   * Starts tracking time.
-   */
-  explicit stopwatch( duration& dur )
-      : dur( dur ),
-        beg( clock::now() )
-  {
-  }
+    /*! \brief Default constructor.
+     *
+     * Starts tracking time.
+     */
+    explicit stopwatch(duration& dur) : dur(dur), beg(clock::now()) {}
 
-  /*! \brief Default deconstructor.
-   *
-   * Stops tracking time and updates duration.
-   */
-  ~stopwatch()
-  {
-    dur += ( clock::now() - beg );
-  }
+    /*! \brief Default deconstructor.
+     *
+     * Stops tracking time and updates duration.
+     */
+    ~stopwatch() { dur += (clock::now() - beg); }
 
-private:
-  duration& dur;
-  time_point beg;
+  private:
+    duration& dur;
+    time_point beg;
 };
 
 /*! \brief Calls a function and tracks time.
@@ -100,26 +91,25 @@ private:
  * The function that is passed as second parameter can be any callable object
  * that takes no parameters.  This construction can be used to avoid
  * pre-declaring the result type of a computation that should be tracked.
- * 
+ *
    \verbatim embed:rst
-  
+
    Example
-   
+
    .. code-block:: c++
-   
+
       stopwatch<>::duration time{0};
 
-      auto result = call_with_stopwatch( time, [&]() { return function( parameters ); } );
-   \endverbatim
+      auto result = call_with_stopwatch( time, [&]() { return function(
+ parameters ); } ); \endverbatim
  *
  * \param dur Duration reference (time will be added to it)
  * \param fn Callable object with no arguments
  */
-template<class Fn, class Clock = std::chrono::steady_clock>
-std::result_of<Fn> call_with_stopwatch( typename Clock::duration& dur, Fn&& fn )
-{
-  stopwatch<Clock> t( dur );
-  return fn();
+template <class Fn, class Clock = std::chrono::steady_clock>
+std::result_of<Fn> call_with_stopwatch(typename Clock::duration& dur, Fn&& fn) {
+    stopwatch<Clock> t(dur);
+    return fn();
 }
 
 /*! \brief Constructs an object and calls time.
@@ -128,29 +118,28 @@ std::result_of<Fn> call_with_stopwatch( typename Clock::duration& dur, Fn&& fn )
  * returns the constructed object.
  *
    \verbatim embed:rst
-  
+
    Example
-   
+
    .. code-block:: c++
-   
+
       stopwatch<>::duration time{0};
 
       // create vector with 100000 elements initialized to 42
       auto result = make_with_stopwatch<std::vector<int>>( time, 100000, 42 );
    \endverbatim
  */
-template<class T, class... Args, class Clock = std::chrono::steady_clock>
-T make_with_stopwatch( typename Clock::duration& dur, Args... args )
-{
-  stopwatch<Clock> t( dur );
-  return T( args... );
+template <class T, class... Args, class Clock = std::chrono::steady_clock>
+T make_with_stopwatch(typename Clock::duration& dur, Args... args) {
+    stopwatch<Clock> t(dur);
+    return T(args...);
 }
 
 /*! \brief Utility function to convert duration into seconds. */
-template<class Duration>
-inline double to_seconds( Duration const& dur )
-{
-  return std::chrono::duration_cast<std::chrono::duration<double>>( dur ).count();
+template <class Duration>
+inline double to_seconds(Duration const& dur) {
+    return std::chrono::duration_cast<std::chrono::duration<double>>(dur)
+        .count();
 }
 
 } // namespace easy::utils

@@ -43,8 +43,7 @@
 #include "../traits.hpp"
 #include "../utils/node_map.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Translates a gate-based network into a node-based network.
  *
@@ -72,60 +71,74 @@ namespace mockturtle
  *
  * \param ntk Network
  */
-template<class NtkDest, class NtkSource>
-NtkDest gates_to_nodes( NtkSource const& ntk )
-{
-  static_assert( is_network_type_v<NtkDest>, "NtkDest is not a network type" );
-  static_assert( has_create_pi_v<NtkDest>, "NtkDest does not implement the create_pi method" );
-  static_assert( has_create_po_v<NtkDest>, "NtkDest does not implement the create_po method" );
-  static_assert( has_create_node_v<NtkDest>, "NtkDest does not implement the create_node method" );
-  static_assert( has_create_not_v<NtkDest>, "NtkDest does not implement the create_not method" );
-  static_assert( has_get_constant_v<NtkDest>, "NtkDest does not implement the get_constant method" );
+template <class NtkDest, class NtkSource>
+NtkDest gates_to_nodes(NtkSource const& ntk) {
+    static_assert(is_network_type_v<NtkDest>, "NtkDest is not a network type");
+    static_assert(has_create_pi_v<NtkDest>,
+                  "NtkDest does not implement the create_pi method");
+    static_assert(has_create_po_v<NtkDest>,
+                  "NtkDest does not implement the create_po method");
+    static_assert(has_create_node_v<NtkDest>,
+                  "NtkDest does not implement the create_node method");
+    static_assert(has_create_not_v<NtkDest>,
+                  "NtkDest does not implement the create_not method");
+    static_assert(has_get_constant_v<NtkDest>,
+                  "NtkDest does not implement the get_constant method");
 
-  static_assert( is_network_type_v<NtkSource>, "NtkSource is not a network type" );
-  static_assert( has_foreach_pi_v<NtkSource>, "NtkSource does not implement the foreach_pi method" );
-  static_assert( has_foreach_gate_v<NtkSource>, "NtkSource does not implement the foreach_gate method" );
-  static_assert( has_foreach_fanin_v<NtkSource>, "NtkSource does not implement the foreach_fanin method" );
-  static_assert( has_get_constant_v<NtkSource>, "NtkSource does not implement the get_constant method" );
-  static_assert( has_get_node_v<NtkSource>, "NtkSource does not implement the get_node method" );
-  static_assert( has_is_constant_v<NtkSource>, "NtkSource does not implement the is_constant method" );
-  static_assert( has_is_pi_v<NtkSource>, "NtkSource does not implement the is_pi method" );
-  static_assert( has_is_complemented_v<NtkSource>, "NtkSource does not implement the is_complemented method" );
-  static_assert( has_node_function_v<NtkSource>, "NtkSource does not implement the node_function method" );
+    static_assert(is_network_type_v<NtkSource>,
+                  "NtkSource is not a network type");
+    static_assert(has_foreach_pi_v<NtkSource>,
+                  "NtkSource does not implement the foreach_pi method");
+    static_assert(has_foreach_gate_v<NtkSource>,
+                  "NtkSource does not implement the foreach_gate method");
+    static_assert(has_foreach_fanin_v<NtkSource>,
+                  "NtkSource does not implement the foreach_fanin method");
+    static_assert(has_get_constant_v<NtkSource>,
+                  "NtkSource does not implement the get_constant method");
+    static_assert(has_get_node_v<NtkSource>,
+                  "NtkSource does not implement the get_node method");
+    static_assert(has_is_constant_v<NtkSource>,
+                  "NtkSource does not implement the is_constant method");
+    static_assert(has_is_pi_v<NtkSource>,
+                  "NtkSource does not implement the is_pi method");
+    static_assert(has_is_complemented_v<NtkSource>,
+                  "NtkSource does not implement the is_complemented method");
+    static_assert(has_node_function_v<NtkSource>,
+                  "NtkSource does not implement the node_function method");
 
-  NtkDest dest;
-  node_map<signal<NtkDest>, NtkSource> node_to_signal( ntk );
+    NtkDest dest;
+    node_map<signal<NtkDest>, NtkSource> node_to_signal(ntk);
 
-  ntk.foreach_pi( [&]( auto const& n ) {
-    node_to_signal[n] = dest.create_pi();
-  } );
+    ntk.foreach_pi(
+        [&](auto const& n) { node_to_signal[n] = dest.create_pi(); });
 
-  node_to_signal[ntk.get_constant( false )] = dest.get_constant( false );
-  if ( ntk.get_node( ntk.get_constant( false ) ) != ntk.get_node( ntk.get_constant( true ) ) )
-  {
-    node_to_signal[ntk.get_constant( true )] = dest.get_constant( true );
-  }
+    node_to_signal[ntk.get_constant(false)] = dest.get_constant(false);
+    if (ntk.get_node(ntk.get_constant(false)) !=
+        ntk.get_node(ntk.get_constant(true))) {
+        node_to_signal[ntk.get_constant(true)] = dest.get_constant(true);
+    }
 
-  ntk.foreach_gate( [&]( auto const& n ) {
-    std::vector<signal<NtkDest>> children;
-    auto func = ntk.node_function( n );
-    ntk.foreach_fanin( n, [&]( auto const& c, auto i ) {
-      if ( ntk.is_complemented( c ) )
-      {
-        kitty::flip_inplace( func, i );
-      }
-      children.push_back( node_to_signal[c] );
-    } );
+    ntk.foreach_gate([&](auto const& n) {
+        std::vector<signal<NtkDest>> children;
+        auto func = ntk.node_function(n);
+        ntk.foreach_fanin(n, [&](auto const& c, auto i) {
+            if (ntk.is_complemented(c)) {
+                kitty::flip_inplace(func, i);
+            }
+            children.push_back(node_to_signal[c]);
+        });
 
-    node_to_signal[n] = dest.create_node( children, func );
-  } );
+        node_to_signal[n] = dest.create_node(children, func);
+    });
 
-  /* outputs */
-  ntk.foreach_po( [&]( auto const& s ) {
-    dest.create_po( ntk.is_complemented( s ) ? dest.create_not( node_to_signal[s] ) : node_to_signal[s] );
-  } );
+    /* outputs */
+    ntk.foreach_po([&](auto const& s) {
+        dest.create_po(ntk.is_complemented(s)
+                           ? dest.create_not(node_to_signal[s])
+                           : node_to_signal[s]);
+    });
 
-  return dest;
+    return dest;
 }
 
 } /* namespace mockturtle */

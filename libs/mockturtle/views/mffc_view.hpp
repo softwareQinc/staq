@@ -42,8 +42,7 @@
 
 #include <sparsepp/spp.h>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Implements an isolated view on the MFFC of a node.
  *
@@ -69,237 +68,227 @@ namespace mockturtle
  * - `is_constant`
  * - `node_to_index`
  */
-template<typename Ntk>
-class mffc_view : public immutable_view<Ntk>
-{
-public:
-  using storage = typename Ntk::storage;
-  using node = typename Ntk::node;
-  using signal = typename Ntk::signal;
+template <typename Ntk>
+class mffc_view : public immutable_view<Ntk> {
+  public:
+    using storage = typename Ntk::storage;
+    using node = typename Ntk::node;
+    using signal = typename Ntk::signal;
 
-public:
-  explicit mffc_view( Ntk const& ntk, node const& root )
-      : immutable_view<Ntk>( ntk ), _root( root )
-  {
-    static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-    static_assert( has_get_node_v<Ntk>, "Ntk does not implement the get_node method" );
-    static_assert( has_decr_value_v<Ntk>, "Ntk does not implement the decr_value method" );
-    static_assert( has_incr_value_v<Ntk>, "Ntk does not implement the incr_value method" );
-    static_assert( has_value_v<Ntk>, "Ntk does not implement the value method" );
-    static_assert( has_foreach_fanin_v<Ntk>, "Ntk does not implement the foreach_fanin method" );
-    static_assert( has_is_constant_v<Ntk>, "Ntk does not implement the is_constant method" );
-    static_assert( has_is_pi_v<Ntk>, "Ntk does not implement the is_pi method" );
-    static_assert( has_node_to_index_v<Ntk>, "Ntk does not implement the node_to_index method" );
+  public:
+    explicit mffc_view(Ntk const& ntk, node const& root)
+        : immutable_view<Ntk>(ntk), _root(root) {
+        static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+        static_assert(has_get_node_v<Ntk>,
+                      "Ntk does not implement the get_node method");
+        static_assert(has_decr_value_v<Ntk>,
+                      "Ntk does not implement the decr_value method");
+        static_assert(has_incr_value_v<Ntk>,
+                      "Ntk does not implement the incr_value method");
+        static_assert(has_value_v<Ntk>,
+                      "Ntk does not implement the value method");
+        static_assert(has_foreach_fanin_v<Ntk>,
+                      "Ntk does not implement the foreach_fanin method");
+        static_assert(has_is_constant_v<Ntk>,
+                      "Ntk does not implement the is_constant method");
+        static_assert(has_is_pi_v<Ntk>,
+                      "Ntk does not implement the is_pi method");
+        static_assert(has_node_to_index_v<Ntk>,
+                      "Ntk does not implement the node_to_index method");
 
-    const auto c0 = this->get_node( this->get_constant( false ));
-    _constants.push_back( c0);
-    _node_to_index.emplace( c0, _node_to_index.size());
+        const auto c0 = this->get_node(this->get_constant(false));
+        _constants.push_back(c0);
+        _node_to_index.emplace(c0, _node_to_index.size());
 
-    const auto c1 = this->get_node( this->get_constant( true));
-    if ( c1 != c0 )
-    {
-      _constants.push_back( c1);
-      _node_to_index.emplace( c1, _node_to_index.size());
-      ++_num_constants;
-    }
-
-    _leaves.reserve( 16 );
-    _nodes.reserve( _limit );
-    _inner.reserve( _limit );
-    update_mffcs();
-  }
-
-  inline auto size() const { return _num_constants + _num_leaves + _inner.size(); }
-  inline auto num_pis() const { return _num_leaves; }
-  inline auto num_pos() const { return _empty ? 0u : 1u; }
-  inline auto num_gates() const { return _inner.size(); }
-
-  inline bool is_pi( node const& pi ) const
-  {
-    return std::find( _leaves.begin(), _leaves.end(), pi ) != _leaves.end();
-  }
-
-  template<typename Fn>
-  void foreach_pi( Fn&& fn ) const
-  {
-    detail::foreach_element( _leaves.begin(), _leaves.end(), fn );
-  }
-
-  template<typename Fn>
-  void foreach_po( Fn&& fn ) const
-  {
-    if ( _empty ) return;
-    std::vector<signal> signals( 1, this->make_signal( _root ) );
-    detail::foreach_element( signals.begin(), signals.end(), fn );
-  }
-
-  template<typename Fn>
-  void foreach_gate( Fn&& fn ) const
-  {
-    detail::foreach_element( _inner.begin(), _inner.end(), fn );
-  }
-
-  template<typename Fn>
-  void foreach_node( Fn&& fn ) const
-  {
-    detail::foreach_element( _constants.begin(), _constants.end(), fn );
-    detail::foreach_element( _leaves.begin(), _leaves.end(), fn, _num_constants );
-    detail::foreach_element( _inner.begin(), _inner.end(), fn, _num_constants + _num_leaves );
-  }
-
-  inline auto index_to_node( uint32_t index ) const
-  {
-    if ( index < _num_constants )
-    {
-      return _constants[index];
-    }
-    if ( index < _num_constants + _num_leaves )
-    {
-      return _leaves[index - _num_constants];
-    }
-    return _inner[index - _num_constants - _num_leaves];
-  }
-
-  inline auto node_to_index( node const& n ) const { return _node_to_index.at( n ); }
-
-  void update_mffcs()
-  {
-    _leaves.clear();
-    _inner.clear();
-    if ( collect( _root ) )
-    {
-      _empty = false;
-      compute_sets();
-    }
-    else
-    {
-      _empty = true;
-    }
-    _num_leaves = static_cast<uint32_t>( _leaves.size() );
-
-    /* restore ref counts */
-    for ( auto const& n : _nodes )
-    {
-      this->incr_value( n );
-    }
-  }
-
-private:
-  bool collect( node const& n )
-  {
-    if ( Ntk::is_constant( n ) )
-      return true;
-
-    if ( Ntk::is_pi( n ) )
-    {
-      _nodes.push_back( n );
-      return true;
-    }
-
-    /* we break from the loop over the fanins, if we find that _nodes contains
-       too many nodes; the return value is stored in ret_val */
-    bool ret_val = true;
-    this->foreach_fanin( n, [&]( auto const& f ) {
-      _nodes.push_back( this->get_node( f ) );
-      if ( this->decr_value( this->get_node( f ) ) == 0 && ( _nodes.size() > _limit || !collect( this->get_node( f ) ) ) )
-      {
-        ret_val = false;
-        return false;
-      }
-      return true;
-    } );
-
-    return ret_val;
-  }
-
-  void compute_sets()
-  {
-    //std::sort( _nodes.begin(), _nodes.end(),
-    //           [&]( auto const& n1, auto const& n2 ) { return static_cast<Ntk*>( this )->node_to_index( n1 ) < static_cast<Ntk*>( this )->node_to_index( n2 ); } );
-    std::sort( _nodes.begin(), _nodes.end() );
-
-    for ( auto const& n : _nodes )
-    {
-      if ( Ntk::is_constant( n ) )
-      {
-        continue;
-      }
-
-      if ( this->value( n ) > 0 || Ntk::is_pi( n ) ) /* PI candidate */
-      {
-        if ( _leaves.empty() || _leaves.back() != n )
-        {
-          _leaves.push_back( n );
+        const auto c1 = this->get_node(this->get_constant(true));
+        if (c1 != c0) {
+            _constants.push_back(c1);
+            _node_to_index.emplace(c1, _node_to_index.size());
+            ++_num_constants;
         }
-      }
-      else
-      {
-        if ( _inner.empty() || _inner.back() != n )
-        {
-          _inner.push_back( n );
+
+        _leaves.reserve(16);
+        _nodes.reserve(_limit);
+        _inner.reserve(_limit);
+        update_mffcs();
+    }
+
+    inline auto size() const {
+        return _num_constants + _num_leaves + _inner.size();
+    }
+    inline auto num_pis() const { return _num_leaves; }
+    inline auto num_pos() const { return _empty ? 0u : 1u; }
+    inline auto num_gates() const { return _inner.size(); }
+
+    inline bool is_pi(node const& pi) const {
+        return std::find(_leaves.begin(), _leaves.end(), pi) != _leaves.end();
+    }
+
+    template <typename Fn>
+    void foreach_pi(Fn&& fn) const {
+        detail::foreach_element(_leaves.begin(), _leaves.end(), fn);
+    }
+
+    template <typename Fn>
+    void foreach_po(Fn&& fn) const {
+        if (_empty)
+            return;
+        std::vector<signal> signals(1, this->make_signal(_root));
+        detail::foreach_element(signals.begin(), signals.end(), fn);
+    }
+
+    template <typename Fn>
+    void foreach_gate(Fn&& fn) const {
+        detail::foreach_element(_inner.begin(), _inner.end(), fn);
+    }
+
+    template <typename Fn>
+    void foreach_node(Fn&& fn) const {
+        detail::foreach_element(_constants.begin(), _constants.end(), fn);
+        detail::foreach_element(_leaves.begin(), _leaves.end(), fn,
+                                _num_constants);
+        detail::foreach_element(_inner.begin(), _inner.end(), fn,
+                                _num_constants + _num_leaves);
+    }
+
+    inline auto index_to_node(uint32_t index) const {
+        if (index < _num_constants) {
+            return _constants[index];
         }
-      }
+        if (index < _num_constants + _num_leaves) {
+            return _leaves[index - _num_constants];
+        }
+        return _inner[index - _num_constants - _num_leaves];
     }
 
-    for ( auto const& n : _leaves )
-    {
-      _node_to_index.emplace( n, _node_to_index.size() );
-    }
-    for ( auto const& n : _inner )
-    {
-      _node_to_index.emplace( n, _node_to_index.size() );
+    inline auto node_to_index(node const& n) const {
+        return _node_to_index.at(n);
     }
 
-    _inner.push_back( _root );
-    _node_to_index.emplace( _root, _node_to_index.size() );
+    void update_mffcs() {
+        _leaves.clear();
+        _inner.clear();
+        if (collect(_root)) {
+            _empty = false;
+            compute_sets();
+        } else {
+            _empty = true;
+        }
+        _num_leaves = static_cast<uint32_t>(_leaves.size());
 
-    /* sort topologically */
-    _topo.clear();
-    _colors.clear();
-    const auto _size = _num_constants + _inner.size() + _leaves.size();
-    _colors.resize( _size, 0 );
-    std::for_each( _leaves.begin(), _leaves.end(), [&]( auto& l ) { _colors[_node_to_index[l]] = 2u; } );
-    for ( auto i = 0u; i < _num_constants; ++i ) { _colors[i] = 2u; }
-    topo_sort_rec( _root );
+        /* restore ref counts */
+        for (auto const& n : _nodes) {
+            this->incr_value(n);
+        }
+    }
 
-    assert( _inner.size() == _topo.size() );
-    _inner = _topo;
-  }
+  private:
+    bool collect(node const& n) {
+        if (Ntk::is_constant(n))
+            return true;
 
-  void topo_sort_rec( node const& n )
-  {
-    const auto idx = _node_to_index[n];
+        if (Ntk::is_pi(n)) {
+            _nodes.push_back(n);
+            return true;
+        }
 
-    /* is permanently marked? */
-    if ( _colors[idx] == 2u )
-      return;
+        /* we break from the loop over the fanins, if we find that _nodes
+           contains too many nodes; the return value is stored in ret_val */
+        bool ret_val = true;
+        this->foreach_fanin(n, [&](auto const& f) {
+            _nodes.push_back(this->get_node(f));
+            if (this->decr_value(this->get_node(f)) == 0 &&
+                (_nodes.size() > _limit || !collect(this->get_node(f)))) {
+                ret_val = false;
+                return false;
+            }
+            return true;
+        });
 
-    /* mark node temporarily */
-    _colors[idx] = 1u;
+        return ret_val;
+    }
 
-    /* mark children */
-    Ntk::foreach_fanin( n, [&]( auto const& f ) {
-      topo_sort_rec( Ntk::get_node( f ) );
-    } );
+    void compute_sets() {
+        // std::sort( _nodes.begin(), _nodes.end(),
+        //           [&]( auto const& n1, auto const& n2 ) { return
+        //           static_cast<Ntk*>( this )->node_to_index( n1 ) <
+        //           static_cast<Ntk*>( this )->node_to_index( n2 ); } );
+        std::sort(_nodes.begin(), _nodes.end());
 
-    /* mark node n permanently */
-    _colors[idx] = 2u;
+        for (auto const& n : _nodes) {
+            if (Ntk::is_constant(n)) {
+                continue;
+            }
 
-    _topo.push_back( n );
-  }
+            if (this->value(n) > 0 || Ntk::is_pi(n)) /* PI candidate */
+            {
+                if (_leaves.empty() || _leaves.back() != n) {
+                    _leaves.push_back(n);
+                }
+            } else {
+                if (_inner.empty() || _inner.back() != n) {
+                    _inner.push_back(n);
+                }
+            }
+        }
 
-public:
-  std::vector<node> _nodes, _constants, _leaves, _inner, _topo;
-  std::vector<uint8_t> _colors;
-  unsigned _num_constants{1}, _num_leaves{0};
-  spp::sparse_hash_map<node, uint32_t> _node_to_index;
-  node _root;
-  bool _empty{true};
-  uint32_t _limit{100};
+        for (auto const& n : _leaves) {
+            _node_to_index.emplace(n, _node_to_index.size());
+        }
+        for (auto const& n : _inner) {
+            _node_to_index.emplace(n, _node_to_index.size());
+        }
+
+        _inner.push_back(_root);
+        _node_to_index.emplace(_root, _node_to_index.size());
+
+        /* sort topologically */
+        _topo.clear();
+        _colors.clear();
+        const auto _size = _num_constants + _inner.size() + _leaves.size();
+        _colors.resize(_size, 0);
+        std::for_each(_leaves.begin(), _leaves.end(),
+                      [&](auto& l) { _colors[_node_to_index[l]] = 2u; });
+        for (auto i = 0u; i < _num_constants; ++i) {
+            _colors[i] = 2u;
+        }
+        topo_sort_rec(_root);
+
+        assert(_inner.size() == _topo.size());
+        _inner = _topo;
+    }
+
+    void topo_sort_rec(node const& n) {
+        const auto idx = _node_to_index[n];
+
+        /* is permanently marked? */
+        if (_colors[idx] == 2u)
+            return;
+
+        /* mark node temporarily */
+        _colors[idx] = 1u;
+
+        /* mark children */
+        Ntk::foreach_fanin(
+            n, [&](auto const& f) { topo_sort_rec(Ntk::get_node(f)); });
+
+        /* mark node n permanently */
+        _colors[idx] = 2u;
+
+        _topo.push_back(n);
+    }
+
+  public:
+    std::vector<node> _nodes, _constants, _leaves, _inner, _topo;
+    std::vector<uint8_t> _colors;
+    unsigned _num_constants{1}, _num_leaves{0};
+    spp::sparse_hash_map<node, uint32_t> _node_to_index;
+    node _root;
+    bool _empty{true};
+    uint32_t _limit{100};
 };
 
-template<class T>
-mffc_view(T const&, typename T::node const&) -> mffc_view<T>;
-
+template <class T>
+mffc_view(T const&, typename T::node const&)->mffc_view<T>;
 
 } /* namespace mockturtle */

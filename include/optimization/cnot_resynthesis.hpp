@@ -45,8 +45,7 @@ namespace optimization {
  */
 class CNOTOptimizer final : public ast::Replacer {
   public:
-    struct config {
-    };
+    struct config {};
 
     CNOTOptimizer() = default;
     CNOTOptimizer(const config& params) : Replacer(), config_(params) {}
@@ -70,16 +69,14 @@ class CNOTOptimizer final : public ast::Replacer {
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
         return std::move(tmp);
     }
-    std::optional<std::list<ast::ptr<ast::Stmt>>>
-    replace(ast::IfStmt& stmt) {
+    std::optional<std::list<ast::ptr<ast::Stmt>>> replace(ast::IfStmt& stmt) {
         auto tmp = flush<ast::Stmt>();
         tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
         return std::move(tmp);
     }
 
     /* Gates */
-    std::optional<std::list<ast::ptr<ast::Gate>>>
-    replace(ast::UGate& gate) {
+    std::optional<std::list<ast::ptr<ast::Gate>>> replace(ast::UGate& gate) {
         if (is_zero(gate.theta()) && is_zero(gate.phi())) {
             // It's a z-axis rotation
             auto idx = get_index(gate.arg());
@@ -96,8 +93,7 @@ class CNOTOptimizer final : public ast::Replacer {
             return std::move(tmp);
         }
     }
-    std::optional<std::list<ast::ptr<ast::Gate>>>
-    replace(ast::CNOTGate& gate) {
+    std::optional<std::list<ast::ptr<ast::Gate>>> replace(ast::CNOTGate& gate) {
         auto ctrl = get_index(gate.ctrl());
         auto tgt = get_index(gate.tgt());
 
@@ -132,8 +128,7 @@ class CNOTOptimizer final : public ast::Replacer {
         } else if (name == "z") {
             auto idx = get_index(gate.qarg(0));
 
-            add_phase(permutation_[idx],
-                      ast::angle_to_expr(utils::angles::pi));
+            add_phase(permutation_[idx], ast::angle_to_expr(utils::angles::pi));
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "s") {
             auto idx = get_index(gate.qarg(0));
@@ -181,8 +176,8 @@ class CNOTOptimizer final : public ast::Replacer {
         std::swap(permutation_, local_permutation);
 
         for (auto& var : decl.q_params())
-          get_index(ast::VarAccess(decl.pos(), var));
-         
+            get_index(ast::VarAccess(decl.pos(), var));
+
         Replacer::visit(decl);
 
         // Flush remaining state
@@ -207,7 +202,7 @@ class CNOTOptimizer final : public ast::Replacer {
         for (int i = 0; i < decl.size(); i++)
             get_index(ast::VarAccess(decl.pos(), decl.id(), i));
 
-        //TODO: make use of zero-valued ancillas
+        // TODO: make use of zero-valued ancillas
     }
 
     /* Program */
@@ -239,10 +234,9 @@ class CNOTOptimizer final : public ast::Replacer {
         for (auto it = phases_.begin(); it != phases_.end(); it++) {
             if (it->first == parity) {
                 parser::Position pos;
-                it->second = ast::BExpr::create(pos,
-                                                std::move(it->second),
-                                                ast::BinaryOp::Plus,
-                                                std::move(e));
+                it->second =
+                    ast::BExpr::create(pos, std::move(it->second),
+                                       ast::BinaryOp::Plus, std::move(e));
                 return;
             }
         }
@@ -261,11 +255,10 @@ class CNOTOptimizer final : public ast::Replacer {
         for (auto& gate : synthesis::gray_synth(phases_, permutation_)) {
             std::visit(
                 utils::overloaded{
-                  [&ret, this](std::pair<int, int>& cx) {
-                        ret.emplace_back(
-                            generate_cnot(cx.first, cx.second));
+                    [&ret, this](std::pair<int, int>& cx) {
+                        ret.emplace_back(generate_cnot(cx.first, cx.second));
                     },
-                    [&ret, this](std::pair<ast::ptr<ast::Expr>,int>& rz) {
+                    [&ret, this](std::pair<ast::ptr<ast::Expr>, int>& rz) {
                         ret.emplace_back(
                             generate_rz(std::move(rz.first), rz.second));
                     }},
@@ -297,15 +290,15 @@ class CNOTOptimizer final : public ast::Replacer {
             map_qubit_.emplace(n, va);
 
             // Extend the current permutation
-            permutation_.emplace_back(std::vector<bool>(n+1, false));
+            permutation_.emplace_back(std::vector<bool>(n + 1, false));
             for (auto i = 0; i < n; i++) {
-              permutation_[i].emplace_back(false);
+                permutation_[i].emplace_back(false);
             }
             permutation_[n][n] = true;
 
             // Extend all other vectors
             for (auto& [vec, angle] : phases_)
-              vec.emplace_back(false);
+                vec.emplace_back(false);
 
             return n;
         }
@@ -313,8 +306,7 @@ class CNOTOptimizer final : public ast::Replacer {
 
     /* Gate generation */
     // Assumes basic gates (x, y, z, s, sdg, t, tdg, rz) are defined
-    ast::ptr<ast::DeclaredGate>
-    generate_rz(ast::ptr<ast::Expr> theta, int i) {
+    ast::ptr<ast::DeclaredGate> generate_rz(ast::ptr<ast::Expr> theta, int i) {
         auto c = theta->constant_eval();
 
         parser::Position pos;
@@ -333,16 +325,16 @@ class CNOTOptimizer final : public ast::Replacer {
             if (*c == utils::pi) {
                 // Z gate
                 name = "z";
-            } else if (*c == utils::pi/2) {
+            } else if (*c == utils::pi / 2) {
                 // S gate
                 name = "s";
-            } else if (*c == 3*utils::pi/2) {
+            } else if (*c == 3 * utils::pi / 2) {
                 // Sdg gate
                 name = "sdg";
-            } else if (*c == utils::pi/4) {
+            } else if (*c == utils::pi / 4) {
                 // T gate
                 name = "t";
-            } else if (*c == 7*utils::pi/4) {
+            } else if (*c == 7 * utils::pi / 4) {
                 // Tdg gate
                 name = "tdg";
             } else {
@@ -352,22 +344,20 @@ class CNOTOptimizer final : public ast::Replacer {
             }
         }
 
-        return std::make_unique<ast::DeclaredGate>(
-            pos, name, std::move(cargs), std::move(qargs));
+        return std::make_unique<ast::DeclaredGate>(pos, name, std::move(cargs),
+                                                   std::move(qargs));
     }
 
-    ast::ptr<ast::DeclaredGate>
-    generate_cnot(int i, int j) {
+    ast::ptr<ast::DeclaredGate> generate_cnot(int i, int j) {
         parser::Position pos;
         std::string name = "cx";
         std::vector<ast::ptr<ast::Expr>> cargs;
         std::vector<ast::VarAccess> qargs{(map_qubit_.find(i))->second,
                                           (map_qubit_.find(j))->second};
 
-        return std::make_unique<ast::DeclaredGate>(
-            pos, name, std::move(cargs), std::move(qargs));
+        return std::make_unique<ast::DeclaredGate>(pos, name, std::move(cargs),
+                                                   std::move(qargs));
     }
-
 };
 
 /** \brief Performs CNOT optimization */
@@ -378,7 +368,7 @@ static void optimize_CNOT(ast::ASTNode& node) {
 
 /** \brief Performs CNOT optimization with configuration */
 static void optimize_CNOT(ast::ASTNode& node,
-                           const CNOTOptimizer::config& params) {
+                          const CNOTOptimizer::config& params) {
     CNOTOptimizer optimizer(params);
     optimizer.run(node);
 }

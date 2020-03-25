@@ -41,18 +41,16 @@
 
 #include <fmt/format.h>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Parameters for node_resynthesis.
  *
  * The data structure `node_resynthesis_params` holds configurable parameters
  * with default arguments for `node_resynthesis`.
  */
-struct node_resynthesis_params
-{
-  /*! \brief Be verbose. */
-  bool verbose{false};
+struct node_resynthesis_params {
+    /*! \brief Be verbose. */
+    bool verbose{false};
 };
 
 /*! \brief Statistics for node_resynthesis.
@@ -60,81 +58,79 @@ struct node_resynthesis_params
  * The data structure `node_resynthesis_stats` provides data collected by
  * running `node_resynthesis`.
  */
-struct node_resynthesis_stats
-{
-  /*! \brief Total runtime. */
-  stopwatch<>::duration time_total{0};
+struct node_resynthesis_stats {
+    /*! \brief Total runtime. */
+    stopwatch<>::duration time_total{0};
 
-  void report() const
-  {
-    std::cout << fmt::format( "[i] total time = {:>5.2f} secs\n", to_seconds( time_total ) );
-  }
+    void report() const {
+        std::cout << fmt::format("[i] total time = {:>5.2f} secs\n",
+                                 to_seconds(time_total));
+    }
 };
 
-namespace detail
-{
+namespace detail {
 
-template<class NtkDest, class NtkSource, class ResynthesisFn>
-class node_resynthesis_impl
-{
-public:
-  node_resynthesis_impl( NtkSource const& ntk, ResynthesisFn&& resynthesis_fn, node_resynthesis_params const& ps, node_resynthesis_stats& st )
-      : ntk( ntk ),
-        resynthesis_fn( resynthesis_fn ),
-        ps( ps ),
-        st( st )
-  {
-  }
+template <class NtkDest, class NtkSource, class ResynthesisFn>
+class node_resynthesis_impl {
+  public:
+    node_resynthesis_impl(NtkSource const& ntk, ResynthesisFn&& resynthesis_fn,
+                          node_resynthesis_params const& ps,
+                          node_resynthesis_stats& st)
+        : ntk(ntk), resynthesis_fn(resynthesis_fn), ps(ps), st(st) {}
 
-  NtkDest run()
-  {
-    stopwatch t( st.time_total );
+    NtkDest run() {
+        stopwatch t(st.time_total);
 
-    NtkDest ntk_dest;
-    node_map<signal<NtkDest>, NtkSource> node2new( ntk );
+        NtkDest ntk_dest;
+        node_map<signal<NtkDest>, NtkSource> node2new(ntk);
 
-    /* map constants */
-    node2new[ntk.get_node( ntk.get_constant( false ) )] = ntk_dest.get_constant( false );
-    if ( ntk.get_node( ntk.get_constant( true ) ) != ntk.get_node( ntk.get_constant( false ) ) )
-    {
-      node2new[ntk.get_node( ntk.get_constant( true ) )] = ntk_dest.get_constant( true );
+        /* map constants */
+        node2new[ntk.get_node(ntk.get_constant(false))] =
+            ntk_dest.get_constant(false);
+        if (ntk.get_node(ntk.get_constant(true)) !=
+            ntk.get_node(ntk.get_constant(false))) {
+            node2new[ntk.get_node(ntk.get_constant(true))] =
+                ntk_dest.get_constant(true);
+        }
+
+        /* map primary inputs */
+        ntk.foreach_pi([&](auto n) { node2new[n] = ntk_dest.create_pi(); });
+
+        /* map nodes */
+        topo_view ntk_topo{ntk};
+        ntk_topo.foreach_node([&](auto n) {
+            if (ntk.is_constant(n) || ntk.is_pi(n))
+                return;
+
+            std::vector<signal<NtkDest>> children;
+            ntk.foreach_fanin(n, [&](auto const& f) {
+                children.push_back(ntk.is_complemented(f)
+                                       ? ntk_dest.create_not(node2new[f])
+                                       : node2new[f]);
+            });
+
+            resynthesis_fn(ntk_dest, ntk.node_function(n), children.begin(),
+                           children.end(), [&](auto const& f) {
+                               node2new[n] = f;
+                               return false;
+                           });
+        });
+
+        /* map primary outputs */
+        ntk.foreach_po([&](auto const& f) {
+            ntk_dest.create_po(ntk.is_complemented(f)
+                                   ? ntk_dest.create_not(node2new[f])
+                                   : node2new[f]);
+        });
+
+        return ntk_dest;
     }
 
-    /* map primary inputs */
-    ntk.foreach_pi( [&]( auto n ) {
-      node2new[n] = ntk_dest.create_pi();
-    } );
-
-    /* map nodes */
-    topo_view ntk_topo{ntk};
-    ntk_topo.foreach_node( [&]( auto n ) {
-      if ( ntk.is_constant( n ) || ntk.is_pi( n ) )
-        return;
-
-      std::vector<signal<NtkDest>> children;
-      ntk.foreach_fanin( n, [&]( auto const& f ) {
-        children.push_back( ntk.is_complemented( f ) ? ntk_dest.create_not( node2new[f] ) : node2new[f] );
-      } );
-
-      resynthesis_fn( ntk_dest, ntk.node_function( n ), children.begin(), children.end(), [&]( auto const& f ) {
-        node2new[n] = f;
-        return false;
-      } );
-    } );
-
-    /* map primary outputs */
-    ntk.foreach_po( [&]( auto const& f ) {
-      ntk_dest.create_po( ntk.is_complemented( f ) ? ntk_dest.create_not( node2new[f] ) : node2new[f] );
-    } );
-
-    return ntk_dest;
-  }
-
-private:
-  NtkSource const& ntk;
-  ResynthesisFn&& resynthesis_fn;
-  node_resynthesis_params const& ps;
-  node_resynthesis_stats& st;
+  private:
+    NtkSource const& ntk;
+    ResynthesisFn&& resynthesis_fn;
+    node_resynthesis_params const& ps;
+    node_resynthesis_stats& st;
 };
 
 } /* namespace detail */
@@ -176,41 +172,56 @@ private:
  * \param resynthesis_fn Resynthesis function
  * \return An equivalent network of type `NtkDest`
  */
-template<class NtkDest, class NtkSource, class ResynthesisFn>
-NtkDest node_resynthesis( NtkSource const& ntk, ResynthesisFn&& resynthesis_fn, node_resynthesis_params const& ps = {}, node_resynthesis_stats* pst = nullptr )
-{
-  static_assert( is_network_type_v<NtkSource>, "NtkSource is not a network type" );
-  static_assert( is_network_type_v<NtkDest>, "NtkDest is not a network type" );
+template <class NtkDest, class NtkSource, class ResynthesisFn>
+NtkDest node_resynthesis(NtkSource const& ntk, ResynthesisFn&& resynthesis_fn,
+                         node_resynthesis_params const& ps = {},
+                         node_resynthesis_stats* pst = nullptr) {
+    static_assert(is_network_type_v<NtkSource>,
+                  "NtkSource is not a network type");
+    static_assert(is_network_type_v<NtkDest>, "NtkDest is not a network type");
 
-  static_assert( has_get_node_v<NtkSource>, "NtkSource does not implement the get_node method" );
-  static_assert( has_get_constant_v<NtkSource>, "NtkSource does not implement the get_constant method" );
-  static_assert( has_foreach_pi_v<NtkSource>, "NtkSource does not implement the foreach_pi method" );
-  static_assert( has_foreach_node_v<NtkSource>, "NtkSource does not implement the foreach_node method" );
-  static_assert( has_is_constant_v<NtkSource>, "NtkSource does not implement the is_constant method" );
-  static_assert( has_is_pi_v<NtkSource>, "NtkSource does not implement the is_pi method" );
-  static_assert( has_is_complemented_v<NtkSource>, "NtkSource does not implement the is_complemented method" );
-  static_assert( has_foreach_fanin_v<NtkSource>, "NtkSource does not implement the foreach_fanin method" );
-  static_assert( has_node_function_v<NtkSource>, "NtkSource does not implement the node_function method" );
-  static_assert( has_foreach_po_v<NtkSource>, "NtkSource does not implement the foreach_po method" );
+    static_assert(has_get_node_v<NtkSource>,
+                  "NtkSource does not implement the get_node method");
+    static_assert(has_get_constant_v<NtkSource>,
+                  "NtkSource does not implement the get_constant method");
+    static_assert(has_foreach_pi_v<NtkSource>,
+                  "NtkSource does not implement the foreach_pi method");
+    static_assert(has_foreach_node_v<NtkSource>,
+                  "NtkSource does not implement the foreach_node method");
+    static_assert(has_is_constant_v<NtkSource>,
+                  "NtkSource does not implement the is_constant method");
+    static_assert(has_is_pi_v<NtkSource>,
+                  "NtkSource does not implement the is_pi method");
+    static_assert(has_is_complemented_v<NtkSource>,
+                  "NtkSource does not implement the is_complemented method");
+    static_assert(has_foreach_fanin_v<NtkSource>,
+                  "NtkSource does not implement the foreach_fanin method");
+    static_assert(has_node_function_v<NtkSource>,
+                  "NtkSource does not implement the node_function method");
+    static_assert(has_foreach_po_v<NtkSource>,
+                  "NtkSource does not implement the foreach_po method");
 
-  static_assert( has_get_constant_v<NtkDest>, "NtkDest does not implement the get_constant method" );
-  static_assert( has_create_pi_v<NtkDest>, "NtkDest does not implement the create_pi method" );
-  static_assert( has_create_not_v<NtkDest>, "NtkDest does not implement the create_not method" );
-  static_assert( has_create_po_v<NtkDest>, "NtkDest does not implement the create_po method" );
+    static_assert(has_get_constant_v<NtkDest>,
+                  "NtkDest does not implement the get_constant method");
+    static_assert(has_create_pi_v<NtkDest>,
+                  "NtkDest does not implement the create_pi method");
+    static_assert(has_create_not_v<NtkDest>,
+                  "NtkDest does not implement the create_not method");
+    static_assert(has_create_po_v<NtkDest>,
+                  "NtkDest does not implement the create_po method");
 
-  node_resynthesis_stats st;
-  detail::node_resynthesis_impl<NtkDest, NtkSource, ResynthesisFn> p( ntk, resynthesis_fn, ps, st );
-  const auto ret = p.run();
-  if ( ps.verbose )
-  {
-    st.report();
-  }
+    node_resynthesis_stats st;
+    detail::node_resynthesis_impl<NtkDest, NtkSource, ResynthesisFn> p(
+        ntk, resynthesis_fn, ps, st);
+    const auto ret = p.run();
+    if (ps.verbose) {
+        st.report();
+    }
 
-  if ( pst )
-  {
-    *pst = st;
-  }
-  return ret;
+    if (pst) {
+        *pst = st;
+    }
+    return ret;
 }
 
 } // namespace mockturtle

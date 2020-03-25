@@ -29,48 +29,54 @@
 #include <easy/esop/synthesis.hpp>
 #include <easy/esop/esop.hpp>
 
-namespace alice
-{
+namespace alice {
 
-class cover_command : public command
-{
-public:
-  explicit cover_command( const environment::ptr& env )
-      : command( env, "computes the cover of an incompletely-specified Boolean function and adds it to the ESOP store" )
-  {
-    opts.add_option( "store index", i, "Index in function storage (default: last element)" );
-  }
-
-protected:
-  rules validity_rules() const
-  {
-    rules rules;
-
-    rules.push_back( {[this]() { return uint32_t(i) < store<function_storee>().size() || ( i == -1 && store<function_storee>().size() > 0 ); }, "first index out of bounds"} );
-
-    return rules;
-  }
-
-  void execute()
-  {
-    const auto& elm = i == -1 ? store<function_storee>()[store<function_storee>().size() - 1u] : store<function_storee>()[i];
-
-    easy::esop::spec spec;
-    assert( elm.bits.num_bits() == elm.care.num_bits() );
-    for ( auto i = 0u; i < elm.bits.num_bits(); ++i )
-    {
-      spec.bits.append( 1, kitty::get_bit( elm.bits, i ) ? '1' : '0' );
-      spec.care.append( 1, kitty::get_bit( elm.care, i ) ? '1' : '0' );
+class cover_command : public command {
+  public:
+    explicit cover_command(const environment::ptr& env)
+        : command(env, "computes the cover of an incompletely-specified "
+                       "Boolean function and adds it to the ESOP store") {
+        opts.add_option("store index", i,
+                        "Index in function storage (default: last element)");
     }
 
-    std::reverse( spec.bits.begin(), spec.bits.end() );
-    std::reverse( spec.care.begin(), spec.care.end() );
+  protected:
+    rules validity_rules() const {
+        rules rules;
 
-    env->store<esop_storee>().extend() = {"", easy::esop::esop_cover( spec ), std::size_t( elm.bits.num_vars() ), 1};
-  }
+        rules.push_back(
+            {[this]() {
+                 return uint32_t(i) < store<function_storee>().size() ||
+                        (i == -1 && store<function_storee>().size() > 0);
+             },
+             "first index out of bounds"});
 
-private:
-  int i = -1;
+        return rules;
+    }
+
+    void execute() {
+        const auto& elm =
+            i == -1
+                ? store<function_storee>()[store<function_storee>().size() - 1u]
+                : store<function_storee>()[i];
+
+        easy::esop::spec spec;
+        assert(elm.bits.num_bits() == elm.care.num_bits());
+        for (auto i = 0u; i < elm.bits.num_bits(); ++i) {
+            spec.bits.append(1, kitty::get_bit(elm.bits, i) ? '1' : '0');
+            spec.care.append(1, kitty::get_bit(elm.care, i) ? '1' : '0');
+        }
+
+        std::reverse(spec.bits.begin(), spec.bits.end());
+        std::reverse(spec.care.begin(), spec.care.end());
+
+        env->store<esop_storee>().extend() = {"", easy::esop::esop_cover(spec),
+                                              std::size_t(elm.bits.num_vars()),
+                                              1};
+    }
+
+  private:
+    int i = -1;
 }; /* cover_command */
 
 } // namespace alice

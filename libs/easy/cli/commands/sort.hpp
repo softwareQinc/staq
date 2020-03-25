@@ -26,48 +26,46 @@
 #include <alice/alice.hpp>
 #include <algorithm>
 
-namespace alice
-{
+namespace alice {
 
-class sort_command : public command
-{
-public:
-  explicit sort_command( const environment::ptr& env )
-      : command( env, "sort current ESOP" )
-  {
-    opts.add_flag( "-i,--index", index, "Index" );
-    opts.add_flag( "-r,--random", random, "Randomize the cubes in the ESOP" );
-  }
-
-protected:
-  rules validity_rules() const
-  {
-    rules rules;
-
-    rules.push_back( {[this]() { return index == -1 || uint32_t(index) < store<esop_storee>().size(); }, "index out of bounds"} );
-
-    return rules;
-  }
-
-  void execute()
-  {
-    std::random_device rd;
-    std::mt19937 g( rd() );
-
-    auto& current = index == -1 ? store<esop_storee>().current() : store<esop_storee>()[index];
-    if ( random )
-    {
-      std::shuffle( current.esop.begin(), current.esop.end(), g );
+class sort_command : public command {
+  public:
+    explicit sort_command(const environment::ptr& env)
+        : command(env, "sort current ESOP") {
+        opts.add_flag("-i,--index", index, "Index");
+        opts.add_flag("-r,--random", random, "Randomize the cubes in the ESOP");
     }
-    else
-    {
-      std::sort( current.esop.begin(), current.esop.end() );
-    }
-  }
 
-private:
-  bool random;
-  int index = -1;
+  protected:
+    rules validity_rules() const {
+        rules rules;
+
+        rules.push_back({[this]() {
+                             return index == -1 ||
+                                    uint32_t(index) <
+                                        store<esop_storee>().size();
+                         },
+                         "index out of bounds"});
+
+        return rules;
+    }
+
+    void execute() {
+        std::random_device rd;
+        std::mt19937 g(rd());
+
+        auto& current = index == -1 ? store<esop_storee>().current()
+                                    : store<esop_storee>()[index];
+        if (random) {
+            std::shuffle(current.esop.begin(), current.esop.end(), g);
+        } else {
+            std::sort(current.esop.begin(), current.esop.end());
+        }
+    }
+
+  private:
+    bool random;
+    int index = -1;
 }; /* sort_command */
 
 } // namespace alice

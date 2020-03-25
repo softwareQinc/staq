@@ -41,108 +41,98 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace easy::esop
-{
+namespace easy::esop {
 
 /*! \cond PRIVATE */
-namespace detail
-{
+namespace detail {
 
-enum class pkrm_decomposition
-{
-  positive_davio,
-  negative_davio,
-  shannon
-};
+enum class pkrm_decomposition { positive_davio, negative_davio, shannon };
 
-template<typename TT>
-using expansion_cache = std::unordered_map<TT, std::pair<uint32_t, pkrm_decomposition>, kitty::hash<TT>>;
+template <typename TT>
+using expansion_cache =
+    std::unordered_map<TT, std::pair<uint32_t, pkrm_decomposition>,
+                       kitty::hash<TT>>;
 
-template<typename TT>
-inline uint32_t find_pkrm_expansions( const TT& tt, expansion_cache<TT>& cache, uint8_t var_index )
-{
-  /* terminal cases */
-  if ( is_const0( tt ) )
-  {
-    return 0;
-  }
-  if ( is_const0( ~tt ) )
-  {
-    return 1;
-  }
+template <typename TT>
+inline uint32_t find_pkrm_expansions(const TT& tt, expansion_cache<TT>& cache,
+                                     uint8_t var_index) {
+    /* terminal cases */
+    if (is_const0(tt)) {
+        return 0;
+    }
+    if (is_const0(~tt)) {
+        return 1;
+    }
 
-  /* already computed */
-  const auto it = cache.find( tt );
-  if ( it != cache.end() )
-  {
-    return it->second.first;
-  }
+    /* already computed */
+    const auto it = cache.find(tt);
+    if (it != cache.end()) {
+        return it->second.first;
+    }
 
-  const auto tt0 = cofactor0( tt, var_index );
-  const auto tt1 = cofactor1( tt, var_index );
+    const auto tt0 = cofactor0(tt, var_index);
+    const auto tt1 = cofactor1(tt, var_index);
 
-  const auto ex0 = find_pkrm_expansions( tt0, cache, var_index + 1 );
-  const auto ex1 = find_pkrm_expansions( tt1, cache, var_index + 1 );
-  const auto ex2 = find_pkrm_expansions( tt0 ^ tt1, cache, var_index + 1 );
+    const auto ex0 = find_pkrm_expansions(tt0, cache, var_index + 1);
+    const auto ex1 = find_pkrm_expansions(tt1, cache, var_index + 1);
+    const auto ex2 = find_pkrm_expansions(tt0 ^ tt1, cache, var_index + 1);
 
-  const auto ex_max = std::max( std::max( ex0, ex1 ), ex2 );
+    const auto ex_max = std::max(std::max(ex0, ex1), ex2);
 
-  uint32_t cost{};
-  pkrm_decomposition decomp;
+    uint32_t cost{};
+    pkrm_decomposition decomp;
 
-  if ( ex_max == ex0 )
-  {
-    cost = ex1 + ex2;
-    decomp = pkrm_decomposition::positive_davio;
-  }
-  else if ( ex_max == ex1 )
-  {
-    cost = ex0 + ex2;
-    decomp = pkrm_decomposition::negative_davio;
-  }
-  else
-  {
-    cost = ex0 + ex1;
-    decomp = pkrm_decomposition::shannon;
-  }
-  cache.insert( {tt, {cost, decomp}} );
-  return cost;
+    if (ex_max == ex0) {
+        cost = ex1 + ex2;
+        decomp = pkrm_decomposition::positive_davio;
+    } else if (ex_max == ex1) {
+        cost = ex0 + ex2;
+        decomp = pkrm_decomposition::negative_davio;
+    } else {
+        cost = ex0 + ex1;
+        decomp = pkrm_decomposition::shannon;
+    }
+    cache.insert({tt, {cost, decomp}});
+    return cost;
 }
 
-template<typename TT>
-inline void optimum_pkrm_rec( std::unordered_set<kitty::cube, kitty::hash<kitty::cube>>& pkrm, const TT& tt, const expansion_cache<TT>& cache, uint8_t var_index, const kitty::cube& c )
-{
-  /* terminal cases */
-  if ( is_const0( tt ) )
-  {
-    return;
-  }
-  if ( is_const0( ~tt ) )
-  {
-    add_to_cubes( pkrm, c );
-    return;
-  }
+template <typename TT>
+inline void optimum_pkrm_rec(
+    std::unordered_set<kitty::cube, kitty::hash<kitty::cube>>& pkrm,
+    const TT& tt, const expansion_cache<TT>& cache, uint8_t var_index,
+    const kitty::cube& c) {
+    /* terminal cases */
+    if (is_const0(tt)) {
+        return;
+    }
+    if (is_const0(~tt)) {
+        add_to_cubes(pkrm, c);
+        return;
+    }
 
-  const auto& p = cache.at( tt );
+    const auto& p = cache.at(tt);
 
-  const auto tt0 = cofactor0( tt, var_index );
-  const auto tt1 = cofactor1( tt, var_index );
+    const auto tt0 = cofactor0(tt, var_index);
+    const auto tt1 = cofactor1(tt, var_index);
 
-  switch ( p.second )
-  {
-  case pkrm_decomposition::positive_davio:
-    optimum_pkrm_rec( pkrm, tt0, cache, var_index + 1, c );
-    optimum_pkrm_rec( pkrm, tt0 ^ tt1, cache, var_index + 1, with_literal( c, var_index, true ) );
-    break;
-  case pkrm_decomposition::negative_davio:
-    optimum_pkrm_rec( pkrm, tt1, cache, var_index + 1, c );
-    optimum_pkrm_rec( pkrm, tt0 ^ tt1, cache, var_index + 1, with_literal( c, var_index, false ) );
-    break;
-  case pkrm_decomposition::shannon:
-    optimum_pkrm_rec( pkrm, tt0, cache, var_index + 1, with_literal( c, var_index, false ) );
-    optimum_pkrm_rec( pkrm, tt1, cache, var_index + 1, with_literal( c, var_index, true ) );
-    break;
-  }
+    switch (p.second) {
+        case pkrm_decomposition::positive_davio:
+            optimum_pkrm_rec(pkrm, tt0, cache, var_index + 1, c);
+            optimum_pkrm_rec(pkrm, tt0 ^ tt1, cache, var_index + 1,
+                             with_literal(c, var_index, true));
+            break;
+        case pkrm_decomposition::negative_davio:
+            optimum_pkrm_rec(pkrm, tt1, cache, var_index + 1, c);
+            optimum_pkrm_rec(pkrm, tt0 ^ tt1, cache, var_index + 1,
+                             with_literal(c, var_index, false));
+            break;
+        case pkrm_decomposition::shannon:
+            optimum_pkrm_rec(pkrm, tt0, cache, var_index + 1,
+                             with_literal(c, var_index, false));
+            optimum_pkrm_rec(pkrm, tt1, cache, var_index + 1,
+                             with_literal(c, var_index, true));
+            break;
+    }
 }
 } // namespace detail
 /*! \endcond */
@@ -156,16 +146,15 @@ inline void optimum_pkrm_rec( std::unordered_set<kitty::cube, kitty::hash<kitty:
 
   \param tt Truth table
 */
-template<typename TT>
-inline esop_t esop_from_optimum_pkrm( const TT& tt )
-{
-  std::unordered_set<kitty::cube, kitty::hash<kitty::cube>> cubes;
-  detail::expansion_cache<TT> cache;
+template <typename TT>
+inline esop_t esop_from_optimum_pkrm(const TT& tt) {
+    std::unordered_set<kitty::cube, kitty::hash<kitty::cube>> cubes;
+    detail::expansion_cache<TT> cache;
 
-  detail::find_pkrm_expansions( tt, cache, 0 );
-  detail::optimum_pkrm_rec( cubes, tt, cache, 0, kitty::cube() );
+    detail::find_pkrm_expansions(tt, cache, 0);
+    detail::optimum_pkrm_rec(cubes, tt, cache, 0, kitty::cube());
 
-  return esop_t( cubes.begin(), cubes.end() );
+    return esop_t(cubes.begin(), cubes.end());
 }
 
 } /* namespace easy::esop */

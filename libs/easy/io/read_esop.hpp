@@ -28,44 +28,36 @@
 #include <easy/esop/esop.hpp>
 #include <lorina/pla.hpp>
 
-namespace easy
-{
+namespace easy {
 
 /*! \brief lorina reader callback for PLA files
  *
  * Reads a PLA file and stores the terms as esop_t.
  *
  */
-class esop_storage_reader : public lorina::pla_reader
-{
-public:
-  esop_storage_reader( esop::esop_t& esop, unsigned& num_vars )
-      : _esop( esop ), _num_vars( num_vars )
-  {
-  }
+class esop_storage_reader : public lorina::pla_reader {
+  public:
+    esop_storage_reader(esop::esop_t& esop, unsigned& num_vars)
+        : _esop(esop), _num_vars(num_vars) {}
 
-  void on_number_of_inputs( std::size_t i ) const override
-  {
-    _num_vars = i;
-  }
+    void on_number_of_inputs(std::size_t i) const override { _num_vars = i; }
 
-  void on_term( const std::string& term, const std::string& out ) const override
-  {
-    assert( out == "1" );
-    _esop.emplace_back( term );
-  }
-
-  bool on_keyword( const std::string& keyword, const std::string& value ) const override
-  {
-    if ( keyword == "type" && value == "esop" )
-    {
-      return true;
+    void on_term(const std::string& term,
+                 const std::string& out) const override {
+        assert(out == "1");
+        _esop.emplace_back(term);
     }
-    return false;
-  }
 
-  esop::esop_t& _esop;
-  unsigned& _num_vars;
+    bool on_keyword(const std::string& keyword,
+                    const std::string& value) const override {
+        if (keyword == "type" && value == "esop") {
+            return true;
+        }
+        return false;
+    }
+
+    esop::esop_t& _esop;
+    unsigned& _num_vars;
 }; /* esop_storage_reader */
 
 } /* namespace easy */

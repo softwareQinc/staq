@@ -27,8 +27,7 @@
 
 #include <easy/esop/esop.hpp>
 
-namespace easy::esop
-{
+namespace easy::esop {
 
 /*! \brief Compute the T-count of a product term
  *
@@ -38,29 +37,24 @@ namespace easy::esop
  * \param num_vars Total number of lines (or qubits)
  * \return T-count, i.e., the number of T-gates for realizing the product term
  */
-inline uint64_t T_count( kitty::cube const& cube, uint32_t num_vars )
-{
-  auto const ac = cube.num_literals();
+inline uint64_t T_count(kitty::cube const& cube, uint32_t num_vars) {
+    auto const ac = cube.num_literals();
 
-  switch( ac )
-  {
-  case 0u:
-  case 1u:
-    return 0u;
-  case 2u:
-    return 7u;
-  default:
-    break;
-  }
+    switch (ac) {
+        case 0u:
+        case 1u:
+            return 0u;
+        case 2u:
+            return 7u;
+        default:
+            break;
+    }
 
-  if ( (num_vars - ac - 1) >= (ac - 1)/2 )
-  {
-    return 8 * ( ac - 1u );
-  }
-  else
-  {
-    return 16 * ( ac -1u );
-  }
+    if ((num_vars - ac - 1) >= (ac - 1) / 2) {
+        return 8 * (ac - 1u);
+    } else {
+        return 16 * (ac - 1u);
+    }
 }
 
 /*! \brief Compute the T-count of an ESOP form
@@ -71,16 +65,14 @@ inline uint64_t T_count( kitty::cube const& cube, uint32_t num_vars )
  * \param num_vars Total number of lines (or qubits)
  * \return T-count, i.e., the number of T-gates for realizing the ESOP form
  */
-inline uint64_t T_count( esop_t const& esop, uint32_t num_vars )
-{
-  uint64_t total_cost = 0u;
-  for ( auto i = 0u; i < esop.size(); ++i )
-  {
-    total_cost += T_count( esop[i], num_vars );
-  }
-  return total_cost;
+inline uint64_t T_count(esop_t const& esop, uint32_t num_vars) {
+    uint64_t total_cost = 0u;
+    for (auto i = 0u; i < esop.size(); ++i) {
+        total_cost += T_count(esop[i], num_vars);
+    }
+    return total_cost;
 }
-  
+
 } // namespace easy::esop
 
 // Local Variables:
@@ -88,4 +80,3 @@ inline uint64_t T_count( esop_t const& esop, uint32_t num_vars )
 // eval: (c-set-offset 'substatement-open 0)
 // eval: (c-set-offset 'innamespace 0)
 // End:
-

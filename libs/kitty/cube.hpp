@@ -39,218 +39,178 @@
 #include "hash.hpp"
 #include "detail/mscfix.hpp"
 
-namespace kitty
-{
-class cube
-{
-public:
-  /*! \brief Constructs the empty cube
+namespace kitty {
+class cube {
+  public:
+    /*! \brief Constructs the empty cube
 
-    Represents the one-cube
-  */
-  cube() : _value( 0 ) {} /* NOLINT */
+      Represents the one-cube
+    */
+    cube() : _value(0) {} /* NOLINT */
 
-  /*! \brief Constructs a cube from bits and mask
+    /*! \brief Constructs a cube from bits and mask
 
-    For a valid cube and to be consistent in the ternary values, we
-    assume that whenever a bit in the care bitmask is set to 0, also
-    the polarity bitmask must be 0.
+      For a valid cube and to be consistent in the ternary values, we
+      assume that whenever a bit in the care bitmask is set to 0, also
+      the polarity bitmask must be 0.
 
-    \param bits Polarity bitmask of variables (0: negative, 1: positive)
-    \param mask Care bitmask of variables (1: part of cube, 0: not part of cube)
-  */
-  cube( uint32_t bits, uint32_t mask ) : _bits( bits ), _mask( mask ) {} /* NOLINT */
+      \param bits Polarity bitmask of variables (0: negative, 1: positive)
+      \param mask Care bitmask of variables (1: part of cube, 0: not part of
+      cube)
+    */
+    cube(uint32_t bits, uint32_t mask)
+        : _bits(bits), _mask(mask) {} /* NOLINT */
 
-  /*! \brief Constructs a cube from a string
+    /*! \brief Constructs a cube from a string
 
-    Each character corresponds to one literal in the cube.  Only up to first 32
-    characters of the string will be considered, since this data structure
-    cannot represent cubes with more than 32 literals.  A '1' in the string
-    corresponds to a postive literal, a '0' corresponds to a negative literal.
-    All other characters represent don't care, but it is customary to use '-'.
+      Each character corresponds to one literal in the cube.  Only up to first
+      32 characters of the string will be considered, since this data structure
+      cannot represent cubes with more than 32 literals.  A '1' in the string
+      corresponds to a postive literal, a '0' corresponds to a negative literal.
+      All other characters represent don't care, but it is customary to use '-'.
 
-    \param str String representing a cube
-  */
-  // cppcheck-suppress noExplicitConstructor
-  cube( const std::string& str ) /* NOLINT */
-  {
-    _bits = _mask = 0u;
-
-    auto p = str.begin();
-
-    for ( uint64_t i = 1; i <= ( uint64_t( 1u ) << 32u ); i <<= 1 )
+      \param str String representing a cube
+    */
+    // cppcheck-suppress noExplicitConstructor
+    cube(const std::string& str) /* NOLINT */
     {
-      switch ( *p )
-      {
-      default: /* don't care */
-        break;
-      case '1':
-        _bits |= i;
-        /* no break on purpose, jump to 0 and set mask */
-      case '0':
-        _mask |= i;
-        break;
-      }
+        _bits = _mask = 0u;
 
-      if ( ++p == str.end() )
-      {
-        return;
-      }
+        auto p = str.begin();
+
+        for (uint64_t i = 1; i <= (uint64_t(1u) << 32u); i <<= 1) {
+            switch (*p) {
+                default: /* don't care */
+                    break;
+                case '1':
+                    _bits |= i;
+                    /* no break on purpose, jump to 0 and set mask */
+                case '0':
+                    _mask |= i;
+                    break;
+            }
+
+            if (++p == str.end()) {
+                return;
+            }
+        }
     }
-  }
 
-  /*! \brief Returns number of literals */
-  inline int num_literals() const
-  {
-    return __builtin_popcount( _mask );
-  }
+    /*! \brief Returns number of literals */
+    inline int num_literals() const { return __builtin_popcount(_mask); }
 
-  /*! \brief Returns the difference to another cube */
-  inline int difference( const cube& that ) const
-  {
-    return ( _bits ^ that._bits ) | ( _mask ^ that._mask );
-  }
-
-  /*! \brief Returns the distance to another cube */
-  inline int distance( const cube& that ) const
-  {
-    return __builtin_popcount( difference( that ) );
-  }
-
-  /*! \brief Checks whether two cubes are equivalent */
-  inline bool operator==( const cube& that ) const
-  {
-    return _value == that._value;
-  }
-
-  /*! \brief Checks whether two cubes are not equivalent */
-  inline bool operator!=( const cube& that ) const
-  {
-    return _value != that._value;
-  }
-
-  /*! \brief Default comparison operator */
-  inline bool operator<( const cube& that ) const
-  {
-    return _value < that._value;
-  }
-
-  /*! \brief Merges two cubes of distance-1 */
-  inline cube merge( const cube& that ) const
-  {
-    const auto d = difference( that );
-    return {_bits ^ ( ~that._bits & d ), _mask ^ ( that._mask & d )};
-  }
-
-  /*! \brief Adds literal to cube */
-  inline void add_literal( uint8_t var_index, bool polarity = true )
-  {
-    set_mask( var_index );
-
-    if ( polarity )
-    {
-      set_bit( var_index );
+    /*! \brief Returns the difference to another cube */
+    inline int difference(const cube& that) const {
+        return (_bits ^ that._bits) | (_mask ^ that._mask);
     }
-    else
-    {
-      clear_bit( var_index );
+
+    /*! \brief Returns the distance to another cube */
+    inline int distance(const cube& that) const {
+        return __builtin_popcount(difference(that));
     }
-  }
 
-  /*! \brief Removes literal from cube */
-  inline void remove_literal( uint8_t var_index )
-  {
-    clear_mask( var_index );
-    clear_bit( var_index );
-  }
-
-  /*! \brief Constructs the elementary cube representing a single variable */
-  static cube nth_var_cube( uint8_t var_index )
-  {
-    const auto _bits = uint32_t( 1 ) << var_index;
-    return {_bits, _bits};
-  }
-
-  /*! \brief Constructs the elementary cube containing the first k positive literals */
-  static cube pos_cube( uint8_t k )
-  {
-    const uint32_t _bits = ( uint64_t( 1 ) << k ) - 1;
-    return {_bits, _bits};
-  }
-
-  /*! \brief Constructs the elementary cube containing the first k negative literals */
-  static cube neg_cube( uint8_t k )
-  {
-    const uint32_t _bits = ( uint64_t( 1 ) << k ) - 1;
-    return {0u, _bits};
-  }
-
-  /*! \brief Prints a cube */
-  inline void print( unsigned length = 32u, std::ostream& os = std::cout ) const
-  {
-    for ( auto i = 0u; i < length; ++i )
-    {
-      os << ( get_mask( i ) ? ( get_bit( i ) ? '1' : '0' ) : '-' );
+    /*! \brief Checks whether two cubes are equivalent */
+    inline bool operator==(const cube& that) const {
+        return _value == that._value;
     }
-  }
 
-  /*! \brief Gets bit at index */
-  inline bool get_bit( uint8_t index ) const
-  {
-    return ( ( _bits >> index ) & 1 ) != 0;
-  }
+    /*! \brief Checks whether two cubes are not equivalent */
+    inline bool operator!=(const cube& that) const {
+        return _value != that._value;
+    }
 
-  /*! \brief Gets mask at index */
-  inline bool get_mask( uint8_t index ) const
-  {
-    return ( ( _mask >> index ) & 1 ) != 0;
-  }
+    /*! \brief Default comparison operator */
+    inline bool operator<(const cube& that) const {
+        return _value < that._value;
+    }
 
-  /*! \brief Sets bit at index */
-  inline void set_bit( uint8_t index )
-  {
-    _bits |= ( 1 << index );
-  }
+    /*! \brief Merges two cubes of distance-1 */
+    inline cube merge(const cube& that) const {
+        const auto d = difference(that);
+        return {_bits ^ (~that._bits & d), _mask ^ (that._mask & d)};
+    }
 
-  /*! \brief Sets mask at index */
-  inline void set_mask( uint8_t index )
-  {
-    _mask |= ( 1 << index );
-  }
+    /*! \brief Adds literal to cube */
+    inline void add_literal(uint8_t var_index, bool polarity = true) {
+        set_mask(var_index);
 
-  /*! \brief Clears bit at index */
-  inline void clear_bit( uint8_t index )
-  {
-    _bits &= ~( 1 << index );
-  }
+        if (polarity) {
+            set_bit(var_index);
+        } else {
+            clear_bit(var_index);
+        }
+    }
 
-  /*! \brief Clears mask at index */
-  inline void clear_mask( uint8_t index )
-  {
-    _mask &= ~( 1 << index );
-  }
+    /*! \brief Removes literal from cube */
+    inline void remove_literal(uint8_t var_index) {
+        clear_mask(var_index);
+        clear_bit(var_index);
+    }
 
-  /*! \brief Flips bit at index */
-  inline void flip_bit( uint8_t index )
-  {
-    _bits ^= ( 1 << index );
-  }
+    /*! \brief Constructs the elementary cube representing a single variable */
+    static cube nth_var_cube(uint8_t var_index) {
+        const auto _bits = uint32_t(1) << var_index;
+        return {_bits, _bits};
+    }
 
-  /*! \brief Flips mask at index */
-  inline void flip_mask( uint8_t index )
-  {
-    _mask ^= ( 1 << index );
-  }
+    /*! \brief Constructs the elementary cube containing the first k positive
+     * literals */
+    static cube pos_cube(uint8_t k) {
+        const uint32_t _bits = (uint64_t(1) << k) - 1;
+        return {_bits, _bits};
+    }
 
-  /* cube data */
-  union {
-    struct
-    {
-      uint32_t _bits;
-      uint32_t _mask;
+    /*! \brief Constructs the elementary cube containing the first k negative
+     * literals */
+    static cube neg_cube(uint8_t k) {
+        const uint32_t _bits = (uint64_t(1) << k) - 1;
+        return {0u, _bits};
+    }
+
+    /*! \brief Prints a cube */
+    inline void print(unsigned length = 32u,
+                      std::ostream& os = std::cout) const {
+        for (auto i = 0u; i < length; ++i) {
+            os << (get_mask(i) ? (get_bit(i) ? '1' : '0') : '-');
+        }
+    }
+
+    /*! \brief Gets bit at index */
+    inline bool get_bit(uint8_t index) const {
+        return ((_bits >> index) & 1) != 0;
+    }
+
+    /*! \brief Gets mask at index */
+    inline bool get_mask(uint8_t index) const {
+        return ((_mask >> index) & 1) != 0;
+    }
+
+    /*! \brief Sets bit at index */
+    inline void set_bit(uint8_t index) { _bits |= (1 << index); }
+
+    /*! \brief Sets mask at index */
+    inline void set_mask(uint8_t index) { _mask |= (1 << index); }
+
+    /*! \brief Clears bit at index */
+    inline void clear_bit(uint8_t index) { _bits &= ~(1 << index); }
+
+    /*! \brief Clears mask at index */
+    inline void clear_mask(uint8_t index) { _mask &= ~(1 << index); }
+
+    /*! \brief Flips bit at index */
+    inline void flip_bit(uint8_t index) { _bits ^= (1 << index); }
+
+    /*! \brief Flips mask at index */
+    inline void flip_mask(uint8_t index) { _mask ^= (1 << index); }
+
+    /* cube data */
+    union {
+        struct {
+            uint32_t _bits;
+            uint32_t _mask;
+        };
+        uint64_t _value;
     };
-    uint64_t _value;
-  };
 };
 
 /*! \brief Prints all cubes in a vector
@@ -259,23 +219,20 @@ public:
   \param length Number of variables in each cube
   \param os Output stream
 */
-inline void print_cubes( const std::vector<cube>& cubes, unsigned length = 32u, std::ostream& os = std::cout )
-{
-  for ( const auto& cube : cubes )
-  {
-    cube.print( length, os );
-    std::cout << '\n';
-  }
+inline void print_cubes(const std::vector<cube>& cubes, unsigned length = 32u,
+                        std::ostream& os = std::cout) {
+    for (const auto& cube : cubes) {
+        cube.print(length, os);
+        std::cout << '\n';
+    }
 
-  std::cout << std::flush;
+    std::cout << std::flush;
 }
 
-template<>
-struct hash<cube>
-{
-  std::size_t operator()( const cube& c ) const
-  {
-    return std::hash<uint64_t>{}( c._value );
-  }
+template <>
+struct hash<cube> {
+    std::size_t operator()(const cube& c) const {
+        return std::hash<uint64_t>{}(c._value);
+    }
 };
 } // namespace kitty

@@ -43,7 +43,8 @@ namespace mapping {
 /**
  * \class staq::mapping::SwapMapper
  * \brief Simple swap-inserting mapping algorithm
- * \note Assumes the circuit has a single global register with the configured name
+ * \note Assumes the circuit has a single global register with the configured
+ * name
  *
  * Maps an AST to a given device by inserting swap gates along a shortest path
  * before each non-local CNOT gate. The mapper keeps track of the current qubit

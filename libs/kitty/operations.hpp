@@ -41,60 +41,55 @@
 #include "dynamic_truth_table.hpp"
 #include "static_truth_table.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /* forward declarations */
 /*! \cond PRIVATE */
-template<typename TT>
-TT create( unsigned num_vars );
+template <typename TT>
+TT create(unsigned num_vars);
 
-template<>
-dynamic_truth_table create<dynamic_truth_table>( unsigned num_vars );
+template <>
+dynamic_truth_table create<dynamic_truth_table>(unsigned num_vars);
 /*! \endcond */
 
 /*! \brief Inverts all bits in a truth table */
-template<typename TT>
-inline TT unary_not( const TT& tt )
-{
-  return unary_operation( tt, []( auto a ) { return ~a; } );
+template <typename TT>
+inline TT unary_not(const TT& tt) {
+    return unary_operation(tt, [](auto a) { return ~a; });
 }
 
 /*! Inverts all bits in a truth table, based on a condition */
-template<typename TT>
-inline TT unary_not_if( const TT& tt, bool cond )
-{
-  const auto mask = -static_cast<uint64_t>( cond );
-  return unary_operation( tt, [mask]( auto a ) { return a ^ mask; } );
+template <typename TT>
+inline TT unary_not_if(const TT& tt, bool cond) {
+    const auto mask = -static_cast<uint64_t>(cond);
+    return unary_operation(tt, [mask](auto a) { return a ^ mask; });
 }
 
 /*! \brief Bitwise AND of two truth tables */
-template<typename TT>
+template <typename TT>
 
-inline TT binary_and( const TT& first, const TT& second )
-{
-  return binary_operation( first, second, std::bit_and<>() );
+inline TT binary_and(const TT& first, const TT& second) {
+    return binary_operation(first, second, std::bit_and<>());
 }
 
 /*! \brief Bitwise OR of two truth tables */
-template<typename TT>
-inline TT binary_or( const TT& first, const TT& second )
-{
-  return binary_operation( first, second, std::bit_or<>() );
+template <typename TT>
+inline TT binary_or(const TT& first, const TT& second) {
+    return binary_operation(first, second, std::bit_or<>());
 }
 
 /*! \brief Bitwise XOR of two truth tables */
-template<typename TT>
-inline TT binary_xor( const TT& first, const TT& second )
-{
-  return binary_operation( first, second, std::bit_xor<>() );
+template <typename TT>
+inline TT binary_xor(const TT& first, const TT& second) {
+    return binary_operation(first, second, std::bit_xor<>());
 }
 
 /*! \brief Ternary majority of three truth tables */
-template<typename TT>
-inline TT ternary_majority( const TT& first, const TT& second, const TT& third )
-{
-  return ternary_operation( first, second, third, []( auto a, auto b, auto c ) { return ( a & ( b ^ c ) ) ^ ( b & c ); } );
+template <typename TT>
+inline TT ternary_majority(const TT& first, const TT& second, const TT& third) {
+    return ternary_operation(first, second, third, [](auto a, auto b, auto c) {
+        return (a & (b ^ c)) ^ (b & c);
+    });
 }
 
 /*! \brief Performs ternary if-then-else of three truth tables
@@ -103,10 +98,11 @@ inline TT ternary_majority( const TT& first, const TT& second, const TT& third )
   \param second Truth table for then-case
   \param third Truth table for else-case
  */
-template<typename TT>
-inline TT ternary_ite( const TT& first, const TT& second, const TT& third )
-{
-  return ternary_operation( first, second, third, []( auto a, auto b, auto c ) { return ( a & b ) ^ ( ~a & c ); } );
+template <typename TT>
+inline TT ternary_ite(const TT& first, const TT& second, const TT& third) {
+    return ternary_operation(first, second, third, [](auto a, auto b, auto c) {
+        return (a & b) ^ (~a & c);
+    });
 }
 
 /*! \brief Muxes two truth tables based on a variable
@@ -115,29 +111,24 @@ inline TT ternary_ite( const TT& first, const TT& second, const TT& third )
   \param then_ Truth table for the then-case
   \param else_ Truth table for the else-case
 */
-template<typename TT>
-inline TT mux_var( uint8_t var_index, const TT& then_, const TT& else_ )
-{
-  if ( var_index < 6u )
-  {
-    return binary_operation( then_, else_,
-                             [&]( auto a, auto b ) { return ( a & detail::projections[var_index] ) |
-                                                            ( b & detail::projections_neg[var_index] ); } );
-  }
-  else
-  {
-    const auto step = 1u << ( var_index - 6u );
-    auto j = 0u;
-    auto res = then_.construct();
+template <typename TT>
+inline TT mux_var(uint8_t var_index, const TT& then_, const TT& else_) {
+    if (var_index < 6u) {
+        return binary_operation(then_, else_, [&](auto a, auto b) {
+            return (a & detail::projections[var_index]) |
+                   (b & detail::projections_neg[var_index]);
+        });
+    } else {
+        const auto step = 1u << (var_index - 6u);
+        auto j = 0u;
+        auto res = then_.construct();
 
-    std::transform( then_.begin(), then_.end(), else_.begin(), res.begin(),
-      [&]( auto a, auto b ) {
-        return ( j++ % ( 2 * step ) ) < step ? b : a;
-      }
-    );
+        std::transform(
+            then_.begin(), then_.end(), else_.begin(), res.begin(),
+            [&](auto a, auto b) { return (j++ % (2 * step)) < step ? b : a; });
 
-    return res;
-  }
+        return res;
+    }
 }
 
 /*! \brief Checks whether two truth tables are equal
@@ -145,15 +136,13 @@ inline TT mux_var( uint8_t var_index, const TT& then_, const TT& else_ )
   \param first First truth table
   \param second Second truth table
 */
-template<typename TT>
-inline bool equal( const TT& first, const TT& second )
-{
-  if ( first.num_vars() != second.num_vars() )
-  {
-    return false;
-  }
+template <typename TT>
+inline bool equal(const TT& first, const TT& second) {
+    if (first.num_vars() != second.num_vars()) {
+        return false;
+    }
 
-  return binary_predicate( first, second, std::equal_to<>() );
+    return binary_predicate(first, second, std::equal_to<>());
 }
 
 /*! \brief Checks if first truth table implies a second truth table
@@ -161,31 +150,32 @@ inline bool equal( const TT& first, const TT& second )
   \param first First truth table
   \param second Second truth table
 */
-template<typename TT>
-inline bool implies( const TT& first, const TT& second )
-{
-  return is_const0( binary_operation( first, second, []( auto a, auto b ) { return ~( ~a | b ); } ) );
+template <typename TT>
+inline bool implies(const TT& first, const TT& second) {
+    return is_const0(binary_operation(
+        first, second, [](auto a, auto b) { return ~(~a | b); }));
 }
 
-/*! \brief Checks whether a truth table is lexicographically smaller than another
+/*! \brief Checks whether a truth table is lexicographically smaller than
+  another
 
   Comparison is initiated from most-significant bit.
 
   \param first First truth table
   \param second Second truth table
 */
-template<typename TT>
-inline bool less_than( const TT& first, const TT& second )
-{
-  return std::lexicographical_compare( first._bits.rbegin(), first._bits.rend(),
-                                       second._bits.rbegin(), second._bits.rend() );
+template <typename TT>
+inline bool less_than(const TT& first, const TT& second) {
+    return std::lexicographical_compare(
+        first._bits.rbegin(), first._bits.rend(), second._bits.rbegin(),
+        second._bits.rend());
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline bool less_than( const static_truth_table<NumVars, true>& first, const static_truth_table<NumVars, true>& second )
-{
-  return first._bits < second._bits;
+template <int NumVars>
+inline bool less_than(const static_truth_table<NumVars, true>& first,
+                      const static_truth_table<NumVars, true>& second) {
+    return first._bits < second._bits;
 }
 /*! \endcond */
 
@@ -193,17 +183,16 @@ inline bool less_than( const static_truth_table<NumVars, true>& first, const sta
 
   \param tt Truth table
 */
-template<typename TT>
-inline bool is_const0( const TT& tt )
-{
-  return std::all_of( std::begin( tt._bits ), std::end( tt._bits ), []( uint64_t word ) { return word == 0; } );
+template <typename TT>
+inline bool is_const0(const TT& tt) {
+    return std::all_of(std::begin(tt._bits), std::end(tt._bits),
+                       [](uint64_t word) { return word == 0; });
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline bool is_const0( const static_truth_table<NumVars, true>& tt )
-{
-  return tt._bits == 0;
+template <int NumVars>
+inline bool is_const0(const static_truth_table<NumVars, true>& tt) {
+    return tt._bits == 0;
 }
 /*! \endcond */
 
@@ -212,40 +201,39 @@ inline bool is_const0( const static_truth_table<NumVars, true>& tt )
   \param tt Truth table
   \param var_index Variable index
 */
-template<typename TT>
-bool has_var( const TT& tt, uint8_t var_index )
-{
-  assert( var_index < tt.num_vars() );
+template <typename TT>
+bool has_var(const TT& tt, uint8_t var_index) {
+    assert(var_index < tt.num_vars());
 
-  if ( tt.num_vars() <= 6 || var_index < 6 )
-  {
-    return std::any_of( std::begin( tt._bits ), std::end( tt._bits ),
-                        [var_index]( uint64_t word ) { return ( ( word >> ( 1 << var_index ) ) & detail::projections_neg[var_index] ) !=
-                                                              ( word & detail::projections_neg[var_index] ); } );
-  }
-
-  const auto step = 1 << ( var_index - 6 );
-  for ( auto i = 0u; i < tt.num_blocks(); i += 2 * step )
-  {
-    for ( auto j = 0; j < step; ++j )
-    {
-      if ( tt._bits[i + j] != tt._bits[i + j + step] )
-      {
-        return true;
-      }
+    if (tt.num_vars() <= 6 || var_index < 6) {
+        return std::any_of(std::begin(tt._bits), std::end(tt._bits),
+                           [var_index](uint64_t word) {
+                               return ((word >> (1 << var_index)) &
+                                       detail::projections_neg[var_index]) !=
+                                      (word &
+                                       detail::projections_neg[var_index]);
+                           });
     }
-  }
-  return false;
+
+    const auto step = 1 << (var_index - 6);
+    for (auto i = 0u; i < tt.num_blocks(); i += 2 * step) {
+        for (auto j = 0; j < step; ++j) {
+            if (tt._bits[i + j] != tt._bits[i + j + step]) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-bool has_var( const static_truth_table<NumVars, true>& tt, uint8_t var_index )
-{
-  assert( var_index < tt.num_vars() );
+template <int NumVars>
+bool has_var(const static_truth_table<NumVars, true>& tt, uint8_t var_index) {
+    assert(var_index < tt.num_vars());
 
-  return ( ( tt._bits >> ( 1 << var_index ) ) & detail::projections_neg[var_index] ) !=
-         ( tt._bits & detail::projections_neg[var_index] );
+    return ((tt._bits >> (1 << var_index)) &
+            detail::projections_neg[var_index]) !=
+           (tt._bits & detail::projections_neg[var_index]);
 }
 /*! \endcond */
 
@@ -257,33 +245,27 @@ bool has_var( const static_truth_table<NumVars, true>& tt, uint8_t var_index )
 
   \param tt Truth table
 */
-template<typename TT>
-void next_inplace( TT& tt )
-{
-  if ( tt.num_vars() <= 6 )
-  {
-    tt._bits[0]++;
-    tt.mask_bits();
-  }
-  else
-  {
-    for ( auto i = 0u; i < tt.num_blocks(); ++i )
-    {
-      /* If incrementing the word does not lead to an overflow, we're done*/
-      if ( ++tt._bits[i] != 0 )
-      {
-        break;
-      }
+template <typename TT>
+void next_inplace(TT& tt) {
+    if (tt.num_vars() <= 6) {
+        tt._bits[0]++;
+        tt.mask_bits();
+    } else {
+        for (auto i = 0u; i < tt.num_blocks(); ++i) {
+            /* If incrementing the word does not lead to an overflow, we're
+             * done*/
+            if (++tt._bits[i] != 0) {
+                break;
+            }
+        }
     }
-  }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline void next_inplace( static_truth_table<NumVars, true>& tt )
-{
-  tt._bits++;
-  tt.mask_bits();
+template <int NumVars>
+inline void next_inplace(static_truth_table<NumVars, true>& tt) {
+    tt._bits++;
+    tt.mask_bits();
 }
 /*! \endcond */
 
@@ -293,12 +275,11 @@ inline void next_inplace( static_truth_table<NumVars, true>& tt )
 
   \param tt Truth table
 */
-template<typename TT>
-inline TT next( const TT& tt )
-{
-  auto copy = tt;
-  next_inplace( copy );
-  return copy;
+template <typename TT>
+inline TT next(const TT& tt) {
+    auto copy = tt;
+    next_inplace(copy);
+    return copy;
 }
 
 /*! \brief Computes co-factor with respect to 0
@@ -306,35 +287,32 @@ inline TT next( const TT& tt )
   \param tt Truth table
   \param var_index Variable index
 */
-template<typename TT>
-void cofactor0_inplace( TT& tt, uint8_t var_index )
-{
-  if ( tt.num_vars() <= 6 || var_index < 6 )
-  {
-    std::transform( std::begin( tt._bits ), std::end( tt._bits ),
-                    std::begin( tt._bits ),
-                    [var_index]( uint64_t word ) { return ( ( word & detail::projections_neg[var_index] ) << ( 1 << var_index ) ) |
-                                                          ( word & detail::projections_neg[var_index] ); } );
-  }
-  else
-  {
-    const auto step = 1 << ( var_index - 6 );
-    for ( auto i = 0u; i < tt.num_blocks(); i += 2 * step )
-    {
-      for ( auto j = 0; j < step; ++j )
-      {
-        tt._bits[i + j + step] = tt._bits[i + j];
-      }
+template <typename TT>
+void cofactor0_inplace(TT& tt, uint8_t var_index) {
+    if (tt.num_vars() <= 6 || var_index < 6) {
+        std::transform(std::begin(tt._bits), std::end(tt._bits),
+                       std::begin(tt._bits), [var_index](uint64_t word) {
+                           return ((word & detail::projections_neg[var_index])
+                                   << (1 << var_index)) |
+                                  (word & detail::projections_neg[var_index]);
+                       });
+    } else {
+        const auto step = 1 << (var_index - 6);
+        for (auto i = 0u; i < tt.num_blocks(); i += 2 * step) {
+            for (auto j = 0; j < step; ++j) {
+                tt._bits[i + j + step] = tt._bits[i + j];
+            }
+        }
     }
-  }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-void cofactor0_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index )
-{
-  tt._bits = ( ( tt._bits & detail::projections_neg[var_index] ) << ( 1 << var_index ) ) |
-             ( tt._bits & detail::projections_neg[var_index] );
+template <int NumVars>
+void cofactor0_inplace(static_truth_table<NumVars, true>& tt,
+                       uint8_t var_index) {
+    tt._bits =
+        ((tt._bits & detail::projections_neg[var_index]) << (1 << var_index)) |
+        (tt._bits & detail::projections_neg[var_index]);
 }
 /*! \endcond */
 
@@ -343,12 +321,11 @@ void cofactor0_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index
  \param tt Truth table
  \param var_index Variable index
 */
-template<typename TT>
-TT cofactor0( const TT& tt, uint8_t var_index )
-{
-  auto copy = tt;
-  cofactor0_inplace( copy, var_index );
-  return copy;
+template <typename TT>
+TT cofactor0(const TT& tt, uint8_t var_index) {
+    auto copy = tt;
+    cofactor0_inplace(copy, var_index);
+    return copy;
 }
 
 /*! \brief Computes co-factor with respect to 1
@@ -356,34 +333,32 @@ TT cofactor0( const TT& tt, uint8_t var_index )
   \param tt Truth table
   \param var_index Variable index
 */
-template<typename TT>
-void cofactor1_inplace( TT& tt, uint8_t var_index )
-{
-  if ( tt.num_vars() <= 6 || var_index < 6 )
-  {
-    std::transform( std::begin( tt._bits ), std::end( tt._bits ),
-                    std::begin( tt._bits ),
-                    [var_index]( uint64_t word ) { return ( word & detail::projections[var_index] ) |
-                                                          ( ( word & detail::projections[var_index] ) >> ( 1 << var_index ) ); } );
-  }
-  else
-  {
-    const auto step = 1 << ( var_index - 6 );
-    for ( auto i = 0u; i < tt.num_blocks(); i += 2 * step )
-    {
-      for ( auto j = 0; j < step; ++j )
-      {
-        tt._bits[i + j] = tt._bits[i + j + step];
-      }
+template <typename TT>
+void cofactor1_inplace(TT& tt, uint8_t var_index) {
+    if (tt.num_vars() <= 6 || var_index < 6) {
+        std::transform(std::begin(tt._bits), std::end(tt._bits),
+                       std::begin(tt._bits), [var_index](uint64_t word) {
+                           return (word & detail::projections[var_index]) |
+                                  ((word & detail::projections[var_index]) >>
+                                   (1 << var_index));
+                       });
+    } else {
+        const auto step = 1 << (var_index - 6);
+        for (auto i = 0u; i < tt.num_blocks(); i += 2 * step) {
+            for (auto j = 0; j < step; ++j) {
+                tt._bits[i + j] = tt._bits[i + j + step];
+            }
+        }
     }
-  }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-void cofactor1_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index )
-{
-  tt._bits = ( tt._bits & detail::projections[var_index] ) | ( ( tt._bits & detail::projections[var_index] ) >> ( 1 << var_index ) );
+template <int NumVars>
+void cofactor1_inplace(static_truth_table<NumVars, true>& tt,
+                       uint8_t var_index) {
+    tt._bits =
+        (tt._bits & detail::projections[var_index]) |
+        ((tt._bits & detail::projections[var_index]) >> (1 << var_index));
 }
 /*! \endcond */
 
@@ -392,12 +367,11 @@ void cofactor1_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index
  \param tt Truth table
  \param var_index Variable index
 */
-template<typename TT>
-TT cofactor1( const TT& tt, uint8_t var_index )
-{
-  auto copy = tt;
-  cofactor1_inplace( copy, var_index );
-  return copy;
+template <typename TT>
+TT cofactor1(const TT& tt, uint8_t var_index) {
+    auto copy = tt;
+    cofactor1_inplace(copy, var_index);
+    return copy;
 }
 
 /*! \brief Swaps two adjacent variables in a truth table
@@ -409,62 +383,58 @@ TT cofactor1( const TT& tt, uint8_t var_index )
   \param tt Truth table
   \param var_index A variable
 */
-template<typename TT>
-void swap_adjacent_inplace( TT& tt, uint8_t var_index )
-{
-  assert( var_index < tt.num_vars() - 1 );
+template <typename TT>
+void swap_adjacent_inplace(TT& tt, uint8_t var_index) {
+    assert(var_index < tt.num_vars() - 1);
 
-  /* permute within each word */
-  if ( var_index < 5 )
-  {
-    const auto shift = uint64_t( 1 ) << var_index;
-    std::transform( std::begin( tt._bits ), std::end( tt._bits ), std::begin( tt._bits ),
-                    [shift, var_index]( uint64_t word ) {
-                      return ( word & detail::permutation_masks[var_index][0] ) |
-                             ( ( word & detail::permutation_masks[var_index][1] ) << shift ) |
-                             ( ( word & detail::permutation_masks[var_index][2] ) >> shift );
-                    } );
-  }
-  /* permute (half) parts of words */
-  else if ( var_index == 5 )
-  {
-    auto it = std::begin( tt._bits );
-    while ( it != std::end( tt._bits ) )
-    {
-      const auto tmp = *it;
-      auto it2 = it + 1;
-      *it = ( tmp & 0xffffffff ) | ( *it2 << 0x20 );
-      *it2 = ( *it2 & UINT64_C( 0xffffffff00000000 ) ) | ( tmp >> 0x20 );
-      it += 2;
+    /* permute within each word */
+    if (var_index < 5) {
+        const auto shift = uint64_t(1) << var_index;
+        std::transform(
+            std::begin(tt._bits), std::end(tt._bits), std::begin(tt._bits),
+            [shift, var_index](uint64_t word) {
+                return (word & detail::permutation_masks[var_index][0]) |
+                       ((word & detail::permutation_masks[var_index][1])
+                        << shift) |
+                       ((word & detail::permutation_masks[var_index][2]) >>
+                        shift);
+            });
     }
-  }
-  /* permute comlete words */
-  else
-  {
-    const auto step = 1 << ( var_index - 6 );
-    auto it = std::begin( tt._bits );
-    while ( it != std::end( tt._bits ) )
-    {
-      for ( auto i = decltype( step ){0}; i < step; ++i )
-      {
-        std::swap( *( it + i + step ), *( it + i + 2 * step ) );
-      }
-      it += 4 * step;
+    /* permute (half) parts of words */
+    else if (var_index == 5) {
+        auto it = std::begin(tt._bits);
+        while (it != std::end(tt._bits)) {
+            const auto tmp = *it;
+            auto it2 = it + 1;
+            *it = (tmp & 0xffffffff) | (*it2 << 0x20);
+            *it2 = (*it2 & UINT64_C(0xffffffff00000000)) | (tmp >> 0x20);
+            it += 2;
+        }
     }
-  }
+    /* permute comlete words */
+    else {
+        const auto step = 1 << (var_index - 6);
+        auto it = std::begin(tt._bits);
+        while (it != std::end(tt._bits)) {
+            for (auto i = decltype(step){0}; i < step; ++i) {
+                std::swap(*(it + i + step), *(it + i + 2 * step));
+            }
+            it += 4 * step;
+        }
+    }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-void swap_adjacent_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index )
-{
-  assert( var_index < tt.num_vars() );
+template <int NumVars>
+void swap_adjacent_inplace(static_truth_table<NumVars, true>& tt,
+                           uint8_t var_index) {
+    assert(var_index < tt.num_vars());
 
-  const auto shift = uint64_t( 1 ) << var_index;
+    const auto shift = uint64_t(1) << var_index;
 
-  tt._bits = ( tt._bits & detail::permutation_masks[var_index][0] ) |
-             ( ( tt._bits & detail::permutation_masks[var_index][1] ) << shift ) |
-             ( ( tt._bits & detail::permutation_masks[var_index][2] ) >> shift );
+    tt._bits = (tt._bits & detail::permutation_masks[var_index][0]) |
+               ((tt._bits & detail::permutation_masks[var_index][1]) << shift) |
+               ((tt._bits & detail::permutation_masks[var_index][2]) >> shift);
 }
 /*! \endcond */
 
@@ -476,12 +446,11 @@ void swap_adjacent_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_i
   \param tt Truth table
   \param var_index A variable
 */
-template<typename TT>
-inline TT swap_adjacent( const TT& tt, uint8_t var_index )
-{
-  auto copy = tt;
-  swap_adjacent_inplace( copy, var_index );
-  return copy;
+template <typename TT>
+inline TT swap_adjacent(const TT& tt, uint8_t var_index) {
+    auto copy = tt;
+    swap_adjacent_inplace(copy, var_index);
+    return copy;
 }
 
 /*! \brief Swaps two variables in a truth table
@@ -494,87 +463,81 @@ inline TT swap_adjacent( const TT& tt, uint8_t var_index )
   \param var_index1 First variable
   \param var_index2 Second variable
 */
-template<typename TT>
-void swap_inplace( TT& tt, uint8_t var_index1, uint8_t var_index2 )
-{
-  if ( var_index1 == var_index2 )
-  {
-    return;
-  }
-
-  if ( var_index1 > var_index2 )
-  {
-    std::swap( var_index1, var_index2 );
-  }
-
-  if ( tt.num_vars() <= 6 )
-  {
-    const auto& pmask = detail::ppermutation_masks[var_index1][var_index2];
-    const auto shift = ( 1 << var_index2 ) - ( 1 << var_index1 );
-    tt._bits[0] = ( tt._bits[0] & pmask[0] ) | ( ( tt._bits[0] & pmask[1] ) << shift ) | ( ( tt._bits[0] & pmask[2] ) >> shift );
-  }
-  else if ( var_index2 <= 5 )
-  {
-    const auto& pmask = detail::ppermutation_masks[var_index1][var_index2];
-    const auto shift = ( 1 << var_index2 ) - ( 1 << var_index1 );
-    std::transform( std::begin( tt._bits ), std::end( tt._bits ), std::begin( tt._bits ),
-                    [shift, &pmask]( uint64_t word ) {
-                      return ( word & pmask[0] ) | ( ( word & pmask[1] ) << shift ) | ( ( word & pmask[2] ) >> shift );
-                    } );
-  }
-  else if ( var_index1 <= 5 ) /* in this case, var_index2 > 5 */
-  {
-    const auto step = 1 << ( var_index2 - 6 );
-    const auto shift = 1 << var_index1;
-    auto it = std::begin( tt._bits );
-    while ( it != std::end( tt._bits ) )
-    {
-      for ( auto i = decltype( step ){0}; i < step; ++i )
-      {
-        const auto low_to_high = ( *( it + i ) & detail::projections[var_index1] ) >> shift;
-        const auto high_to_low = ( *( it + i + step ) << shift ) & detail::projections[var_index1];
-        *( it + i ) = ( *( it + i ) & ~detail::projections[var_index1] ) | high_to_low;
-        *( it + i + step ) = ( *( it + i + step ) & detail::projections[var_index1] ) | low_to_high;
-      }
-      it += 2 * step;
+template <typename TT>
+void swap_inplace(TT& tt, uint8_t var_index1, uint8_t var_index2) {
+    if (var_index1 == var_index2) {
+        return;
     }
-  }
-  else
-  {
-    const auto step1 = 1 << ( var_index1 - 6 );
-    const auto step2 = 1 << ( var_index2 - 6 );
-    auto it = std::begin( tt._bits );
-    while ( it != std::end( tt._bits ) )
+
+    if (var_index1 > var_index2) {
+        std::swap(var_index1, var_index2);
+    }
+
+    if (tt.num_vars() <= 6) {
+        const auto& pmask = detail::ppermutation_masks[var_index1][var_index2];
+        const auto shift = (1 << var_index2) - (1 << var_index1);
+        tt._bits[0] = (tt._bits[0] & pmask[0]) |
+                      ((tt._bits[0] & pmask[1]) << shift) |
+                      ((tt._bits[0] & pmask[2]) >> shift);
+    } else if (var_index2 <= 5) {
+        const auto& pmask = detail::ppermutation_masks[var_index1][var_index2];
+        const auto shift = (1 << var_index2) - (1 << var_index1);
+        std::transform(std::begin(tt._bits), std::end(tt._bits),
+                       std::begin(tt._bits), [shift, &pmask](uint64_t word) {
+                           return (word & pmask[0]) |
+                                  ((word & pmask[1]) << shift) |
+                                  ((word & pmask[2]) >> shift);
+                       });
+    } else if (var_index1 <= 5) /* in this case, var_index2 > 5 */
     {
-      for ( auto i = 0; i < step2; i += 2 * step1 )
-      {
-        for ( auto j = 0; j < step1; ++j )
-        {
-          std::swap( *( it + i + j + step1 ), *( it + i + j + step2 ) );
+        const auto step = 1 << (var_index2 - 6);
+        const auto shift = 1 << var_index1;
+        auto it = std::begin(tt._bits);
+        while (it != std::end(tt._bits)) {
+            for (auto i = decltype(step){0}; i < step; ++i) {
+                const auto low_to_high =
+                    (*(it + i) & detail::projections[var_index1]) >> shift;
+                const auto high_to_low = (*(it + i + step) << shift) &
+                                         detail::projections[var_index1];
+                *(it + i) = (*(it + i) & ~detail::projections[var_index1]) |
+                            high_to_low;
+                *(it + i + step) =
+                    (*(it + i + step) & detail::projections[var_index1]) |
+                    low_to_high;
+            }
+            it += 2 * step;
         }
-      }
-      it += 2 * step2;
+    } else {
+        const auto step1 = 1 << (var_index1 - 6);
+        const auto step2 = 1 << (var_index2 - 6);
+        auto it = std::begin(tt._bits);
+        while (it != std::end(tt._bits)) {
+            for (auto i = 0; i < step2; i += 2 * step1) {
+                for (auto j = 0; j < step1; ++j) {
+                    std::swap(*(it + i + j + step1), *(it + i + j + step2));
+                }
+            }
+            it += 2 * step2;
+        }
     }
-  }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline void swap_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index1, uint8_t var_index2 )
-{
-  if ( var_index1 == var_index2 )
-  {
-    return;
-  }
+template <int NumVars>
+inline void swap_inplace(static_truth_table<NumVars, true>& tt,
+                         uint8_t var_index1, uint8_t var_index2) {
+    if (var_index1 == var_index2) {
+        return;
+    }
 
-  if ( var_index1 > var_index2 )
-  {
-    std::swap( var_index1, var_index2 );
-  }
+    if (var_index1 > var_index2) {
+        std::swap(var_index1, var_index2);
+    }
 
-  const auto& pmask = detail::ppermutation_masks[var_index1][var_index2];
-  const auto shift = ( 1 << var_index2 ) - ( 1 << var_index1 );
-  tt._bits = ( tt._bits & pmask[0] ) | ( ( tt._bits & pmask[1] ) << shift ) | ( ( tt._bits & pmask[2] ) >> shift );
+    const auto& pmask = detail::ppermutation_masks[var_index1][var_index2];
+    const auto shift = (1 << var_index2) - (1 << var_index1);
+    tt._bits = (tt._bits & pmask[0]) | ((tt._bits & pmask[1]) << shift) |
+               ((tt._bits & pmask[2]) >> shift);
 }
 /* \endcond */
 
@@ -587,12 +550,11 @@ inline void swap_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_ind
   \param var_index1 First variable
   \param var_index2 Second variable
 */
-template<typename TT>
-inline TT swap( const TT& tt, uint8_t var_index1, uint8_t var_index2 )
-{
-  auto copy = tt;
-  swap_inplace( copy, var_index1, var_index2 );
-  return copy;
+template <typename TT>
+inline TT swap(const TT& tt, uint8_t var_index1, uint8_t var_index2) {
+    auto copy = tt;
+    swap_inplace(copy, var_index1, var_index2);
+    return copy;
 }
 
 /*! \brief Flips a variable in a truth table
@@ -604,47 +566,44 @@ inline TT swap( const TT& tt, uint8_t var_index1, uint8_t var_index2 )
   \param tt Truth table
   \param var_index A variable
 */
-template<typename TT>
-void flip_inplace( TT& tt, uint8_t var_index )
-{
-  assert( var_index < tt.num_vars() );
+template <typename TT>
+void flip_inplace(TT& tt, uint8_t var_index) {
+    assert(var_index < tt.num_vars());
 
-  if ( tt.num_blocks() == 1 )
-  {
-    const auto shift = 1 << var_index;
-    tt._bits[0] = ( ( tt._bits[0] << shift ) & detail::projections[var_index] ) | ( ( tt._bits[0] & detail::projections[var_index] ) >> shift );
-  }
-  else if ( var_index < 6 )
-  {
-    const auto shift = 1 << var_index;
-    std::transform( std::begin( tt._bits ), std::end( tt._bits ), std::begin( tt._bits ),
-                    [var_index, shift]( uint64_t word ) {
-                      return ( ( word << shift ) & detail::projections[var_index] ) | ( ( word & detail::projections[var_index] ) >> shift );
-                    } );
-  }
-  else
-  {
-    const auto step = 1 << ( var_index - 6 );
-    auto it = std::begin( tt._bits );
-    while ( it != std::end( tt._bits ) )
-    {
-      for ( auto i = decltype( step ){0}; i < step; ++i )
-      {
-        std::swap( *( it + i ), *( it + i + step ) );
-      }
-      it += 2 * step;
+    if (tt.num_blocks() == 1) {
+        const auto shift = 1 << var_index;
+        tt._bits[0] =
+            ((tt._bits[0] << shift) & detail::projections[var_index]) |
+            ((tt._bits[0] & detail::projections[var_index]) >> shift);
+    } else if (var_index < 6) {
+        const auto shift = 1 << var_index;
+        std::transform(
+            std::begin(tt._bits), std::end(tt._bits), std::begin(tt._bits),
+            [var_index, shift](uint64_t word) {
+                return ((word << shift) & detail::projections[var_index]) |
+                       ((word & detail::projections[var_index]) >> shift);
+            });
+    } else {
+        const auto step = 1 << (var_index - 6);
+        auto it = std::begin(tt._bits);
+        while (it != std::end(tt._bits)) {
+            for (auto i = decltype(step){0}; i < step; ++i) {
+                std::swap(*(it + i), *(it + i + step));
+            }
+            it += 2 * step;
+        }
     }
-  }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline void flip_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_index )
-{
-  assert( var_index < tt.num_vars() );
+template <int NumVars>
+inline void flip_inplace(static_truth_table<NumVars, true>& tt,
+                         uint8_t var_index) {
+    assert(var_index < tt.num_vars());
 
-  const auto shift = 1 << var_index;
-  tt._bits = ( ( tt._bits << shift ) & detail::projections[var_index] ) | ( ( tt._bits & detail::projections[var_index] ) >> shift );
+    const auto shift = 1 << var_index;
+    tt._bits = ((tt._bits << shift) & detail::projections[var_index]) |
+               ((tt._bits & detail::projections[var_index]) >> shift);
 }
 /* \endcond */
 
@@ -656,12 +615,11 @@ inline void flip_inplace( static_truth_table<NumVars, true>& tt, uint8_t var_ind
   \param tt Truth table
   \param var_index A variable
 */
-template<typename TT>
-inline TT flip( const TT& tt, uint8_t var_index )
-{
-  auto copy = tt;
-  flip_inplace( copy, var_index );
-  return copy;
+template <typename TT>
+inline TT flip(const TT& tt, uint8_t var_index) {
+    auto copy = tt;
+    flip_inplace(copy, var_index);
+    return copy;
 }
 
 /*! \brief Reorders truth table to have minimum base
@@ -680,27 +638,23 @@ inline TT flip( const TT& tt, uint8_t var_index )
 
   \param tt Truth table
  */
-template<typename TT>
-std::vector<uint8_t> min_base_inplace( TT& tt )
-{
-  std::vector<uint8_t> support;
+template <typename TT>
+std::vector<uint8_t> min_base_inplace(TT& tt) {
+    std::vector<uint8_t> support;
 
-  auto k = 0;
-  for ( auto i = 0; i < tt.num_vars(); ++i )
-  {
-    if ( !has_var( tt, i ) )
-    {
-      continue;
+    auto k = 0;
+    for (auto i = 0; i < tt.num_vars(); ++i) {
+        if (!has_var(tt, i)) {
+            continue;
+        }
+        if (k < i) {
+            swap_inplace(tt, k, i);
+        }
+        support.push_back(i);
+        ++k;
     }
-    if ( k < i )
-    {
-      swap_inplace( tt, k, i );
-    }
-    support.push_back( i );
-    ++k;
-  }
 
-  return support;
+    return support;
 }
 
 /*! \brief Expands truth table from minimum base to original based on support
@@ -711,14 +665,12 @@ std::vector<uint8_t> min_base_inplace( TT& tt )
   \param tt Truth table
   \param support Original indexes of support variables
 */
-template<typename TT>
-void expand_inplace( TT& tt, const std::vector<uint8_t>& support )
-{
-  for ( int i = support.size() - 1; i >= 0; --i )
-  {
-    assert( i <= support[i] );
-    swap_inplace( tt, i, support[i] );
-  }
+template <typename TT>
+void expand_inplace(TT& tt, const std::vector<uint8_t>& support) {
+    for (int i = support.size() - 1; i >= 0; --i) {
+        assert(i <= support[i]);
+        swap_inplace(tt, i, support[i]);
+    }
 }
 
 /*! \brief Extends smaller truth table to larger one
@@ -730,30 +682,25 @@ void expand_inplace( TT& tt, const std::vector<uint8_t>& support )
   \param tt Larger truth table to create
   \param from Smaller truth table to copy from
 */
-template<typename TT, typename TTFrom>
-void extend_to_inplace( TT& tt, const TTFrom& from )
-{
-  assert( tt.num_vars() >= from.num_vars() );
+template <typename TT, typename TTFrom>
+void extend_to_inplace(TT& tt, const TTFrom& from) {
+    assert(tt.num_vars() >= from.num_vars());
 
-  if ( from.num_vars() < 6 )
-  {
-    auto mask = *from.begin();
+    if (from.num_vars() < 6) {
+        auto mask = *from.begin();
 
-    for ( auto i = from.num_vars(); i < std::min<uint8_t>( 6, tt.num_vars() ); ++i )
-    {
-      mask |= ( mask << ( 1 << i ) );
+        for (auto i = from.num_vars(); i < std::min<uint8_t>(6, tt.num_vars());
+             ++i) {
+            mask |= (mask << (1 << i));
+        }
+
+        std::fill(tt.begin(), tt.end(), mask);
+    } else {
+        auto it = tt.begin();
+        while (it != tt.end()) {
+            it = std::copy(from.cbegin(), from.cend(), it);
+        }
     }
-
-    std::fill( tt.begin(), tt.end(), mask );
-  }
-  else
-  {
-    auto it = tt.begin();
-    while ( it != tt.end() )
-    {
-      it = std::copy( from.cbegin(), from.cend(), it );
-    }
-  }
 }
 
 /*! \brief Extends smaller truth table to larger static one
@@ -765,12 +712,11 @@ void extend_to_inplace( TT& tt, const TTFrom& from )
 
   \param from Smaller truth table to copy from
 */
-template<int NumVars, typename TTFrom>
-inline static_truth_table<NumVars> extend_to( const TTFrom& from )
-{
-  static_truth_table<NumVars> tt;
-  extend_to_inplace( tt, from );
-  return tt;
+template <int NumVars, typename TTFrom>
+inline static_truth_table<NumVars> extend_to(const TTFrom& from) {
+    static_truth_table<NumVars> tt;
+    extend_to_inplace(tt, from);
+    return tt;
 }
 
 /*! \brief Extends smaller truth table to larger dynamic one
@@ -782,34 +728,31 @@ inline static_truth_table<NumVars> extend_to( const TTFrom& from )
 
   \param from Smaller truth table to copy from
 */
-template<typename TTFrom>
-inline dynamic_truth_table extend_to( const TTFrom& from, unsigned num_vars )
-{
-  auto tt = create<dynamic_truth_table>( num_vars );
-  extend_to_inplace( tt, from );
-  return tt;
+template <typename TTFrom>
+inline dynamic_truth_table extend_to(const TTFrom& from, unsigned num_vars) {
+    auto tt = create<dynamic_truth_table>(num_vars);
+    extend_to_inplace(tt, from);
+    return tt;
 }
 
 /*! \brief Shrinks larger truth table to smaller one
 
   The function expects that the most significant bits, which are cut off, are
-  not in the functional support of the original function.  Only then it is 
-  ensured that the resulting function is equivalent. 
+  not in the functional support of the original function.  Only then it is
+  ensured that the resulting function is equivalent.
 
   \param tt Smaller truth table to create
   \param from Larger truth table to copy from
 */
-template<typename TT, typename TTFrom>
-void shrink_to_inplace( TT& tt, const TTFrom& from )
-{
-  assert( tt.num_vars() <= from.num_vars() );
+template <typename TT, typename TTFrom>
+void shrink_to_inplace(TT& tt, const TTFrom& from) {
+    assert(tt.num_vars() <= from.num_vars());
 
-  std::copy( from.begin(), from.begin() + tt.num_blocks(), tt.begin() );
+    std::copy(from.begin(), from.begin() + tt.num_blocks(), tt.begin());
 
-  if ( tt.num_vars() < 6 )
-  {
-    tt.mask_bits();
-  }
+    if (tt.num_vars() < 6) {
+        tt.mask_bits();
+    }
 }
 
 /*! \brief Shrinks larger truth table to smaller static one
@@ -821,12 +764,11 @@ void shrink_to_inplace( TT& tt, const TTFrom& from )
 
   \param from Smaller truth table to copy from
 */
-template<int NumVars, typename TTFrom>
-inline static_truth_table<NumVars> shrink_to( const TTFrom& from )
-{
-  static_truth_table<NumVars> tt;
-  shrink_to_inplace( tt, from );
-  return tt;
+template <int NumVars, typename TTFrom>
+inline static_truth_table<NumVars> shrink_to(const TTFrom& from) {
+    static_truth_table<NumVars> tt;
+    shrink_to_inplace(tt, from);
+    return tt;
 }
 
 /*! \brief Shrinks larger truth table to smaller dynamic one
@@ -837,12 +779,11 @@ inline static_truth_table<NumVars> shrink_to( const TTFrom& from )
 
   \param from Smaller truth table to copy from
 */
-template<typename TTFrom>
-inline dynamic_truth_table shrink_to( const TTFrom& from, unsigned num_vars )
-{
-  auto tt = create<dynamic_truth_table>( num_vars );
-  shrink_to_inplace( tt, from );
-  return tt;
+template <typename TTFrom>
+inline dynamic_truth_table shrink_to(const TTFrom& from, unsigned num_vars) {
+    auto tt = create<dynamic_truth_table>(num_vars);
+    shrink_to_inplace(tt, from);
+    return tt;
 }
 
 /*! \brief Left-shift truth table
@@ -853,58 +794,50 @@ inline dynamic_truth_table shrink_to( const TTFrom& from, unsigned num_vars )
   \param tt Truth table
   \param shift Number of bits to shift
 */
-template<typename TT>
-void shift_left_inplace( TT& tt, uint64_t shift )
-{
-  /* small truth table */
-  if ( tt.num_vars() <= 6 )
-  {
-    tt._bits[0] <<= shift;
-    tt.mask_bits();
-    return;
-  }
-
-  /* large shift */
-  if ( shift >= tt.num_bits() )
-  {
-    clear( tt );
-    return;
-  }
-
-  if ( shift > 0 )
-  {
-    const auto last = tt.num_blocks() - 1u;
-    const auto div = shift / 64u;
-    const auto rem = shift % 64u;
-
-    if ( rem != 0 )
-    {
-      const auto rshift = 64u - rem;
-      for ( auto i = last - div; i > 0; --i )
-      {
-        tt._bits[i + div] = ( tt._bits[i] << rem ) | ( tt._bits[i - 1] >> rshift );
-      }
-      tt._bits[div] = tt._bits[0] << rem;
-    }
-    else
-    {
-      for ( auto i = last - div; i > 0; --i )
-      {
-        tt._bits[i + div] = tt._bits[i];
-      }
-      tt._bits[div] = tt._bits[0];
+template <typename TT>
+void shift_left_inplace(TT& tt, uint64_t shift) {
+    /* small truth table */
+    if (tt.num_vars() <= 6) {
+        tt._bits[0] <<= shift;
+        tt.mask_bits();
+        return;
     }
 
-    std::fill_n( std::begin( tt._bits ), div, 0u );
-  }
+    /* large shift */
+    if (shift >= tt.num_bits()) {
+        clear(tt);
+        return;
+    }
+
+    if (shift > 0) {
+        const auto last = tt.num_blocks() - 1u;
+        const auto div = shift / 64u;
+        const auto rem = shift % 64u;
+
+        if (rem != 0) {
+            const auto rshift = 64u - rem;
+            for (auto i = last - div; i > 0; --i) {
+                tt._bits[i + div] =
+                    (tt._bits[i] << rem) | (tt._bits[i - 1] >> rshift);
+            }
+            tt._bits[div] = tt._bits[0] << rem;
+        } else {
+            for (auto i = last - div; i > 0; --i) {
+                tt._bits[i + div] = tt._bits[i];
+            }
+            tt._bits[div] = tt._bits[0];
+        }
+
+        std::fill_n(std::begin(tt._bits), div, 0u);
+    }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline void shift_left_inplace( static_truth_table<NumVars, true>& tt, uint64_t shift )
-{
-  tt._bits <<= shift;
-  tt.mask_bits();
+template <int NumVars>
+inline void shift_left_inplace(static_truth_table<NumVars, true>& tt,
+                               uint64_t shift) {
+    tt._bits <<= shift;
+    tt.mask_bits();
 }
 /*! \endcond */
 
@@ -915,12 +848,11 @@ inline void shift_left_inplace( static_truth_table<NumVars, true>& tt, uint64_t 
   \param tt Truth table
   \param shift Number of bits to shift
 */
-template<typename TT>
-inline TT shift_left( const TT& tt, uint64_t shift )
-{
-  auto copy = tt;
-  shift_left_inplace( copy, shift );
-  return copy;
+template <typename TT>
+inline TT shift_left(const TT& tt, uint64_t shift) {
+    auto copy = tt;
+    shift_left_inplace(copy, shift);
+    return copy;
 }
 
 /*! \brief Right-shift truth table
@@ -931,56 +863,48 @@ inline TT shift_left( const TT& tt, uint64_t shift )
   \param tt Truth table
   \param shift Number of bits to shift
 */
-template<typename TT>
-void shift_right_inplace( TT& tt, uint64_t shift )
-{
-  /* small truth table */
-  if ( tt.num_vars() <= 6 )
-  {
-    tt._bits[0] >>= shift;
-    tt.mask_bits();
-    return;
-  }
-
-  /* large shift */
-  if ( shift >= tt.num_bits() )
-  {
-    clear( tt );
-    return;
-  }
-
-  if ( shift > 0 )
-  {
-    const auto last = tt.num_blocks() - 1u;
-    const auto div = shift / 64u;
-    const auto rem = shift % 64u;
-
-    if ( rem != 0 )
-    {
-      const auto rshift = 64u - rem;
-      for ( auto i = div; i < last; ++i )
-      {
-        tt._bits[i - div] = ( tt._bits[i] >> rem ) | ( tt._bits[i + 1] << rshift );
-      }
-      tt._bits[last - div] = tt._bits[last] >> rem;
-    }
-    else
-    {
-      for ( auto i = div; i <= last; ++i )
-      {
-        tt._bits[i - div] = tt._bits[i];
-      }
+template <typename TT>
+void shift_right_inplace(TT& tt, uint64_t shift) {
+    /* small truth table */
+    if (tt.num_vars() <= 6) {
+        tt._bits[0] >>= shift;
+        tt.mask_bits();
+        return;
     }
 
-    std::fill_n( std::begin( tt._bits ) + ( tt.num_blocks() - div ), div, 0u );
-  }
+    /* large shift */
+    if (shift >= tt.num_bits()) {
+        clear(tt);
+        return;
+    }
+
+    if (shift > 0) {
+        const auto last = tt.num_blocks() - 1u;
+        const auto div = shift / 64u;
+        const auto rem = shift % 64u;
+
+        if (rem != 0) {
+            const auto rshift = 64u - rem;
+            for (auto i = div; i < last; ++i) {
+                tt._bits[i - div] =
+                    (tt._bits[i] >> rem) | (tt._bits[i + 1] << rshift);
+            }
+            tt._bits[last - div] = tt._bits[last] >> rem;
+        } else {
+            for (auto i = div; i <= last; ++i) {
+                tt._bits[i - div] = tt._bits[i];
+            }
+        }
+
+        std::fill_n(std::begin(tt._bits) + (tt.num_blocks() - div), div, 0u);
+    }
 }
 
 /*! \cond PRIVATE */
-template<int NumVars>
-inline void shift_right_inplace( static_truth_table<NumVars, true>& tt, uint64_t shift )
-{
-  tt._bits >>= shift;
+template <int NumVars>
+inline void shift_right_inplace(static_truth_table<NumVars, true>& tt,
+                                uint64_t shift) {
+    tt._bits >>= shift;
 }
 /*! \endcond */
 
@@ -991,12 +915,11 @@ inline void shift_right_inplace( static_truth_table<NumVars, true>& tt, uint64_t
   \param tt Truth table
   \param shift Number of bits to shift
 */
-template<typename TT>
-inline TT shift_right( const TT& tt, uint64_t shift )
-{
-  auto copy = tt;
-  shift_right_inplace( copy, shift );
-  return copy;
+template <typename TT>
+inline TT shift_right(const TT& tt, uint64_t shift) {
+    auto copy = tt;
+    shift_right_inplace(copy, shift);
+    return copy;
 }
 
 } // namespace kitty

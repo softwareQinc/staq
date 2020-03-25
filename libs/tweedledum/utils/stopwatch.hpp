@@ -33,44 +33,35 @@ namespace tweedledum {
       std::cout << fmt::format("{:5.2f} seconds passed\n", to_seconds(time));
    \endverbatim
  */
-template<class Clock = std::chrono::steady_clock>
+template <class Clock = std::chrono::steady_clock>
 class stopwatch {
-public:
-	using clock = Clock;
-	using duration_type = typename Clock::duration;
-	using time_point_type = typename Clock::time_point;
+  public:
+    using clock = Clock;
+    using duration_type = typename Clock::duration;
+    using time_point_type = typename Clock::time_point;
 
-	/*! \brief Default constructor.
-	 *
-	 * Starts tracking time.
-	 */
-	explicit stopwatch(duration_type& duration)
-	    : duration(duration)
-	    , begin(clock::now())
-	{}
+    /*! \brief Default constructor.
+     *
+     * Starts tracking time.
+     */
+    explicit stopwatch(duration_type& duration)
+        : duration(duration), begin(clock::now()) {}
 
+    /*! \brief .
+     *
+     * Stops tracking time and updates duration.
+     */
+    void stop() { duration += (clock::now() - begin); }
 
-	/*! \brief .
-	 *
-	 * Stops tracking time and updates duration.
-	 */
-	void stop()
-	{
-		duration += (clock::now() - begin);
-	}
+    /*! \brief Default deconstructor.
+     *
+     * Stops tracking time and updates duration.
+     */
+    ~stopwatch() { duration += (clock::now() - begin); }
 
-	/*! \brief Default deconstructor.
-	 *
-	 * Stops tracking time and updates duration.
-	 */
-	~stopwatch()
-	{
-		duration += (clock::now() - begin);
-	}
-
-private:
-	duration_type& duration;
-	time_point_type begin;
+  private:
+    duration_type& duration;
+    time_point_type begin;
 };
 
 /*! \brief Calls a function and tracks time.
@@ -86,17 +77,17 @@ private:
    .. code-block:: c++
 
       stopwatch<>::duration_type time = 0;
-      auto result = call_with_stopwatch(time, [&]() { return function(parameters); });
-   \endverbatim
+      auto result = call_with_stopwatch(time, [&]() { return
+ function(parameters); }); \endverbatim
  *
  * \param duration Duration reference (time will be added to it)
  * \param fn Callable object with no arguments
  */
-template<class Fn, class Clock = std::chrono::steady_clock>
-inline std::invoke_result_t<Fn> call_with_stopwatch(typename Clock::duration& duration, Fn&& fn)
-{
-	stopwatch<Clock> t(duration);
-	return fn();
+template <class Fn, class Clock = std::chrono::steady_clock>
+inline std::invoke_result_t<Fn>
+call_with_stopwatch(typename Clock::duration& duration, Fn&& fn) {
+    stopwatch<Clock> t(duration);
+    return fn();
 }
 
 /*! \brief Constructs an object and calls time.
@@ -115,18 +106,17 @@ inline std::invoke_result_t<Fn> call_with_stopwatch(typename Clock::duration& du
       auto result = make_with_stopwatch<std::vector<int>>(time, 100000, 42);
    \endverbatim
  */
-template<class T, class... Args, class Clock = std::chrono::steady_clock>
-inline T make_with_stopwatch(typename Clock::duration& duration, Args... args)
-{
-	stopwatch<Clock> t(duration);
-	return T{std::forward<Args>(args)...};
+template <class T, class... Args, class Clock = std::chrono::steady_clock>
+inline T make_with_stopwatch(typename Clock::duration& duration, Args... args) {
+    stopwatch<Clock> t(duration);
+    return T{std::forward<Args>(args)...};
 }
 
 /*! \brief Utility function to convert duration into seconds. */
-template<class Duration>
-inline double to_seconds(Duration const& duration)
-{
-	return std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();
+template <class Duration>
+inline double to_seconds(Duration const& duration) {
+    return std::chrono::duration_cast<std::chrono::duration<double>>(duration)
+        .count();
 }
 
 } // namespace tweedledum

@@ -8,6 +8,4 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace tweedledum {
-
-} // namespace tweedledum
+namespace tweedledum {} // namespace tweedledum

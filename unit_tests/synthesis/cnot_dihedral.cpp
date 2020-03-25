@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream& os, const synthesis::cx_dihedral& gate) {
                                  << ")";
                           },
                           [&os, &gate](const std::pair<ptr<Expr>, int>& rz) {
-                            os << "rz(" << *(rz.first) << "," << rz.second
+                              os << "rz(" << *(rz.first) << "," << rz.second
                                  << ")";
                           }},
                gate);
@@ -49,41 +49,40 @@ std::ostream& operator<<(std::ostream& os, const synthesis::cx_dihedral& gate) {
 
 std::pair<int, int> cnot(int c, int t) { return std::make_pair(c, t); }
 std::pair<ptr<Expr>, int> rz(Angle theta, int t) {
-  return std::make_pair(angle_to_expr(theta), t);
+    return std::make_pair(angle_to_expr(theta), t);
 }
 synthesis::phase_term phase(std::vector<bool> b, Angle theta) {
-  return std::make_pair(b, angle_to_expr(theta));
+    return std::make_pair(b, angle_to_expr(theta));
 }
 
 // Custom equality to deal with ptr<Expr> in cx_dihedral circuits
-bool eq(const synthesis::cx_dihedral& a,
-        const synthesis::cx_dihedral& b)
-{
-  if (a.index() != b.index()) return false;
+bool eq(const synthesis::cx_dihedral& a, const synthesis::cx_dihedral& b) {
+    if (a.index() != b.index())
+        return false;
 
-  if (std::holds_alternative<std::pair<int, int>>(a)) {
-    auto& [c1, t1] = std::get<std::pair<int, int>>(a);
-    auto& [c2, t2] = std::get<std::pair<int, int>>(b);
+    if (std::holds_alternative<std::pair<int, int>>(a)) {
+        auto& [c1, t1] = std::get<std::pair<int, int>>(a);
+        auto& [c2, t2] = std::get<std::pair<int, int>>(b);
 
-    return ((c1 == c2) && (t1 == t2));
-  } else {
-    auto& [e1, t1] = std::get<std::pair<ptr<Expr>, int>>(a);
-    auto& [e2, t2] = std::get<std::pair<ptr<Expr>, int>>(b);
+        return ((c1 == c2) && (t1 == t2));
+    } else {
+        auto& [e1, t1] = std::get<std::pair<ptr<Expr>, int>>(a);
+        auto& [e2, t2] = std::get<std::pair<ptr<Expr>, int>>(b);
 
-    return ((e1->constant_eval() == e2->constant_eval()) && (t1 == t2));
-  }
+        return ((e1->constant_eval() == e2->constant_eval()) && (t1 == t2));
+    }
 }
 
 bool eq(const std::list<synthesis::cx_dihedral>& a,
-        const std::list<synthesis::cx_dihedral>& b)
-{
-  if (a.size() != b.size()) return false;
+        const std::list<synthesis::cx_dihedral>& b) {
+    if (a.size() != b.size())
+        return false;
 
-  bool same = true;
-  for (auto i = a.begin(), j = b.begin(); same && i != a.end(); i++, j++)
-    same &= eq(*i, *j);
+    bool same = true;
+    for (auto i = a.begin(), j = b.begin(); same && i != a.end(); i++, j++)
+        same &= eq(*i, *j);
 
-  return same;
+    return same;
 }
 
 /******************************************************************************/
@@ -207,7 +206,7 @@ TEST(Gray_Steiner, Base) {
                                 });
 
     std::list<synthesis::phase_term> f;
-    f.emplace_back(phase({true, true, false, false, true, false, false, false}, 
+    f.emplace_back(phase({true, true, false, false, true, false, false, false},
                          angles::pi));
 
     synthesis::linear_op<bool> mat{
@@ -255,8 +254,9 @@ TEST(Gray_Steiner, Fill_flush) {
                                 });
 
     std::list<synthesis::phase_term> f;
-    f.emplace_back(phase({true,false,true,false,false,false,true,false,false},
-                         angles::pi));
+    f.emplace_back(
+        phase({true, false, true, false, false, false, true, false, false},
+              angles::pi));
 
     synthesis::linear_op<bool> mat{
         {1, 0, 1, 0, 0, 0, 1, 0}, {0, 1, 1, 0, 0, 0, 1, 0},

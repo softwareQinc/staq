@@ -49,28 +49,26 @@
 #include "../../utils/node_map.hpp"
 #include "../../utils/stopwatch.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
-struct xag_npn_resynthesis_params
-{
-  /*! \brief Be verbose. */
-  bool verbose{false};
+struct xag_npn_resynthesis_params {
+    /*! \brief Be verbose. */
+    bool verbose{false};
 };
 
-struct xag_npn_resynthesis_stats
-{
-  stopwatch<>::duration time_classes{0};
-  stopwatch<>::duration time_db{0};
+struct xag_npn_resynthesis_stats {
+    stopwatch<>::duration time_classes{0};
+    stopwatch<>::duration time_db{0};
 
-  uint32_t db_size;
-  uint32_t covered_classes;
+    uint32_t db_size;
+    uint32_t covered_classes;
 
-  void report() const
-  {
-    std::cout << fmt::format( "[i] build classes time = {:>5.2f} secs\n", to_seconds( time_classes ) );
-    std::cout << fmt::format( "[i] build db time      = {:>5.2f} secs\n", to_seconds( time_db ) );
-  }
+    void report() const {
+        std::cout << fmt::format("[i] build classes time = {:>5.2f} secs\n",
+                                 to_seconds(time_classes));
+        std::cout << fmt::format("[i] build db time      = {:>5.2f} secs\n",
+                                 to_seconds(time_db));
+    }
 };
 
 /*! \brief Resynthesis function based on pre-computed AIGs.
@@ -96,239 +94,229 @@ struct xag_npn_resynthesis_stats
       command in AIG.  It uses the same underlying database of subcircuits.
    \endverbatim
  */
-template<class Ntk, class DatabaseNtk = xag_network>
-class xag_npn_resynthesis
-{
-public:
-  xag_npn_resynthesis( xag_npn_resynthesis_params const& ps = {}, xag_npn_resynthesis_stats* pst = nullptr )
-      : ps( ps ),
-        pst( pst ),
-        _classes( 1 << 16 )
-  {
-    static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-    static_assert( has_get_constant_v<Ntk>, "Ntk does not implement the get_constant method" );
-    static_assert( has_create_and_v<Ntk>, "Ntk does not implement the create_and method" );
-    static_assert( has_create_xor_v<Ntk>, "Ntk does not implement the create_xor method" );
-    static_assert( has_create_not_v<Ntk>, "Ntk does not implement the create_not method" );
+template <class Ntk, class DatabaseNtk = xag_network>
+class xag_npn_resynthesis {
+  public:
+    xag_npn_resynthesis(xag_npn_resynthesis_params const& ps = {},
+                        xag_npn_resynthesis_stats* pst = nullptr)
+        : ps(ps), pst(pst), _classes(1 << 16) {
+        static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+        static_assert(has_get_constant_v<Ntk>,
+                      "Ntk does not implement the get_constant method");
+        static_assert(has_create_and_v<Ntk>,
+                      "Ntk does not implement the create_and method");
+        static_assert(has_create_xor_v<Ntk>,
+                      "Ntk does not implement the create_xor method");
+        static_assert(has_create_not_v<Ntk>,
+                      "Ntk does not implement the create_not method");
 
-    static_assert( is_network_type_v<DatabaseNtk>, "DatabaseNtk is not a network type" );
-    static_assert( has_get_node_v<DatabaseNtk>, "DatabaseNtk does not implement the get_node method" );
-    static_assert( has_is_complemented_v<DatabaseNtk>, "DatabaseNtk does not implement the is_complemented method" );
-    static_assert( has_is_xor_v<DatabaseNtk>, "DatabaseNtk does not implement the is_xor method" );
-    static_assert( has_size_v<DatabaseNtk>, "DatabaseNtk does not implement the size method" );
-    static_assert( has_create_pi_v<DatabaseNtk>, "DatabaseNtk does not implement the create_pi method" );
-    static_assert( has_create_and_v<DatabaseNtk>, "DatabaseNtk does not implement the create_and method" );
-    static_assert( has_create_xor_v<DatabaseNtk>, "DatabaseNtk does not implement the create_xor method" );
-    static_assert( has_foreach_fanin_v<DatabaseNtk>, "DatabaseNtk does not implement the foreach_fanin method" );
-    static_assert( has_foreach_node_v<DatabaseNtk>, "DatabaseNtk does not implement the foreach_node method" );
-    static_assert( has_make_signal_v<DatabaseNtk>, "DatabaseNtk does not implement the make_signal method" );
+        static_assert(is_network_type_v<DatabaseNtk>,
+                      "DatabaseNtk is not a network type");
+        static_assert(has_get_node_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the get_node method");
+        static_assert(
+            has_is_complemented_v<DatabaseNtk>,
+            "DatabaseNtk does not implement the is_complemented method");
+        static_assert(has_is_xor_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the is_xor method");
+        static_assert(has_size_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the size method");
+        static_assert(has_create_pi_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the create_pi method");
+        static_assert(has_create_and_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the create_and method");
+        static_assert(has_create_xor_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the create_xor method");
+        static_assert(
+            has_foreach_fanin_v<DatabaseNtk>,
+            "DatabaseNtk does not implement the foreach_fanin method");
+        static_assert(has_foreach_node_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the foreach_node method");
+        static_assert(has_make_signal_v<DatabaseNtk>,
+                      "DatabaseNtk does not implement the make_signal method");
 
-    _repr.reserve( 222u );
-    build_classes();
-    build_db();
-  }
-
-  virtual ~xag_npn_resynthesis()
-  {
-    if ( ps.verbose )
-    {
-      st.report();
+        _repr.reserve(222u);
+        build_classes();
+        build_db();
     }
 
-    if ( pst )
-    {
-      *pst = st;
-    }
-  }
-
-  template<typename LeavesIterator, typename Fn>
-  void operator()( Ntk& ntk, kitty::dynamic_truth_table const& function, LeavesIterator begin, LeavesIterator end, Fn&& fn )
-  {
-    kitty::static_truth_table<4> tt = kitty::extend_to<4>( function );
-
-    /* get representative of function */
-    const auto repr = _repr[_classes[*tt.cbegin()]];
-
-    /* check if representative has circuits */
-    const auto it = _repr_to_signal.find( repr );
-    if ( it == _repr_to_signal.end() )
-    {
-      return;
-    }
-
-    const auto config = kitty::exact_npn_canonization( tt );
-
-    assert( repr == std::get<0>( config ) );
-
-    std::vector<signal<Ntk>> pis( 4, ntk.get_constant( false ) );
-    std::copy( begin, end, pis.begin() );
-
-    std::vector<signal<Ntk>> pis_perm;
-    auto perm = std::get<2>( config );
-    for ( auto i = 0; i < 4; ++i )
-    {
-      pis_perm.push_back( pis[perm[i]] );
-    }
-
-    const auto& phase = std::get<1>( config );
-    for ( auto i = 0; i < 4; ++i )
-    {
-      if ( ( phase >> perm[i] ) & 1 )
-      {
-        pis_perm[i] = ntk.create_not( pis_perm[i] );
-      }
-    }
-
-    for ( auto const& cand : it->second )
-    {
-      std::unordered_map<node<DatabaseNtk>, signal<Ntk>> db_to_ntk;
-
-      db_to_ntk.insert( {0, ntk.get_constant( false )} );
-      for ( auto i = 0; i < 4; ++i )
-      {
-        db_to_ntk.insert( {i + 1, pis_perm[i]} );
-      }
-      auto f = copy_db_entry( ntk, _db.get_node( cand ), db_to_ntk );
-      if ( _db.is_complemented( cand ) != ( ( phase >> 4 ) & 1 ) )
-      {
-        f = ntk.create_not( f );
-      }
-      if ( !fn( f ) )
-      {
-        return;
-      }
-    }
-  }
-
-private:
-  signal<Ntk>
-  copy_db_entry( Ntk& ntk, node<DatabaseNtk> const& n, std::unordered_map<node<DatabaseNtk>, signal<Ntk>>& db_to_ntk ) const
-  {
-    if ( const auto it = db_to_ntk.find( n ); it != db_to_ntk.end() )
-    {
-      return it->second;
-    }
-
-    std::vector<signal<Ntk>> fanin;
-    //std::array<signal<Ntk>, 2> fanin;
-    _db.foreach_fanin( n, [&]( auto const& f ) {
-      auto ntk_f = copy_db_entry( ntk, _db.get_node( f ), db_to_ntk );
-      if ( _db.is_complemented( f ) )
-      {
-        ntk_f = ntk.create_not( ntk_f );
-      }
-      fanin.push_back( ntk_f );
-    } );
-
-    const auto f = _db.is_xor( n ) ? ntk.create_xor( fanin[0], fanin[1] ) : ntk.create_and( fanin[0], fanin[1] );
-    db_to_ntk.insert( {n, f} );
-    return f;
-  }
-
-  void build_classes()
-  {
-    stopwatch t( st.time_classes );
-
-    kitty::dynamic_truth_table map( 16u );
-    std::transform( map.cbegin(), map.cend(), map.begin(), []( auto word ) { return ~word; } );
-
-    int64_t index = 0;
-    kitty::static_truth_table<4> tt;
-    while ( index != -1 )
-    {
-      kitty::create_from_words( tt, &index, &index + 1 );
-      const auto res = kitty::exact_npn_canonization( tt, [&]( const auto& tt ) {
-        _classes[*tt.cbegin()] = _repr.size();
-        kitty::clear_bit( map, *tt.cbegin() );
-      } );
-      _repr.push_back( std::get<0>( res ) );
-
-      /* find next non-classified truth table */
-      index = find_first_one_bit( map );
-    }
-  }
-
-  void build_db()
-  {
-    stopwatch t( st.time_db );
-
-    /* four primary inputs */
-    _db.create_pi();
-    _db.create_pi();
-    _db.create_pi();
-    _db.create_pi();
-
-    auto* p = subgraphs;
-    while ( true )
-    {
-      auto entry0 = *p++;
-      auto entry1 = *p++;
-
-      if ( entry0 == 0 && entry1 == 0 )
-        break;
-
-      auto is_xor = entry0 & 1;
-      entry0 >>= 1;
-
-      const auto child0 = _db.make_signal( entry0 >> 1 ) ^ ( entry0 & 1 );
-      const auto child1 = _db.make_signal( entry1 >> 1 ) ^ ( entry1 & 1 );
-
-      if ( is_xor )
-      {
-        _db.create_xor( child0, child1 );
-      }
-      else
-      {
-        _db.create_and( child0, child1 );
-      }
-    }
-
-    const auto sim_res = simulate_nodes<kitty::static_truth_table<4>>( _db );
-
-    _db.foreach_node( [&]( auto n ) {
-      if ( _repr[_classes[*sim_res[n].cbegin()]] == sim_res[n] )
-      {
-        if ( _repr_to_signal.count( sim_res[n] ) == 0 )
-        {
-          _repr_to_signal.insert( {sim_res[n], {_db.make_signal( n )}} );
+    virtual ~xag_npn_resynthesis() {
+        if (ps.verbose) {
+            st.report();
         }
-        else
-        {
-          _repr_to_signal[sim_res[n]].push_back( _db.make_signal( n ) );
+
+        if (pst) {
+            *pst = st;
         }
-      }
-      else
-      {
-        const auto f = ~sim_res[n];
-        if ( _repr[_classes[*f.cbegin()]] == f )
-        {
-          if ( _repr_to_signal.count( f ) == 0 )
-          {
-            _repr_to_signal.insert( {f, {!_db.make_signal( n )}} );
-          }
-          else
-          {
-            _repr_to_signal[f].push_back( !_db.make_signal( n ) );
-          }
+    }
+
+    template <typename LeavesIterator, typename Fn>
+    void operator()(Ntk& ntk, kitty::dynamic_truth_table const& function,
+                    LeavesIterator begin, LeavesIterator end, Fn&& fn) {
+        kitty::static_truth_table<4> tt = kitty::extend_to<4>(function);
+
+        /* get representative of function */
+        const auto repr = _repr[_classes[*tt.cbegin()]];
+
+        /* check if representative has circuits */
+        const auto it = _repr_to_signal.find(repr);
+        if (it == _repr_to_signal.end()) {
+            return;
         }
-      }
-    } );
 
-    st.db_size = _db.size();
-    st.covered_classes = _repr_to_signal.size();
-  }
+        const auto config = kitty::exact_npn_canonization(tt);
 
-  xag_npn_resynthesis_params ps;
-  xag_npn_resynthesis_stats st;
-  xag_npn_resynthesis_stats* pst{nullptr};
+        assert(repr == std::get<0>(config));
 
-  std::vector<kitty::static_truth_table<4>> _repr;
-  std::vector<uint8_t> _classes;
-  std::unordered_map<kitty::static_truth_table<4>, std::vector<signal<DatabaseNtk>>, kitty::hash<kitty::static_truth_table<4>>> _repr_to_signal;
+        std::vector<signal<Ntk>> pis(4, ntk.get_constant(false));
+        std::copy(begin, end, pis.begin());
 
-  DatabaseNtk _db;
+        std::vector<signal<Ntk>> pis_perm;
+        auto perm = std::get<2>(config);
+        for (auto i = 0; i < 4; ++i) {
+            pis_perm.push_back(pis[perm[i]]);
+        }
 
-  // clang-format off
+        const auto& phase = std::get<1>(config);
+        for (auto i = 0; i < 4; ++i) {
+            if ((phase >> perm[i]) & 1) {
+                pis_perm[i] = ntk.create_not(pis_perm[i]);
+            }
+        }
+
+        for (auto const& cand : it->second) {
+            std::unordered_map<node<DatabaseNtk>, signal<Ntk>> db_to_ntk;
+
+            db_to_ntk.insert({0, ntk.get_constant(false)});
+            for (auto i = 0; i < 4; ++i) {
+                db_to_ntk.insert({i + 1, pis_perm[i]});
+            }
+            auto f = copy_db_entry(ntk, _db.get_node(cand), db_to_ntk);
+            if (_db.is_complemented(cand) != ((phase >> 4) & 1)) {
+                f = ntk.create_not(f);
+            }
+            if (!fn(f)) {
+                return;
+            }
+        }
+    }
+
+  private:
+    signal<Ntk> copy_db_entry(
+        Ntk& ntk, node<DatabaseNtk> const& n,
+        std::unordered_map<node<DatabaseNtk>, signal<Ntk>>& db_to_ntk) const {
+        if (const auto it = db_to_ntk.find(n); it != db_to_ntk.end()) {
+            return it->second;
+        }
+
+        std::vector<signal<Ntk>> fanin;
+        // std::array<signal<Ntk>, 2> fanin;
+        _db.foreach_fanin(n, [&](auto const& f) {
+            auto ntk_f = copy_db_entry(ntk, _db.get_node(f), db_to_ntk);
+            if (_db.is_complemented(f)) {
+                ntk_f = ntk.create_not(ntk_f);
+            }
+            fanin.push_back(ntk_f);
+        });
+
+        const auto f = _db.is_xor(n) ? ntk.create_xor(fanin[0], fanin[1])
+                                     : ntk.create_and(fanin[0], fanin[1]);
+        db_to_ntk.insert({n, f});
+        return f;
+    }
+
+    void build_classes() {
+        stopwatch t(st.time_classes);
+
+        kitty::dynamic_truth_table map(16u);
+        std::transform(map.cbegin(), map.cend(), map.begin(),
+                       [](auto word) { return ~word; });
+
+        int64_t index = 0;
+        kitty::static_truth_table<4> tt;
+        while (index != -1) {
+            kitty::create_from_words(tt, &index, &index + 1);
+            const auto res =
+                kitty::exact_npn_canonization(tt, [&](const auto& tt) {
+                    _classes[*tt.cbegin()] = _repr.size();
+                    kitty::clear_bit(map, *tt.cbegin());
+                });
+            _repr.push_back(std::get<0>(res));
+
+            /* find next non-classified truth table */
+            index = find_first_one_bit(map);
+        }
+    }
+
+    void build_db() {
+        stopwatch t(st.time_db);
+
+        /* four primary inputs */
+        _db.create_pi();
+        _db.create_pi();
+        _db.create_pi();
+        _db.create_pi();
+
+        auto* p = subgraphs;
+        while (true) {
+            auto entry0 = *p++;
+            auto entry1 = *p++;
+
+            if (entry0 == 0 && entry1 == 0)
+                break;
+
+            auto is_xor = entry0 & 1;
+            entry0 >>= 1;
+
+            const auto child0 = _db.make_signal(entry0 >> 1) ^ (entry0 & 1);
+            const auto child1 = _db.make_signal(entry1 >> 1) ^ (entry1 & 1);
+
+            if (is_xor) {
+                _db.create_xor(child0, child1);
+            } else {
+                _db.create_and(child0, child1);
+            }
+        }
+
+        const auto sim_res = simulate_nodes<kitty::static_truth_table<4>>(_db);
+
+        _db.foreach_node([&](auto n) {
+            if (_repr[_classes[*sim_res[n].cbegin()]] == sim_res[n]) {
+                if (_repr_to_signal.count(sim_res[n]) == 0) {
+                    _repr_to_signal.insert({sim_res[n], {_db.make_signal(n)}});
+                } else {
+                    _repr_to_signal[sim_res[n]].push_back(_db.make_signal(n));
+                }
+            } else {
+                const auto f = ~sim_res[n];
+                if (_repr[_classes[*f.cbegin()]] == f) {
+                    if (_repr_to_signal.count(f) == 0) {
+                        _repr_to_signal.insert({f, {!_db.make_signal(n)}});
+                    } else {
+                        _repr_to_signal[f].push_back(!_db.make_signal(n));
+                    }
+                }
+            }
+        });
+
+        st.db_size = _db.size();
+        st.covered_classes = _repr_to_signal.size();
+    }
+
+    xag_npn_resynthesis_params ps;
+    xag_npn_resynthesis_stats st;
+    xag_npn_resynthesis_stats* pst{nullptr};
+
+    std::vector<kitty::static_truth_table<4>> _repr;
+    std::vector<uint8_t> _classes;
+    std::unordered_map<kitty::static_truth_table<4>,
+                       std::vector<signal<DatabaseNtk>>,
+                       kitty::hash<kitty::static_truth_table<4>>>
+        _repr_to_signal;
+
+    DatabaseNtk _db;
+
+    // clang-format off
   inline static const uint16_t subgraphs[]
   {
     0x0008,0x0002, 0x000a,0x0002, 0x0008,0x0003, 0x000a,0x0003, 0x0009,0x0002,
@@ -689,7 +677,7 @@ private:
     0x0b02,0x000b, 0x0b06,0x00f5, 0x0b06,0x022b, 0x0b06,0x037b, 0x0b0a,0x003d,
     0x0000,0x0000
   };
-  // clang-format on
+    // clang-format on
 }; // namespace mockturtle
 
 } /* namespace mockturtle */

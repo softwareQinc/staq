@@ -40,168 +40,151 @@
 
 #include <sparsepp/spp.h>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
-template<int PointerFieldSize = 0>
-struct node_pointer
-{
-private:
-  static constexpr auto _len = sizeof( uint64_t ) * 8;
+template <int PointerFieldSize = 0>
+struct node_pointer {
+  private:
+    static constexpr auto _len = sizeof(uint64_t) * 8;
 
-public:
-  node_pointer() = default;
-  node_pointer( uint64_t index, uint64_t weight ) : weight( weight ), index( index ) {}
+  public:
+    node_pointer() = default;
+    node_pointer(uint64_t index, uint64_t weight)
+        : weight(weight), index(index) {}
 
-  union {
-    struct
-    {
-      uint64_t weight : PointerFieldSize;
-      uint64_t index : _len - PointerFieldSize;
+    union {
+        struct {
+            uint64_t weight : PointerFieldSize;
+            uint64_t index : _len - PointerFieldSize;
+        };
+        uint64_t data;
     };
-    uint64_t data;
-  };
 
-  bool operator==( node_pointer<PointerFieldSize> const& other ) const
-  {
-    return data == other.data;
-  }
+    bool operator==(node_pointer<PointerFieldSize> const& other) const {
+        return data == other.data;
+    }
 };
 
-template<>
-struct node_pointer<0>
-{
-public:
-  node_pointer<0>() = default;
-  node_pointer<0>( uint64_t index ) : index( index ) {}
+template <>
+struct node_pointer<0> {
+  public:
+    node_pointer<0>() = default;
+    node_pointer<0>(uint64_t index) : index(index) {}
 
-  union {
-    uint64_t index;
-    uint64_t data;
-  };
+    union {
+        uint64_t index;
+        uint64_t data;
+    };
 
-  bool operator==( node_pointer<0> const& other ) const
-  {
-    return data == other.data;
-  }
+    bool operator==(node_pointer<0> const& other) const {
+        return data == other.data;
+    }
 };
 
 union cauint64_t {
-  uint64_t n{0};
-  struct
-  {
-    uint64_t h1 : 32;
-    uint64_t h2 : 32;
-  };
-  struct
-  {
-    uint64_t q1 : 16;
-    uint64_t q2 : 16;
-    uint64_t q3 : 16;
-    uint64_t q4 : 16;
-  };
+    uint64_t n{0};
+    struct {
+        uint64_t h1 : 32;
+        uint64_t h2 : 32;
+    };
+    struct {
+        uint64_t q1 : 16;
+        uint64_t q2 : 16;
+        uint64_t q3 : 16;
+        uint64_t q4 : 16;
+    };
 };
 
-template<int Fanin, int Size = 0, int PointerFieldSize = 0>
-struct regular_node
-{
-  using pointer_type = node_pointer<PointerFieldSize>;
+template <int Fanin, int Size = 0, int PointerFieldSize = 0>
+struct regular_node {
+    using pointer_type = node_pointer<PointerFieldSize>;
 
-  std::array<pointer_type, Fanin> children;
-  std::array<cauint64_t, Size> data;
+    std::array<pointer_type, Fanin> children;
+    std::array<cauint64_t, Size> data;
 
-  bool operator==( regular_node<Fanin, Size, PointerFieldSize> const& other ) const
-  {
-    return children == other.children;
-  }
+    bool
+    operator==(regular_node<Fanin, Size, PointerFieldSize> const& other) const {
+        return children == other.children;
+    }
 };
 
-template<int Size = 0, int PointerFieldSize = 0>
-struct mixed_fanin_node
-{
-  using pointer_type = node_pointer<PointerFieldSize>;
+template <int Size = 0, int PointerFieldSize = 0>
+struct mixed_fanin_node {
+    using pointer_type = node_pointer<PointerFieldSize>;
 
-  std::vector<pointer_type> children;
-  std::array<cauint64_t, Size> data;
+    std::vector<pointer_type> children;
+    std::array<cauint64_t, Size> data;
 
-  bool operator==( mixed_fanin_node<Size, PointerFieldSize> const& other ) const
-  {
-    return children == other.children;
-  }
+    bool
+    operator==(mixed_fanin_node<Size, PointerFieldSize> const& other) const {
+        return children == other.children;
+    }
 };
 
 /*! \brief Hash function for 64-bit word */
-inline uint64_t hash_block( uint64_t word )
-{
-  /* from boost::hash_detail::hash_value_unsigned */
-  return word ^ ( word + ( word << 6 ) + ( word >> 2 ) );
+inline uint64_t hash_block(uint64_t word) {
+    /* from boost::hash_detail::hash_value_unsigned */
+    return word ^ (word + (word << 6) + (word >> 2));
 }
 
 /*! \brief Combines two hash values */
-inline void hash_combine( uint64_t& seed, uint64_t other )
-{
-  /* from boost::hash_detail::hash_combine_impl */
-  const uint64_t m = UINT64_C( 0xc6a4a7935bd1e995 );
-  const int r = 47;
+inline void hash_combine(uint64_t& seed, uint64_t other) {
+    /* from boost::hash_detail::hash_combine_impl */
+    const uint64_t m = UINT64_C(0xc6a4a7935bd1e995);
+    const int r = 47;
 
-  other *= m;
-  other ^= other >> r;
-  other *= m;
+    other *= m;
+    other ^= other >> r;
+    other *= m;
 
-  seed ^= other;
-  seed *= m;
+    seed ^= other;
+    seed *= m;
 
-  seed += 0xe6546b64;
+    seed += 0xe6546b64;
 }
 
-template<typename Node>
-struct node_hash
-{
-  uint64_t operator()( const Node& n ) const
-  {
-    if ( n.children.size() == 0 )
-      return 0;
+template <typename Node>
+struct node_hash {
+    uint64_t operator()(const Node& n) const {
+        if (n.children.size() == 0)
+            return 0;
 
-    auto it = std::begin( n.children );
-    auto seed = hash_block( it->data );
-    ++it;
+        auto it = std::begin(n.children);
+        auto seed = hash_block(it->data);
+        ++it;
 
-    while ( it != std::end( n.children ) )
-    {
-      hash_combine( seed, hash_block( it->data ) );
-      ++it;
+        while (it != std::end(n.children)) {
+            hash_combine(seed, hash_block(it->data));
+            ++it;
+        }
+
+        return seed;
+    }
+};
+
+struct empty_storage_data {};
+
+template <typename Node, typename T = empty_storage_data,
+          typename NodeHasher = node_hash<Node>>
+struct storage {
+    storage() {
+        nodes.reserve(10000u);
+        hash.reserve(10000u);
+        hash.set_resizing_parameters(.4f, .95f);
+
+        /* we generally reserve the first node for a constant */
+        nodes.emplace_back();
     }
 
-    return seed;
-  }
-};
+    using node_type = Node;
 
-struct empty_storage_data
-{
-};
+    std::vector<node_type> nodes;
+    std::vector<uint64_t> inputs;
+    std::vector<typename node_type::pointer_type> outputs;
 
-template<typename Node, typename T = empty_storage_data, typename NodeHasher = node_hash<Node>>
-struct storage
-{
-  storage()
-  {
-    nodes.reserve( 10000u );
-    hash.reserve( 10000u );
-    hash.set_resizing_parameters( .4f, .95f );
+    spp::sparse_hash_map<node_type, uint64_t, NodeHasher> hash;
 
-    /* we generally reserve the first node for a constant */
-    nodes.emplace_back();
-  }
-
-  using node_type = Node;
-
-  std::vector<node_type> nodes;
-  std::vector<uint64_t> inputs;
-  std::vector<typename node_type::pointer_type> outputs;
-
-  spp::sparse_hash_map<node_type, uint64_t, NodeHasher> hash;
-
-  T data;
+    T data;
 };
 
 } /* namespace mockturtle */

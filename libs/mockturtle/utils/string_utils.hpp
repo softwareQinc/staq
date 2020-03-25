@@ -37,26 +37,22 @@
 #include <string>
 #include <type_traits>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
-template<class Iterator, class MapFn, class JoinFn>
-std::invoke_result_t<MapFn, typename Iterator::value_type> map_and_join( Iterator begin, Iterator end, MapFn&& map_fn, JoinFn&& join_fn )
-{
-  if constexpr ( std::is_same_v<std::decay_t<JoinFn>, std::string> )
-  {
-    return std::accumulate( begin + 1, end, map_fn( *begin ),
-                            [&]( auto const& a, auto const& v ) {
-                              return a + join_fn + map_fn( v );
-                            } );
-  }
-  else
-  {
-    return std::accumulate( begin + 1, end, map_fn( *begin ),
-                            [&]( auto const& a, auto const& v ) {
-                              return join_fn( a, map_fn( v ) );
-                            } );
-  }
+template <class Iterator, class MapFn, class JoinFn>
+std::invoke_result_t<MapFn, typename Iterator::value_type>
+map_and_join(Iterator begin, Iterator end, MapFn&& map_fn, JoinFn&& join_fn) {
+    if constexpr (std::is_same_v<std::decay_t<JoinFn>, std::string>) {
+        return std::accumulate(begin + 1, end, map_fn(*begin),
+                               [&](auto const& a, auto const& v) {
+                                   return a + join_fn + map_fn(v);
+                               });
+    } else {
+        return std::accumulate(begin + 1, end, map_fn(*begin),
+                               [&](auto const& a, auto const& v) {
+                                   return join_fn(a, map_fn(v));
+                               });
+    }
 }
 
 } // namespace mockturtle

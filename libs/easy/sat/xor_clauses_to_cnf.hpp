@@ -28,64 +28,53 @@
 #include <easy/sat/sat_solver.hpp>
 #include <queue>
 
-namespace easy::sat
-{
+namespace easy::sat {
 
-class xor_clauses_to_cnf
-{
-public:
-  xor_clauses_to_cnf( int& sid )
-      : _sid( sid )
-  {
-  }
+class xor_clauses_to_cnf {
+  public:
+    xor_clauses_to_cnf(int& sid) : _sid(sid) {}
 
-  inline void add_xor_clause( constraints& constraints, const std::vector<int>& xor_clause, bool value )
-  {
-    assert( !xor_clause.empty() && "clause must not be empty" );
+    inline void add_xor_clause(constraints& constraints,
+                               const std::vector<int>& xor_clause, bool value) {
+        assert(!xor_clause.empty() && "clause must not be empty");
 
-    std::queue<int> lits;
-    for ( const auto& l : xor_clause )
-    {
-      lits.push( l );
+        std::queue<int> lits;
+        for (const auto& l : xor_clause) {
+            lits.push(l);
+        }
+
+        while (lits.size() > 1) {
+            auto a = lits.front();
+            lits.pop();
+            auto b = lits.front();
+            lits.pop();
+
+            int c = _sid++;
+            constraints.add_clause({-a, -b, -c});
+            constraints.add_clause({a, b, -c});
+            constraints.add_clause({a, -b, c});
+            constraints.add_clause({-a, b, c});
+
+            lits.push(c);
+        }
+
+        assert(lits.size() == 1u);
+        if (value) {
+            constraints.add_clause({lits.front()});
+        } else {
+            constraints.add_clause({-lits.front()});
+        }
     }
 
-    while ( lits.size() > 1 )
-    {
-      auto a = lits.front();
-      lits.pop();
-      auto b = lits.front();
-      lits.pop();
-
-      int c = _sid++;
-      constraints.add_clause( { -a, -b, -c } );
-      constraints.add_clause( {  a,  b, -c } );
-      constraints.add_clause( {  a, -b,  c } );
-      constraints.add_clause( { -a,  b,  c } );
-
-      lits.push( c );
+    inline void apply(constraints& constraints) {
+        constraints.foreach_xor_clause([&](xor_clause_t const& cl) {
+            add_xor_clause(constraints, cl.clause, cl.value);
+        });
+        constraints.clear_xor_clauses();
     }
 
-    assert( lits.size() == 1u );
-    if ( value )
-    {
-      constraints.add_clause( {lits.front()} );
-    }
-    else
-    {
-      constraints.add_clause( {-lits.front()} );
-    }
-  }
-
-  inline void apply( constraints& constraints )
-  {
-    constraints.foreach_xor_clause([&]( xor_clause_t const& cl ){
-        add_xor_clause( constraints, cl.clause, cl.value );
-      });
-    constraints.clear_xor_clauses();
-  }
-
-public:
-  int& _sid;
+  public:
+    int& _sid;
 }; /* xor_clauses_to_cnf */
 
 } // namespace easy::sat

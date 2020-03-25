@@ -34,10 +34,9 @@
 
 #include <type_traits>
 
-namespace kitty
-{
+namespace kitty {
 
-template<class TT>
+template <class TT>
 struct is_truth_table : std::false_type {};
 
-}
+} // namespace kitty

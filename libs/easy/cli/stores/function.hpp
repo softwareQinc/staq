@@ -26,69 +26,58 @@
 #include <kitty/dynamic_truth_table.hpp>
 #include <kitty/print.hpp>
 
-namespace alice
-{
+namespace alice {
 
-struct function_storee
-{
-  kitty::dynamic_truth_table bits;
-  kitty::dynamic_truth_table care;
-  uint32_t number_of_variables;
+struct function_storee {
+    kitty::dynamic_truth_table bits;
+    kitty::dynamic_truth_table care;
+    uint32_t number_of_variables;
 
-  std::string as_string() const
-  {
-    const auto len = 1ull << number_of_variables;
-    std::string s( len, '0' );
-    for ( auto i = 0u; i < len; ++i )
-    {
-      if ( !get_bit( care, i ) )
-      {
-        s[i] = '-';
-      }
-      else
-      {
-        s[i] = get_bit( bits, i ) ? '1' : '0';
-      }
-    }
-    return s;
-  }
-
-  inline static function_storee from_hex_string( std::string s, uint32_t num_vars )
-  {
-    /* remove prefix '0x' if present */
-    if ( s.size() >= 2 && s[0] == '0' && s[1] == 'x' )
-    {
-      s = s.substr( 2, s.size()-3 );
+    std::string as_string() const {
+        const auto len = 1ull << number_of_variables;
+        std::string s(len, '0');
+        for (auto i = 0u; i < len; ++i) {
+            if (!get_bit(care, i)) {
+                s[i] = '-';
+            } else {
+                s[i] = get_bit(bits, i) ? '1' : '0';
+            }
+        }
+        return s;
     }
 
-    function_storee fn;
-    fn.bits = kitty::dynamic_truth_table( num_vars );
-    kitty::create_from_hex_string( fn.bits, s );
-    fn.care = ~kitty::dynamic_truth_table( num_vars );
-    fn.number_of_variables = num_vars;
+    inline static function_storee from_hex_string(std::string s,
+                                                  uint32_t num_vars) {
+        /* remove prefix '0x' if present */
+        if (s.size() >= 2 && s[0] == '0' && s[1] == 'x') {
+            s = s.substr(2, s.size() - 3);
+        }
 
-    return fn;
-  }
+        function_storee fn;
+        fn.bits = kitty::dynamic_truth_table(num_vars);
+        kitty::create_from_hex_string(fn.bits, s);
+        fn.care = ~kitty::dynamic_truth_table(num_vars);
+        fn.number_of_variables = num_vars;
+
+        return fn;
+    }
 }; // function_storee
 
-ALICE_ADD_STORE( function_storee, "function", "f", "Function", "Functions" )
+ALICE_ADD_STORE(function_storee, "function", "f", "Function", "Functions")
 
-ALICE_PRINT_STORE( function_storee, os, element )
-{
-  kitty::print_hex( element.bits, os );
-  os << ' ';
-  kitty::print_hex( element.care, os );
-  os << '\n';
+ALICE_PRINT_STORE(function_storee, os, element) {
+    kitty::print_hex(element.bits, os);
+    os << ' ';
+    kitty::print_hex(element.care, os);
+    os << '\n';
 }
 
-ALICE_DESCRIBE_STORE( function_storee, element )
-{
-  return fmt::format( "{}", element.as_string() );
+ALICE_DESCRIBE_STORE(function_storee, element) {
+    return fmt::format("{}", element.as_string());
 }
 
-ALICE_PRINT_STORE_STATISTICS( function_storee, os, element )
-{
-  os << fmt::format( "{}", element.as_string() ) << '\n';
+ALICE_PRINT_STORE_STATISTICS(function_storee, os, element) {
+    os << fmt::format("{}", element.as_string()) << '\n';
 }
 
 } // namespace alice

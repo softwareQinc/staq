@@ -38,8 +38,7 @@
 
 #include "operators.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /*! \brief Enumerate all representatives using 1-neighborhood search.
 
@@ -52,54 +51,48 @@ namespace kitty
   \param canonization_fn A canonization function, which takes as input a truth
                          table and returns a truth table
 */
-template<class TT, class CanonizationFn>
-void fuller_neighborhood_enumeration( std::vector<TT>& functions, CanonizationFn&& canonization_fn )
-{
-  /* there must be one seed truth table given */
-  assert( functions.size() == 1u );
+template <class TT, class CanonizationFn>
+void fuller_neighborhood_enumeration(std::vector<TT>& functions,
+                                     CanonizationFn&& canonization_fn) {
+    /* there must be one seed truth table given */
+    assert(functions.size() == 1u);
 
-  /* classify seed function */
-  functions.front() = canonization_fn( functions.front() );
+    /* classify seed function */
+    functions.front() = canonization_fn(functions.front());
 
-  /* get number of bits from seed truth table */
-  const auto num_bits = functions.front().num_bits();
-  std::vector<TT> neighborhood( num_bits );
-  uint32_t num{1};
-  std::stack<TT> stack;
-  stack.push( functions.front() );
+    /* get number of bits from seed truth table */
+    const auto num_bits = functions.front().num_bits();
+    std::vector<TT> neighborhood(num_bits);
+    uint32_t num{1};
+    std::stack<TT> stack;
+    stack.push(functions.front());
 
-  while ( !stack.empty() )
-  {
-    const auto g = stack.top();
-    stack.pop();
+    while (!stack.empty()) {
+        const auto g = stack.top();
+        stack.pop();
 
-    /* Finding connecting classes */
-    for ( auto j = 0u; j < num_bits; ++j )
-    {
-      neighborhood[j] = g;
-      flip_bit( neighborhood[j], j );
-      neighborhood[j] = canonization_fn( neighborhood[j] );
-    }
-
-    for ( auto j = 0u; j < num_bits; ++j )
-    {
-      bool flag{false};
-      for ( auto i = 0u; i < num; ++i )
-      {
-        if ( neighborhood[j] == functions[i] )
-        {
-          flag = true;
-          break;
+        /* Finding connecting classes */
+        for (auto j = 0u; j < num_bits; ++j) {
+            neighborhood[j] = g;
+            flip_bit(neighborhood[j], j);
+            neighborhood[j] = canonization_fn(neighborhood[j]);
         }
-      }
-      if ( !flag )
-      {
-        ++num;
-        functions.push_back( neighborhood[j] );
-        stack.push( neighborhood[j] );
-      }
+
+        for (auto j = 0u; j < num_bits; ++j) {
+            bool flag{false};
+            for (auto i = 0u; i < num; ++i) {
+                if (neighborhood[j] == functions[i]) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                ++num;
+                functions.push_back(neighborhood[j]);
+                stack.push(neighborhood[j]);
+            }
+        }
     }
-  }
 }
 
 } /* namespace kitty */

@@ -43,8 +43,7 @@
 
 #include <sparsepp/spp.h>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Implements an isolated view on a single cut in a network.
  *
@@ -66,169 +65,176 @@ namespace mockturtle
  * - `is_constant`
  * - `make_signal`
  */
-template<typename Ntk>
-class cut_view : public immutable_view<Ntk>
-{
-public:
-  using storage = typename Ntk::storage;
-  using node = typename Ntk::node;
-  using signal = typename Ntk::signal;
-  static constexpr bool is_topologically_sorted = true;
+template <typename Ntk>
+class cut_view : public immutable_view<Ntk> {
+  public:
+    using storage = typename Ntk::storage;
+    using node = typename Ntk::node;
+    using signal = typename Ntk::signal;
+    static constexpr bool is_topologically_sorted = true;
 
-public:
-  explicit cut_view( Ntk const& ntk, std::vector<node> const& leaves, node const& root )
-      : immutable_view<Ntk>( ntk ), _root( root )
-  {
-    static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-    static_assert( has_set_visited_v<Ntk>, "Ntk does not implement the set_visited method" );
-    static_assert( has_visited_v<Ntk>, "Ntk does not implement the visited method" );
-    static_assert( has_get_node_v<Ntk>, "Ntk does not implement the get_node method" );
-    static_assert( has_get_constant_v<Ntk>, "Ntk does not implement the get_constant method" );
-    static_assert( has_is_constant_v<Ntk>, "Ntk does not implement the is_constant method" );
-    static_assert( has_make_signal_v<Ntk>, "Ntk does not implement the make_signal method" );
+  public:
+    explicit cut_view(Ntk const& ntk, std::vector<node> const& leaves,
+                      node const& root)
+        : immutable_view<Ntk>(ntk), _root(root) {
+        static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+        static_assert(has_set_visited_v<Ntk>,
+                      "Ntk does not implement the set_visited method");
+        static_assert(has_visited_v<Ntk>,
+                      "Ntk does not implement the visited method");
+        static_assert(has_get_node_v<Ntk>,
+                      "Ntk does not implement the get_node method");
+        static_assert(has_get_constant_v<Ntk>,
+                      "Ntk does not implement the get_constant method");
+        static_assert(has_is_constant_v<Ntk>,
+                      "Ntk does not implement the is_constant method");
+        static_assert(has_make_signal_v<Ntk>,
+                      "Ntk does not implement the make_signal method");
 
-    /* constants */
-    add_constants();
+        /* constants */
+        add_constants();
 
-    /* primary inputs */
-    for ( auto const& leaf : leaves )
-    {
-      add_leaf( leaf );
+        /* primary inputs */
+        for (auto const& leaf : leaves) {
+            add_leaf(leaf);
+        }
+
+        traverse(root);
+
+        /* restore visited */
+        for (auto const& n : _nodes) {
+            this->set_visited(n, 0);
+        }
     }
 
-    traverse( root );
+    template <typename _Ntk = Ntk,
+              typename = std::enable_if_t<
+                  !std::is_same_v<typename _Ntk::signal, typename _Ntk::node>>>
+    explicit cut_view(Ntk const& ntk, std::vector<signal> const& leaves,
+                      node const& root)
+        : immutable_view<Ntk>(ntk), _root(root) {
+        static_assert(is_network_type_v<Ntk>, "Ntk is not a network type");
+        static_assert(has_set_visited_v<Ntk>,
+                      "Ntk does not implement the set_visited method");
+        static_assert(has_visited_v<Ntk>,
+                      "Ntk does not implement the visited method");
+        static_assert(has_get_node_v<Ntk>,
+                      "Ntk does not implement the get_node method");
+        static_assert(has_get_constant_v<Ntk>,
+                      "Ntk does not implement the get_constant method");
+        static_assert(has_is_constant_v<Ntk>,
+                      "Ntk does not implement the is_constant method");
+        static_assert(has_make_signal_v<Ntk>,
+                      "Ntk does not implement the make_signal method");
 
-    /* restore visited */
-    for ( auto const& n : _nodes )
-    {
-      this->set_visited( n, 0 );
+        /* constants */
+        add_constants();
+
+        /* primary inputs */
+        for (auto const& f : leaves) {
+            const auto leaf = this->get_node(f);
+            add_leaf(leaf);
+        }
+
+        traverse(root);
+
+        /* restore visited */
+        for (auto const& n : _nodes) {
+            this->set_visited(n, 0);
+        }
     }
-  }
 
-  template<typename _Ntk = Ntk, typename = std::enable_if_t<!std::is_same_v<typename _Ntk::signal, typename _Ntk::node>>>
-  explicit cut_view( Ntk const& ntk, std::vector<signal> const& leaves, node const& root )
-      : immutable_view<Ntk>( ntk ), _root( root )
-  {
-    static_assert( is_network_type_v<Ntk>, "Ntk is not a network type" );
-    static_assert( has_set_visited_v<Ntk>, "Ntk does not implement the set_visited method" );
-    static_assert( has_visited_v<Ntk>, "Ntk does not implement the visited method" );
-    static_assert( has_get_node_v<Ntk>, "Ntk does not implement the get_node method" );
-    static_assert( has_get_constant_v<Ntk>, "Ntk does not implement the get_constant method" );
-    static_assert( has_is_constant_v<Ntk>, "Ntk does not implement the is_constant method" );
-    static_assert( has_make_signal_v<Ntk>, "Ntk does not implement the make_signal method" );
-
-    /* constants */
-    add_constants();
-
-    /* primary inputs */
-    for ( auto const& f : leaves )
-    {
-      const auto leaf = this->get_node( f );
-      add_leaf( leaf );
+    inline auto size() const { return _nodes.size(); }
+    inline auto num_pis() const { return _num_leaves; }
+    inline auto num_pos() const { return 1; }
+    inline auto num_gates() const {
+        return _nodes.size() - _num_leaves - _num_constants;
     }
 
-    traverse( root );
-
-    /* restore visited */
-    for ( auto const& n : _nodes )
-    {
-      this->set_visited( n, 0 );
+    inline auto node_to_index(const node& n) const {
+        return _node_to_index.at(n);
     }
-  }
+    inline auto index_to_node(uint32_t index) const { return _nodes[index]; }
 
-  inline auto size() const { return _nodes.size(); }
-  inline auto num_pis() const { return _num_leaves; }
-  inline auto num_pos() const { return 1; }
-  inline auto num_gates() const { return _nodes.size() - _num_leaves - _num_constants; }
-
-  inline auto node_to_index( const node& n ) const { return _node_to_index.at( n ); }
-  inline auto index_to_node( uint32_t index ) const { return _nodes[index]; }
-
-  template<typename Fn>
-  void foreach_po( Fn&& fn ) const
-  {
-    std::vector<signal> signals( 1, this->make_signal( _root ) );
-    detail::foreach_element( signals.begin(), signals.end(), fn );
-  }
-
-  inline bool is_pi( node const& pi ) const
-  {
-    const auto beg = _nodes.begin() + _num_constants;
-    return std::find( beg, beg + _num_leaves, pi ) != beg + _num_leaves;
-  }
-
-  template<typename Fn>
-  void foreach_pi( Fn&& fn ) const
-  {
-    detail::foreach_element( _nodes.begin() + _num_constants, _nodes.begin() + _num_constants + _num_leaves, fn );
-  }
-
-  template<typename Fn>
-  void foreach_node( Fn&& fn ) const
-  {
-    detail::foreach_element( _nodes.begin(), _nodes.end(), fn );
-  }
-
-  template<typename Fn>
-  void foreach_gate( Fn&& fn ) const
-  {
-    detail::foreach_element( _nodes.begin() + _num_constants + _num_leaves, _nodes.end(), fn );
-  }
-
-private:
-  inline void add_constants()
-  {
-    add_node( this->get_node( this->get_constant( false ) ) );
-    this->set_visited( this->get_node( this->get_constant( false ) ), 1 );
-    if ( this->get_node( this->get_constant( true ) ) != this->get_node( this->get_constant( false ) ) )
-    {
-      add_node( this->get_node( this->get_constant( true ) ) );
-      this->set_visited( this->get_node( this->get_constant( true ) ), 1 );
-      ++_num_constants;
+    template <typename Fn>
+    void foreach_po(Fn&& fn) const {
+        std::vector<signal> signals(1, this->make_signal(_root));
+        detail::foreach_element(signals.begin(), signals.end(), fn);
     }
-  }
 
-  inline void add_leaf( node const& leaf )
-  {
-    if ( this->visited( leaf ) == 1 )
-      return;
+    inline bool is_pi(node const& pi) const {
+        const auto beg = _nodes.begin() + _num_constants;
+        return std::find(beg, beg + _num_leaves, pi) != beg + _num_leaves;
+    }
 
-    add_node( leaf );
-    this->set_visited( leaf, 1 );
-    ++_num_leaves;
-  }
+    template <typename Fn>
+    void foreach_pi(Fn&& fn) const {
+        detail::foreach_element(_nodes.begin() + _num_constants,
+                                _nodes.begin() + _num_constants + _num_leaves,
+                                fn);
+    }
 
-  inline void add_node( node const& n )
-  {
-    _node_to_index[n] = static_cast<uint32_t>( _nodes.size() );
-    _nodes.push_back( n );
-  }
+    template <typename Fn>
+    void foreach_node(Fn&& fn) const {
+        detail::foreach_element(_nodes.begin(), _nodes.end(), fn);
+    }
 
-  void traverse( node const& n )
-  {
-    if ( this->visited( n ) == 1 )
-      return;
+    template <typename Fn>
+    void foreach_gate(Fn&& fn) const {
+        detail::foreach_element(_nodes.begin() + _num_constants + _num_leaves,
+                                _nodes.end(), fn);
+    }
 
-    this->foreach_fanin( n, [&]( const auto& f ) {
-      traverse( this->get_node( f ) );
-    } );
+  private:
+    inline void add_constants() {
+        add_node(this->get_node(this->get_constant(false)));
+        this->set_visited(this->get_node(this->get_constant(false)), 1);
+        if (this->get_node(this->get_constant(true)) !=
+            this->get_node(this->get_constant(false))) {
+            add_node(this->get_node(this->get_constant(true)));
+            this->set_visited(this->get_node(this->get_constant(true)), 1);
+            ++_num_constants;
+        }
+    }
 
-    add_node( n );
-    this->set_visited( n, 1 );
-  }
+    inline void add_leaf(node const& leaf) {
+        if (this->visited(leaf) == 1)
+            return;
 
-public:
-  unsigned _num_constants{1};
-  unsigned _num_leaves{0};
-  std::vector<node> _nodes;
-  spp::sparse_hash_map<node, uint32_t> _node_to_index;
-  node _root;
+        add_node(leaf);
+        this->set_visited(leaf, 1);
+        ++_num_leaves;
+    }
+
+    inline void add_node(node const& n) {
+        _node_to_index[n] = static_cast<uint32_t>(_nodes.size());
+        _nodes.push_back(n);
+    }
+
+    void traverse(node const& n) {
+        if (this->visited(n) == 1)
+            return;
+
+        this->foreach_fanin(
+            n, [&](const auto& f) { traverse(this->get_node(f)); });
+
+        add_node(n);
+        this->set_visited(n, 1);
+    }
+
+  public:
+    unsigned _num_constants{1};
+    unsigned _num_leaves{0};
+    std::vector<node> _nodes;
+    spp::sparse_hash_map<node, uint32_t> _node_to_index;
+    node _root;
 };
 
-template<class T>
-cut_view(T const&, std::vector<node<T>> const&, node<T> const&) -> cut_view<T>;
+template <class T>
+cut_view(T const&, std::vector<node<T>> const&, node<T> const&)->cut_view<T>;
 
-template<class T, typename = std::enable_if_t<!std::is_same_v<typename T::signal, typename T::node>>>
-cut_view(T const&, std::vector<signal<T>> const&, node<T> const&) -> cut_view<T>;
+template <class T, typename = std::enable_if_t<
+                       !std::is_same_v<typename T::signal, typename T::node>>>
+cut_view(T const&, std::vector<signal<T>> const&, node<T> const&)->cut_view<T>;
 
 } /* namespace mockturtle */

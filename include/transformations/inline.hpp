@@ -140,49 +140,50 @@ class Inliner final : public ast::Replacer {
             auto reg = registers_.begin();
             auto reg_offset = 0;
             for (auto& anc : it->second.ancillas) {
-              if (anc.dirty) {
-                // Try to find an unused qubit to use as a dirty ancilla
-                auto i = 0;
+                if (anc.dirty) {
+                    // Try to find an unused qubit to use as a dirty ancilla
+                    auto i = 0;
 
-                while (i < anc.size) {
-                  if (reg == registers_.end()) {
-                    // Switch to clean ancillas
-                    q_subst.insert(
-                        {ast::VarAccess(gate.pos(), anc.name, i++),
-                         ast::VarAccess(gate.pos(),
-                                        config_.ancilla_name,
-                                        anc_offset++)});
+                    while (i < anc.size) {
+                        if (reg == registers_.end()) {
+                            // Switch to clean ancillas
+                            q_subst.insert(
+                                {ast::VarAccess(gate.pos(), anc.name, i++),
+                                 ast::VarAccess(gate.pos(),
+                                                config_.ancilla_name,
+                                                anc_offset++)});
 
-                  } else if (reg_offset >= reg->second) {
-                    // Move to the next register
-                    reg++;
-                    reg_offset = 0;
+                        } else if (reg_offset >= reg->second) {
+                            // Move to the next register
+                            reg++;
+                            reg_offset = 0;
 
-                  } else {
-                    // Check whether this qubit is used in the gate
-                    bool used = false;
-                    gate.foreach_qarg([&used,&reg,&reg_offset](auto& arg){
-                        used = used || (arg.var() == reg->first &&
-                                        arg.offset() == reg_offset);
-                      });
+                        } else {
+                            // Check whether this qubit is used in the gate
+                            bool used = false;
+                            gate.foreach_qarg(
+                                [&used, &reg, &reg_offset](auto& arg) {
+                                    used = used || (arg.var() == reg->first &&
+                                                    arg.offset() == reg_offset);
+                                });
 
-                    if (!used) {
-                      q_subst.insert(
-                          {ast::VarAccess(gate.pos(), anc.name, i++),
-                           ast::VarAccess(gate.pos(), reg->first, reg_offset)});
+                            if (!used) {
+                                q_subst.insert(
+                                    {ast::VarAccess(gate.pos(), anc.name, i++),
+                                     ast::VarAccess(gate.pos(), reg->first,
+                                                    reg_offset)});
+                            }
+
+                            reg_offset++;
+                        }
                     }
-
-                    reg_offset++;
-                  }
+                } else {
+                    q_subst.insert(
+                        {ast::VarAccess(gate.pos(), anc.name),
+                         ast::VarAccess(gate.pos(), config_.ancilla_name,
+                                        anc_offset)});
+                    anc_offset += anc.size;
                 }
-              } else {
-                q_subst.insert(
-                    {ast::VarAccess(gate.pos(), anc.name),
-                     ast::VarAccess(gate.pos(),
-                                    config_.ancilla_name,
-                                    anc_offset)});
-                anc_offset += anc.size;
-              }
             }
             SubstAP ap_subst(q_subst);
 

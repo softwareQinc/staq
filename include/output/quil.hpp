@@ -41,7 +41,7 @@ std::unordered_map<std::string, std::string> qasmstd_to_quilstd{
     {"ry", "RY"},        {"rz", "RZ"},   {"u1", "RZ"},        {"crz", "CPHASE"},
     {"cu1", "CPHASE"}};
 
-/** 
+/**
  * \class staq::output::QuilOutputter
  * \brief Visitor for converting a QASM AST to Quil
  */

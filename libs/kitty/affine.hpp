@@ -41,65 +41,57 @@
 #include "detail/linear_constants.hpp"
 /*! \endcond */
 
-namespace kitty
-{
+namespace kitty {
 
 /*! \cond PRIVATE */
-namespace detail
-{
-/* all delta-swap operations have been optimized to work with integer masks omega */
-template<typename TT>
-inline void delta_swap_inplace_opt( TT& tt, uint64_t delta, uint64_t omega )
-{
-  assert( tt.num_vars() <= 6 );
-  const uint64_t y = ( tt._bits[0] ^ ( tt._bits[0] >> delta ) ) & omega;
-  tt._bits[0] = tt._bits[0] ^ y ^ ( y << delta );
+namespace detail {
+/* all delta-swap operations have been optimized to work with integer masks
+ * omega */
+template <typename TT>
+inline void delta_swap_inplace_opt(TT& tt, uint64_t delta, uint64_t omega) {
+    assert(tt.num_vars() <= 6);
+    const uint64_t y = (tt._bits[0] ^ (tt._bits[0] >> delta)) & omega;
+    tt._bits[0] = tt._bits[0] ^ y ^ (y << delta);
 }
 
-template<int NumVars>
-inline void delta_swap_inplace_opt( static_truth_table<NumVars, true>& tt, uint64_t delta, uint64_t omega )
-{
-  assert ( NumVars <= 6 );
-  const uint64_t y = ( tt._bits ^ ( tt._bits >> delta ) ) & omega;
-  tt._bits = tt._bits ^ y ^ ( y << delta );
+template <int NumVars>
+inline void delta_swap_inplace_opt(static_truth_table<NumVars, true>& tt,
+                                   uint64_t delta, uint64_t omega) {
+    assert(NumVars <= 6);
+    const uint64_t y = (tt._bits ^ (tt._bits >> delta)) & omega;
+    tt._bits = tt._bits ^ y ^ (y << delta);
 }
 
-template<typename TT>
-void permute_with_masks_inplace_opt( TT& tt, uint64_t const* masks )
-{
-  for ( auto k = 0; k < tt.num_vars(); ++k )
-  {
-    delta_swap_inplace_opt( tt, uint64_t( 1 ) << k, masks[k] );
-  }
+template <typename TT>
+void permute_with_masks_inplace_opt(TT& tt, uint64_t const* masks) {
+    for (auto k = 0; k < tt.num_vars(); ++k) {
+        delta_swap_inplace_opt(tt, uint64_t(1) << k, masks[k]);
+    }
 
-  for ( int k = tt.num_vars() - 2, i = tt.num_vars(); k >= 0; --k, ++i )
-  {
-    delta_swap_inplace_opt( tt, uint64_t( 1 ) << k, masks[i] );
-  }
+    for (int k = tt.num_vars() - 2, i = tt.num_vars(); k >= 0; --k, ++i) {
+        delta_swap_inplace_opt(tt, uint64_t(1) << k, masks[i]);
+    }
 }
 
-template<typename TT>
-TT permute_with_masks_opt( const TT& tt, uint64_t const* masks )
-{
-  auto copy = tt;
-  permute_with_masks_inplace_opt( copy, masks );
-  return copy;
+template <typename TT>
+TT permute_with_masks_opt(const TT& tt, uint64_t const* masks) {
+    auto copy = tt;
+    permute_with_masks_inplace_opt(copy, masks);
+    return copy;
 }
 
-template<typename Fn>
-inline void for_each_permutation_mask( unsigned num_vars, Fn&& fn )
-{
-  assert( num_vars >= 2 && num_vars <= 4 );
+template <typename Fn>
+inline void for_each_permutation_mask(unsigned num_vars, Fn&& fn) {
+    assert(num_vars >= 2 && num_vars <= 4);
 
-  const auto offset = 2 * num_vars - 1;
+    const auto offset = 2 * num_vars - 1;
 
-  const auto s = detail::masks_start[num_vars - 2u];
-  const auto e = detail::masks_end[num_vars - 2u];
+    const auto s = detail::masks_start[num_vars - 2u];
+    const auto e = detail::masks_end[num_vars - 2u];
 
-  for ( auto i = s; i < e; i += offset )
-  {
-    fn( &detail::linear_masks[i] );
-  }
+    for (auto i = s; i < e; i += offset) {
+        fn(&detail::linear_masks[i]);
+    }
 }
 } /* namespace detail */
 /*! \endcond */
@@ -112,24 +104,26 @@ inline void for_each_permutation_mask( unsigned num_vars, Fn&& fn )
 
   \param tt Truth table
 */
-template<typename TT, typename Callback = decltype( detail::exact_spectral_canonization_null_callback )>
-TT exact_linear_canonization( const TT& tt, Callback&& fn = detail::exact_spectral_canonization_null_callback )
-{
-  detail::miller_spectral_canonization_impl<TT> impl( tt, false, false, false );
-  return impl.run( fn ).first;
+template <typename TT, typename Callback = decltype(
+                           detail::exact_spectral_canonization_null_callback)>
+TT exact_linear_canonization(
+    const TT& tt,
+    Callback&& fn = detail::exact_spectral_canonization_null_callback) {
+    detail::miller_spectral_canonization_impl<TT> impl(tt, false, false, false);
+    return impl.run(fn).first;
 }
 
 /*! \cond PRIVATE */
-template<typename TT>
-TT exact_linear_canonization_old( const TT& tt )
-{
-  auto min = tt;
+template <typename TT>
+TT exact_linear_canonization_old(const TT& tt) {
+    auto min = tt;
 
-  detail::for_each_permutation_mask( tt.num_vars(), [&min, &tt]( const auto* mask ) {
-    min = std::min( min, detail::permute_with_masks_opt( tt, mask ) );
-  });
+    detail::for_each_permutation_mask(
+        tt.num_vars(), [&min, &tt](const auto* mask) {
+            min = std::min(min, detail::permute_with_masks_opt(tt, mask));
+        });
 
-  return min;
+    return min;
 }
 /*! \endcond */
 
@@ -141,10 +135,10 @@ TT exact_linear_canonization_old( const TT& tt )
 
   \param tt Truth table
 */
-template<typename TT>
-TT exact_linear_output_canonization( const TT& tt )
-{
-  return std::min( exact_linear_canonization_old( tt ), exact_linear_canonization_old( ~tt ) );
+template <typename TT>
+TT exact_linear_output_canonization(const TT& tt) {
+    return std::min(exact_linear_canonization_old(tt),
+                    exact_linear_canonization_old(~tt));
 }
 
 /*! \brief Applies exact affine classification
@@ -155,35 +149,35 @@ TT exact_linear_output_canonization( const TT& tt )
 
   \param tt Truth table
 */
-template<typename TT, typename Callback = decltype( detail::exact_spectral_canonization_null_callback )>
-TT exact_affine_canonization( const TT& tt, Callback&& fn = detail::exact_spectral_canonization_null_callback )
-{
-  detail::miller_spectral_canonization_impl<TT> impl( tt, true, false, false );
-  return impl.run( fn ).first;
+template <typename TT, typename Callback = decltype(
+                           detail::exact_spectral_canonization_null_callback)>
+TT exact_affine_canonization(
+    const TT& tt,
+    Callback&& fn = detail::exact_spectral_canonization_null_callback) {
+    detail::miller_spectral_canonization_impl<TT> impl(tt, true, false, false);
+    return impl.run(fn).first;
 }
 
 /*! \cond PRIVATE */
-template<typename TT>
-TT exact_affine_canonization_old( const TT& tt )
-{
-  const auto num_vars = tt.num_vars();
+template <typename TT>
+TT exact_affine_canonization_old(const TT& tt) {
+    const auto num_vars = tt.num_vars();
 
-  assert( num_vars >= 2 && num_vars <= 4 );
+    assert(num_vars >= 2 && num_vars <= 4);
 
-  auto copy = tt;
+    auto copy = tt;
 
-  const auto& flips = detail::flips[num_vars - 2u];
-  
-  auto min = exact_linear_canonization_old( copy );
+    const auto& flips = detail::flips[num_vars - 2u];
 
-  for ( int j = flips.size() - 1; j >= 0; --j )
-  {
-    const auto pos = flips[j];
-    flip_inplace( copy, pos );
-    min = std::min( min, exact_linear_canonization_old( copy ) );
-  }
+    auto min = exact_linear_canonization_old(copy);
 
-  return min;
+    for (int j = flips.size() - 1; j >= 0; --j) {
+        const auto pos = flips[j];
+        flip_inplace(copy, pos);
+        min = std::min(min, exact_linear_canonization_old(copy));
+    }
+
+    return min;
 }
 /*! \endcond */
 
@@ -196,10 +190,10 @@ TT exact_affine_canonization_old( const TT& tt )
 
   \param tt Truth table
 */
-template<typename TT>
-TT exact_affine_output_canonization( const TT& tt )
-{
-  return std::min( exact_affine_canonization_old( tt ), exact_affine_canonization_old( ~tt ) );
+template <typename TT>
+TT exact_affine_output_canonization(const TT& tt) {
+    return std::min(exact_affine_canonization_old(tt),
+                    exact_affine_canonization_old(~tt));
 }
 
 } /* namespace kitty */

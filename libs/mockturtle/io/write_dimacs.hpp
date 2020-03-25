@@ -43,8 +43,7 @@
 #include "../traits.hpp"
 #include "../algorithms/cnf.hpp"
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Writes network into CNF DIMACS format
  *
@@ -54,30 +53,31 @@ namespace mockturtle
  * \param ntk Logic network
  * \param out Output stream
  */
-template<class Ntk>
-void write_dimacs( Ntk const& ntk, std::ostream& out = std::cout )
-{
-  std::stringstream clauses;
-  uint32_t num_clauses = 0u;
+template <class Ntk>
+void write_dimacs(Ntk const& ntk, std::ostream& out = std::cout) {
+    std::stringstream clauses;
+    uint32_t num_clauses = 0u;
 
-  const auto lits = generate_cnf( ntk, [&]( std::vector<uint32_t> const& clause ) {
-    for ( auto lit : clause ) {
-      const auto var = ( lit / 2 ) + 1;
-      const auto pol = lit % 2;
-      clauses << fmt::format( "{}{} ", pol ? "-" : "", var );
+    const auto lits =
+        generate_cnf(ntk, [&](std::vector<uint32_t> const& clause) {
+            for (auto lit : clause) {
+                const auto var = (lit / 2) + 1;
+                const auto pol = lit % 2;
+                clauses << fmt::format("{}{} ", pol ? "-" : "", var);
+            }
+            clauses << fmt::format("0\n");
+            ++num_clauses;
+        });
+
+    for (auto lit : lits) {
+        const auto var = (lit / 2) + 1;
+        const auto pol = lit % 2;
+        clauses << fmt::format("{}{} 0\n", pol ? "-" : "", var);
+        ++num_clauses;
     }
-    clauses << fmt::format( "0\n" );
-    ++num_clauses;
-  } );
 
-  for ( auto lit : lits ) {
-    const auto var = ( lit / 2 ) + 1;
-    const auto pol = lit % 2;
-    clauses << fmt::format( "{}{} 0\n", pol ? "-" : "", var );
-    ++num_clauses;
-  }
-
-  out << fmt::format( "p cnf {} {}\n{}", ntk.size(), num_clauses, clauses.str() );
+    out << fmt::format("p cnf {} {}\n{}", ntk.size(), num_clauses,
+                       clauses.str());
 }
 
 /*! \brief Writes network into CNF DIMACS format
@@ -88,12 +88,11 @@ void write_dimacs( Ntk const& ntk, std::ostream& out = std::cout )
  * \param ntk Logic network
  * \param filename Filename
  */
-template<class Ntk>
-void write_dimacs( Ntk const& ntk, std::string const& filename )
-{
-  std::ofstream os( filename.c_str(), std::ofstream::out );
-  write_dimacs( ntk, os );
-  os.close();
+template <class Ntk>
+void write_dimacs(Ntk const& ntk, std::string const& filename) {
+    std::ofstream os(filename.c_str(), std::ofstream::out);
+    write_dimacs(ntk, os);
+    os.close();
 }
 
 } /* namespace mockturtle */

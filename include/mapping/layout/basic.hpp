@@ -39,7 +39,7 @@
 namespace staq {
 namespace mapping {
 
-/** 
+/**
  * \class staq::mapping::LayoutTransformer
  * \brief Applies a hardware layout to a circuit
  *
@@ -51,7 +51,6 @@ namespace mapping {
  */
 class LayoutTransformer final : public ast::Replacer {
   public:
-
     /**
      * \class staq::mapping::LayoutTransformer::config
      * \brief Holds configuration options
@@ -96,7 +95,7 @@ class LayoutTransformer final : public ast::Replacer {
     config config_;
 };
 
-/** 
+/**
  * \class staq::mapping::BasicLayout
  * \brief A simple layout generation algorithm
  *

@@ -32,11 +32,9 @@
 #include <cassert>
 #include <vector>
 
-namespace easy::esop
-{
+namespace easy::esop {
 
-namespace detail
-{
+namespace detail {
 static constexpr auto XOR_SYMBOL = "\u2295";
 }
 
@@ -50,21 +48,17 @@ using esops_t = std::vector<esop_t>;
  * \param esop ESOP
  * \return Minimum pairwise distance
  */
-inline unsigned min_pairwise_distance( const esop_t& esop )
-{
-  auto min = (std::numeric_limits<unsigned>::max)();
-  for ( auto i = 0u; i < esop.size(); ++i )
-  {
-    for ( auto j = i + 1; j < esop.size(); ++j )
-    {
-      const auto d = esop[i].distance( esop[j] );
-      if ( unsigned(d) < min )
-      {
-        min = d;
-      }
+inline unsigned min_pairwise_distance(const esop_t& esop) {
+    auto min = (std::numeric_limits<unsigned>::max)();
+    for (auto i = 0u; i < esop.size(); ++i) {
+        for (auto j = i + 1; j < esop.size(); ++j) {
+            const auto d = esop[i].distance(esop[j]);
+            if (unsigned(d) < min) {
+                min = d;
+            }
+        }
     }
-  }
-  return min;
+    return min;
 }
 
 /*! \brief Maximum pairwise distance
@@ -74,21 +68,17 @@ inline unsigned min_pairwise_distance( const esop_t& esop )
  * \param esop ESOP
  * \return maximum pairwise distance
  */
-inline unsigned max_pairwise_distance( const esop_t& esop )
-{
-  unsigned max = 0;
-  for ( auto i = 0u; i < esop.size(); ++i )
-  {
-    for ( auto j = i + 1; j < esop.size(); ++j )
-    {
-      const auto d = esop[i].distance( esop[j] );
-      if ( unsigned(d) > max )
-      {
-        max = d;
-      }
+inline unsigned max_pairwise_distance(const esop_t& esop) {
+    unsigned max = 0;
+    for (auto i = 0u; i < esop.size(); ++i) {
+        for (auto j = i + 1; j < esop.size(); ++j) {
+            const auto d = esop[i].distance(esop[j]);
+            if (unsigned(d) > max) {
+                max = d;
+            }
+        }
     }
-  }
-  return max;
+    return max;
 }
 
 /*! \brief Average pairwise distance
@@ -98,47 +88,44 @@ inline unsigned max_pairwise_distance( const esop_t& esop )
  * \param esop ESOP
  * \return average pairwise distance
  */
-inline double avg_pairwise_distance( const esop_t& esop )
-{
-  double dist = 0;
-  auto counter = 0;
-  for ( auto i = 0u; i < esop.size(); ++i )
-  {
-    for ( auto j = i + 1; j < esop.size(); ++j )
-    {
-      const auto d = esop[i].distance( esop[j] );
-      dist += d;
-      ++counter;
+inline double avg_pairwise_distance(const esop_t& esop) {
+    double dist = 0;
+    auto counter = 0;
+    for (auto i = 0u; i < esop.size(); ++i) {
+        for (auto j = i + 1; j < esop.size(); ++j) {
+            const auto d = esop[i].distance(esop[j]);
+            dist += d;
+            ++counter;
+        }
     }
-  }
-  return dist / counter;
+    return dist / counter;
 }
 
 /*! \brief Verify ESOP.
  *
- * Verify ESOP given an incompletely-specified Boolean function as specification.
+ * Verify ESOP given an incompletely-specified Boolean function as
+ * specification.
  *
  * \param esop ESOP
  * \param bits output as Boolean function
  * \param care care-set as Boolean function
- * \return true if ESOP and bits are equal within the care set, or false otherwise
+ * \return true if ESOP and bits are equal within the care set, or false
+ * otherwise
  */
-inline bool verify_esop( const esop_t& esop, const std::string& bits, const std::string& care )
-{
-  assert( bits.size() == care.size() );
-  const auto number_of_variables = unsigned( log2( bits.size() ) );
+inline bool verify_esop(const esop_t& esop, const std::string& bits,
+                        const std::string& care) {
+    assert(bits.size() == care.size());
+    const auto number_of_variables = unsigned(log2(bits.size()));
 
-  kitty::dynamic_truth_table tt( number_of_variables );
-  kitty::create_from_cubes( tt, esop, true );
+    kitty::dynamic_truth_table tt(number_of_variables);
+    kitty::create_from_cubes(tt, esop, true);
 
-  for ( auto i = 0u; i < bits.size(); ++i )
-  {
-    if ( care[i] && bits[i] != '0' + char(get_bit( tt, i )) )
-    {
-      return false;
+    for (auto i = 0u; i < bits.size(); ++i) {
+        if (care[i] && bits[i] != '0' + char(get_bit(tt, i))) {
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
 /*! \brief Check ESOP equivalence of two ESOP forms.
@@ -150,20 +137,22 @@ inline bool verify_esop( const esop_t& esop, const std::string& bits, const std:
  * \param num_vars Number of Boolean variables
  * \return true if esop1 == esop2 and false otherwise
  */
-inline bool equivalent_esops( const esop_t& esop1, const esop_t& esop2, unsigned num_vars )
-{
-  assert( num_vars <= 20 && "20 and more variables cannot be handled using explicit truth table manipulation" );
+inline bool equivalent_esops(const esop_t& esop1, const esop_t& esop2,
+                             unsigned num_vars) {
+    assert(num_vars <= 20 && "20 and more variables cannot be handled using "
+                             "explicit truth table manipulation");
 
-  kitty::dynamic_truth_table tt1( num_vars );
-  kitty::create_from_cubes( tt1, esop1, true );
+    kitty::dynamic_truth_table tt1(num_vars);
+    kitty::create_from_cubes(tt1, esop1, true);
 
-  kitty::dynamic_truth_table tt2( num_vars );
-  kitty::create_from_cubes( tt2, esop2, true );
+    kitty::dynamic_truth_table tt2(num_vars);
+    kitty::create_from_cubes(tt2, esop2, true);
 
-  return tt1 == tt2;
+    return tt1 == tt2;
 }
 
-/*! \brief Check if ESOP form implements an incompletely-specified Boolean function
+/*! \brief Check if ESOP form implements an incompletely-specified Boolean
+ * function
  *
  * Check if an ESOP form implements an incompletely-specified Boolean function.
  *
@@ -173,14 +162,17 @@ inline bool equivalent_esops( const esop_t& esop1, const esop_t& esop2, unsigned
  * \param num_vars Number of Boolean variables
  * \return true if esop element Impl(bits,care) and false otherwise
  */
-inline bool implements_function( const esop_t& esop, const kitty::dynamic_truth_table& bits, const kitty::dynamic_truth_table& care, unsigned num_vars )
-{
-  assert( num_vars <= 20 && "20 and more variables cannot be handled using explicit truth table manipulation" );
+inline bool implements_function(const esop_t& esop,
+                                const kitty::dynamic_truth_table& bits,
+                                const kitty::dynamic_truth_table& care,
+                                unsigned num_vars) {
+    assert(num_vars <= 20 && "20 and more variables cannot be handled using "
+                             "explicit truth table manipulation");
 
-  kitty::dynamic_truth_table tt( num_vars );
-  kitty::create_from_cubes( tt, esop, true );
+    kitty::dynamic_truth_table tt(num_vars);
+    kitty::create_from_cubes(tt, esop, true);
 
-  return ( tt & care ) == ( bits & care );
+    return (tt & care) == (bits & care);
 }
 
 /*! \brief Printer function for ESOP
@@ -191,41 +183,33 @@ inline bool implements_function( const esop_t& esop, const kitty::dynamic_truth_
  * \param num_vars Number of variables
  * \param os Output stream
  */
-inline void print_esop_as_exprs( const esop_t& esop, unsigned num_vars, std::ostream& os = std::cout )
-{
-  assert( num_vars <= 32 );
-  os << esop.size() << ' ';
-  for ( auto i = 0u; i < esop.size(); ++i )
-  {
-    const auto& c = esop[i];
-    auto lit_count = c.num_literals();
-    if ( lit_count == 0 )
-    {
-      os << "(1)";
-    }
-    else
-    {
-      os << "(";
-      for ( auto j = 0u; j < num_vars; ++j )
-      {
-        if ( ( c._mask >> j ) & 1 )
-        {
-          os << ( ( ( c._bits >> j ) & 1 ) ? "x" : "~x" ) << j;
-          --lit_count;
-          if ( lit_count != 0 )
-          {
-            os << "*";
-          }
+inline void print_esop_as_exprs(const esop_t& esop, unsigned num_vars,
+                                std::ostream& os = std::cout) {
+    assert(num_vars <= 32);
+    os << esop.size() << ' ';
+    for (auto i = 0u; i < esop.size(); ++i) {
+        const auto& c = esop[i];
+        auto lit_count = c.num_literals();
+        if (lit_count == 0) {
+            os << "(1)";
+        } else {
+            os << "(";
+            for (auto j = 0u; j < num_vars; ++j) {
+                if ((c._mask >> j) & 1) {
+                    os << (((c._bits >> j) & 1) ? "x" : "~x") << j;
+                    --lit_count;
+                    if (lit_count != 0) {
+                        os << "*";
+                    }
+                }
+            }
+            os << ")";
         }
-      }
-      os << ")";
+        if (i + 1 < esop.size()) {
+            os << detail::XOR_SYMBOL;
+        }
     }
-    if ( i + 1 < esop.size() )
-    {
-      os << detail::XOR_SYMBOL;
-    }
-  }
-  os << '\n';
+    os << '\n';
 }
 
 /*! \brief Printer function for ESOP
@@ -236,15 +220,14 @@ inline void print_esop_as_exprs( const esop_t& esop, unsigned num_vars, std::ost
  * \param num_vars Number of variables
  * \param os Output stream
  */
-inline void print_esop_as_cubes( const esop_t& esop, unsigned num_vars, std::ostream& os = std::cout )
-{
-  assert( num_vars <= 32 );
-  for ( const auto& c : esop )
-  {
-    c.print( num_vars, os );
-    os << ' ';
-  }
-  os << '\n';
+inline void print_esop_as_cubes(const esop_t& esop, unsigned num_vars,
+                                std::ostream& os = std::cout) {
+    assert(num_vars <= 32);
+    for (const auto& c : esop) {
+        c.print(num_vars, os);
+        os << ' ';
+    }
+    os << '\n';
 }
 
 } /* namespace easy::esop */

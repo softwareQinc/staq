@@ -30,145 +30,118 @@
 #include <memory>
 #include <vector>
 
-namespace easy::sat
-{
+namespace easy::sat {
 
-struct sat_solver
-{
-  using assumptions_t = std::vector<int>;
-  using state_t = Glucose::lbool;
-  using model_t = std::vector<Glucose::lbool>;
+struct sat_solver {
+    using assumptions_t = std::vector<int>;
+    using state_t = Glucose::lbool;
+    using model_t = std::vector<Glucose::lbool>;
 
-  struct result
-  {
-    result( state_t state = Glucose::l_Undef )
-        : state( state )
-    {
-    }
+    struct result {
+        result(state_t state = Glucose::l_Undef) : state(state) {}
 
-    result( const model_t& m )
-        : state( Glucose::l_True ), model( m )
-    {
-    }
+        result(const model_t& m) : state(Glucose::l_True), model(m) {}
 
-    inline operator bool() const { return ( state == Glucose::l_True ); }
+        inline operator bool() const { return (state == Glucose::l_True); }
 
-    inline bool is_sat() const { return ( state == Glucose::l_True ); }
-    inline bool is_unsat() const { return ( state == Glucose::l_False ); }
-    inline bool is_undef() const { return ( state == Glucose::l_Undef ); }
+        inline bool is_sat() const { return (state == Glucose::l_True); }
+        inline bool is_unsat() const { return (state == Glucose::l_False); }
+        inline bool is_undef() const { return (state == Glucose::l_Undef); }
 
-    state_t state;
-    model_t model;
-  }; /* result */
+        state_t state;
+        model_t model;
+    }; /* result */
 
-  sat_solver();
-  result solve( constraints& constraints, const assumptions_t& assumptions = {} );
-  void reset();
+    sat_solver();
+    result solve(constraints& constraints,
+                 const assumptions_t& assumptions = {});
+    void reset();
 
-  void set_conflict_limit( int limit );
-  int get_conflicts() const;
+    void set_conflict_limit(int limit);
+    int get_conflicts() const;
 
-  unsigned _num_vars = 0;
+    unsigned _num_vars = 0;
 
-  /* -1 indicates no conflict limit */
-  int _conflict_limit = -1;
+    /* -1 indicates no conflict limit */
+    int _conflict_limit = -1;
 
-  std::unique_ptr<Glucose::Solver> _solver;
+    std::unique_ptr<Glucose::Solver> _solver;
 };
 
-inline sat_solver::sat_solver()
-{
-  _solver = std::make_unique<Glucose::Solver>();
+inline sat_solver::sat_solver() {
+    _solver = std::make_unique<Glucose::Solver>();
 }
 
-inline void sat_solver::reset()
-{
-  _solver = std::make_unique<Glucose::Solver>();
-  _num_vars = 0;
-  _solver->budgetOff();
+inline void sat_solver::reset() {
+    _solver = std::make_unique<Glucose::Solver>();
+    _num_vars = 0;
+    _solver->budgetOff();
 }
 
-inline void sat_solver::set_conflict_limit( int limit )
-{
-  _conflict_limit = limit;
-  _solver->setConfBudget( limit );
+inline void sat_solver::set_conflict_limit(int limit) {
+    _conflict_limit = limit;
+    _solver->setConfBudget(limit);
 }
 
-inline int sat_solver::get_conflicts() const
-{
-  return _solver->conflicts;
-}
+inline int sat_solver::get_conflicts() const { return _solver->conflicts; }
 
-inline sat_solver::result sat_solver::solve( constraints& constraints, const assumptions_t& assumptions )
-{
-  /* add clauses to solver & remove them from constraints */
-  constraints.foreach_clause( [&]( constraints::clause_t const& c ){
-      Glucose::vec<Glucose::Lit> clause;
-      for ( const auto& l : c )
-      {
-        const unsigned var = abs( l ) - 1;
-        while ( _num_vars <= var )
-        {
-          _solver->newVar();
-          ++_num_vars;
+inline sat_solver::result sat_solver::solve(constraints& constraints,
+                                            const assumptions_t& assumptions) {
+    /* add clauses to solver & remove them from constraints */
+    constraints.foreach_clause([&](constraints::clause_t const& c) {
+        Glucose::vec<Glucose::Lit> clause;
+        for (const auto& l : c) {
+            const unsigned var = abs(l) - 1;
+            while (_num_vars <= var) {
+                _solver->newVar();
+                ++_num_vars;
+            }
+            clause.push(Glucose::mkLit(var, l < 0));
         }
-        clause.push( Glucose::mkLit( var, l < 0 ) );
-      }
-      _solver->addClause( clause );
+        _solver->addClause(clause);
     });
-  constraints.clear_clauses();
+    constraints.clear_clauses();
 
-  /* add xor clauses to solver & remove them from constraints */
-  assert( constraints.num_xor_clauses() == 0u );
+    /* add xor clauses to solver & remove them from constraints */
+    assert(constraints.num_xor_clauses() == 0u);
 
-  bool sat;
+    bool sat;
 
-  Glucose::vec<Glucose::Lit> assume;
-  if ( assumptions.size() > 0 )
-  {
-    for ( const auto& v : assumptions )
-    {
-      const unsigned var = abs( v ) - 1;
-      while ( _num_vars <= var )
-      {
-        _solver->newVar();
-        ++_num_vars;
-      }
-      assume.push( Glucose::mkLit( var, v < 0 ) );
+    Glucose::vec<Glucose::Lit> assume;
+    if (assumptions.size() > 0) {
+        for (const auto& v : assumptions) {
+            const unsigned var = abs(v) - 1;
+            while (_num_vars <= var) {
+                _solver->newVar();
+                ++_num_vars;
+            }
+            assume.push(Glucose::mkLit(var, v < 0));
+        }
     }
-  }
 
-  if ( _conflict_limit == -1 )
-  {
-    sat = _solver->solve( assume );
-  }
-  else
-  {
-    const auto solver_result = _solver->solveLimited( assume );
-    if ( solver_result == Glucose::l_Undef || int32_t(_solver->conflicts) >= _conflict_limit )
-    {
-      return result( Glucose::l_Undef );
+    if (_conflict_limit == -1) {
+        sat = _solver->solve(assume);
+    } else {
+        const auto solver_result = _solver->solveLimited(assume);
+        if (solver_result == Glucose::l_Undef ||
+            int32_t(_solver->conflicts) >= _conflict_limit) {
+            return result(Glucose::l_Undef);
+        } else {
+            assert(solver_result == Glucose::l_True ||
+                   solver_result == Glucose::l_False);
+            sat = solver_result == Glucose::l_True;
+        }
     }
-    else
-    {
-      assert( solver_result == Glucose::l_True || solver_result == Glucose::l_False );
-      sat = solver_result == Glucose::l_True;
-    }
-  }
 
-  if ( sat )
-  {
-    std::vector<Glucose::lbool> model( _num_vars );
-    for ( auto i = 0u; i < _num_vars; ++i )
-    {
-      model[i] = _solver->modelValue( i );
+    if (sat) {
+        std::vector<Glucose::lbool> model(_num_vars);
+        for (auto i = 0u; i < _num_vars; ++i) {
+            model[i] = _solver->modelValue(i);
+        }
+        return result(model);
+    } else {
+        return result(sat ? Glucose::l_True : Glucose::l_False);
     }
-    return result( model );
-  }
-  else
-  {
-    return result( sat ? Glucose::l_True : Glucose::l_False );
-  }
 }
 
 } // namespace easy::sat

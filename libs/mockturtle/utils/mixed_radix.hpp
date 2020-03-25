@@ -35,8 +35,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace mockturtle
-{
+namespace mockturtle {
 
 /*! \brief Mixed radix enumeration.
  *
@@ -55,58 +54,50 @@ namespace mockturtle
  * \param end End iterator of radixes
  * \param fn Callable
  */
-template<typename Iterator, typename Fn>
-void foreach_mixed_radix_tuple( Iterator begin, Iterator end, Fn&& fn )
-{
-  constexpr auto is_bool_f = std::is_invocable_r_v<bool, Fn, std::vector<uint32_t>::iterator, std::vector<uint32_t>::iterator>;
-  constexpr auto is_void_f = std::is_invocable_r_v<void, Fn, std::vector<uint32_t>::iterator, std::vector<uint32_t>::iterator>;
+template <typename Iterator, typename Fn>
+void foreach_mixed_radix_tuple(Iterator begin, Iterator end, Fn&& fn) {
+    constexpr auto is_bool_f =
+        std::is_invocable_r_v<bool, Fn, std::vector<uint32_t>::iterator,
+                              std::vector<uint32_t>::iterator>;
+    constexpr auto is_void_f =
+        std::is_invocable_r_v<void, Fn, std::vector<uint32_t>::iterator,
+                              std::vector<uint32_t>::iterator>;
 
-  static_assert( is_bool_f || is_void_f );
+    static_assert(is_bool_f || is_void_f);
 
-  std::vector<uint32_t> positions( std::distance( begin, end ), 0u );
+    std::vector<uint32_t> positions(std::distance(begin, end), 0u);
 
-  while ( true )
-  {
-    if constexpr ( is_bool_f )
-    {
-      if ( !fn( positions.begin(), positions.end() ) )
-      {
-        return;
-      }
+    while (true) {
+        if constexpr (is_bool_f) {
+            if (!fn(positions.begin(), positions.end())) {
+                return;
+            }
+        } else {
+            fn(positions.begin(), positions.end());
+        }
+
+        auto itm = end - 1;
+        auto itp = positions.end() - 1;
+        auto ret = false;
+        while (!ret && *itp == (*itm - 1)) {
+            *itp = 0;
+            if (itp != positions.begin()) {
+                --itp;
+            }
+
+            if (itm == begin) {
+                ret = true;
+            } else {
+                --itm;
+            }
+        }
+
+        if (ret) {
+            break;
+        }
+
+        (*itp)++;
     }
-    else
-    {
-      fn( positions.begin(), positions.end() );
-    }
-
-    auto itm = end - 1;
-    auto itp = positions.end() - 1;
-    auto ret = false;
-    while ( !ret && *itp == ( *itm - 1 ) )
-    {
-      *itp = 0;
-      if ( itp != positions.begin() )
-      {
-        --itp;
-      }
-
-      if ( itm == begin )
-      {
-        ret = true;
-      }
-      else
-      {
-        --itm;
-      }
-    }
-
-    if ( ret )
-    {
-      break;
-    }
-
-    (*itp)++;
-  }
 }
 
-}
+} // namespace mockturtle

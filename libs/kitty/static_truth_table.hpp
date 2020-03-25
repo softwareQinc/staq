@@ -38,8 +38,7 @@
 #include "detail/constants.hpp"
 #include "traits.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /*! Truth table in which number of variables is known at compile time.
 
@@ -48,231 +47,215 @@ namespace kitty
   (more than 6 variables).  A small truth table fits into a single
   block and therefore dedicated optimizations are possible.
  */
-template<int NumVars, bool = ( NumVars <= 6 )>
+template <int NumVars, bool = (NumVars <= 6)>
 struct static_truth_table;
 
-/*! Truth table (for up to 6 variables) in which number of variables is known at compile time.
+/*! Truth table (for up to 6 variables) in which number of variables is known at
+ * compile time.
  */
-template<int NumVars>
-struct static_truth_table<NumVars, true>
-{
-  /*! \cond PRIVATE */
-  enum
-  {
-    NumBits = uint64_t( 1 ) << NumVars
-  };
-  /*! \endcond */
+template <int NumVars>
+struct static_truth_table<NumVars, true> {
+    /*! \cond PRIVATE */
+    enum { NumBits = uint64_t(1) << NumVars };
+    /*! \endcond */
 
-  /*! Constructs a new static truth table instance with the same number of variables. */
-  inline static_truth_table<NumVars> construct() const
-  {
-    return static_truth_table<NumVars>();
-  }
-
-  /*! Returns number of variables.
-   */
-  inline auto num_vars() const noexcept { return NumVars; }
-
-  /*! Returns number of blocks.
-   */
-  inline auto num_blocks() const noexcept { return 1; }
-
-  /*! Returns number of bits.
-   */
-  inline auto num_bits() const noexcept { return NumBits; }
-
-  /*! \brief Begin iterator to bits.
-   */
-  inline auto begin() noexcept { return &_bits; }
-
-  /*! \brief End iterator to bits.
-   */
-  inline auto end() noexcept { return ( &_bits ) + 1; }
-
-  /*! \brief Begin iterator to bits.
-   */
-  inline auto begin() const noexcept { return &_bits; }
-
-  /*! \brief End iterator to bits.
-   */
-  inline auto end() const noexcept { return ( &_bits ) + 1; }
-
-  /*! \brief Reverse begin iterator to bits.
-   */
-  inline auto rbegin() noexcept { return &_bits; }
-
-  /*! \brief Reverse end iterator to bits.
-   */
-  inline auto rend() noexcept { return ( &_bits ) + 1; }
-
-  /*! \brief Constant begin iterator to bits.
-   */
-  inline auto cbegin() const noexcept { return &_bits; }
-
-  /*! \brief Constant end iterator to bits.
-   */
-  inline auto cend() const noexcept { return ( &_bits ) + 1; }
-
-  /*! \brief Constant reverse begin iterator to bits.
-   */
-  inline auto crbegin() const noexcept { return &_bits; }
-
-  /*! \brief Constant everse end iterator to bits.
-   */
-  inline auto crend() const noexcept { return ( &_bits ) + 1; }
-
-  /*! \brief Assign other truth table if number of variables match.
-
-    This replaces the current truth table with another truth table, if `other`
-    has the same number of variables.  Otherwise, the truth table is not
-    changed.
-
-    \param other Other truth table
-  */
-  template<class TT, typename = std::enable_if_t<is_truth_table<TT>::value>>
-  static_truth_table<NumVars>& operator=( const TT& other )
-  {
-    if ( other.num_vars() == num_vars() )
-    {
-      std::copy( other.begin(), other.end(), begin() );
+    /*! Constructs a new static truth table instance with the same number of
+     * variables. */
+    inline static_truth_table<NumVars> construct() const {
+        return static_truth_table<NumVars>();
     }
 
-    return *this;
-  }
+    /*! Returns number of variables.
+     */
+    inline auto num_vars() const noexcept { return NumVars; }
 
-  /*! Masks the number of valid truth table bits.
+    /*! Returns number of blocks.
+     */
+    inline auto num_blocks() const noexcept { return 1; }
 
-    If the truth table has less than 6 variables, it may not use all
-    the bits.  This operation makes sure to zero out all non-valid
-    bits.
-  */
-  inline void mask_bits() noexcept { _bits &= detail::masks[NumVars]; }
+    /*! Returns number of bits.
+     */
+    inline auto num_bits() const noexcept { return NumBits; }
 
-  /*! \cond PRIVATE */
-public: /* fields */
-  uint64_t _bits = 0;
-  /*! \endcond */
-};
+    /*! \brief Begin iterator to bits.
+     */
+    inline auto begin() noexcept { return &_bits; }
 
-/*! Truth table (more than 6 variables) in which number of variables is known at compile time.
- */
-template<int NumVars>
-struct static_truth_table<NumVars, false>
-{
-  /*! \cond PRIVATE */
-  enum
-  {
-    NumBlocks = ( NumVars <= 6 ) ? 1 : ( 1 << ( NumVars - 6 ) )
-  };
+    /*! \brief End iterator to bits.
+     */
+    inline auto end() noexcept { return (&_bits) + 1; }
 
-  enum
-  {
-    NumBits = uint64_t( 1 ) << NumVars
-  };
-  /*! \endcond */
+    /*! \brief Begin iterator to bits.
+     */
+    inline auto begin() const noexcept { return &_bits; }
 
-  /*! Standard constructor.
+    /*! \brief End iterator to bits.
+     */
+    inline auto end() const noexcept { return (&_bits) + 1; }
 
-    The number of variables provided to the truth table must be known
-    at runtime.  The number of blocks will be computed as a compile
-    time constant.
-  */
-  static_truth_table()
-  {
-    _bits.fill( 0 );
-  }
+    /*! \brief Reverse begin iterator to bits.
+     */
+    inline auto rbegin() noexcept { return &_bits; }
 
-  /*! Constructs a new static truth table instance with the same number of variables. */
-  inline static_truth_table<NumVars> construct() const
-  {
-    return static_truth_table<NumVars>();
-  }
+    /*! \brief Reverse end iterator to bits.
+     */
+    inline auto rend() noexcept { return (&_bits) + 1; }
 
-  /*! Returns number of variables.
-   */
-  inline auto num_vars() const noexcept { return NumVars; }
+    /*! \brief Constant begin iterator to bits.
+     */
+    inline auto cbegin() const noexcept { return &_bits; }
 
-  /*! Returns number of blocks.
-   */
-  inline auto num_blocks() const noexcept { return NumBlocks; }
+    /*! \brief Constant end iterator to bits.
+     */
+    inline auto cend() const noexcept { return (&_bits) + 1; }
 
-  /*! Returns number of bits.
-   */
-  inline auto num_bits() const noexcept { return NumBits; }
+    /*! \brief Constant reverse begin iterator to bits.
+     */
+    inline auto crbegin() const noexcept { return &_bits; }
 
-  /*! \brief Begin iterator to bits.
-   */
-  inline auto begin() noexcept { return _bits.begin(); }
+    /*! \brief Constant everse end iterator to bits.
+     */
+    inline auto crend() const noexcept { return (&_bits) + 1; }
 
-  /*! \brief End iterator to bits.
-   */
-  inline auto end() noexcept { return _bits.end(); }
+    /*! \brief Assign other truth table if number of variables match.
 
-  /*! \brief Begin iterator to bits.
-   */
-  inline auto begin() const noexcept { return _bits.begin(); }
+      This replaces the current truth table with another truth table, if `other`
+      has the same number of variables.  Otherwise, the truth table is not
+      changed.
 
-  /*! \brief End iterator to bits.
-   */
-  inline auto end() const noexcept { return _bits.end(); }
+      \param other Other truth table
+    */
+    template <class TT, typename = std::enable_if_t<is_truth_table<TT>::value>>
+    static_truth_table<NumVars>& operator=(const TT& other) {
+        if (other.num_vars() == num_vars()) {
+            std::copy(other.begin(), other.end(), begin());
+        }
 
-  /*! \brief Reverse begin iterator to bits.
-   */
-  inline auto rbegin() noexcept { return _bits.rbegin(); }
-
-  /*! \brief Reverse end iterator to bits.
-   */
-  inline auto rend() noexcept { return _bits.rend(); }
-
-  /*! \brief Constant begin iterator to bits.
-   */
-  inline auto cbegin() const noexcept { return _bits.cbegin(); }
-
-  /*! \brief Constant end iterator to bits.
-   */
-  inline auto cend() const noexcept { return _bits.cend(); }
-
-  /*! \brief Constant reverse begin iterator to bits.
-   */
-  inline auto crbegin() const noexcept { return _bits.crbegin(); }
-
-  /*! \brief Constant teverse end iterator to bits.
-   */
-  inline auto crend() const noexcept { return _bits.crend(); }
-
-  /*! \brief Assign other truth table if number of variables match.
-
-    This replaces the current truth table with another truth table, if `other`
-    has the same number of variables.  Otherwise, the truth table is not
-    changed.
-
-    \param other Other truth table
-  */
-  template<class TT, typename = std::enable_if_t<is_truth_table<TT>::value>>
-  static_truth_table<NumVars>& operator=( const TT& other )
-  {
-    if ( other.num_vars() == num_vars() )
-    {
-      std::copy( other.begin(), other.end(), begin() );
+        return *this;
     }
 
-    return *this;
-  }
+    /*! Masks the number of valid truth table bits.
 
-  /*! Masks the number of valid truth table bits.
+      If the truth table has less than 6 variables, it may not use all
+      the bits.  This operation makes sure to zero out all non-valid
+      bits.
+    */
+    inline void mask_bits() noexcept { _bits &= detail::masks[NumVars]; }
 
-    We know that we will have at least 7 variables in this data
-    structure.
-  */
-  inline void mask_bits() noexcept {}
-
-  /*! \cond PRIVATE */
-public: /* fields */
-  std::array<uint64_t, NumBlocks> _bits;
-  /*! \endcond */
+    /*! \cond PRIVATE */
+  public: /* fields */
+    uint64_t _bits = 0;
+    /*! \endcond */
 };
 
-template<int NumVars>
+/*! Truth table (more than 6 variables) in which number of variables is known at
+ * compile time.
+ */
+template <int NumVars>
+struct static_truth_table<NumVars, false> {
+    /*! \cond PRIVATE */
+    enum { NumBlocks = (NumVars <= 6) ? 1 : (1 << (NumVars - 6)) };
+
+    enum { NumBits = uint64_t(1) << NumVars };
+    /*! \endcond */
+
+    /*! Standard constructor.
+
+      The number of variables provided to the truth table must be known
+      at runtime.  The number of blocks will be computed as a compile
+      time constant.
+    */
+    static_truth_table() { _bits.fill(0); }
+
+    /*! Constructs a new static truth table instance with the same number of
+     * variables. */
+    inline static_truth_table<NumVars> construct() const {
+        return static_truth_table<NumVars>();
+    }
+
+    /*! Returns number of variables.
+     */
+    inline auto num_vars() const noexcept { return NumVars; }
+
+    /*! Returns number of blocks.
+     */
+    inline auto num_blocks() const noexcept { return NumBlocks; }
+
+    /*! Returns number of bits.
+     */
+    inline auto num_bits() const noexcept { return NumBits; }
+
+    /*! \brief Begin iterator to bits.
+     */
+    inline auto begin() noexcept { return _bits.begin(); }
+
+    /*! \brief End iterator to bits.
+     */
+    inline auto end() noexcept { return _bits.end(); }
+
+    /*! \brief Begin iterator to bits.
+     */
+    inline auto begin() const noexcept { return _bits.begin(); }
+
+    /*! \brief End iterator to bits.
+     */
+    inline auto end() const noexcept { return _bits.end(); }
+
+    /*! \brief Reverse begin iterator to bits.
+     */
+    inline auto rbegin() noexcept { return _bits.rbegin(); }
+
+    /*! \brief Reverse end iterator to bits.
+     */
+    inline auto rend() noexcept { return _bits.rend(); }
+
+    /*! \brief Constant begin iterator to bits.
+     */
+    inline auto cbegin() const noexcept { return _bits.cbegin(); }
+
+    /*! \brief Constant end iterator to bits.
+     */
+    inline auto cend() const noexcept { return _bits.cend(); }
+
+    /*! \brief Constant reverse begin iterator to bits.
+     */
+    inline auto crbegin() const noexcept { return _bits.crbegin(); }
+
+    /*! \brief Constant teverse end iterator to bits.
+     */
+    inline auto crend() const noexcept { return _bits.crend(); }
+
+    /*! \brief Assign other truth table if number of variables match.
+
+      This replaces the current truth table with another truth table, if `other`
+      has the same number of variables.  Otherwise, the truth table is not
+      changed.
+
+      \param other Other truth table
+    */
+    template <class TT, typename = std::enable_if_t<is_truth_table<TT>::value>>
+    static_truth_table<NumVars>& operator=(const TT& other) {
+        if (other.num_vars() == num_vars()) {
+            std::copy(other.begin(), other.end(), begin());
+        }
+
+        return *this;
+    }
+
+    /*! Masks the number of valid truth table bits.
+
+      We know that we will have at least 7 variables in this data
+      structure.
+    */
+    inline void mask_bits() noexcept {}
+
+    /*! \cond PRIVATE */
+  public: /* fields */
+    std::array<uint64_t, NumBlocks> _bits;
+    /*! \endcond */
+};
+
+template <int NumVars>
 struct is_truth_table<kitty::static_truth_table<NumVars>> : std::true_type {};
 
 } // namespace kitty

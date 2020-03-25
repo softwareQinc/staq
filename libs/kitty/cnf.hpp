@@ -38,8 +38,7 @@
 #include "isop.hpp"
 #include "operators.hpp"
 
-namespace kitty
-{
+namespace kitty {
 
 /*! \brief Create CNF of the characteristic function
 
@@ -49,30 +48,27 @@ namespace kitty
 
   \param tt Truth table
 */
-template<typename TT>
-std::vector<cube> cnf_characteristic( const TT& tt )
-{
-  std::vector<cube> cubes;
-  detail::isop_rec( tt, tt, tt.num_vars(), cubes );
+template <typename TT>
+std::vector<cube> cnf_characteristic(const TT& tt) {
+    std::vector<cube> cubes;
+    detail::isop_rec(tt, tt, tt.num_vars(), cubes);
 
-  for ( auto& cube : cubes )
-  {
-    cube._bits = ~cube._bits & cube._mask;
-    cube.add_literal( tt.num_vars(), true );
-  }
+    for (auto& cube : cubes) {
+        cube._bits = ~cube._bits & cube._mask;
+        cube.add_literal(tt.num_vars(), true);
+    }
 
-  const auto end = cubes.size();
+    const auto end = cubes.size();
 
-  detail::isop_rec( ~tt, ~tt, tt.num_vars(), cubes );
+    detail::isop_rec(~tt, ~tt, tt.num_vars(), cubes);
 
-  for ( auto i = end; i < cubes.size(); ++i )
-  {
-    auto& cube = cubes[i];
-    cube._bits = ~cube._bits & cube._mask;
-    cube.add_literal( tt.num_vars(), false );
-  }
+    for (auto i = end; i < cubes.size(); ++i) {
+        auto& cube = cubes[i];
+        cube._bits = ~cube._bits & cube._mask;
+        cube.add_literal(tt.num_vars(), false);
+    }
 
-  return cubes;
+    return cubes;
 }
 
 } // namespace kitty
