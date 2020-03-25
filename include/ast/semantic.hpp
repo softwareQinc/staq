@@ -44,7 +44,7 @@ namespace ast {
 class SemanticError : public std::exception {
   public:
     SemanticError() noexcept = default;
-    ~SemanticError() {}
+    ~SemanticError() = default;
     const char* what() const noexcept { return "Error(s) occurred"; }
 };
 

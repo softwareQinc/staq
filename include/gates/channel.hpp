@@ -222,8 +222,8 @@ struct ChannelRepr {
       public:
         /** @name Constructors */
         /**@{*/
-        /** \brief Empty constructor */
-        Pauli() {}
+        /** \brief Default constructor */
+        Pauli() = default;
         /** \brief Constructs a Pauli from a qubit, PauliOp pair */
         Pauli(std::pair<qarg, PauliOp> gate) {
             pauli_[gate.first] = gate.second;
@@ -419,8 +419,8 @@ struct ChannelRepr {
       public:
         /** @name Constructors */
         /**@{*/
-        /** \brief Empty constructor */
-        Clifford() {}
+        /** \brief Default constructor */
+        Clifford() = default;
         /** \brief Construct a Clifford from a mapping from single-qubit Paulis
          * to multi-qubit Paulis */
         Clifford(std::map<std::pair<qarg, PauliOp>, Pauli> perm)

@@ -70,8 +70,8 @@ class Device {
   public:
     /** @name Constructors */
     /**@{*/
-    /** \brief Empty constructor */
-    Device() {}
+    /** \brief Default constructor */
+    Device() = default;
     /**
      * \brief Construct a device from a coupling graph
      * \param name A name for the device

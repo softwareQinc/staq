@@ -46,7 +46,7 @@ namespace parser {
 class ParseError : public std::exception {
   public:
     ParseError() noexcept = default;
-    ~ParseError() {}
+    ~ParseError() = default;
     const char* what() const noexcept { return "Parse error(s)"; }
 };
 
