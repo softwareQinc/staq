@@ -209,7 +209,7 @@ TEST(Rotation_folding, Global_Phase) {
                       "qreg q[1];\n"
                       "t q[0];\n"
                       "x q[0];\n"
-                      "t q[0];\n"
+                      "tdg q[0];\n"
                       "x q[0];\n";
 
     std::string post = "OPENQASM 2.0;\n"
@@ -217,11 +217,11 @@ TEST(Rotation_folding, Global_Phase) {
                        "\n"
                        "qreg q[1];\n"
                        "x q[0];\n"
-                       "h q[0];\ns q[0];\nh q[0];\ns q[0];\nh q[0];\ns q[0];\n"
+                       "sdg q[0];\n"
                        "x q[0];\n";
 
     auto program = parser::parse_string(pre, "global_phase.qasm");
-    optimization::fold_rotations(*program);
+    optimization::fold_rotations(*program, {false});
     std::stringstream ss;
     ss << *program;
 

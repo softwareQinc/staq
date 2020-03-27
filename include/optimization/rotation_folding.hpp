@@ -317,30 +317,22 @@ class RotationOptimizer final : public ast::Visitor {
                     new ast::DeclaredGate(parser::Position(), "x", {}, {*tgt}));
             } else if (global_phase == utils::angles::pi_quarter) {
                 subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "h", {}, {*tgt}));
+                    new ast::DeclaredGate(parser::Position(), "t", {}, {*tgt}));
                 subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "s", {}, {*tgt}));
+                    new ast::DeclaredGate(parser::Position(), "x", {}, {*tgt}));
                 subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "h", {}, {*tgt}));
+                    new ast::DeclaredGate(parser::Position(), "t", {}, {*tgt}));
                 subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "s", {}, {*tgt}));
-                subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "h", {}, {*tgt}));
-                subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "s", {}, {*tgt}));
+                    new ast::DeclaredGate(parser::Position(), "x", {}, {*tgt}));
             } else if (global_phase == -utils::angles::pi_quarter) {
                 subst_ref->emplace_back(new ast::DeclaredGate(
-                    parser::Position(), "sdg", {}, {*tgt}));
+                    parser::Position(), "tdg", {}, {*tgt}));
                 subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "h", {}, {*tgt}));
+                    new ast::DeclaredGate(parser::Position(), "x", {}, {*tgt}));
                 subst_ref->emplace_back(new ast::DeclaredGate(
-                    parser::Position(), "sdg", {}, {*tgt}));
+                    parser::Position(), "tdg", {}, {*tgt}));
                 subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "h", {}, {*tgt}));
-                subst_ref->emplace_back(new ast::DeclaredGate(
-                    parser::Position(), "sdg", {}, {*tgt}));
-                subst_ref->emplace_back(
-                    new ast::DeclaredGate(parser::Position(), "h", {}, {*tgt}));
+                    new ast::DeclaredGate(parser::Position(), "x", {}, {*tgt}));
             } else {
                 std::vector<ast::ptr<ast::Expr>> tmp1;
                 std::vector<ast::ptr<ast::Expr>> tmp2;
