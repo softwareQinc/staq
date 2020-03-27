@@ -85,26 +85,25 @@ class DesugarImpl final : public ast::Replacer {
         return std::nullopt;
     }
 
+    // For barriers, we expand all the arguments into a single
+    // barrier command
     std::optional<std::list<ast::ptr<ast::Gate>>>
     replace(ast::BarrierGate& gate) override {
-        if (auto num = repeats(gate.args())) {
-            std::list<ast::ptr<ast::Gate>> ret;
+        std::list<ast::ptr<ast::Gate>> ret;
+        std::vector<ast::VarAccess> args;
 
-            // Do the expansion
-            for (int i = 0; i < *num; i++) {
-                std::vector<ast::VarAccess> args;
-                gate.foreach_arg([&args, this, i](auto& arg) {
+        gate.foreach_arg([&args, this](auto& arg) {
+            if (auto num = repeats({arg})) {
+                for (int i = 0; i < *num; i++)
                     args.emplace_back(expand(arg, i));
-                });
-
-                ret.emplace_back(std::make_unique<ast::BarrierGate>(
-                    ast::BarrierGate(gate.pos(), std::move(args))));
+            } else {
+              args.emplace_back(arg);
             }
-
-            return std::move(ret);
-        } else {
-            return std::nullopt;
-        }
+        });
+        
+        ret.emplace_back(
+            ast::BarrierGate::create(gate.pos(), std::move(args)));
+        return std::move(ret);
     }
 
     std::optional<std::list<ast::ptr<ast::Gate>>>
