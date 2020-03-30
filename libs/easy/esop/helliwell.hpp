@@ -36,6 +36,21 @@ namespace easy::esop {
 
 namespace detail {
 
+// Added by Vlad on Mar. 30, 2020, Windows compatibility
+#ifdef WIN32
+int GetLowestBitPos(int value) {
+    if (value == 0)
+        return 0;
+    int pos = 0;
+    while (!(value & 1)) {
+        value >>= 1;
+        ++pos;
+    }
+    return 1 + pos;
+}
+#endif // WIN32
+// END added by Vlad on Mar. 30, 2020, Windows compatibility
+
 std::vector<uint32_t> compute_flips(uint32_t n) {
     auto const size = (1u << n);
     auto const total_flips = size - 1;
@@ -45,7 +60,14 @@ std::vector<uint32_t> compute_flips(uint32_t n) {
     auto temp = 0u;
     for (auto i = 1u; i <= total_flips; ++i) {
         gray_number = i ^ (i >> 1);
-        flip_vec[total_flips - i] = ffs(temp ^ gray_number) - 1u;
+        flip_vec[total_flips - i] =
+// Added by Vlad on Mar. 30, 2020, for Windows compatibility
+#ifndef WIN32
+            ffs(temp ^ gray_number) - 1u;
+#else
+            GetLowestBitPos(temp ^ gray_number) - 1u;
+#endif  // WIN32
+// END added by Vlad on Mar. 30, 2020, Windows compatibility
         temp = gray_number;
     }
 

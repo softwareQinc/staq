@@ -97,12 +97,11 @@ class DesugarImpl final : public ast::Replacer {
                 for (int i = 0; i < *num; i++)
                     args.emplace_back(expand(arg, i));
             } else {
-              args.emplace_back(arg);
+                args.emplace_back(arg);
             }
         });
-        
-        ret.emplace_back(
-            ast::BarrierGate::create(gate.pos(), std::move(args)));
+
+        ret.emplace_back(ast::BarrierGate::create(gate.pos(), std::move(args)));
         return std::move(ret);
     }
 

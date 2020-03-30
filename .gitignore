@@ -37,7 +37,12 @@ build/*
 # CLion
 .idea/
 build/
-cmake-build*/ 
+cmake-build*/
+
+# MSVC
+.vs
+/out*
+CMakeSettings.json
 
 # Documentation source files 
 doc/

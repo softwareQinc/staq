@@ -1,5 +1,5 @@
 /*
- * This file is part of Quantum++.
+ * This file is part of staq.
  *
  * MIT License
  *

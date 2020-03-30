@@ -167,7 +167,7 @@ synthesize_net(parser::Position pos, T& l_net,
     int num_qubits = q_net.num_qubits();
     int num_inputs = stats.i_indexes.size() + stats.o_indexes.size();
 
-    if (num_qubits - num_inputs > 0) 
+    if (num_qubits - num_inputs > 0)
         ret.emplace_back(std::make_unique<ast::AncillaDecl>(
             ast::AncillaDecl(pos, anc, false, num_qubits - num_inputs)));
 

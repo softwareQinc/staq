@@ -2066,12 +2066,58 @@ static inline double Glucose::cpuTime(void) {
 
 // Laurent: I know that this will not compile directly under Windows... sorry
 // for that
+// Added by Vlad on Mar. 30, 2020, Windows compatibility
+#ifdef WIN32
+#define DELTA_EPOCH_IN_MICROSECS 11644473600000000Ui64
+struct timezone {
+    int tz_minuteswest; /* minutes W of Greenwich */
+    int tz_dsttime;     /* type of dst correction */
+};
+
+int GetTimeOfDay(struct timeval* tv, struct timezone* tz) {
+    FILETIME ft;
+    unsigned __int64 tmpres = 0;
+    static int tzflag;
+
+    if (NULL != tv) {
+        GetSystemTimeAsFileTime(&ft);
+
+        tmpres |= ft.dwHighDateTime;
+        tmpres <<= 32;
+        tmpres |= ft.dwLowDateTime;
+
+        /*converting file time to unix epoch*/
+        tmpres /= 10; /*convert into microseconds*/
+        tmpres -= DELTA_EPOCH_IN_MICROSECS;
+        tv->tv_sec = (long) (tmpres / 1000000UL);
+        tv->tv_usec = (long) (tmpres % 1000000UL);
+    }
+
+    if (NULL != tz) {
+        if (!tzflag) {
+            _tzset();
+            tzflag++;
+        }
+        tz->tz_minuteswest = _timezone / 60;
+        tz->tz_dsttime = _daylight;
+    }
+
+    return 0;
+}
+#endif // WIN32
+// END added by Vlad on Mar. 30, 2020, Windows compatibility
+
 static inline double Glucose::realTime() {
     struct timeval tv;
+// Added by Vlad on Mar. 30, 2020, Windows compatibility
+#ifndef WIN32
     gettimeofday(&tv, NULL);
+#else
+    GetTimeOfDay(&tv, NULL);
+#endif
     return (double) tv.tv_sec + (double) tv.tv_usec / 1000000;
+// END added by Vlad on Mar. 30, 2020, Windows compatibility
 }
-
 #endif
 /***************************************************************************************[SolverTypes.h]
  Glucose -- Copyright (c) 2009-2014, Gilles Audemard, Laurent Simon
@@ -4150,8 +4196,8 @@ inline Solver::~Solver() {}
 ****************************************************************/
 
 inline void Solver::write_char(unsigned char ch) {
-    if (putc_unlocked((int) ch, certifiedOutput) == EOF)
-        exit(1);
+    // if (putc_unlocked((int) ch, certifiedOutput) == EOF)
+    exit(1);
 }
 
 inline void Solver::write_lit(int n) {
