@@ -42,7 +42,7 @@ namespace optimization {
  *  Returns a replacement list giving the nodes to the be erased
  */
 
-// TODO: Add option for global phase correction
+// TODO: add option for global phase correction
 class Simplifier final : public ast::Visitor {
   public:
     struct config {

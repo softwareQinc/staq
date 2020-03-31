@@ -28,7 +28,7 @@
  */
 #pragma once
 
-// TODO: Account for compound gates, i.e. qreg q[n]; reset q;
+// TODO: account for compound gates, i.e. qreg q[n]; reset q;
 
 #include "ast/ast.hpp"
 

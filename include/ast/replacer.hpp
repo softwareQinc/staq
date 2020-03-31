@@ -259,8 +259,11 @@ class Replacer : public Visitor {
                 it = decl.body().erase(it);
                 decl.body().splice(it, std::move(*replacement_gates_));
                 replacement_gates_ = std::nullopt;
-                it--;
+                if (it != decl.body().begin())
+                    --it;
             }
+            if (it == decl.body().end())
+                break;
         }
 
         replacement_stmts_ = replace(decl);
@@ -284,7 +287,8 @@ class Replacer : public Visitor {
                 it = prog.body().erase(it);
                 prog.body().splice(it, std::move(*replacement_stmts_));
                 replacement_stmts_ = std::nullopt;
-                it--;
+                if (it != prog.body().begin())
+                    --it;
             } else if (replacement_gates_) {
                 it = prog.body().erase(it);
                 for (auto ti = replacement_gates_->begin();
@@ -293,8 +297,11 @@ class Replacer : public Visitor {
                 }
                 // prog.body().splice(it, std::move(*replacement_gates_));
                 replacement_gates_ = std::nullopt;
-                it--;
+                if (it != prog.body().begin())
+                    --it;
             }
+            if (it == prog.body().end())
+                break;
         }
     }
 };

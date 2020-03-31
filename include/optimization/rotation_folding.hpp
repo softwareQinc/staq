@@ -263,27 +263,34 @@ class RotationOptimizer final : public ast::Visitor {
             if (auto tmp =
                     std::get_if<std::pair<rotation_info, Gatelib::Rotation>>(
                         &op)) {
-                auto [new_phase, new_R] =
-                    fold_forward(circuit, std::next(it), tmp->second);
 
-                global_phase += new_phase;
-                if (!(new_R == tmp->second)) {
-                    std::list<ast::ptr<ast::Gate>> subst;
+                auto it_next = std::next(it);
+                if (it_next != circuit.rend()) {
+                    auto [new_phase, new_R] =
+                        fold_forward(circuit, it_next, tmp->second);
 
-                    auto rot = alloc_rot(tmp->first, new_R.rotation_angle());
-                    if (rot)
-                        subst.emplace_back(rot);
-                    replacement_list_[tmp->first.uid] = std::move(subst);
+                    global_phase += new_phase;
+                    if (!(new_R == tmp->second)) {
+                        std::list<ast::ptr<ast::Gate>> subst;
 
-                    // WARNING: this is a massive hack so that the global phase
-                    // correction can be performed by the replacement engine. We
-                    // append the final phase correction to the last gate
-                    // substitution in-place in the replacement list. Since we
-                    // need a qubit to apply the phase correction on, we select
-                    // the qubit on which the rotation itself was applied.
-                    tgt = &(tmp->first.arg);
-                    subst_ref = &(replacement_list_[tmp->first.uid]);
-                }
+                        auto rot =
+                            alloc_rot(tmp->first, new_R.rotation_angle());
+                        if (rot)
+                            subst.emplace_back(rot);
+                        replacement_list_[tmp->first.uid] = std::move(subst);
+
+                        // WARNING: this is a massive hack so that the global
+                        // phase correction can be performed by the replacement
+                        // engine. We append the final phase correction to the
+                        // last gate substitution in-place in the replacement
+                        // list. Since we need a qubit to apply the phase
+                        // correction on, we select the qubit on which the
+                        // rotation itself was applied.
+                        tgt = &(tmp->first.arg);
+                        subst_ref = &(replacement_list_[tmp->first.uid]);
+                    }
+                } else
+                    break;
             }
         }
 
@@ -374,7 +381,10 @@ class RotationOptimizer final : public ast::Visitor {
                         // Delete R in circuit & the node
                         replacement_list_[P.first.uid] =
                             std::move(std::list<ast::ptr<ast::Gate>>());
-                        circuit.erase(std::next(it).base());
+
+                        auto it_next = std::next(it);
+                        if (it_next != circuit.rend())
+                            circuit.erase(std::next(it).base());
 
                         return false;
                     } else if (R.commutes_with(P.second)) {
