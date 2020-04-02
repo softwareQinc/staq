@@ -34,6 +34,7 @@
 #include "token.hpp"
 
 #include <memory>
+#include <cctype>
 
 namespace staq {
 namespace parser {

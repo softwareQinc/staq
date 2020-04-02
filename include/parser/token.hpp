@@ -323,7 +323,7 @@ class Token {
      *
      * \return The raw source string
      */
-    std::string_view raw() const { return str_; }
+    const std::string& raw() const { return str_; }
 
     /**
      * \brief Extraction operator override

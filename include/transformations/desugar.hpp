@@ -217,17 +217,17 @@ class DesugarImpl final : public ast::Replacer {
 
   private:
     using type_info = std::variant<std::monostate, int>;
-    std::list<std::unordered_map<std::string_view, type_info>> symbol_table;
+    std::list<std::unordered_map<std::string, type_info>> symbol_table;
 
     void push_scope() { symbol_table.push_front({}); }
 
     void pop_scope() { symbol_table.pop_front(); }
 
-    void set_var(std::string_view x, type_info t) {
+    void set_var(std::string x, type_info t) {
         symbol_table.front()[x] = t;
     }
 
-    std::optional<type_info> lookup(std::string_view x) {
+    std::optional<type_info> lookup(std::string x) {
         for (auto& table : symbol_table) {
             if (auto it = table.find(x); it != table.end()) {
                 return std::make_optional(it->second);
