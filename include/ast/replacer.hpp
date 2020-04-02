@@ -253,17 +253,17 @@ class Replacer : public Visitor {
     }
 
     void visit(GateDecl& decl) override {
-        for (auto it = decl.begin(); it != decl.end(); it++) {
+        auto it = decl.body().begin();
+
+        while (it != decl.body().end()) {
             (**it).accept(*this);
             if (replacement_gates_) {
                 it = decl.body().erase(it);
                 decl.body().splice(it, std::move(*replacement_gates_));
                 replacement_gates_ = std::nullopt;
-                if (it != decl.body().begin())
-                    --it;
+            } else {
+                ++it;
             }
-            if (it == decl.body().end())
-                break;
         }
 
         replacement_stmts_ = replace(decl);
@@ -281,27 +281,24 @@ class Replacer : public Visitor {
     }
 
     void visit(Program& prog) override {
-        for (auto it = prog.begin(); it != prog.end(); it++) {
+        auto it = prog.body().begin();
+
+        while (it != prog.end()) {
             (**it).accept(*this);
             if (replacement_stmts_) {
                 it = prog.body().erase(it);
                 prog.body().splice(it, std::move(*replacement_stmts_));
                 replacement_stmts_ = std::nullopt;
-                if (it != prog.body().begin())
-                    --it;
             } else if (replacement_gates_) {
                 it = prog.body().erase(it);
                 for (auto ti = replacement_gates_->begin();
                      ti != replacement_gates_->end(); ti++) {
                     prog.body().emplace(it, std::move(*ti));
                 }
-                // prog.body().splice(it, std::move(*replacement_gates_));
                 replacement_gates_ = std::nullopt;
-                if (it != prog.body().begin())
-                    --it;
-            }
-            if (it == prog.body().end())
-                break;
+            } else {
+                ++it;
+			}
         }
     }
 };
