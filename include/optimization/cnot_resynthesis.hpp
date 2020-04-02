@@ -270,8 +270,8 @@ class CNOTOptimizer final : public ast::Replacer {
 
         // Reset the cnot-dihedral circuit
         phases_.clear();
-        for (auto i = 0; i < qubit_map_.size(); i++) {
-            for (auto j = 0; j < qubit_map_.size(); j++) {
+        for (size_t i = 0; i < qubit_map_.size(); i++) {
+            for (size_t j = 0; j < qubit_map_.size(); j++) {
                 permutation_[i][j] = i == j ? true : false;
             }
         }
@@ -294,7 +294,7 @@ class CNOTOptimizer final : public ast::Replacer {
 
             // Extend the current permutation
             permutation_.emplace_back(std::vector<bool>(n + 1, false));
-            for (auto i = 0; i < n; i++) {
+            for (size_t i = 0; i < n; i++) {
                 permutation_[i].emplace_back(false);
             }
             permutation_[n][n] = true;

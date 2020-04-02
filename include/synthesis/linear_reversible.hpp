@@ -43,15 +43,15 @@ using linear_op = std::vector<std::vector<T>>;
 // faster bitwise operations
 inline std::vector<bool>& operator^=(std::vector<bool>& A,
                                      const std::vector<bool>& B) {
-    for (auto i = 0; i < A.size(); i++) {
+    for (size_t i = 0; i < A.size(); i++) {
         A[i] = B[i] ^ A[i];
     }
     return A;
 }
 
 static void print_linop(const linear_op<bool>& mat) {
-    for (auto i = 0; i < mat.size(); i++) {
-        for (auto j = 0; j < mat[i].size(); j++) {
+    for (size_t i = 0; i < mat.size(); i++) {
+        for (size_t j = 0; j < mat[i].size(); j++) {
             std::cout << (mat[i][j] ? "1" : "0");
         }
         std::cout << "\n";
@@ -67,11 +67,11 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     if (mat.size() == 0)
         return ret;
 
-    for (auto i = 0; i < mat[0].size(); i++) {
+    for (size_t i = 0; i < mat[0].size(); i++) {
 
         // Find pivot
         int pivot = -1;
-        for (auto j = i; j < mat.size(); j++) {
+        for (size_t j = i; j < mat.size(); j++) {
             if (mat[j][i] == true) {
                 pivot = j;
                 break;
@@ -91,7 +91,7 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
         }
 
         // Zero other rows
-        for (auto j = 0; j < mat.size(); j++) {
+        for (size_t j = 0; j < mat.size(); j++) {
             if (j != i && mat[j][i] == true) {
                 mat[j] ^= mat[i];
                 ret.push_back(std::make_pair(i, j));
@@ -109,11 +109,11 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
 static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
 
-    for (auto i = 0; i < mat[0].size(); i++) {
+    for (size_t i = 0; i < mat[0].size(); i++) {
 
         // Find pivot
         int pivot = -1;
-        for (auto j = i; j < mat.size(); j++) {
+        for (size_t j = i; j < mat.size(); j++) {
             if (mat[j][i] == true) {
                 pivot = j;
                 break;
@@ -133,7 +133,7 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
         }
 
         // Zero other row below diagonal
-        for (auto j = i + 1; j < mat.size(); j++) {
+        for (size_t j = i + 1; j < mat.size(); j++) {
             if (mat[j][i] == true) {
                 mat[j] ^= mat[i];
                 ret.push_back(std::make_pair(i, j));
@@ -192,14 +192,14 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
     // Whether or not a row has a dependence on a row above the diagonal
     std::vector<bool> above_diagonal_dep(mat.size(), false);
 
-    for (auto i = 0; i < mat[0].size(); i++) {
+    for (size_t i = 0; i < mat[0].size(); i++) {
 
         std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
         // Phase 0: Find a pivot
         int pivot = -1;
         int dist;
-        for (auto j = i; j < mat.size(); j++) {
+        for (size_t j = i; j < mat.size(); j++) {
             if (mat[j][i] == true) {
                 if (pivot == -1 || d.distance(j, i) < dist) {
                     pivot = j;
@@ -216,7 +216,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
         std::list<std::pair<int, int>> uncompute_swap;
         bool crossed_diag = false;
         auto path = d.shortest_path(pivot, i);
-        int ctrl = pivot;
+        size_t ctrl = pivot;
 
         // Phase 1: Fill 1's in column i along shortest path to row i
         for (auto tgt : path) {
@@ -238,7 +238,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
             // First zero out column i along the path
             auto tgt = i;
             for (auto it = std::next(path.rbegin()); it != path.rend(); it++) {
-                auto ctrl = *it;
+                size_t ctrl = *it;
                 if (tgt != i) {
                     mat[tgt] ^= mat[ctrl];
                     swap.push_back(std::make_pair(ctrl, tgt));
@@ -266,7 +266,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
 
         // Phase 3: Compute steiner tree covering the 1's in column i
         std::list<int> pivots;
-        for (auto j = 0; j < mat.size(); j++) {
+        for (size_t j = 0; j < mat.size(); j++) {
             if (j != i && mat[j][i] == true)
                 pivots.push_back(j);
         }

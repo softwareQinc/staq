@@ -364,7 +364,7 @@ class SemanticChecker final : public Visitor {
                        const std::vector<std::optional<BitType>>& types) {
         int mapping_size = -1;
 
-        for (auto i = 0; i < args.size(); i++) {
+        for (size_t i = 0; i < args.size(); i++) {
             auto entry = lookup(args[i].var());
 
             if (!entry) {
