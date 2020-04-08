@@ -223,9 +223,7 @@ class DesugarImpl final : public ast::Replacer {
 
     void pop_scope() { symbol_table.pop_front(); }
 
-    void set_var(std::string x, type_info t) {
-        symbol_table.front()[x] = t;
-    }
+    void set_var(std::string x, type_info t) { symbol_table.front()[x] = t; }
 
     std::optional<type_info> lookup(std::string x) {
         for (auto& table : symbol_table) {

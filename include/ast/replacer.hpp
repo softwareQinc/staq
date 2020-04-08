@@ -298,7 +298,7 @@ class Replacer : public Visitor {
                 replacement_gates_ = std::nullopt;
             } else {
                 ++it;
-			}
+            }
         }
     }
 };

@@ -1,2 +1,6 @@
+Version 1.1 - 8 April 2020
+    - Added complete Windows support (including MSVC) + AppVeyor CI
+    - Various minor bugfixes
+
 Version 1.0 - 10 December 2019
     - Initial public release

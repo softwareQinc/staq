@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required (VERSION 3.8)
-project(staq LANGUAGES CXX)
+project(staq VERSION 1.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -16,7 +16,7 @@ endif ()
 ### Miscrosoft Visual Studio
 if (MSVC)
     add_compile_options(-bigobj)
-    include_directories(libs/zlib libs/pthreadwin32)
+    include_directories(libs/pthreadwin32)
 endif ()
 
 ### MinGW or Cygwin have issues with object files that are too large
