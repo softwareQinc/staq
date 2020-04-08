@@ -4,6 +4,7 @@
 **Build status:**
 
 [![Build Status](https://travis-ci.com/softwareQinc/staq.svg?branch=master)](https://travis-ci.com/softwareQinc/staq)
+[![Build status](https://ci.appveyor.com/api/projects/status/gwc8fde2jdp3tol7?svg=true)](https://ci.appveyor.com/project/vsoftco/staq)
 
 ---
 ## About

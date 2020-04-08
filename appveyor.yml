@@ -1,0 +1,19 @@
+version: 1.0.{build}
+
+image: Visual Studio 2019
+
+platform: x64
+
+build_script:
+  - cmd: |-
+      @echo on
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+      cd %APPVEYOR_BUILD_FOLDER%
+      mkdir build
+      cd build
+      cmake ..
+      msbuild -verbosity:quiet staq.sln
+        
+test_script:
+  - cmd: |-
+      %APPVEYOR_BUILD_FOLDER%\build\unit_tests\Debug\unit_tests.exe
