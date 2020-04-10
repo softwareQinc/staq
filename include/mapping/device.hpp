@@ -316,14 +316,14 @@ class Device {
                         dist[i][j] = 0;
                         shortest_paths[i][j] = j;
                     } else if (couplings_[i][j]) {
-                        dist[i][j] = -log(coupling_fidelities_[i][j]);
+                        dist[i][j] = -std::log(coupling_fidelities_[i][j]);
                         shortest_paths[i][j] = j;
                     } else if (couplings_[j][i]) { // Since swaps are the same
                                                    // cost either direction
-                        dist[i][j] = -log(coupling_fidelities_[j][i]);
+                        dist[i][j] = -std::log(coupling_fidelities_[j][i]);
                         shortest_paths[i][j] = j;
                     } else {
-                        dist[i][j] = -log(0.0000000001); // Effectively infinite
+                        dist[i][j] = -std::log(0.0000000001); // Effectively infinite
                         shortest_paths[i][j] = qubits_;
                     }
                 }
