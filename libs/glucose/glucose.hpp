@@ -2045,7 +2045,14 @@ extern double memUsedPeak(); // Peak-memory in mega bytes (returns 0 for
 // Implementation of inline functions:
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
+
+#if defined(_MSC_VER)
 #include <time.h>
+#endif
+
+#if defined(__MINGW32__)
+#include <sys/time.h>
+#endif
 
 static inline double Glucose::cpuTime(void) {
     return (double) clock() / CLOCKS_PER_SEC;
@@ -2067,7 +2074,7 @@ static inline double Glucose::cpuTime(void) {
 // Laurent: I know that this will not compile directly under Windows... sorry
 // for that
 // Added by Vlad on Mar. 30, 2020, Windows compatibility
-#ifdef WIN32
+#if defined(WIN32) && defined(_MSC_VER)
 #define DELTA_EPOCH_IN_MICROSECS 11644473600000000Ui64
 struct timezone {
     int tz_minuteswest; /* minutes W of Greenwich */
@@ -2104,19 +2111,19 @@ int GetTimeOfDay(struct timeval* tv, struct timezone* tz) {
 
     return 0;
 }
-#endif // WIN32
+#endif // WIN32 && _MSC_VER
 // END added by Vlad on Mar. 30, 2020, Windows compatibility
 
 static inline double Glucose::realTime() {
     struct timeval tv;
 // Added by Vlad on Mar. 30, 2020, Windows compatibility
-#ifndef WIN32
-    gettimeofday(&tv, NULL);
-#else
+#if defined(WIN32) && defined(_MSC_VER)
     GetTimeOfDay(&tv, NULL);
+#else
+    gettimeofday(&tv, NULL);
 #endif
     return (double) tv.tv_sec + (double) tv.tv_usec / 1000000;
-// END added by Vlad on Mar. 30, 2020, Windows compatibility
+    // END added by Vlad on Mar. 30, 2020, Windows compatibility
 }
 #endif
 /***************************************************************************************[SolverTypes.h]

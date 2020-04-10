@@ -323,7 +323,8 @@ class Device {
                         dist[i][j] = -std::log(coupling_fidelities_[j][i]);
                         shortest_paths[i][j] = j;
                     } else {
-                        dist[i][j] = -std::log(0.0000000001); // Effectively infinite
+                        dist[i][j] =
+                            -std::log(0.0000000001); // Effectively infinite
                         shortest_paths[i][j] = qubits_;
                     }
                 }

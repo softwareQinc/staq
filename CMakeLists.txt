@@ -16,7 +16,7 @@ endif ()
 ### Miscrosoft Visual Studio
 if (MSVC)
     add_compile_options(-bigobj)
-    include_directories(libs/pthreadwin32)
+    include_directories(SYSTEM libs/pthreadwin32)
 endif ()
 
 ### MinGW or Cygwin have issues with object files that are too large
@@ -28,7 +28,7 @@ endif()
 add_definitions(-DPATH="${CMAKE_SOURCE_DIR}" -DNOMINMAX)
 
 #### Libs
-include_directories(libs)
+include_directories(SYSTEM libs)
 
 #### Library
 add_library(libstaq INTERFACE)

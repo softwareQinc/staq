@@ -1,7 +1,5 @@
 set(target "unit_tests")
 
-include_directories(${CMAKE_SOURCE_DIR}/libs/googletest/include ${CMAKE_SOURCE_DIR}/libs/googletest)
-
 aux_source_directory(. FILES)
 aux_source_directory(parser FILES)
 aux_source_directory(utils FILES)

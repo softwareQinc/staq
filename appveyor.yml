@@ -4,16 +4,13 @@ image: Visual Studio 2019
 
 platform: x64
 
+environment: 
+  matrix:
+    - compiler: msvc2019
+    - compiler: msys2
+
 build_script:
-  - cmd: |-
-      @echo on
-      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-      cd %APPVEYOR_BUILD_FOLDER%
-      mkdir build
-      cd build
-      cmake ..
-      msbuild -verbosity:quiet staq.sln
+  - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\appveyor_build.bat'
         
 test_script:
-  - cmd: |-
-      %APPVEYOR_BUILD_FOLDER%\build\unit_tests\Debug\unit_tests.exe
+  - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\appveyor_test.bat'
