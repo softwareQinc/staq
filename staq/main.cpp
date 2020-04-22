@@ -114,8 +114,8 @@ enum class Format { qasm, quil, projectq, qsharp, cirq, resources };
 void print_help() {
     int width = 40;
 
-    std::cout << "staq -- copyright softwareQ 2019\n";
-    std::cout << "Usage: ./staq [PASSES/OPTIONS] FILE.qasm\n\n";
+    std::cout << "staq -- (c) 2019-2020 softwareQ Inc.\n";
+    std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n\n";
     std::cout << "Compiler passes:\n";
     std::cout << std::setw(width) << std::left << "-i,--inline"
               << "Inline all gates\n";
@@ -132,7 +132,7 @@ void print_help() {
     std::cout << std::setw(width) << std::left << "-O1"
               << "Standard light optimization pass\n";
     std::cout << std::setw(width) << std::left << "-O2"
-              << "Standard heavy optimization pass\n\n";
+              << "Standard heavy optimization pass\n";
     std::cout << std::setw(width) << std::left << "-O3"
               << "Non-monotonic optimization pass\n\n";
     std::cout << "Options:\n";
@@ -156,13 +156,13 @@ void print_help() {
                  "the steiner mapper.\n";
     std::cout
         << std::setw(width) << std::left << "--no-expand-registers"
-        << "Disables expanding gates applied to registers rather than qubits\n";
+        << "Disables expanding gates applied to registers rather than qubits.\n";
 }
 
 int main(int argc, char** argv) {
     if (argc == 1) {
-        std::cout << "staq -- copyright softwareQ 2019\n";
-        std::cout << "Usage: ./staq [PASSES/OPTIONS] FILE.qasm\n";
+        std::cout << "staq -- (c) 2019-2020 softwareQ Inc.\n";
+        std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n";
         std::cout << "Pass --help for additional help\n";
     }
 
