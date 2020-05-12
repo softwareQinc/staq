@@ -166,15 +166,33 @@ class Replacer : public Visitor {
         replacement_stmts_ = replace(stmt);
     }
 
+    // Vanilla QASM only allows a single statement in
+    // the "then" branch, so we need to clone the statement
+    // for each gate in the result
     void visit(IfStmt& stmt) override {
         stmt.then().accept(*this);
         if (replacement_stmts_) {
-            stmt.set_then(std::move(replacement_stmts_->front()));
-            replacement_stmts_ = std::nullopt;
+            std::list<ptr<Stmt>> ret;
+            for (auto &rep : *replacement_stmts_) {
+                auto tmp = stmt.clone();
+                tmp->set_then(std::move(rep));
+                ret.emplace_back(tmp);
+            }
+            replacement_stmts_ = std::move(ret);
+        } else if (replacement_gates_) {
+            std::list<ptr<Stmt>> ret;
+            for (auto &rep : *replacement_gates_) {
+                auto tmp = stmt.clone();
+                tmp->set_then(std::move(rep));
+                ret.emplace_back(tmp);
+            }
+            replacement_gates_ = std::nullopt;
+            replacement_stmts_ = std::move(ret);
+        } else {
+            replacement_stmts_ = replace(stmt);
         }
-
-        replacement_stmts_ = replace(stmt);
     }
+
 
     void visit(UGate& gate) override {
         gate.theta().accept(*this);
