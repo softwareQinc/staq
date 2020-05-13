@@ -114,7 +114,7 @@ enum class Format { qasm, quil, projectq, qsharp, cirq, resources };
 void print_help() {
     int width = 40;
 
-    std::cout << "staq -- (c) 2019-2020 softwareQ Inc.\n";
+    std::cout << "staq -- (c) 2019 - 2020 softwareQ Inc.\n";
     std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n\n";
     std::cout << "Compiler passes:\n";
     std::cout << std::setw(width) << std::left << "-i,--inline"
@@ -161,7 +161,7 @@ void print_help() {
 
 int main(int argc, char** argv) {
     if (argc == 1) {
-        std::cout << "staq -- (c) 2019-2020 softwareQ Inc.\n";
+        std::cout << "staq -- (c) 2019 - 2020 softwareQ Inc.\n";
         std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n";
         std::cout << "Pass --help for additional help\n";
     }
