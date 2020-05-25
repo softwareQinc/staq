@@ -37,7 +37,7 @@ namespace easy::esop {
 namespace detail {
 
 // Added by Vlad on Mar. 30, 2020, Windows compatibility
-#ifdef WIN32
+#ifdef _WIN32
 int GetLowestBitPos(int value) {
     if (value == 0)
         return 0;
@@ -48,7 +48,7 @@ int GetLowestBitPos(int value) {
     }
     return 1 + pos;
 }
-#endif // WIN32
+#endif // _WIN32
 // END added by Vlad on Mar. 30, 2020, Windows compatibility
 
 std::vector<uint32_t> compute_flips(uint32_t n) {
@@ -62,11 +62,11 @@ std::vector<uint32_t> compute_flips(uint32_t n) {
         gray_number = i ^ (i >> 1);
         flip_vec[total_flips - i] =
 // Added by Vlad on Mar. 30, 2020, for Windows compatibility
-#ifndef WIN32
+#ifndef _WIN32
             ffs(temp ^ gray_number) - 1u;
 #else
             GetLowestBitPos(temp ^ gray_number) - 1u;
-#endif  // WIN32
+#endif  // _WIN32
 // END added by Vlad on Mar. 30, 2020, Windows compatibility
         temp = gray_number;
     }
