@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     CLI::App app{"QASM physical mapper"};
 
     app.add_option("-d", device_name,
-                   "Device to map onto (tokyo|agave|aspen-4|square|fullycon)");
+                   "Device to map onto (tokyo|agave|aspen-4|singapore|square|fullycon)");
     app.add_option("-l", layout,
                    "Layout algorithm to use (linear|eager|bestfit)");
     app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");
@@ -68,6 +68,8 @@ int main(int argc, char** argv) {
             dev = mapping::agave;
         } else if (device_name == "aspen-4") {
             dev = mapping::aspen4;
+        } else if (device_name == "singapore") {
+            dev = mapping::singapore;
         } else if (device_name == "square") {
             dev = mapping::square_9q;
         } else if (device_name == "fullycon") {
