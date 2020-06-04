@@ -248,8 +248,9 @@ class SteinerMapper final : public ast::Replacer {
     void add_phase(std::vector<bool> parity, ast::ptr<ast::Expr> angle) {
         for (auto it = phases_.begin(); it != phases_.end(); it++) {
             if (it->first == parity) {
+                auto tmp = angle->pos();
                 it->second =
-                    ast::BExpr::create(angle->pos(), std::move(it->second),
+                    ast::BExpr::create(tmp, std::move(it->second),
                                        ast::BinaryOp::Plus, std::move(angle));
                 return;
             }
