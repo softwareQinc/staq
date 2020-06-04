@@ -410,6 +410,14 @@ class SteinerDry final : public ast::Traverse {
                     [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& rz) {}},
                 gate);
         }
+
+        // Reset the cnot-dihedral circuit
+        phases_.clear();
+        for (auto i = 0; i < device_.qubits_; i++) {
+            for (auto j = 0; j < device_.qubits_; j++) {
+                permutation_[i][j] = i == j ? true : false;
+            }
+        }
     }
 
     void visit(ast::CNOTGate& gate) override {

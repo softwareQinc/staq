@@ -551,9 +551,12 @@ static Device square_9q("9 qubit square lattice", 9,
 
 /** \brief Generates a fully connected device with a given number of qubits */
 inline Device fully_connected(uint32_t n) {
-    return Device(
-        "Fully connected device", n,
-        std::vector<std::vector<bool>>(n, std::vector<bool>(n, true)));
+    auto tmp = std::vector<std::vector<bool>>(n, std::vector<bool>(n, true));
+    for (auto i = 0; i < n; i++) {
+        tmp[i][i] = false;
+    }
+  
+    return Device("Fully connected device", n, tmp);
 }
 
 } // namespace mapping
