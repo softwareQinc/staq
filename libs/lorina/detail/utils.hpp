@@ -46,7 +46,9 @@
 
 #ifndef _WIN32
 #include <libgen.h>
+#ifndef OS_OPENBSD
 #include <wordexp.h>
+#endif
 #endif
 
 namespace lorina {
@@ -208,7 +210,7 @@ inline std::vector<std::string> split(const std::string& str,
     return result;
 }
 
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(OS_OPENBSD))
 inline std::string word_exp_filename(const std::string& filename) {
     std::string result;
 
