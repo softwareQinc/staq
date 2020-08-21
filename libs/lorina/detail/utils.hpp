@@ -46,7 +46,7 @@
 
 #ifndef _WIN32
 #include <libgen.h>
-#ifndef OS_OPENBSD
+#ifndef __OpenBSD__
 #include <wordexp.h>
 #endif
 #endif
@@ -210,7 +210,7 @@ inline std::vector<std::string> split(const std::string& str,
     return result;
 }
 
-#if !(defined(_WIN32) || defined(OS_OPENBSD))
+#if !(defined(_WIN32) || defined(__OpenBSD__))
 inline std::string word_exp_filename(const std::string& filename) {
     std::string result;
 
