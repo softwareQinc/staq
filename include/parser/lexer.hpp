@@ -117,7 +117,7 @@ class Lexer {
     /**
      * \brief Lex a numeric constant
      *
-     * \note [0-9]*(.[0-9]*)
+     * \note [0-9]+(.[0-9]*)([eE][+-][0-9]+)?
      *
      * \param tok_start The position of the beginning of the token
      * \return An integer or real type token
@@ -139,6 +139,24 @@ class Lexer {
         // lex decimal part
         str.push_back(buf_->peek());
         skip_char();
+        while (std::isdigit(buf_->peek())) {
+            str.push_back(buf_->peek());
+            skip_char();
+        }
+
+        if (buf_->peek() != 'e' && buf_->peek() != 'E') {
+            return Token(tok_start, Token::Kind::real, str, std::stof(str));
+        }
+
+        // lex exponent
+        str.push_back(buf_->peek());
+        skip_char();
+
+        if (buf_->peek() == '-' || buf_->peek() == '+') {
+            str.push_back(buf_->peek());
+            skip_char();
+        }
+
         while (std::isdigit(buf_->peek())) {
             str.push_back(buf_->peek());
             skip_char();
@@ -239,9 +257,10 @@ class Lexer {
                 return Token(tok_start, Token::Kind::slash, "/");
 
                 // clang-format off
-      case '0': case '1': case '2': case '3': case '4':
-      case '5': case '6': case '7': case '8': case '9':
-        return lex_numeric_constant(tok_start);
+            case '0': case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+            case '.':
+                return lex_numeric_constant(tok_start);
                 // clang-format on
 
             case 'C':
@@ -263,12 +282,12 @@ class Lexer {
                 return Token(tok_start, Token::Kind::kw_u, "U");
 
                 // clang-format off
-      case 'O':
-      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
-      case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
-      case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
-      case 'v': case 'w': case 'x': case 'y': case 'z':
-        return lex_identifier(tok_start);
+            case 'O':
+            case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
+            case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
+            case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
+            case 'v': case 'w': case 'x': case 'y': case 'z':
+                return lex_identifier(tok_start);
                 // clang-format on
 
             case '[':

@@ -217,3 +217,15 @@ TEST(Parsing, Trailing_Comment) {
     EXPECT_NO_THROW(parser::parse_string(src, "trailing_comment.qasm"));
 }
 /******************************************************************************/
+
+/******************************************************************************/
+TEST(Parsing, Scientific_Notation) {
+    std::string src = "OPENQASM 2.0;\n"
+                      "include \"qelib1.inc\";\n"
+                      "\n"
+                      "qreg q[1];\n"
+                      "U(0.01e3,.02E+4,1.54E-10) q[0];\n";
+
+    EXPECT_NO_THROW(parser::parse_string(src, "scientific_notation.qasm"));
+}
+/******************************************************************************/
