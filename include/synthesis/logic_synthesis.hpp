@@ -171,8 +171,7 @@ synthesize_net(parser::Position pos, T& l_net,
         ret.emplace_back(std::make_unique<ast::AncillaDecl>(
             ast::AncillaDecl(pos, anc, false, num_qubits - num_inputs)));
 
-    // Create a mapping from qubits to functions generating declaration
-    // references
+    // Create a mapping from qubits to variable accesses
     auto inputs = stats.i_indexes;
     inputs.insert(inputs.end(), stats.o_indexes.begin(), stats.o_indexes.end());
     if (params.size() != inputs.size()) {
@@ -181,13 +180,17 @@ synthesize_net(parser::Position pos, T& l_net,
         throw ast::SemanticError();
     }
 
-    std::vector<ast::VarAccess> id_refs;
-    id_refs.reserve(num_qubits);
-    for (int id = 0, cur_param = 0, cur_anc = 0; id < num_qubits; id++) {
-        if (std::find(inputs.begin(), inputs.end(), id) != inputs.end())
-            id_refs.emplace_back(ast::VarAccess(pos, params[cur_param++]));
-        else
-            id_refs.emplace_back(ast::VarAccess(pos, anc, cur_anc++));
+    std::vector<ast::VarAccess> id_refs(num_qubits, ast::VarAccess(pos, anc));
+
+    // Map each input to the correct parameter
+    for (int i = 0; i < num_inputs; i++) {
+        id_refs[inputs[i]] = ast::VarAccess(pos, params[i]);
+    }
+
+    // Map each non-input to an ancilla
+    for (int i = 0, cur_anc = 0; i < num_qubits; i++) {
+        if (std::find(inputs.begin(), inputs.end(), i) == inputs.end())
+            id_refs[i] = ast::VarAccess(pos, anc, cur_anc++);
     }
 
     // Convert each gate to an ast::Gate
