@@ -644,7 +644,7 @@ class verilog_parser {
             detail::trim(token);
 
             /* switch to comment mode */
-            if (token == "//" &&
+            if (token.substr(0,2) == "//" &&
                 result == detail::tokenizer_return_code::valid) {
                 tok.set_comment_mode();
             } else if (result == detail::tokenizer_return_code::comment) {
