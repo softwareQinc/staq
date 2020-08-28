@@ -13,11 +13,8 @@ matrix:
         # Ubuntu Linux 18.04 clang-7.0
         - os: linux
           compiler: clang
-          packages:
-              - clang
-              - libc++-dev
-              - libc++abi-dev
           before_install:
+              - sudo apt-get install libc++-dev libc++abi-dev
               - export CXX="clang++" CC="clang"
               - export BUILD="make"
 
