@@ -10,15 +10,15 @@ matrix:
               - export CXX="g++-7" CC="gcc-7"
               - export BUILD="make"
 
-        # Ubuntu Linux 18.04 clang-8
+        # Ubuntu Linux 18.04 clang-7
         - os: linux
           compiler: clang
           packages:
-              - clang-8
-              - libc++-8-dev
-              - libc++abi-8-dev
+              - clang
+              - libc++-dev
+              - libc++abi-dev
           before_install:
-              - export CXX="clang++-8" CC="clang-8"
+              - export CXX="clang++" CC="clang"
               - export BUILD="make"
 
         # Apple OSX LLVM version 10.0.0 (clang-1000.11.45.5)
