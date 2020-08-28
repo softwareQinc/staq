@@ -14,7 +14,7 @@ matrix:
         - os: linux
           compiler: clang
           before_install:
-              - sudo apt-get install clang libc++-dev libc++abi-dev
+              - sudo apt-get install libc++-dev libc++abi-dev
               - export CXX="clang++" CC="clang"
               - export BUILD="make"
 

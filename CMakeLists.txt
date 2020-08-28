@@ -8,12 +8,12 @@ if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
 endif ()
 
-### Clang and glibc don't seem to mesh
+### Force clang to use libc++
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif ()
 
-### Miscrosoft Visual Studio
+### Microsoft Visual Studio
 if (MSVC)
     add_compile_options(-bigobj)
     include_directories(SYSTEM libs/pthreadwin32)
