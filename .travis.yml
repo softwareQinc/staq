@@ -3,23 +3,23 @@ dist: bionic
 
 matrix:
     include:
-        # Ubuntu Linux 18.04 gcc7.1
+        # Ubuntu Linux 18.04 gcc-7.1
         - os: linux
           compiler: gcc
           before_install:
               - export CXX="g++-7" CC="gcc-7"
               - export BUILD="make"
 
-        # Ubuntu Linux 18.04 clang8
+        # Ubuntu Linux 18.04 clang-8
         - os: linux
           compiler: clang
           packages:
-            - clang-8
-            - libc++-8-dev
-            - libc++abi-8-dev
+              - clang-8
+              - libc++-8-dev
+              - libc++abi-8-dev
           before_install:
-            - export CXX="clang++-8" CC="clang-8"
-            - export BUILD="make"
+              - export CXX="clang++-8" CC="clang-8"
+              - export BUILD="make"
 
         # Apple OSX LLVM version 10.0.0 (clang-1000.11.45.5)
         - os: osx
@@ -28,7 +28,7 @@ matrix:
           before_install:
               - export BUILD="make" 
 
-        # OSX gcc7
+        # OSX gcc-7
         - os: osx
           osx_image: xcode10.2
           compiler: gcc
@@ -39,13 +39,6 @@ matrix:
               - export CXX="g++-7" CC="gcc-7"
               - export BUILD="make"
               - sudo softwareupdate -i "Command Line Tools (macOS Mojave version 10.14) for Xcode-10.2"
-
-        # Windows VisualStudio 2017
-        #- os: windows
-        #  compiler: dotnet
-        #  before_install:
-        #      - export CXX="dotnet" CC="dotnet"
-        #      - export BUILD="dotnet build staq.sln"
 
 notifications:
   email: false
