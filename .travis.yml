@@ -25,7 +25,7 @@ matrix:
       before_install:
         - export BUILD="make"
 
-    # Apple OSX gcc-7
+    # Apple OSX gcc-7.5
     - os: osx
       osx_image: xcode10.2
       compiler: gcc
