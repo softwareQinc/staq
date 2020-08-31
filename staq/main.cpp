@@ -172,9 +172,12 @@ int main(int argc, char** argv) {
     mapping::Device dev = mapping::tokyo;
     Layout layout_alg = Layout::bestfit;
     Mapper mapper = Mapper::steiner;
+    mapping::layout initial_layout;
     std::string ofile = "";
+    std::string mapfile = "layout.txt";
     Format format = Format::qasm;
     bool do_lo = true;
+    bool mapped = false;
 
     for (int i = 1; i < argc; i++) {
         switch (cli_map[std::string_view(argv[i])]) {
@@ -332,12 +335,13 @@ int main(int argc, char** argv) {
                                 optimization::simplify(*prog);
                                 break;
                             case Pass::map: {
+                                mapped = true;
+
                                 /* Inline fully first */
                                 transformations::inline_ast(*prog,
                                                             {false, {}, "anc"});
 
                                 /* Generate the layout */
-                                mapping::layout initial_layout;
                                 switch (layout_alg) {
                                     case Layout::linear:
                                         initial_layout =
@@ -374,6 +378,7 @@ int main(int argc, char** argv) {
                                         mapping::steiner_mapping(dev, *prog);
                                         break;
                                 }
+
                             }
                         }
 
@@ -427,12 +432,18 @@ int main(int argc, char** argv) {
                         }
                         case Format::qasm:
                         default:
-                            if (ofile == "")
+                            if (ofile == "") {
+                                if (mapped)
+                                  dev.print_layout(initial_layout, std::cout, "// ");
                                 std::cout << *prog << "\n";
-                            else {
+                            } else {
                                 std::ofstream os;
                                 os.open(ofile);
+
+                                if (mapped)
+                                  dev.print_layout(initial_layout, os, "// ");
                                 os << *prog;
+
                                 os.close();
                             }
                     }
