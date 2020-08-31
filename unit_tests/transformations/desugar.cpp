@@ -25,6 +25,7 @@
 #include "gtest/gtest.h"
 #include "parser/parser.hpp"
 #include "transformations/desugar.hpp"
+#include "transformations/barrier_merge.hpp"
 
 using namespace staq;
 
@@ -89,10 +90,11 @@ TEST(Desugar, Multi_Qubit) {
                        "qreg q[2];\n"
                        "qreg p[2];\n"
                        "qreg r[2];\n"
-                       "barrier q[0],q[1],p[0],p[1],r[0],r[1];\n";
+                       "barrier q[0],p[0],r[0],q[1],p[1],r[1];\n";
 
     auto program = parser::parse_string(pre, "multi_qubit.qasm");
     transformations::desugar(*program);
+    transformations::merge_barriers(*program);
     std::stringstream ss;
     ss << *program;
 
@@ -114,10 +116,11 @@ TEST(Desugar, Mixin) {
                        "qreg q[2];\n"
                        "qreg p[2];\n"
                        "qreg r[2];\n"
-                       "barrier q[0],q[1],p[1],r[0],r[1];\n";
+                       "barrier q[0],p[1],r[0],q[1],r[1];\n";
 
     auto program = parser::parse_string(pre, "mixin.qasm");
     transformations::desugar(*program);
+    transformations::merge_barriers(*program);
     std::stringstream ss;
     ss << *program;
 

@@ -27,6 +27,7 @@
 #include "transformations/desugar.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
+#include "transformations/barrier_merge.hpp"
 
 #include "optimization/simplify.hpp"
 #include "optimization/rotation_folding.hpp"
@@ -310,6 +311,7 @@ int main(int argc, char** argv) {
                         switch (pass) {
                             case Pass::desugar:
                                 transformations::desugar(*prog);
+                                transformations::merge_barriers(*prog);
                                 break;
                             case Pass::inln:
                                 transformations::inline_ast(
