@@ -125,44 +125,48 @@ class Lexer {
     Token lex_numeric_constant(Position tok_start) {
         std::string str;
         str.reserve(64); // Reserve space to avoid reallocation
+        bool integral = true;
 
         while (std::isdigit(buf_->peek())) {
             str.push_back(buf_->peek());
             skip_char();
         }
 
-        if (buf_->peek() != '.') {
-            return Token(tok_start, Token::Kind::nninteger, str,
-                         std::stoi(str));
-        }
-
-        // lex decimal part
-        str.push_back(buf_->peek());
-        skip_char();
-        while (std::isdigit(buf_->peek())) {
+        // lex decimal
+        if (buf_->peek() == '.') {
+            integral = false;
             str.push_back(buf_->peek());
             skip_char();
-        }
 
-        if (buf_->peek() != 'e' && buf_->peek() != 'E') {
-            return Token(tok_start, Token::Kind::real, str, std::stof(str));
+            while (std::isdigit(buf_->peek())) {
+                str.push_back(buf_->peek());
+                skip_char();
+            }
         }
 
         // lex exponent
-        str.push_back(buf_->peek());
-        skip_char();
-
-        if (buf_->peek() == '-' || buf_->peek() == '+') {
+        if (buf_->peek() == 'e' || buf_->peek() == 'E') {
+            integral = false;
             str.push_back(buf_->peek());
             skip_char();
+
+            if (buf_->peek() == '-' || buf_->peek() == '+') {
+                str.push_back(buf_->peek());
+                skip_char();
+            }
+          
+            while (std::isdigit(buf_->peek())) {
+                str.push_back(buf_->peek());
+                skip_char();
+            }
         }
 
-        while (std::isdigit(buf_->peek())) {
-            str.push_back(buf_->peek());
-            skip_char();
+        if (integral) {
+            return Token(tok_start, Token::Kind::nninteger, str,
+                         std::stoi(str));
+        } else {
+            return Token(tok_start, Token::Kind::real, str, std::stof(str));
         }
-
-        return Token(tok_start, Token::Kind::real, str, std::stof(str));
     }
 
     /**
