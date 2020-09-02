@@ -224,7 +224,7 @@ TEST(Parsing, Scientific_Notation) {
                       "include \"qelib1.inc\";\n"
                       "\n"
                       "qreg q[1];\n"
-                      "U(0.01e3,.02E+4,1.54E-10) q[0];\n";
+                      "U(0.01e3,.02E+4,1.54E-10) q[0];\n"
                       "U(1E3, 1e-3, 0.E1) q[0];\n";
 
     EXPECT_NO_THROW(parser::parse_string(src, "scientific_notation.qasm"));
