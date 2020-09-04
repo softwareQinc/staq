@@ -702,7 +702,7 @@ class Parser {
 
             case Token::Kind::minus: {
                 consume_token();
-                auto exp = parse_exp();
+                auto exp = parse_atom();
                 return ast::UExpr::create(pos, ast::UnaryOp::Neg,
                                           std::move(exp));
             }
