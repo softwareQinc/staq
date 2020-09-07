@@ -8,18 +8,18 @@ if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
 endif ()
 
-### Force clang to use libc++
+#### Force clang to use libc++
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif ()
 
-### Microsoft Visual Studio
+#### Microsoft Visual Studio
 if (MSVC)
     add_compile_options(-bigobj)
     include_directories(SYSTEM libs/pthreadwin32)
 endif ()
 
-### MinGW or Cygwin have issues with object files that are too large
+#### MinGW or Cygwin have issues with object files that are too large
 if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
 endif()
