@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
     Layout layout_alg = Layout::bestfit;
     Mapper mapper = Mapper::steiner;
     mapping::layout initial_layout;
+    std::optional<std::map<int,int>> output_perm = std::nullopt;
     std::string ofile = "";
     std::string mapfile = "layout.txt";
     Format format = Format::qasm;
@@ -372,7 +373,8 @@ int main(int argc, char** argv) {
                                 /* Apply the mapping algorithm */
                                 switch (mapper) {
                                     case Mapper::swap:
-                                        mapping::map_onto_device(dev, *prog);
+                                        output_perm =
+                                            mapping::map_onto_device(dev, *prog);
                                         break;
                                     case Mapper::steiner:
                                         mapping::steiner_mapping(dev, *prog);
@@ -434,14 +436,18 @@ int main(int argc, char** argv) {
                         default:
                             if (ofile == "") {
                                 if (mapped)
-                                  dev.print_layout(initial_layout, std::cout, "// ");
+                                    dev.print_layout(initial_layout,
+                                                     std::cout, "// ",
+                                                     output_perm);
                                 std::cout << *prog << "\n";
                             } else {
                                 std::ofstream os;
                                 os.open(ofile);
 
                                 if (mapped)
-                                  dev.print_layout(initial_layout, os, "// ");
+                                    dev.print_layout(initial_layout,
+                                                     os, "// ",
+                                                     output_perm);
                                 os << *prog;
 
                                 os.close();

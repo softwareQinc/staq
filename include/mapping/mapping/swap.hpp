@@ -62,6 +62,11 @@ class SwapMapper final : public ast::Replacer {
         }
     }
 
+    std::map<int, int> run(ast::Program& prog) {
+      prog.accept(*this);
+      return permutation_;
+    }
+
     // Ignore declarations if they were left in during inlining
     void visit(ast::GateDecl&) override {}
     void visit(ast::OracleDecl&) override {}
@@ -168,9 +173,9 @@ class SwapMapper final : public ast::Replacer {
 };
 
 /** \brief Applies the swap mapper to an AST given a physical device */
-void map_onto_device(Device& device, ast::Program& prog) {
+std::map<int, int> map_onto_device(Device& device, ast::Program& prog) {
     SwapMapper mapper(device);
-    prog.accept(mapper);
+    return mapper.run(prog);
 }
 
 } // namespace mapping

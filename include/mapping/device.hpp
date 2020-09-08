@@ -38,6 +38,7 @@
 
 #include <functional>
 #include <queue>
+#include <optional>
 
 #include <iostream>
 
@@ -289,8 +290,13 @@ class Device {
      * \param l The physical layout
      * \param os The output stream
      * \param pref An optional prefix
+     * \param f An optional permutation giving the output layout
      */
-    void print_layout(layout& l, std::ostream& os, std::string pref = "") {
+    void print_layout(layout& l,
+                      std::ostream& os,
+                      std::string pref = "",
+                      std::optional<std::map<int, int>> f = std::nullopt
+                      ) {
       std::unordered_map<int, ast::VarAccess> invmap;
       for (auto it = l.begin(); it != l.end(); it++) {
         invmap.insert({it->second, it->first});
@@ -298,14 +304,24 @@ class Device {
 
       os << pref << "Mapped to device \"" << name_ << "\"\n";
       os << pref << "Qubits: " << qubits_ << "\n";
-      os << pref << "Layout (physical --> virtual):\n";
+      os << pref << "Input layout (physical --> virtual):\n";
       for (int i = 0; i < qubits_; i++) {
         os << pref << "\tq[" << i << "] --> ";
         auto it = invmap.find(i);
         if (it != invmap.end()) os << it->second;
         os << "\n";
       }
-      os << "\n";
+
+      if (f) {
+        os << pref << "Output layout (physical --> virtual):\n";
+        for (int i = 0; i < qubits_; i++) {
+          os << pref << "\tq[" << i << "] --> ";
+          auto it = invmap.find((*f)[i]);
+          if (it != invmap.end()) os << it->second;
+          os << "\n";
+        }
+        os << "\n";
+      }
     }
 
   private:
