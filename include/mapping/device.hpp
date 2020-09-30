@@ -290,43 +290,43 @@ class Device {
      * \param l The physical layout
      * \param os The output stream
      * \param pref An optional prefix
-     * \param f An optional permutation giving the output layout
+     * \param f An optional permutation
      */
     void print_layout(layout& l,
                       std::ostream& os,
                       std::string pref = "",
                       std::optional<std::map<int, int>> f = std::nullopt
                       ) {
-      std::unordered_map<int, ast::VarAccess> invmap;
-      for (auto it = l.begin(); it != l.end(); it++) {
-        invmap.insert({it->second, it->first});
-      }
-
-      os << pref << "Mapped to device \"" << name_ << "\"\n";
-      os << pref << "Qubits: " << qubits_ << "\n";
-      os << pref << "Input layout (physical --> virtual):\n";
-      for (int i = 0; i < qubits_; i++) {
-        os << pref << "\tq[" << i << "] --> ";
-        auto it = invmap.find(i);
-        if (it != invmap.end()) os << it->second;
-        os << "\n";
-      }
-
-      if (f) {
-        std::map<int, int> invperm;
-        for (auto it = f->begin(); it != f->end(); it++) {
-          invperm.insert({it->second, it->first});
+        std::unordered_map<int, ast::VarAccess> invmap;
+        for (auto it = l.begin(); it != l.end(); it++) {
+            invmap.insert({it->second, it->first});
         }
 
-        os << pref << "Output layout (physical --> virtual):\n";
-        for (int i = 0; i < qubits_; i++) {
-          os << pref << "\tq[" << i << "] --> ";
-          auto it = invmap.find(invperm[i]);
-          if (it != invmap.end()) os << it->second;
-          os << "\n";
+        os << pref << "Mapped to device \"" << name_ << "\"\n";
+        os << pref << "Qubits: " << qubits_ << "\n";
+        os << pref << "Layout (physical --> virtual):\n";
+        if (f) {
+            std::map<int, int> invperm;
+            for (auto it = f->begin(); it != f->end(); it++) {
+                invperm.insert({it->second, it->first});
+            }
+
+            for (int i = 0; i < qubits_; i++) {
+                os << pref << "\tq[" << i << "] --> ";
+                auto it = invmap.find(invperm[i]);
+                if (it != invmap.end()) os << it->second;
+                os << "\n";
+            }
+            os << "\n";
+        } else {
+            for (int i = 0; i < qubits_; i++) {
+                os << pref << "\tq[" << i << "] --> ";
+                auto it = invmap.find(i);
+                if (it != invmap.end()) os << it->second;
+                os << "\n";
+            }
         }
-        os << "\n";
-      }
+
     }
 
   private:
