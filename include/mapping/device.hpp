@@ -313,10 +313,15 @@ class Device {
       }
 
       if (f) {
+        std::map<int, int> invperm;
+        for (auto it = f->begin(); it != f->end(); it++) {
+          invperm.insert({it->second, it->first});
+        }
+
         os << pref << "Output layout (physical --> virtual):\n";
         for (int i = 0; i < qubits_; i++) {
           os << pref << "\tq[" << i << "] --> ";
-          auto it = invmap.find((*f)[i]);
+          auto it = invmap.find(invperm[i]);
           if (it != invmap.end()) os << it->second;
           os << "\n";
         }
