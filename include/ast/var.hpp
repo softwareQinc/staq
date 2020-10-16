@@ -131,6 +131,19 @@ class VarAccess final : public ASTNode {
             return v.var_ == var_;
     }
 
+    /**
+     * \brief Return the root of a variable access
+     *
+     * Strips any dereferences and returns a new variable access.
+     * Satisfies root(v).contains(v) == true
+     *
+     * \param v Const reference to a variable access
+     * \return var access for the root variable
+     */
+    VarAccess root() const {
+        return VarAccess(pos_, var_);
+    }
+
     friend std::size_t hash_value(const VarAccess& v) {
         size_t lhs = std::hash<symbol>{}(v.var_);
         lhs ^= std::hash<std::optional<int>>{}(v.offset_) + 0x9e3779b9 +

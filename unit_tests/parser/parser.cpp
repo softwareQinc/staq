@@ -143,6 +143,36 @@ TEST(Parsing, Mapping_Fail) {
 /******************************************************************************/
 
 /******************************************************************************/
+TEST(Parsing, Repeated_Arguments1) {
+    std::string src = "OPENQASM 2.0;\n"
+                      "qreg x[1];\n"
+                      "CX x[0], x[0];\n";
+    EXPECT_THROW(parser::parse_string(src, "repeated_arguments1.qasm"),
+                 ast::SemanticError);
+}
+/******************************************************************************/
+
+/******************************************************************************/
+TEST(Parsing, Repeated_Arguments2) {
+    std::string src = "OPENQASM 2.0;\n"
+                      "qreg x[1];\n"
+                      "CX x, x[0];\n";
+    EXPECT_THROW(parser::parse_string(src, "repeated_arguments2.qasm"),
+                 ast::SemanticError);
+}
+/******************************************************************************/
+
+/******************************************************************************/
+TEST(Parsing, Repeated_Arguments3) {
+    std::string src = "OPENQASM 2.0;\n"
+                      "qreg x[1];\n"
+                      "CX x[0], x;\n";
+    EXPECT_THROW(parser::parse_string(src, "repeated_arguments3.qasm"),
+                 ast::SemanticError);
+}
+/******************************************************************************/
+
+/******************************************************************************/
 TEST(Parsing, Standard_Compliance) {
     // generic circuits
     EXPECT_NO_THROW(parser::parse_file(PATH "/qasm/generic/adder.qasm"));

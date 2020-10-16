@@ -28,6 +28,8 @@
 #include "visitor.hpp"
 
 #include <unordered_map>
+#include <set>
+#include <algorithm>
 
 /**
  * \file ast/semantic.hpp
@@ -343,8 +345,8 @@ class SemanticChecker final : public Visitor {
      *
      * Given a vector of variable access and a vector of optional bit types,
      * checks that each variable access is well-formed, is of the correct type
-     * if its type is specific, and that all **register** accesses are of the
-     * same length.
+     * if its type is specific, that all **register** accesses are of the
+     * same length, and that no bit is used multiple times.
      *
      * For instance,
      *     qreg q[2];
@@ -363,6 +365,7 @@ class SemanticChecker final : public Visitor {
     void check_uniform(const std::vector<VarAccess>& args,
                        const std::vector<std::optional<BitType>>& types) {
         int mapping_size = -1;
+        std::set<VarAccess> seen;
 
         for (size_t i = 0; i < args.size(); i++) {
             auto entry = lookup(args[i].var());
@@ -374,58 +377,94 @@ class SemanticChecker final : public Visitor {
             } else if (std::holds_alternative<BitType>(*entry)) {
                 auto ty = std::get<BitType>(*entry);
 
-                if (args[i]
-                        .offset()) { // Check that the bit is not dereferenced
+                // Check that the bit is not a dereference
+                if (args[i].offset()) {
                     std::cerr << args[i].pos()
-                              << ": Attempting to dereference bit type\n";
+                              << ": Illegal dereference of non-register type\n";
                     error_ = true;
-                } else if (types[i] &&
-                           ty != *(types[i])) { // Check if it's compatible with
-                                                // the type list
-                    std::cerr << args[i].pos() << ": Bit is of wrong type\n";
+                }
+
+                // Check that it's compatible with the type list
+                if (types[i] && ty != *(types[i])) {
+                    std::cerr << args[i].pos()
+                              << ": Argument " << args[i]
+                              << " has incorrect type\n";
+                    error_ = true;
+                }
+
+                // Check that the bit hasn't been used previously
+                if (seen.find(args[i]) != seen.end()) {
+                    std::cerr << args[i].pos()
+                              << ": Repeated argument " << args[i] << "\n";
                     error_ = true;
                 }
             } else if (std::holds_alternative<RegisterType>(*entry) &&
                        args[i].offset()) {
                 auto ty = std::get<RegisterType>(*entry);
 
+                // Check that it's within bounds
                 if (0 > *(args[i].offset()) ||
-                    *(args[i].offset()) >=
-                        ty.length) { // Check that it's within bounds
+                    *(args[i].offset()) >= ty.length) {
                     std::cerr << args[i].pos()
-                              << ": Bit access out of bounds\n";
-                    error_ = true;
-                } else if (types[i] &&
-                           ty.type != *(types[i])) { // Check if it's compatible
-                                                     // with the type list
-                    std::cerr << args[i].pos() << ": Bit is of wrong type\n";
+                              << ": Register access " << args[i]
+                              << " out of bounds\n";
                     error_ = true;
                 }
+
+                // Check if it's compatible with the type list
+                if (types[i] && ty.type != *(types[i])) {
+                    std::cerr << args[i].pos() << ": Argument " << args[i]
+                              << " has incorrect type\n";
+                    error_ = true;
+                }
+
+                // Check that it hasn't been used previously
+                if (seen.find(args[i]) != seen.end() ||
+                    seen.find(args[i].root()) != seen.end()) {
+                    std::cerr << args[i].pos()
+                              << ": Repeated argument " << args[i] << "\n";
+                    error_ = true;
+                }
+
             } else if (std::holds_alternative<RegisterType>(*entry)) {
                 auto ty = std::get<RegisterType>(*entry);
 
+                // Check that the register length is consistent
                 if (mapping_size == -1) {
                     mapping_size = ty.length;
-                } else if (mapping_size !=
-                           ty.length) { // Check that the register length is
-                                        // consistent
+                } else if (mapping_size != ty.length) {
                     std::cerr << args[i].pos()
-                              << ": Register has incompatible length\n";
+                              << ": Register " << args[i]
+                              << " has incompatible length\n";
                     error_ = true;
                 }
 
-                if (types[i] &&
-                    ty.type != *(types[i])) { // Check if it's compatible with
-                                              // the type list
+                // Check if it's compatible with the type list
+                if (types[i] && ty.type != *(types[i])) {
                     std::cerr << args[i].pos()
-                              << ": Register is of wrong type\n";
+                              << ": Argument " << args[i]
+                              << " has incorrect type\n";
                     error_ = true;
                 }
+
+                // Check that it hasn't been used previously
+                if (std::any_of(seen.begin(), seen.end(),
+                                [&args, &i](auto &v) {
+                                  return args[i].contains(v);
+                                })) {
+                    std::cerr << args[i].pos()
+                              << ": Repeated argument " << args[i] << "\n";
+                    error_ = true;
+                }
+
             } else {
                 std::cerr << args[i].pos()
-                          << ": Identifier is not a bit or register\n";
+                          << ": Identifier " << args[i]
+                          << " is not a bit or register\n";
                 error_ = true;
             }
+
+            seen.insert(args[i]);
         }
     }
 };
