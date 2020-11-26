@@ -3,7 +3,7 @@
 
 **Build status:**
 
-[![Build Status](https://travis-ci.com/softwareQinc/staq.svg?branch=master)](https://travis-ci.com/softwareQinc/staq)
+[![Build Status](https://travis-ci.com/softwareQinc/staq.svg?branch=main)](https://travis-ci.com/softwareQinc/staq)
 [![Build status](https://ci.appveyor.com/api/projects/status/gwc8fde2jdp3tol7?svg=true)](https://ci.appveyor.com/project/vsoftco/staq)
 
 ---
@@ -47,13 +47,13 @@ To build the **staq** tool suite, from the `build` directory, enter
 ### Windows
 Building on Windows requires [Visual Studio](https://www.visualstudio.com) 2017 
 or later for cmake support. In Visual Studio, open
-[CMakeLists.txt](https://github.com/softwareQinc/staq/blob/master/CMakeLists.txt)
+[CMakeLists.txt](https://github.com/softwareQinc/staq/blob/main/CMakeLists.txt)
 as a cmake project, then simply build as a regular Visual Studio project.
 
 ---
 ## License
 **staq** is distributed under the MIT license. Please see the
-[`LICENSE`](https://github.com/softwareQinc/staq/blob/master/LICENSE) file for
+[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for
 more details.
 
 ---
