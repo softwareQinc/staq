@@ -21,7 +21,7 @@ directly, rather than through an intermediate representation which makes
 retrieving the original source code impossible. In particular, openQASM
 circuits can be inspected and transformed (in most cases) without losing the
 original source structure. This makes **staq** ideally suited for
-source-to-source tranformations, where only specific changes are desired.
+source-to-source transformations, where only specific changes are desired.
 Likewise, this allows translations to other common circuit description languages
 and libraries to closely follow the openQASM source.
 
