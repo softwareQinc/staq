@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required(VERSION 3.8)
 project(staq VERSION 1.4 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -22,7 +22,7 @@ endif ()
 #### MinGW or Cygwin have issues with object files that are too large
 if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
-endif()
+endif ()
 
 #### Source directory
 add_definitions(-DPATH="${CMAKE_SOURCE_DIR}" -DNOMINMAX)
