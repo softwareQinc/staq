@@ -260,3 +260,15 @@ TEST(Parsing, Scientific_Notation) {
     EXPECT_NO_THROW(parser::parse_string(src, "scientific_notation.qasm"));
 }
 /******************************************************************************/
+
+/******************************************************************************/
+TEST(Parsing, Unary_Plus) {
+    std::string src = "OPENQASM 2.0;\n"
+                      "include \"qelib1.inc\";\n"
+                      "\n"
+                      "qreg q[1];\n"
+                      "U(+1,+(1+1),+1+(+1)) q[0];\n";
+
+    EXPECT_NO_THROW(parser::parse_string(src, "unary_plus.qasm"));
+}
+/******************************************************************************/

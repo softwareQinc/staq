@@ -707,6 +707,11 @@ class Parser {
                                           std::move(exp));
             }
 
+            case Token::Kind::plus: {
+                consume_token();
+                return parse_atom();
+            }
+
             case Token::Kind::identifier: {
                 auto id = current_token_;
                 consume_token();
