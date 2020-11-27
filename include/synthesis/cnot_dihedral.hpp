@@ -85,8 +85,8 @@ static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
 }
 
 /**
- * \brief Alternate adjustment to deal with depencies on non-partitioned
- *        indicies, necessary for steiner synthesis
+ * \brief Alternate adjustment to deal with dependencies on non-partitioned
+ *        indices, necessary for steiner synthesis
  */
 static void adjust_vectors_and_indices(int ctrl, int tgt,
                                        std::list<partition>& stack) {
@@ -158,7 +158,7 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
 
     std::set<int> indices;
     for (size_t i = 0; i < A.size(); i++)
-        indices.insert(i);
+        indices.insert(static_cast<int>(i));
 
     stack.emplace_front(partition(std::nullopt, indices, std::move(f)));
 
@@ -166,7 +166,7 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
         auto part = std::move(stack.front());
         stack.pop_front();
 
-        if (part.terms.size() == 0)
+        if (part.terms.empty())
             continue;
         else if (part.terms.size() == 1 && part.target) {
             // This case allows us to shortcut a lot of partitions
@@ -176,17 +176,18 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
 
             for (size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
                 if (ctrl != tgt && vec[ctrl]) {
-                    ret.push_back(std::make_pair((int) ctrl, (int) tgt));
+                    ret.emplace_back(std::make_pair((int) ctrl, (int) tgt));
 
                     // Adjust remaining vectors & output function
-                    adjust_vectors(ctrl, tgt, stack);
+                    adjust_vectors(static_cast<int>(ctrl),
+                                   static_cast<int>(tgt), stack);
                     for (size_t i = 0; i < A.size(); i++) {
                         A[i][ctrl] = A[i][ctrl] ^ A[i][tgt];
                     }
                 }
             }
 
-            ret.push_back(std::make_pair(std::move(angle), tgt));
+            ret.emplace_back(std::make_pair(std::move(angle), tgt));
         } else if (!part.remaining_indices.empty()) {
             // Divide into the zeros and ones of some row
             auto i = find_best_split(part.terms, part.remaining_indices);
@@ -214,7 +215,7 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
     // Synthesize the overall linear transformation
     auto linear_trans = gauss_jordan(A);
     for (auto gate : linear_trans)
-        ret.push_back(gate);
+        ret.emplace_back(gate);
 
     return ret;
 }
@@ -230,7 +231,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
 
     std::set<int> indices;
     for (size_t i = 0; i < A.size(); i++)
-        indices.insert(i);
+        indices.insert(static_cast<int>(i));
 
     stack.emplace_front(partition(std::nullopt, indices, std::move(f)));
 
@@ -238,7 +239,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
         auto part = std::move(stack.front());
         stack.pop_front();
 
-        if (part.terms.size() == 0)
+        if (part.terms.empty())
             continue;
         else if (part.terms.size() == 1 && part.target) {
             // This case allows us to shortcut a lot of partitions
@@ -249,7 +250,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
             std::list<int> terminals;
             for (size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
                 if (ctrl != tgt && vec[ctrl])
-                    terminals.push_back(ctrl);
+                    terminals.push_back(static_cast<int>(ctrl));
             }
 
             auto s_tree = d.steiner(terminals, tgt);
@@ -257,7 +258,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
             // Fill each steiner point with a one
             for (auto it = s_tree.begin(); it != s_tree.end(); it++) {
                 if (vec[it->second] == 0) {
-                    ret.push_back(
+                    ret.emplace_back(
                         std::make_pair((int) (it->second), (int) (it->first)));
                     adjust_vectors(it->second, it->first, stack);
                     for (size_t i = 0; i < A.size(); i++) {
@@ -268,7 +269,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
 
             // Zero out each row except for the root
             for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
-                ret.push_back(
+                ret.emplace_back(
                     std::make_pair((int) (it->second), (int) (it->first)));
                 adjust_vectors(it->second, it->first, stack);
                 for (size_t i = 0; i < A.size(); i++) {
@@ -276,7 +277,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
                 }
             }
 
-            ret.push_back(std::make_pair(std::move(angle), tgt));
+            ret.emplace_back(std::make_pair(std::move(angle), tgt));
         } else if (!part.remaining_indices.empty()) {
             // Divide into the zeros and ones of some row
             auto i = find_best_split(part.terms, part.remaining_indices);
@@ -299,7 +300,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
             // The previously partitioned rows have gotten mangled. Start
             // again from scratch for this partition
             for (size_t i = 0; i < A.size(); i++)
-                part.remaining_indices.insert(i);
+                part.remaining_indices.insert(static_cast<int>(i));
             stack.emplace_front(std::move(part));
         }
     }
@@ -307,7 +308,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
     // Synthesize the overall linear transformation
     auto linear_trans = steiner_gauss(A, d);
     for (auto gate : linear_trans)
-        ret.push_back(gate);
+        ret.emplace_back(gate);
 
     return ret;
 }

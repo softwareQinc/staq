@@ -459,7 +459,7 @@ class BarrierGate final : public Gate {
      *
      * \return The number of arguments
      */
-    int num_args() const { return args_.size(); }
+    int num_args() const { return static_cast<int>(args_.size()); }
 
     /**
      * \brief Get the list of arguments
@@ -555,14 +555,14 @@ class DeclaredGate final : public Gate {
      *
      * \return The number of arguments
      */
-    int num_cargs() const { return c_args_.size(); }
+    int num_cargs() const { return static_cast<int>(c_args_.size()); }
 
     /**
      * \brief Get the number of quantum arguments
      *
      * \return The number of arguments
      */
-    int num_qargs() const { return q_args_.size(); }
+    int num_qargs() const { return static_cast<int>(q_args_.size()); }
 
     /**
      * \brief Get the ith classical argument

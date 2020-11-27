@@ -292,11 +292,8 @@ class Device {
      * \param pref An optional prefix
      * \param f An optional permutation
      */
-    void print_layout(layout& l,
-                      std::ostream& os,
-                      std::string pref = "",
-                      std::optional<std::map<int, int>> f = std::nullopt
-                      ) {
+    void print_layout(layout& l, std::ostream& os, std::string pref = "",
+                      std::optional<std::map<int, int>> f = std::nullopt) {
         std::unordered_map<int, ast::VarAccess> invmap;
         for (auto it = l.begin(); it != l.end(); it++) {
             invmap.insert({it->second, it->first});
@@ -314,7 +311,8 @@ class Device {
             for (int i = 0; i < qubits_; i++) {
                 os << pref << "\tq[" << i << "] --> ";
                 auto it = invmap.find(invperm[i]);
-                if (it != invmap.end()) os << it->second;
+                if (it != invmap.end())
+                    os << it->second;
                 os << "\n";
             }
             os << "\n";
@@ -322,11 +320,11 @@ class Device {
             for (int i = 0; i < qubits_; i++) {
                 os << pref << "\tq[" << i << "] --> ";
                 auto it = invmap.find(i);
-                if (it != invmap.end()) os << it->second;
+                if (it != invmap.end())
+                    os << it->second;
                 os << "\n";
             }
         }
-
     }
 
   private:
@@ -600,10 +598,10 @@ static Device square_9q("9 qubit square lattice", 9,
 /** \brief Generates a fully connected device with a given number of qubits */
 inline Device fully_connected(uint32_t n) {
     auto tmp = std::vector<std::vector<bool>>(n, std::vector<bool>(n, true));
-    for (auto i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
         tmp[i][i] = false;
     }
-  
+
     return Device("Fully connected device", n, tmp);
 }
 

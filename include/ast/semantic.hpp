@@ -386,16 +386,15 @@ class SemanticChecker final : public Visitor {
 
                 // Check that it's compatible with the type list
                 if (types[i] && ty != *(types[i])) {
-                    std::cerr << args[i].pos()
-                              << ": Argument " << args[i]
+                    std::cerr << args[i].pos() << ": Argument " << args[i]
                               << " has incorrect type\n";
                     error_ = true;
                 }
 
                 // Check that the bit hasn't been used previously
                 if (seen.find(args[i]) != seen.end()) {
-                    std::cerr << args[i].pos()
-                              << ": Repeated argument " << args[i] << "\n";
+                    std::cerr << args[i].pos() << ": Repeated argument "
+                              << args[i] << "\n";
                     error_ = true;
                 }
             } else if (std::holds_alternative<RegisterType>(*entry) &&
@@ -405,9 +404,8 @@ class SemanticChecker final : public Visitor {
                 // Check that it's within bounds
                 if (0 > *(args[i].offset()) ||
                     *(args[i].offset()) >= ty.length) {
-                    std::cerr << args[i].pos()
-                              << ": Register access " << args[i]
-                              << " out of bounds\n";
+                    std::cerr << args[i].pos() << ": Register access "
+                              << args[i] << " out of bounds\n";
                     error_ = true;
                 }
 
@@ -421,8 +419,8 @@ class SemanticChecker final : public Visitor {
                 // Check that it hasn't been used previously
                 if (seen.find(args[i]) != seen.end() ||
                     seen.find(args[i].root()) != seen.end()) {
-                    std::cerr << args[i].pos()
-                              << ": Repeated argument " << args[i] << "\n";
+                    std::cerr << args[i].pos() << ": Repeated argument "
+                              << args[i] << "\n";
                     error_ = true;
                 }
 
@@ -433,33 +431,29 @@ class SemanticChecker final : public Visitor {
                 if (mapping_size == -1) {
                     mapping_size = ty.length;
                 } else if (mapping_size != ty.length) {
-                    std::cerr << args[i].pos()
-                              << ": Register " << args[i]
+                    std::cerr << args[i].pos() << ": Register " << args[i]
                               << " has incompatible length\n";
                     error_ = true;
                 }
 
                 // Check if it's compatible with the type list
                 if (types[i] && ty.type != *(types[i])) {
-                    std::cerr << args[i].pos()
-                              << ": Argument " << args[i]
+                    std::cerr << args[i].pos() << ": Argument " << args[i]
                               << " has incorrect type\n";
                     error_ = true;
                 }
 
                 // Check that it hasn't been used previously
-                if (std::any_of(seen.begin(), seen.end(),
-                                [&args, &i](auto &v) {
-                                  return args[i].contains(v);
-                                })) {
-                    std::cerr << args[i].pos()
-                              << ": Repeated argument " << args[i] << "\n";
+                if (std::any_of(seen.begin(), seen.end(), [&args, &i](auto& v) {
+                        return args[i].contains(v);
+                    })) {
+                    std::cerr << args[i].pos() << ": Repeated argument "
+                              << args[i] << "\n";
                     error_ = true;
                 }
 
             } else {
-                std::cerr << args[i].pos()
-                          << ": Identifier " << args[i]
+                std::cerr << args[i].pos() << ": Identifier " << args[i]
                           << " is not a bit or register\n";
                 error_ = true;
             }

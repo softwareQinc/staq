@@ -289,7 +289,7 @@ class CNOTOptimizer final : public ast::Replacer {
             return qubit_map_[va];
         else {
             auto n = qubit_map_.size();
-            qubit_map_[va] = n;
+            qubit_map_[va] = static_cast<int>(n);
             map_qubit_.emplace(n, va);
 
             // Extend the current permutation
@@ -303,7 +303,7 @@ class CNOTOptimizer final : public ast::Replacer {
             for (auto& [vec, angle] : phases_)
                 vec.emplace_back(false);
 
-            return n;
+            return static_cast<int>(n);
         }
     }
 

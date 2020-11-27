@@ -47,7 +47,6 @@ namespace transformations {
 /* Implementation */
 class BarrierMerger final : public ast::Traverse {
   public:
-
     BarrierMerger() = default;
     ~BarrierMerger() = default;
 
@@ -87,13 +86,13 @@ class BarrierMerger final : public ast::Traverse {
             if (std::next(it) == uids_.end()) {
                 // Set the new barrier
                 std::list<ast::ptr<ast::Gate>> tmp;
-                tmp.emplace_back(new ast::BarrierGate(parser::Position(),
-                                                      std::move(args_)));
+                tmp.emplace_back(
+                    new ast::BarrierGate(parser::Position(), std::move(args_)));
                 replacement_list_[*it] = std::move(tmp);
             } else {
                 // Erase the barrier
                 replacement_list_[*it] =
-                  std::move(std::list<ast::ptr<ast::Gate>>());
+                    std::move(std::list<ast::ptr<ast::Gate>>());
             }
         }
 
@@ -106,7 +105,6 @@ class BarrierMerger final : public ast::Traverse {
         uids_.clear();
         args_.clear();
     }
-
 };
 
 static void merge_barriers(ast::ASTNode& node) {

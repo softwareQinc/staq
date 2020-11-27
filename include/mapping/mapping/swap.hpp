@@ -63,8 +63,8 @@ class SwapMapper final : public ast::Replacer {
     }
 
     std::map<int, int> run(ast::Program& prog) {
-      prog.accept(*this);
-      return permutation_;
+        prog.accept(*this);
+        return permutation_;
     }
 
     // Ignore declarations if they were left in during inlining

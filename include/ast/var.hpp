@@ -140,9 +140,7 @@ class VarAccess final : public ASTNode {
      * \param v Const reference to a variable access
      * \return var access for the root variable
      */
-    VarAccess root() const {
-        return VarAccess(pos_, var_);
-    }
+    VarAccess root() const { return VarAccess(pos_, var_); }
 
     friend std::size_t hash_value(const VarAccess& v) {
         size_t lhs = std::hash<symbol>{}(v.var_);

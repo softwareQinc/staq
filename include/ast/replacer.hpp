@@ -173,7 +173,7 @@ class Replacer : public Visitor {
         stmt.then().accept(*this);
         if (replacement_stmts_) {
             std::list<ptr<Stmt>> ret;
-            for (auto &rep : *replacement_stmts_) {
+            for (auto& rep : *replacement_stmts_) {
                 auto tmp = stmt.clone();
                 tmp->set_then(std::move(rep));
                 ret.emplace_back(tmp);
@@ -181,7 +181,7 @@ class Replacer : public Visitor {
             replacement_stmts_ = std::move(ret);
         } else if (replacement_gates_) {
             std::list<ptr<Stmt>> ret;
-            for (auto &rep : *replacement_gates_) {
+            for (auto& rep : *replacement_gates_) {
                 auto tmp = stmt.clone();
                 tmp->set_then(std::move(rep));
                 ret.emplace_back(tmp);
@@ -192,7 +192,6 @@ class Replacer : public Visitor {
             replacement_stmts_ = replace(stmt);
         }
     }
-
 
     void visit(UGate& gate) override {
         gate.theta().accept(*this);

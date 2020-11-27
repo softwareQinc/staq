@@ -154,7 +154,7 @@ class Lexer {
                 str.push_back(buf_->peek());
                 skip_char();
             }
-          
+
             while (std::isdigit(buf_->peek())) {
                 str.push_back(buf_->peek());
                 skip_char();

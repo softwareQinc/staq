@@ -121,7 +121,7 @@ class BasicLayout final : public ast::Traverse {
             if (n_ + decl.size() <= device_.qubits_) {
                 for (auto i = 0; i < decl.size(); i++) {
                     current_[ast::VarAccess(parser::Position(), decl.id(), i)] =
-                        n_ + i;
+                        static_cast<int>(n_ + i);
                 }
                 n_ += decl.size();
             } else {

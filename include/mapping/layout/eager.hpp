@@ -120,8 +120,8 @@ class EagerLayout final : public ast::Traverse {
                 continue;
             }
 
-            layout_[ctrl] = ctrl_bit;
-            layout_[tgt] = tgt_bit;
+            layout_[ctrl] = static_cast<int>(ctrl_bit);
+            layout_[tgt] = static_cast<int>(tgt_bit);
             allocated_[ctrl_bit] = true;
             allocated_[tgt_bit] = true;
             couplings_.erase(std::make_pair(coupling, f));

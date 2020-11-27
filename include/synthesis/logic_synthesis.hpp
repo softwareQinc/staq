@@ -78,7 +78,7 @@ mockturtle::mig_network read_network(const std::string& fname) {
         return mig;
     }
 
-    const auto i = fname.find_last_of(".");
+    const auto i = fname.find_last_of('.');
     if (i == std::string::npos) {
         std::cerr << "No filename extension" << std::endl;
         return mig;
@@ -165,7 +165,8 @@ synthesize_net(parser::Position pos, T& l_net,
 
     // Allocate ancillas
     int num_qubits = q_net.num_qubits();
-    int num_inputs = stats.i_indexes.size() + stats.o_indexes.size();
+    int num_inputs =
+        static_cast<int>(stats.i_indexes.size() + stats.o_indexes.size());
 
     if (num_qubits - num_inputs > 0)
         ret.emplace_back(std::make_unique<ast::AncillaDecl>(

@@ -73,7 +73,7 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
         int pivot = -1;
         for (size_t j = i; j < mat.size(); j++) {
             if (mat[j][i] == true) {
-                pivot = j;
+                pivot = static_cast<int>(j);
                 break;
             }
         }
@@ -85,16 +85,16 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
         // Swap into place
         if (pivot != i) {
             mat[pivot].swap(mat[i]);
-            ret.push_back(std::make_pair(pivot, i));
-            ret.push_back(std::make_pair(i, pivot));
-            ret.push_back(std::make_pair(pivot, i));
+            ret.emplace_back(pivot, static_cast<int>(i));
+            ret.emplace_back(static_cast<int>(i), pivot);
+            ret.emplace_back(pivot, static_cast<int>(i));
         }
 
         // Zero other rows
         for (size_t j = 0; j < mat.size(); j++) {
             if (j != i && mat[j][i] == true) {
                 mat[j] ^= mat[i];
-                ret.push_back(std::make_pair(i, j));
+                ret.emplace_back(static_cast<int>(i), static_cast<int>(j));
             }
         }
     }
@@ -115,7 +115,7 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
         int pivot = -1;
         for (size_t j = i; j < mat.size(); j++) {
             if (mat[j][i] == true) {
-                pivot = j;
+                pivot = static_cast<int>(j);
                 break;
             }
         }
@@ -127,25 +127,25 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
         // Swap into place
         if (pivot != i) {
             mat[pivot].swap(mat[i]);
-            ret.push_back(std::make_pair(pivot, i));
-            ret.push_back(std::make_pair(i, pivot));
-            ret.push_back(std::make_pair(pivot, i));
+            ret.emplace_back(pivot, static_cast<int>(i));
+            ret.emplace_back(static_cast<int>(i), pivot);
+            ret.emplace_back(pivot, static_cast<int>(i));
         }
 
         // Zero other row below diagonal
         for (size_t j = i + 1; j < mat.size(); j++) {
             if (mat[j][i] == true) {
                 mat[j] ^= mat[i];
-                ret.push_back(std::make_pair(i, j));
+                ret.emplace_back(static_cast<int>(i), static_cast<int>(j));
             }
         }
     }
 
-    for (int i = mat[0].size() - 1; i >= 0; i--) {
+    for (int i = static_cast<int>(mat[0].size()) - 1; i >= 0; i--) {
         for (int j = i - 1; j >= 0; j--) {
             if (mat[j][i] == true) {
                 mat[j] ^= mat[i];
-                ret.push_back(std::make_pair(i, j));
+                ret.emplace_back(static_cast<int>(i), static_cast<int>(j));
             }
         }
     }
@@ -201,9 +201,10 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
         int dist;
         for (size_t j = i; j < mat.size(); j++) {
             if (mat[j][i] == true) {
-                if (pivot == -1 || d.distance(j, i) < dist) {
-                    pivot = j;
-                    dist = d.distance(j, i);
+                if (pivot == -1 || d.distance(static_cast<int>(j),
+                                              static_cast<int>(i)) < dist) {
+                    pivot = static_cast<int>(j);
+                    dist = d.distance(static_cast<int>(j), static_cast<int>(i));
                 }
             }
         }
@@ -215,14 +216,15 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
         std::list<std::pair<int, int>> swap;
         std::list<std::pair<int, int>> uncompute_swap;
         bool crossed_diag = false;
-        auto path = d.shortest_path(pivot, i);
+        auto path = d.shortest_path(pivot, static_cast<int>(i));
         size_t ctrl = pivot;
 
         // Phase 1: Fill 1's in column i along shortest path to row i
         for (auto tgt : path) {
             if (tgt != ctrl && mat[tgt][i] == false) {
                 mat[tgt] ^= mat[ctrl];
-                swap.push_back(std::make_pair(ctrl, tgt));
+                swap.emplace_back(static_cast<int>(ctrl),
+                                  static_cast<int>(tgt));
                 if (ctrl < i)
                     crossed_diag = true;
                 above_diagonal_dep[tgt] = above_diagonal_dep[tgt] ||
@@ -241,7 +243,8 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
                 size_t ctrl = *it;
                 if (tgt != i) {
                     mat[tgt] ^= mat[ctrl];
-                    swap.push_back(std::make_pair(ctrl, tgt));
+                    swap.emplace_back(static_cast<int>(ctrl),
+                                      static_cast<int>(tgt));
                     above_diagonal_dep[tgt] = above_diagonal_dep[tgt] ||
                                               above_diagonal_dep[ctrl] ||
                                               (ctrl < i);
@@ -255,20 +258,21 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
                 auto tgt = it->second;
                 if (above_diagonal_dep[tgt] && it->first != pivot) {
                     mat[tgt] ^= mat[ctrl];
-                    uncompute_swap.push_back(std::make_pair(ctrl, tgt));
+                    uncompute_swap.emplace_back(static_cast<int>(ctrl),
+                                                static_cast<int>(tgt));
                 }
             }
         }
 
         // Our pivot is now necessarily row i
-        pivot = i;
+        pivot = static_cast<int>(i);
         std::fill(above_diagonal_dep.begin(), above_diagonal_dep.end(), false);
 
         // Phase 3: Compute steiner tree covering the 1's in column i
         std::list<int> pivots;
         for (size_t j = 0; j < mat.size(); j++) {
             if (j != i && mat[j][i] == true)
-                pivots.push_back(j);
+                pivots.push_back(static_cast<int>(j));
         }
         auto s_tree = d.steiner(pivots, pivot);
 
@@ -277,7 +281,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
         for (auto& [ctrl, tgt] : s_tree) {
             if (mat[tgt][i] == false) {
                 mat[tgt] ^= mat[ctrl];
-                compute.push_back(std::make_pair(ctrl, tgt));
+                compute.emplace_back(ctrl, tgt);
 
                 above_diagonal_dep[tgt] = above_diagonal_dep[tgt] ||
                                           above_diagonal_dep[ctrl] ||
@@ -291,7 +295,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
             auto tgt = it->second;
 
             mat[tgt] ^= mat[ctrl];
-            compute.push_back(std::make_pair(ctrl, tgt));
+            compute.emplace_back(ctrl, tgt);
 
             above_diagonal_dep[tgt] = above_diagonal_dep[tgt] ||
                                       above_diagonal_dep[ctrl] ||
@@ -306,7 +310,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
             auto tgt = it->second;
             if (above_diagonal_dep[tgt] && it->first != pivot) {
                 mat[tgt] ^= mat[ctrl];
-                uncompute.push_back(std::make_pair(ctrl, tgt));
+                uncompute.emplace_back(ctrl, tgt);
             }
         }
 
