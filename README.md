@@ -1,5 +1,5 @@
 # staq
-## Version 1.4 - 26 November 2020
+## Version 1.4 - 28 November 2020
 
 **Build status:**
 
