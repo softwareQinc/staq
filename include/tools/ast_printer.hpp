@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +28,7 @@
  * \file tools/ast_printer.hpp
  * \brief Direct AST printer for debugging
  */
+
 #pragma once
 
 #include "ast/ast.hpp"

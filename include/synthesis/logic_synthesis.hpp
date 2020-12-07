@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +28,7 @@
  * \file synthesis/logic_synthesis.hpp
  * \brief Synthesis of classical logic
  */
+
 #pragma once
 
 #define FMT_HEADER_ONLY = true
@@ -37,8 +40,8 @@
 #include <caterpillar/synthesis/strategies/bennett_mapping_strategy.hpp>
 #include <caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
 
-#include <unordered_map>
 #include <fstream>
+#include <unordered_map>
 
 #include "parser/position.hpp"
 #include "ast/stmt.hpp"

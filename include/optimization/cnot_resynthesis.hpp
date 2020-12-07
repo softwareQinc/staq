@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,15 +28,17 @@
  * \file optimization/cnot_resynthesis.hpp
  * \brief CNOT re-synthesis based on Gray-Synth
  */
+
 #pragma once
 
 #include "ast/visitor.hpp"
 #include "ast/replacer.hpp"
 #include "synthesis/cnot_dihedral.hpp"
 
+#include <cstddef>
 #include <list>
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 
 namespace staq {
 namespace optimization {
@@ -270,8 +274,8 @@ class CNOTOptimizer final : public ast::Replacer {
 
         // Reset the cnot-dihedral circuit
         phases_.clear();
-        for (size_t i = 0; i < qubit_map_.size(); i++) {
-            for (size_t j = 0; j < qubit_map_.size(); j++) {
+        for (std::size_t i = 0; i < qubit_map_.size(); i++) {
+            for (std::size_t j = 0; j < qubit_map_.size(); j++) {
                 permutation_[i][j] = i == j ? true : false;
             }
         }
@@ -290,11 +294,11 @@ class CNOTOptimizer final : public ast::Replacer {
         else {
             auto n = qubit_map_.size();
             qubit_map_[va] = static_cast<int>(n);
-            map_qubit_.emplace(n, va);
+            map_qubit_.emplace(static_cast<int>(n), va);
 
             // Extend the current permutation
             permutation_.emplace_back(std::vector<bool>(n + 1, false));
-            for (size_t i = 0; i < n; i++) {
+            for (std::size_t i = 0; i < n; i++) {
                 permutation_[i].emplace_back(false);
             }
             permutation_[n][n] = true;

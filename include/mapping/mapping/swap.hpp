@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,12 +24,12 @@
  * SOFTWARE.
  */
 
-#pragma once
-
 /**
  * \file mapping/mapping/swap.hpp
  * \brief Local swapping hardware mapper
  */
+
+#pragma once
 
 #include "ast/replacer.hpp"
 #include "transformations/substitution.hpp"

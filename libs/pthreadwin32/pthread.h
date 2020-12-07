@@ -316,7 +316,7 @@ enum { PTW32_FALSE = 0, PTW32_TRUE = (!PTW32_FALSE) };
 #if !defined(_TIMESPEC_DEFINED)
 #define _TIMESPEC_DEFINED
 // Added by Vlad on Mar. 30, 2020, Windows compatibility
-#ifndef WIN32
+#ifndef _WIN32
 struct timespec {
     time_t tv_sec;
     long tv_nsec;

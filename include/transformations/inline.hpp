@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,13 +28,14 @@
  * \file transformations/inline.hpp
  * \brief AST inlining
  */
+
 #pragma once
 
 #include "ast/replacer.hpp"
 #include "substitution.hpp"
 
-#include <unordered_map>
 #include <set>
+#include <unordered_map>
 
 namespace staq {
 namespace transformations {

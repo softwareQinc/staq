@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +28,7 @@
  * \file optimization/rotation_folding.hpp
  * \brief Rotation folding algorithm
  */
+
 #pragma once
 
 #include "ast/visitor.hpp"
@@ -33,8 +36,8 @@
 #include "gates/channel.hpp"
 
 #include <list>
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 
 namespace staq {
 namespace optimization {

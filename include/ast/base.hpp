@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,13 +28,14 @@
  * \file ast/base.hpp
  * \brief openQASM syntax trees
  */
+
 #pragma once
 
 #include "parser/position.hpp"
 #include "visitor.hpp"
 
-#include <set>
 #include <memory>
+#include <set>
 
 namespace staq {
 namespace ast {

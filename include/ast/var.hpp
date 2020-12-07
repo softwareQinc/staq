@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,10 +28,12 @@
  * \file ast/var.hpp
  * \brief openQASM variable utilities
  */
+
 #pragma once
 
 #include "base.hpp"
 
+#include <cstddef>
 #include <optional>
 
 namespace staq {
@@ -143,7 +147,7 @@ class VarAccess final : public ASTNode {
     VarAccess root() const { return VarAccess(pos_, var_); }
 
     friend std::size_t hash_value(const VarAccess& v) {
-        size_t lhs = std::hash<symbol>{}(v.var_);
+        std::size_t lhs = std::hash<symbol>{}(v.var_);
         lhs ^= std::hash<std::optional<int>>{}(v.offset_) + 0x9e3779b9 +
                (lhs << 6) + (lhs >> 2);
         return lhs;
@@ -173,8 +177,8 @@ namespace std {
  */
 template <>
 struct hash<staq::ast::VarAccess> {
-    size_t operator()(const staq::ast::VarAccess& v) const {
-        size_t lhs = std::hash<std::string>{}(v.var_);
+    std::size_t operator()(const staq::ast::VarAccess& v) const {
+        std::size_t lhs = std::hash<std::string>{}(v.var_);
         lhs ^= std::hash<std::optional<int>>{}(v.offset_) + 0x9e3779b9 +
                (lhs << 6) + (lhs >> 2);
         return lhs;

@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,12 +28,13 @@
  * \file output/qsharp.hpp
  * \brief Q# outputter
  */
+
 #pragma once
 
 #include "ast/ast.hpp"
 
-#include <typeinfo>
 #include <iomanip>
+#include <typeinfo>
 
 namespace staq {
 namespace output {

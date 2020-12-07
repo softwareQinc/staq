@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -115,7 +117,8 @@ enum class Format { qasm, quil, projectq, qsharp, cirq, resources };
 void print_help() {
     int width = 40;
 
-    std::cout << "staq -- (c) 2019 - 2020 softwareQ Inc.\n";
+    std::cout
+        << "staq -- (c) 2019 - 2021 softwareQ Inc. All rights reserved.\n";
     std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n\n";
     std::cout << "Compiler passes:\n";
     std::cout << std::setw(width) << std::left << "-i,--inline"
@@ -155,14 +158,15 @@ void print_help() {
               << "--disable_layout_optimization"
               << "Disables an expensive layout optimization pass when using "
                  "the steiner mapper.\n";
-    std::cout
-        << std::setw(width) << std::left << "--no-expand-registers"
-        << "Disables expanding gates applied to registers rather than qubits.\n";
+    std::cout << std::setw(width) << std::left << "--no-expand-registers"
+              << "Disables expanding gates applied to registers rather than "
+                 "qubits.\n";
 }
 
 int main(int argc, char** argv) {
     if (argc == 1) {
-        std::cout << "staq -- (c) 2019 - 2020 softwareQ Inc.\n";
+        std::cout
+            << "staq -- (c) 2019 - 2021 softwareQ Inc. All rights reserved.\n";
         std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n";
         std::cout << "Pass --help for additional help\n";
     }
@@ -173,7 +177,7 @@ int main(int argc, char** argv) {
     Layout layout_alg = Layout::bestfit;
     Mapper mapper = Mapper::steiner;
     mapping::layout initial_layout;
-    std::optional<std::map<int,int>> output_perm = std::nullopt;
+    std::optional<std::map<int, int>> output_perm = std::nullopt;
     std::string ofile = "";
     std::string mapfile = "layout.txt";
     Format format = Format::qasm;
@@ -373,14 +377,13 @@ int main(int argc, char** argv) {
                                 /* Apply the mapping algorithm */
                                 switch (mapper) {
                                     case Mapper::swap:
-                                        output_perm =
-                                            mapping::map_onto_device(dev, *prog);
+                                        output_perm = mapping::map_onto_device(
+                                            dev, *prog);
                                         break;
                                     case Mapper::steiner:
                                         mapping::steiner_mapping(dev, *prog);
                                         break;
                                 }
-
                             }
                         }
 
@@ -436,17 +439,15 @@ int main(int argc, char** argv) {
                         default:
                             if (ofile == "") {
                                 if (mapped)
-                                    dev.print_layout(initial_layout,
-                                                     std::cout, "// ",
-                                                     output_perm);
+                                    dev.print_layout(initial_layout, std::cout,
+                                                     "// ", output_perm);
                                 std::cout << *prog << "\n";
                             } else {
                                 std::ofstream os;
                                 os.open(ofile);
 
                                 if (mapped)
-                                    dev.print_layout(initial_layout,
-                                                     os, "// ",
+                                    dev.print_layout(initial_layout, os, "// ",
                                                      output_perm);
                                 os << *prog;
 

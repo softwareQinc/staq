@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,8 +48,9 @@ int main(int argc, char** argv) {
 
     CLI::App app{"QASM physical mapper"};
 
-    app.add_option("-d", device_name,
-                   "Device to map onto (tokyo|agave|aspen-4|singapore|square|fullycon)");
+    app.add_option(
+        "-d", device_name,
+        "Device to map onto (tokyo|agave|aspen-4|singapore|square|fullycon)");
     app.add_option("-l", layout,
                    "Layout algorithm to use (linear|eager|bestfit)");
     app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");

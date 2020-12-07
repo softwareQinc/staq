@@ -18,6 +18,20 @@
 
 namespace tweedledum {
 
+// Added by Vlad on Dec. 5, 2020, Windows compatibility
+#ifdef _WIN32
+static inline int MSVC_builtin_ctz(unsigned int value) {
+    assert(value != 0);
+    int pos = 0;
+    while (!(value & 1)) {
+        value >>= 1;
+        ++pos;
+    }
+    return pos;
+}
+#endif // _WIN32
+// END added by Vlad on Dec. 5, 2020, Windows compatibility
+
 /*! \brief Multiple Control Multiple Target reversible gate
  *
  * This class represents a gate which can act upon up to 32 qubits of a quantum
@@ -89,7 +103,15 @@ class mcmt_gate final : public gate_base {
         if (num_targets() > 1) {
             return io_invalid;
         }
+
+// Added by Vlad on Dec. 5, 2020, Windows compatibility
+#ifdef _WIN32
+        const uint32_t idx = MSVC_builtin_ctz(targets_);
+#else
         const uint32_t idx = __builtin_ctz(targets_);
+#endif
+// END added by Vlad on Dec. 5, 2020, Windows compatibility
+
         return io_id(idx, (is_qubit_ >> idx) & 1);
     }
 
@@ -97,7 +119,15 @@ class mcmt_gate final : public gate_base {
         if (!is_one_of(gate_lib::cx, gate_lib::cz)) {
             return io_invalid;
         }
+
+// Added by Vlad on Dec. 5, 2020, Windows compatibility
+#ifdef _WIN32
+        const uint32_t idx = MSVC_builtin_ctz(controls_);
+#else
         const uint32_t idx = __builtin_ctz(controls_);
+#endif
+// END added by Vlad on Dec. 5, 2020, Windows compatibility
+
         return io_id(idx, (is_qubit_ >> idx) & 1, (polarity_ >> idx) & 1);
     }
 

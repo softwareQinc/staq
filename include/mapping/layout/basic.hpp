@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,18 +24,19 @@
  * SOFTWARE.
  */
 
-#pragma once
-
 /**
  * \file mapping/layout/basic.hpp
  * \brief Simple hardware layout generation
  */
+
+#pragma once
 
 #include "ast/replacer.hpp"
 #include "ast/traversal.hpp"
 #include "transformations/substitution.hpp"
 #include "mapping/device.hpp"
 
+#include <cstddef>
 #include <unordered_map>
 
 namespace staq {
@@ -133,7 +136,7 @@ class BasicLayout final : public ast::Traverse {
   private:
     Device device_;
     layout current_;
-    size_t n_;
+    std::size_t n_;
 };
 
 /** \brief Rewrites an AST according to a physical layout */

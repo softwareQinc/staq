@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,19 +24,20 @@
  * SOFTWARE.
  */
 
-#pragma once
-
 /**
  * \file mapping/layout/eager.hpp
  * \brief Eager hardware layout generation
  */
 
+#pragma once
+
 #include "ast/traversal.hpp"
 #include "mapping/device.hpp"
 
+#include <cstddef>
 #include <map>
-#include <vector>
 #include <set>
+#include <vector>
 
 namespace staq {
 namespace mapping {
@@ -95,8 +98,8 @@ class EagerLayout final : public ast::Traverse {
         auto ctrl = gate.ctrl();
         auto tgt = gate.tgt();
 
-        size_t ctrl_bit;
-        size_t tgt_bit;
+        std::size_t ctrl_bit;
+        std::size_t tgt_bit;
         for (auto& [coupling, f] : couplings_) {
             if (auto it = layout_.find(ctrl); it != layout_.end()) {
                 if (it->second != coupling.first)

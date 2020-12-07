@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,27 +24,24 @@
  * SOFTWARE.
  */
 
-#pragma once
-
 /**
  * \file mapping/device.hpp
  * \brief Representation & tools for restricted device topologies
  */
 
+#pragma once
+
 #include "ast/var.hpp"
 
-#include <vector>
-#include <unordered_map>
-#include <list>
-#include <set>
-
-#include <functional>
-#include <queue>
-#include <optional>
-
-#include <iostream>
-
 #include <cmath>
+#include <functional>
+#include <iostream>
+#include <list>
+#include <optional>
+#include <queue>
+#include <set>
+#include <unordered_map>
+#include <vector>
 
 namespace staq {
 namespace mapping {

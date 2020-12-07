@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,15 +30,16 @@
  * \file utils/angle.hpp
  * \brief Either symbolic or concrete representation of rotation angles
  */
+
 #pragma once
 
 #include "utils/templates.hpp"
 
-#include <variant>
 #include <cmath>
-#include <optional>
 #include <iostream>
 #include <numeric>
+#include <optional>
+#include <variant>
 
 namespace staq {
 namespace utils {

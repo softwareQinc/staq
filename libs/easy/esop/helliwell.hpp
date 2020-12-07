@@ -38,7 +38,7 @@ namespace detail {
 
 // Added by Vlad on Mar. 30, 2020, Windows compatibility
 #ifdef _WIN32
-int GetLowestBitPos(int value) {
+static inline int MSVC_ffs(unsigned int value) {
     if (value == 0)
         return 0;
     int pos = 0;
@@ -65,7 +65,7 @@ std::vector<uint32_t> compute_flips(uint32_t n) {
 #ifndef _WIN32
             ffs(temp ^ gray_number) - 1u;
 #else
-            GetLowestBitPos(temp ^ gray_number) - 1u;
+            MSVC_ffs(temp ^ gray_number) - 1u;
 #endif  // _WIN32
 // END added by Vlad on Mar. 30, 2020, Windows compatibility
         temp = gray_number;

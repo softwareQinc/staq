@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,9 +35,9 @@
 
 #include "lexer.hpp"
 
-#include <vector>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 namespace staq {
 namespace parser {

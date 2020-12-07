@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +28,7 @@
  * \file synthesis/cnot_dihedral.hpp
  * \brief Synthesis of CNOT-dihedral circuits
  */
+
 #pragma once
 
 #include "mapping/device.hpp"
@@ -33,9 +36,10 @@
 #include "ast/expr.hpp"
 #include "utils/templates.hpp"
 
-#include <vector>
+#include <cstddef>
 #include <list>
 #include <variant>
+#include <vector>
 
 namespace staq {
 namespace synthesis {
@@ -66,7 +70,7 @@ static void print_partition(const partition& part) {
     std::cout << "], {";
     for (auto& [vec, angle] : part.terms) {
         std::cout << *angle << "*(";
-        for (size_t i = 0; i < vec.size(); i++)
+        for (std::size_t i = 0; i < vec.size(); i++)
             std::cout << (vec[i] ? "1" : "0");
         std::cout << "), ";
     }
@@ -157,7 +161,7 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
     std::list<partition> stack;
 
     std::set<int> indices;
-    for (size_t i = 0; i < A.size(); i++)
+    for (std::size_t i = 0; i < A.size(); i++)
         indices.insert(static_cast<int>(i));
 
     stack.emplace_front(partition(std::nullopt, indices, std::move(f)));
@@ -174,14 +178,14 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
             auto tgt = *(part.target);
             auto& [vec, angle] = part.terms.front();
 
-            for (size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
+            for (std::size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
                 if (ctrl != tgt && vec[ctrl]) {
                     ret.emplace_back(std::make_pair((int) ctrl, (int) tgt));
 
                     // Adjust remaining vectors & output function
                     adjust_vectors(static_cast<int>(ctrl),
                                    static_cast<int>(tgt), stack);
-                    for (size_t i = 0; i < A.size(); i++) {
+                    for (std::size_t i = 0; i < A.size(); i++) {
                         A[i][ctrl] = A[i][ctrl] ^ A[i][tgt];
                     }
                 }
@@ -230,7 +234,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
     std::list<partition> stack;
 
     std::set<int> indices;
-    for (size_t i = 0; i < A.size(); i++)
+    for (std::size_t i = 0; i < A.size(); i++)
         indices.insert(static_cast<int>(i));
 
     stack.emplace_front(partition(std::nullopt, indices, std::move(f)));
@@ -248,7 +252,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
             auto& [vec, angle] = part.terms.front();
 
             std::list<int> terminals;
-            for (size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
+            for (std::size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
                 if (ctrl != tgt && vec[ctrl])
                     terminals.push_back(static_cast<int>(ctrl));
             }
@@ -261,7 +265,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
                     ret.emplace_back(
                         std::make_pair((int) (it->second), (int) (it->first)));
                     adjust_vectors(it->second, it->first, stack);
-                    for (size_t i = 0; i < A.size(); i++) {
+                    for (std::size_t i = 0; i < A.size(); i++) {
                         A[i][it->second] = A[i][it->second] ^ A[i][it->first];
                     }
                 }
@@ -272,7 +276,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
                 ret.emplace_back(
                     std::make_pair((int) (it->second), (int) (it->first)));
                 adjust_vectors(it->second, it->first, stack);
-                for (size_t i = 0; i < A.size(); i++) {
+                for (std::size_t i = 0; i < A.size(); i++) {
                     A[i][it->second] = A[i][it->second] ^ A[i][it->first];
                 }
             }
@@ -299,7 +303,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
         } else {
             // The previously partitioned rows have gotten mangled. Start
             // again from scratch for this partition
-            for (size_t i = 0; i < A.size(); i++)
+            for (std::size_t i = 0; i < A.size(); i++)
                 part.remaining_indices.insert(static_cast<int>(i));
             stack.emplace_front(std::move(part));
         }

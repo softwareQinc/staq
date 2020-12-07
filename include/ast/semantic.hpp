@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,19 +24,20 @@
  * SOFTWARE.
  */
 
+/**
+ * \file ast/semantic.hpp
+ * \brief Semantic analysis for syntax trees
+ */
+
 #pragma once
 
 #include "ast.hpp"
 #include "visitor.hpp"
 
-#include <unordered_map>
-#include <set>
 #include <algorithm>
-
-/**
- * \file ast/semantic.hpp
- * \brief Semantic analysis for syntax trees
- */
+#include <cstddef>
+#include <set>
+#include <unordered_map>
 
 namespace staq {
 namespace ast {
@@ -367,7 +370,7 @@ class SemanticChecker final : public Visitor {
         int mapping_size = -1;
         std::set<VarAccess> seen;
 
-        for (size_t i = 0; i < args.size(); i++) {
+        for (std::size_t i = 0; i < args.size(); i++) {
             auto entry = lookup(args[i].var());
 
             if (!entry) {

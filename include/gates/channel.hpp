@@ -1,6 +1,8 @@
 /*
  * This file is part of staq.
  *
+ * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,8 +24,6 @@
  * SOFTWARE.
  */
 
-#pragma once
-
 /**
  * \file gates/channel.hpp
  * \brief Gates in the channel representation
@@ -36,13 +36,15 @@
  * for an overview of the representation.
  */
 
+#pragma once
+
 #include "utils/angle.hpp"
 
-#include <unordered_map>
-#include <map>
-#include <vector>
-#include <variant>
 #include <iostream>
+#include <map>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
 namespace staq {
 namespace gates {
