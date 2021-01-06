@@ -62,10 +62,10 @@ std::vector<uint32_t> compute_flips(uint32_t n) {
         gray_number = i ^ (i >> 1);
         flip_vec[total_flips - i] =
 // Added by Vlad on Mar. 30, 2020, for Windows compatibility
-#ifndef _WIN32
-            ffs(temp ^ gray_number) - 1u;
-#else
+#ifdef _WIN32
             MSVC_ffs(temp ^ gray_number) - 1u;
+#else
+            ffs(temp ^ gray_number) - 1u;
 #endif  // _WIN32
 // END added by Vlad on Mar. 30, 2020, Windows compatibility
         temp = gray_number;
