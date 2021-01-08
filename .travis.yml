@@ -1,52 +1,50 @@
 language: cpp
-dist: bionic
+dist: focal
+os: linux
 
-matrix:
+jobs:
   include:
-    # Ubuntu Linux 18.04 gcc-7.1
+    # Ubuntu Linux Focal Fosa 20.04, gcc-9.3
     - os: linux
       compiler: gcc
-      before_install:
-        - export CXX="g++-7" CC="gcc-7"
-        - export BUILD="make"
+      env:
+        - MATRIX_EVAL="CXX=g++ && CC=gcc"
 
-    # Ubuntu Linux 18.04 clang-7.0
+    # Ubuntu Linux Focal Fosa 20.04, clang-7.0
     - os: linux
       compiler: clang
       before_install:
-        - sudo apt-get install libc++-dev libc++abi-dev
-        - export CXX="clang++" CC="clang"
-        - export BUILD="make"
+        - export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
+      env:
+        - MATRIX_EVAL="CXX=clang++ && CC=clang"
 
-    # Apple OSX LLVM version 10.0.0 (clang-1000.11.45.5)
+    # macOS Catalina 10.15, AppleClang version 12.0.0 (clang-1200.0.32.2)
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12
       compiler: clang
-      before_install:
-        - export BUILD="make"
+      env:
+        - MATRIX_EVAL="CXX=clang++ && CC=clang"
 
-    # Apple OSX gcc-7.5
+    # macOS Catalina 10.15, gcc-10.2
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12
       compiler: gcc
-      before_install:
-        - rm -rf /usr/local/include/c++
-        - brew update
-        - brew install gcc@7
-        - export CXX="g++-7" CC="gcc-7"
-        - export BUILD="make"
-        - sudo softwareupdate -i "Command Line Tools (macOS Mojave version 10.14) for Xcode-10.2"
+      env:
+        - MATRIX_EVAL="CXX=g++-10 && CC=gcc-10"
 
 notifications:
   email: false
 
+before_install:
+  - eval "${MATRIX_EVAL}"
+
 script:
   - $CXX --version
 
-  # Build the examples
+  # Build the staq toolkit
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug && $BUILD
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
 
   # Run the unit tests
   - ./unit_tests/unit_tests
