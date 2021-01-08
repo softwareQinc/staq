@@ -1,4 +1,4 @@
-// Try with "./staq -S -O2 -m -d aspen4 -l bestfit -M steiner"
+// Try with "staq -S -O2 -m -d aspen-4 -l bestfit -M steiner"
 
 OPENQASM 2.0;
 include "qelib1.inc";
