@@ -1,3 +1,10 @@
+Pre-release
+    - Simplified unit testing, now you can run tests with 'ctest' or
+      'make test'. Use 'GTEST_COLOR=1 ARGS="-V" make test' or 
+      'GTEST_COLOR=1 ctest -V' for coloured verbose testing output.
+    - CMake minimum required version bumped to 3.10 for automatic unit tests
+      detection by CMake
+
 Version 1.4 - 5 December 2020
     - Bugfixes
     - Renamed 'master' branch to 'main'    
