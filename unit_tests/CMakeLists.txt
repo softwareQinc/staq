@@ -1,21 +1,34 @@
-set(target "unit_tests")
+include(GoogleTest)
+set(TARGET_NAME "staq_testing")
 
-aux_source_directory(. FILES)
-aux_source_directory(parser FILES)
-aux_source_directory(utils FILES)
-aux_source_directory(gates FILES)
-aux_source_directory(optimization FILES)
-aux_source_directory(transformations FILES)
-aux_source_directory(mapping FILES)
-aux_source_directory(synthesis FILES)
-add_executable(${target} main.cpp)
+#### Link Google Test dynamically if using MSVC
+if (MSVC)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif ()
+
+add_subdirectory(lib/googletest-release-1.10.0)
+
+aux_source_directory(tests TEST_FILES)
+aux_source_directory(tests/parser TEST_FILES)
+aux_source_directory(tests/utils TEST_FILES)
+aux_source_directory(tests/gates TEST_FILES)
+aux_source_directory(tests/optimization TEST_FILES)
+aux_source_directory(tests/transformations TEST_FILES)
+aux_source_directory(tests/mapping TEST_FILES)
+aux_source_directory(tests/synthesis TEST_FILES)
+
+add_executable(${TARGET_NAME} tests/main.cpp)
+
 if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
 endif ()
 
-foreach (filename ${FILES})
-    target_sources(${target} PUBLIC ${filename})
+#### Build all tests in ${TEST_FILES}
+foreach (filename ${TEST_FILES})
+    target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${target} PUBLIC gmock)
-target_link_libraries(${target} PUBLIC libstaq)
+target_link_libraries(${TARGET_NAME} PUBLIC gmock)
+target_link_libraries(${TARGET_NAME} PUBLIC libstaq)
+
+gtest_discover_tests(${TARGET_NAME})

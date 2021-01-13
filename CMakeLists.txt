@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 project(staq VERSION 1.4 LANGUAGES CXX)
+enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
@@ -30,19 +31,17 @@ add_definitions(-DPATH="${CMAKE_SOURCE_DIR}" -DNOMINMAX)
 #### Libs
 include_directories(SYSTEM libs)
 
-#### Library
+#### staq headers
 add_library(libstaq INTERFACE)
 target_include_directories(libstaq INTERFACE ${PROJECT_SOURCE_DIR}/include)
 
 #### Compiler
-set(compiler "staq")
-add_executable(${compiler} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
-target_link_libraries(${compiler} PUBLIC libstaq)
+set(COMPILER "staq")
+add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
+target_link_libraries(${COMPILER} PUBLIC libstaq)
 
 #### Additional command line tools
 add_subdirectory(tools)
 
-#### Testing
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-add_subdirectory(libs/googletest)
-add_subdirectory(unit_tests)
+#### Unit testing
+add_subdirectory(unit_tests/)

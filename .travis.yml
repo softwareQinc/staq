@@ -41,10 +41,10 @@ before_install:
 script:
   - $CXX --version
 
-  # Build the staq toolkit
+  # Build the staq toolkit and the unit tests
   - mkdir build
   - cd build
   - cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
 
   # Run the unit tests
-  - ./unit_tests/unit_tests
+  - make test
