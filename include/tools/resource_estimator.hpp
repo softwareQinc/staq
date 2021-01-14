@@ -162,11 +162,12 @@ class ResourceEstimator final : public ast::Visitor {
     void visit(ast::DeclaredGate& gate) {
         auto& [counts, depths] = running_estimate_;
 
-        // Gate count
+        // Gate prefix, appropriately stripped of daggers
         auto tmp = gate.name();
         if (config_.merge_dagger)
             strip_dagger(tmp);
 
+        // Gate sufix. Only included if the parameters are constants
         std::stringstream ss;
         bool all_constant = true;
         if (gate.num_cargs() > 0) {
@@ -189,32 +190,40 @@ class ResourceEstimator final : public ast::Visitor {
             ss << ")";
         }
 
+        // Gate name
         std::string name;
         if (all_constant)
             name = tmp + ss.str();
         else
             name = tmp;
 
+        // Get the longest critical path into the gate
+        int in_depth = -1;
+        gate.foreach_qarg([&in_depth, this](auto& arg) {
+            in_depth = std::max(in_depth, running_estimate_.second[arg]);
+        });
+
+        // Get the pre-computed resource counts
         auto& [gate_counts, depth_counts] = resource_map_[name];
+
         if (config_.unbox &&
             (config_.overrides.find(name) == config_.overrides.end()) &&
             (gate.num_cargs() == 0)) {
             add_counts(counts, gate_counts);
 
-            // Note that this gives the "boxed" depth, which is not really
-            // optimal In the future this should be changed
-            int in_depth = -1;
+            // Note that this gives the depth as if there were a barrier on
+            // all involved gates before and after the sub-circuit. Not
+            // super ideal
             int gate_depth = gate_counts["depth"];
-            gate.foreach_qarg([&in_depth, this](auto& arg) {
-                in_depth = std::max(in_depth, running_estimate_.second[arg]);
-            });
             gate.foreach_qarg([in_depth, this, gate_depth](auto& arg) {
                 running_estimate_.second[arg] = in_depth + gate_depth;
             });
         } else {
             counts[name] += 1;
-            gate.foreach_qarg(
-                [this](auto& arg) { running_estimate_.second[arg] += 1; });
+
+            gate.foreach_qarg([in_depth, this](auto& arg) {
+                running_estimate_.second[arg] = in_depth + 1;
+            });
         }
     }
 
