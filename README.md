@@ -4,7 +4,7 @@
 
 **Build status:**
 
-[![Build Status](https://travis-ci.com/softwareQinc/staq.svg?branch=main)](https://travis-ci.com/softwareQinc/staq)
+[![Build status - CircleCI Linux/macOS](https://circleci.com/gh/softwareQinc/staq.svg?style=svg)](https://circleci.com/gh/softwareQinc/staq)
 [![Build status](https://ci.appveyor.com/api/projects/status/gwc8fde2jdp3tol7?svg=true)](https://ci.appveyor.com/project/vsoftco/staq)
 
 ---
