@@ -210,12 +210,14 @@ int main(int argc, char** argv) {
                 passes.push_back(Pass::simplify);
                 break;
             case Option::O2:
+                passes.push_back(Pass::simplify);
                 passes.push_back(Pass::inln);
                 passes.push_back(Pass::simplify);
                 passes.push_back(Pass::rotfold);
                 passes.push_back(Pass::simplify);
                 break;
             case Option::O3:
+                passes.push_back(Pass::simplify);
                 passes.push_back(Pass::inln);
                 passes.push_back(Pass::simplify);
                 passes.push_back(Pass::rotfold);
