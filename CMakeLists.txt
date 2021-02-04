@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(staq VERSION 1.4 LANGUAGES CXX)
 enable_testing()
 
@@ -26,7 +26,7 @@ if (MINGW OR CYGWIN)
 endif ()
 
 #### Source directory
-add_definitions(-DPATH="${CMAKE_SOURCE_DIR}" -DNOMINMAX)
+add_compile_definitions(PATH="${CMAKE_SOURCE_DIR}" NOMINMAX)
 
 #### Libs
 include_directories(SYSTEM libs)
