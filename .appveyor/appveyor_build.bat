@@ -5,7 +5,7 @@ IF %COMPILER%==msvc2019 (
     mkdir build
     cd build
     cmake ..
-    msbuild -verbosity:minimal staq.sln
+    msbuild -verbosity:minimal -m:4 staq.sln
 )
 IF %COMPILER%==msys2 (
     @echo on
@@ -13,5 +13,5 @@ IF %COMPILER%==msys2 (
     cd %APPVEYOR_BUILD_FOLDER%
     mkdir build
     cd build
-    bash -lc "cmake .. -GNinja && ninja"
+    bash -lc "cmake .. -GNinja && ninja && ninja unit_tests"
 )

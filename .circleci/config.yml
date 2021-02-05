@@ -18,15 +18,20 @@ jobs:
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
-          name: Build the staq toolkit and the unit tests
+          name: Build the staq toolkit
           command: |
             mkdir build && cd build
             cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
       - run:
+          name: Build the unit tests
+          command: |
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4 unit_tests
+      - run:
           name: Run the unit tests
           command: |
             cd build
-            make test
+            ctest
 
   macOS:
     description: A template for building and testing staq on macOS
@@ -35,15 +40,20 @@ jobs:
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
-          name: Build the staq toolkit and the unit tests
+          name: Build the staq toolkit
           command: |
             mkdir build && cd build
             cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
       - run:
+          name: Build the unit tests
+          command: |
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4 unit_tests
+      - run:
           name: Run the unit tests
           command: |
             cd build
-            make test
+            ctest
 
 workflows:
   build:
