@@ -5,8 +5,7 @@ IF %COMPILER%==msvc2019 (
     mkdir build
     cd build
     cmake ..
-    msbuild -verbosity:minimal staq.sln
-    msbuild -verbosity:minimal unit_tests.sln
+    msbuild -verbosity:minimal -m:4 staq.sln
 )
 IF %COMPILER%==msys2 (
     @echo on
