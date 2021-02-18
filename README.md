@@ -47,6 +47,8 @@ executable, from the root directory execute
 To build the **staq** tool suite, from the `build` directory, enter
 `make tools`. Unit tests can be built with the command `make unit_tests`.
 
+To install, type `sudo make install`.
+
 ### Windows
 
 Building on Windows requires [Visual Studio](https://www.visualstudio.com) 2017
