@@ -143,6 +143,27 @@ class Simplifier final : public ast::Visitor {
 
                     return;
                 }
+            } else if (name == "ccx") {
+                auto ctrl1 = gate.qarg(0);
+                auto ctrl2 = gate.qarg(1);
+                auto tgt = gate.qarg(2);
+                auto [name1, args1, uid1] = last_[ctrl1];
+                auto [name2, args2, uid2] = last_[ctrl2];
+                auto [name3, args3, uid3] = last_[tgt];
+
+                if (uid1 == uid2 && uid1 == uid3 && name1 == "ccx" &&
+                    args1 == std::vector<ast::VarAccess>({ctrl1, ctrl2, tgt})) {
+                    erasures_[uid1] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+                    erasures_[gate.uid()] =
+                        std::move(std::list<ast::ptr<ast::Gate>>());
+
+                    last_.erase(ctrl1);
+                    last_.erase(ctrl2);
+                    last_.erase(tgt);
+
+                    return;
+                }
             } else if (name == "h") {
                 auto arg = gate.qarg(0);
                 auto [name, args, uid] = last_[arg];
