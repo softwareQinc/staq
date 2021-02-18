@@ -41,11 +41,11 @@ executable, from the root directory execute
   ```bash
   mkdir build && cd build
   cmake ..
-  make -j4 staq
+  make -j8 staq
   ```
 
 To build the **staq** tool suite, from the `build` directory, enter
-`make -j4 tools`. To build both tool suite and the **staq** executable, type `make -j4`
+`make -j8 tools`. To build both tool suite and the **staq** executable, type `make -j8`
 Unit tests can be built with the command `make unit_tests`.
 
 To (un)install, type `sudo make (un)install`.
