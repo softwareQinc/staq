@@ -58,11 +58,11 @@ or later for cmake support. In Visual Studio, open
 as a cmake project, then simply build as a regular Visual Studio project or,
 from a Developer Command Prompt, from the root directory execute 
 
-    ```
-    mkdir build && cd build
-    cmake .. 
-    msbuild -m:8 -p:Configuration=Release staq.sln
-    ````
+  ```
+  mkdir build && cd build
+  cmake .. 
+  msbuild -m:8 -p:Configuration=Release staq.sln
+  ````
 
 assuming you are building from an out of source directory. 
 
