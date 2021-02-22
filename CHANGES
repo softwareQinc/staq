@@ -1,12 +1,12 @@
 Pre-release
     - Added CMake installation support
     - Switched continuous integration from Travis CI to CircleCI
-    - CMake minimum required version bumped to 3.10 for automatic unit tests
+    - CMake minimum required version bumped to 3.12 for automatic unit tests
       detection by CMake
     - Unit testing is now a separate CMake target, one needs to explicitly type
-      'make unit_testing' to build the unit testing suite
+      'make unit_tests' to build the unit testing suite
     - Simplified unit testing, now one can run tests with 'ctest' or
-      'make test' (after explicitly built with 'make unit_testing'). Use
+      'make test' (after explicitly built with 'make unit_tests'). Use
       'GTEST_COLOR=1 ARGS="-V" make test' or 'GTEST_COLOR=1 ctest -V' for
       coloured verbose testing output.
 
