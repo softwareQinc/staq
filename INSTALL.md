@@ -1,19 +1,22 @@
-### Linux & Mac OS
+### Linux/UNIX
 
-**staq** uses CMake for its build system. To build the main **staq**
-executable, from the root directory execute
+**staq** uses [CMake](https://cmake.org/) for its build system. To build both tool suite and the **staq** executable, from the root directory execute
 
   ```bash
   mkdir build && cd build
   cmake ..
-  make -j8 staq
+  make -j8
   ```
 
-To build the **staq** tool suite, from the `build` directory, enter
-`make -j8 tools`. To build both tool suite and the **staq** executable, type `make -j8`
-Unit tests can be built with the command `make unit_tests`.
+To build only the **staq** tool suite, from the `build` directory, enter
+`make -j8 tools`. To build only the **staq** executable, type `make -j8 staq`
+Unit tests can be built with the command `make -j8 unit_tests`.
 
-To (un)install, type `sudo make (un)install`.
+To (un)install, type 
+
+```bash
+sudo make (un)install
+```
 
 ### Windows
 
@@ -31,4 +34,8 @@ from a Developer Command Prompt, from the root directory execute
 
 assuming you are building from an out of source directory. 
 
-To (un)install, type `cmake --build . --target (UN)INSTALL`.
+To (un)install, type 
+
+```
+cmake --build . --target (UN)INSTALL
+```
