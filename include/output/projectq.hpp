@@ -67,6 +67,7 @@ class ProjectQOutputter final : public ast::Visitor {
         prefix_ = "";
         ambiguous_ = false;
         ancillas_.clear();
+        prefix_self_ = false;
 
         prog.accept(*this);
     }
@@ -117,7 +118,11 @@ class ProjectQOutputter final : public ast::Visitor {
 
     void visit(ast::RealExpr& expr) { os_ << expr.value(); }
 
-    void visit(ast::VarExpr& expr) { os_ << sanitize(expr.var()); }
+    void visit(ast::VarExpr& expr) {
+        if (prefix_self_)
+            os_ << "self.";
+        os_ << sanitize(expr.var());
+    }
 
     // Statements
     void visit(ast::MeasureStmt& stmt) {
@@ -141,12 +146,18 @@ class ProjectQOutputter final : public ast::Visitor {
     // Gates
     void visit(ast::UGate& gate) {
         os_ << prefix_ << "UGate(";
+
+        // Classical arguments
+        bool tmp = prefix_self_;
+        prefix_self_ = true;
         gate.theta().accept(*this);
         os_ << ", ";
         gate.phi().accept(*this);
         os_ << ", ";
         gate.lambda().accept(*this);
         os_ << ") | ";
+        prefix_self_ = tmp;
+
         gate.arg().accept(*this);
         os_ << "\n";
     }
@@ -178,11 +189,17 @@ class ProjectQOutputter final : public ast::Visitor {
         else
             os_ << gate.name() << "(";
 
+        // Classical arguments
+        bool tmp = prefix_self_;
+        prefix_self_ = true;
         for (int i = 0; i < gate.num_cargs(); i++) {
             if (i != 0)
                 os_ << ", ";
             gate.carg(i).accept(*this);
         }
+        prefix_self_ = tmp;
+
+        // Quantum arguments
         os_ << ") | (";
         for (int i = 0; i < gate.num_qargs(); i++) {
             if (i > 0)
@@ -400,6 +417,7 @@ class ProjectQOutputter final : public ast::Visitor {
     std::string eng_ = "eng";
     std::list<std::pair<std::string, int>> ancillas_{};
     bool ambiguous_ = false;
+    bool prefix_self_ = false;
 
     // Hack because lambda is reserved by python
     std::string sanitize(const std::string& id) {
