@@ -35,7 +35,7 @@ information about the library and included tools.
 
 ### Linux/UNIX
 
-**staq** uses [CMake](https://cmake.org/) for its build system. To build both tool suite and the **staq** executable, from the root directory execute
+**staq** uses [CMake](https://cmake.org/) for its build system. To build both tool suite and the **staq** executable, execute under the root directory
 
   ```bash
   mkdir build && cd build
@@ -59,7 +59,7 @@ Building on Windows requires [Visual Studio](https://www.visualstudio.com) 2017
 or later for cmake support. In Visual Studio, open
 [CMakeLists.txt](https://github.com/softwareQinc/staq/blob/main/CMakeLists.txt)
 as a cmake project, then simply build as a regular Visual Studio project or,
-from a Developer Command Prompt, from the root directory execute 
+from a Developer Command Prompt, execute under the root directory 
 
   ```
   mkdir build && cd build

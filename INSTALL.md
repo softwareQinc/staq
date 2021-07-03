@@ -1,6 +1,6 @@
 ### Linux/UNIX
 
-**staq** uses [CMake](https://cmake.org/) for its build system. To build both tool suite and the **staq** executable, from the root directory execute
+**staq** uses [CMake](https://cmake.org/) for its build system. To build both tool suite and the **staq** executable, execute under the root directory
 
 ```bash
 mkdir build && cd build
