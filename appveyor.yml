@@ -9,6 +9,9 @@ environment:
     - compiler: msvc2019
     - compiler: msys2
 
+install:
+  - cmd: git submodule update --init --recursive  
+
 build_script:
   - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\appveyor_build.bat'
         
