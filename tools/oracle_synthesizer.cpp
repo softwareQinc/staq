@@ -24,10 +24,11 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "transformations/oracle_synthesizer.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 int main() {
     auto program = parser::parse_stdin();

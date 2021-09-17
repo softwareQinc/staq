@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "optimization/cnot_resynthesis.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 // Testing cnot resynthesis
 /******************************************************************************/

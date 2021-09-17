@@ -31,14 +31,16 @@
 
 #pragma once
 
-#include "ast/visitor.hpp"
-#include "ast/replacer.hpp"
+#include <qasm/ast/visitor.hpp>
+#include <qasm/ast/replacer.hpp>
 #include "synthesis/cnot_dihedral.hpp"
 
 #include <cstddef>
 #include <list>
 #include <sstream>
 #include <unordered_map>
+
+using namespace qasm;
 
 namespace staq {
 namespace optimization {

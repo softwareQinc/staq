@@ -31,13 +31,15 @@
 
 #pragma once
 
-#include "ast/traversal.hpp"
+#include <qasm/ast/traversal.hpp>
 #include "mapping/device.hpp"
 
 #include <cstddef>
 #include <map>
 #include <set>
 #include <vector>
+
+using namespace qasm;
 
 namespace staq {
 namespace mapping {

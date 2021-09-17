@@ -33,13 +33,15 @@
 
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
-#include "ast/expr.hpp"
-#include "utils/templates.hpp"
+#include <qasm/ast/expr.hpp>
+#include <qasm/utils/templates.hpp>
 
 #include <cstddef>
 #include <list>
 #include <variant>
 #include <vector>
+
+using namespace qasm;
 
 namespace staq {
 namespace synthesis {

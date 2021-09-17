@@ -1,12 +1,12 @@
 #include "gtest/gtest.h"
 #include "mapping/device.hpp"
 #include "synthesis/cnot_dihedral.hpp"
-#include "utils/templates.hpp"
-#include "ast/expr.hpp"
+#include <qasm/utils/templates.hpp>
+#include <qasm/ast/expr.hpp>
 
 using namespace staq;
-using namespace utils;
-using namespace ast;
+using namespace qasm::utils;
+using namespace qasm::ast;
 
 // Testing linear reversible (cnot) synthesis
 

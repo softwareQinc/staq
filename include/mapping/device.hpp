@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "ast/var.hpp"
+#include <qasm/ast/var.hpp>
 
 #include <cmath>
 #include <functional>
@@ -42,6 +42,8 @@
 #include <set>
 #include <unordered_map>
 #include <vector>
+
+using namespace qasm;
 
 namespace staq {
 namespace mapping {

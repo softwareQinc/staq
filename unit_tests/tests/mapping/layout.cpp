@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "mapping/device.hpp"
 
 #include "mapping/layout/basic.hpp"
@@ -7,6 +7,7 @@
 #include "mapping/layout/bestfit.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 static mapping::Device test_device("Test device", 9,
                                    {

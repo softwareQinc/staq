@@ -33,9 +33,11 @@
 
 // TODO: account for compound gates, i.e. qreg q[n]; reset q;
 
-#include "ast/ast.hpp"
+#include <qasm/ast/ast.hpp>
 
 #include <algorithm>
+
+using namespace qasm;
 
 namespace staq {
 namespace tools {

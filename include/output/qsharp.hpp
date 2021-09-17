@@ -31,10 +31,12 @@
 
 #pragma once
 
-#include "ast/ast.hpp"
+#include <qasm/ast/ast.hpp>
 
 #include <iomanip>
 #include <typeinfo>
+
+using namespace qasm;
 
 namespace staq {
 namespace output {

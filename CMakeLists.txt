@@ -25,11 +25,8 @@ if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
 endif ()
 
-#### Source directory
-add_compile_definitions(PATH="${CMAKE_SOURCE_DIR}" NOMINMAX)
-
 #### Libs
-include_directories(SYSTEM libs)
+include_directories(SYSTEM libs ${PROJECT_SOURCE_DIR}/qasmtools/include)
 
 #### staq headers
 add_library(libstaq INTERFACE)

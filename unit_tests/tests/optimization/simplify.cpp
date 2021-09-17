@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "optimization/simplify.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 // Testing basic simplifications
 /******************************************************************************/

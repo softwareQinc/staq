@@ -24,13 +24,14 @@
  * SOFTWARE.
  */
 
-#include "ast/ast.hpp"
-#include "parser/parser.hpp"
+#include <qasm/ast/ast.hpp>
+#include <qasm/parser/parser.hpp>
 #include "tools/resource_estimator.hpp"
 
 #include <CLI/CLI.hpp>
 
 using namespace staq;
+using namespace qasm;
 
 int main(int argc, char** argv) {
     bool unbox_qelib = false;
