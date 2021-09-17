@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "transformations/inline.hpp"
 
 #include "mapping/device.hpp"
@@ -37,6 +37,7 @@
 #include <CLI/CLI.hpp>
 
 using namespace staq;
+using namespace qasm;
 
 // TODO: Find or create a format for reading machine definitions
 // and have this tool accept a machine definition as input for mapping

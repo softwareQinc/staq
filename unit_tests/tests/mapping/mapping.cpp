@@ -1,11 +1,12 @@
 #include "gtest/gtest.h"
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "mapping/device.hpp"
 
 #include "mapping/mapping/swap.hpp"
 #include "mapping/mapping/steiner.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 static mapping::Device test_device("Test device", 9,
                                    {

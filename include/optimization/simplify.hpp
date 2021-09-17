@@ -31,10 +31,12 @@
 
 #pragma once
 
-#include "ast/visitor.hpp"
-#include "ast/replacer.hpp"
+#include <qasm/ast/visitor.hpp>
+#include <qasm/ast/replacer.hpp>
 
 #include <tuple>
+
+using namespace qasm;
 
 namespace staq {
 namespace optimization {

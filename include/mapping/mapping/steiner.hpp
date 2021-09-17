@@ -31,13 +31,15 @@
 
 #pragma once
 
-#include "ast/traversal.hpp"
+#include <qasm/ast/traversal.hpp>
 #include "synthesis/linear_reversible.hpp"
 #include "synthesis/cnot_dihedral.hpp"
 #include "mapping/device.hpp"
-#include "utils/templates.hpp"
+#include <qasm/utils/templates.hpp>
 
 #include <vector>
+
+using namespace qasm;
 
 namespace staq {
 namespace mapping {

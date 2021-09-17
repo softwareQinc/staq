@@ -31,13 +31,15 @@
 
 #pragma once
 
-#include "ast/replacer.hpp"
-#include "ast/traversal.hpp"
+#include <qasm/ast/replacer.hpp>
+#include <qasm/ast/traversal.hpp>
 #include "transformations/substitution.hpp"
 #include "mapping/device.hpp"
 
 #include <cstddef>
 #include <unordered_map>
+
+using namespace qasm;
 
 namespace staq {
 namespace mapping {

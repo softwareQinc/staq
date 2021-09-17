@@ -24,12 +24,13 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "optimization/simplify.hpp"
 
 #include <CLI/CLI.hpp>
 
 using namespace staq;
+using namespace qasm;
 
 int main(int argc, char** argv) {
     bool no_fixpoint = false;

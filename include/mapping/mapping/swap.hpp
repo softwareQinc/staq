@@ -31,11 +31,13 @@
 
 #pragma once
 
-#include "ast/replacer.hpp"
+#include <qasm/ast/replacer.hpp>
 #include "transformations/substitution.hpp"
 #include "mapping/device.hpp"
 
 #include <map>
+
+using namespace qasm;
 
 // TODO: figure out what to do with if statements
 

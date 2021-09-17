@@ -31,14 +31,16 @@
 
 #pragma once
 
-#include "ast/replacer.hpp"
-#include "utils/templates.hpp"
+#include <qasm/ast/replacer.hpp>
+#include <qasm/utils/templates.hpp>
 
 #include <list>
 #include <map>
 #include <set>
 #include <unordered_map>
 #include <variant>
+
+using namespace qasm;
 
 namespace staq {
 namespace transformations {

@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "transformations/barrier_merge.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 // Testing merging of adjacent barriers
 /******************************************************************************/

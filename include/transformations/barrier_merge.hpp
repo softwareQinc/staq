@@ -31,12 +31,14 @@
 
 #pragma once
 
-#include "ast/traversal.hpp"
-#include "ast/replacer.hpp"
+#include <qasm/ast/traversal.hpp>
+#include <qasm/ast/replacer.hpp>
 
 #include <algorithm>
 #include <set>
 #include <unordered_map>
+
+using namespace qasm;
 
 namespace staq {
 namespace transformations {

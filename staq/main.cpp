@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 
 #include "transformations/desugar.hpp"
 #include "transformations/inline.hpp"
@@ -50,6 +50,7 @@
 #include "output/cirq.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 /**
  * \brief Compiler passes

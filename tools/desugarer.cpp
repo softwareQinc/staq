@@ -24,10 +24,11 @@
  * SOFTWARE.
  */
 
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "transformations/desugar.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 int main() {
 

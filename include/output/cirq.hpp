@@ -31,9 +31,11 @@
 
 #pragma once
 
-#include "ast/ast.hpp"
+#include <qasm/ast/ast.hpp>
 
 #include <typeinfo>
+
+using namespace qasm;
 
 namespace staq {
 namespace output {

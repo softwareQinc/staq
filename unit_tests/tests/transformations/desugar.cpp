@@ -1,9 +1,10 @@
 #include "gtest/gtest.h"
-#include "parser/parser.hpp"
+#include <qasm/parser/parser.hpp>
 #include "transformations/desugar.hpp"
 #include "transformations/barrier_merge.hpp"
 
 using namespace staq;
+using namespace qasm;
 
 // Testing desugaring of mapped gates
 /******************************************************************************/
