@@ -16,8 +16,9 @@ endif ()
 
 #### Windows issues with Microsoft Visual Studio
 if (MSVC)
-    add_compile_options(-bigobj)
     include_directories(SYSTEM libs/pthreadwin32)
+    add_compile_options(-bigobj)
+    add_definitions(-DNOMINMAX)
 endif ()
 
 #### MinGW or Cygwin have issues with object files that are too large
