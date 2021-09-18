@@ -26,14 +26,13 @@ if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
 endif ()
 
-#### Libs
+#### qasmtools library
 include_directories(SYSTEM libs ${PROJECT_SOURCE_DIR}/qasmtools/include)
 
 #### staq headers
 add_library(libstaq INTERFACE)
 target_include_directories(libstaq INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-        $<INSTALL_INTERFACE:include/>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
 
 #### Compiler
 set(COMPILER "staq")
