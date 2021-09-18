@@ -18,6 +18,10 @@ jobs:
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
+          name: Clone submodules
+          command: |
+            git submodule update --init
+      - run:
           name: Build the staq toolkit
           command: |
             mkdir build && cd build
@@ -39,6 +43,10 @@ jobs:
       xcode: "11.3.0"
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
+      - run:
+          name: Clone submodules
+          command: |
+            git submodule update --init
       - run:
           name: Build the staq toolkit
           command: |
