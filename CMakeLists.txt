@@ -14,10 +14,9 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif ()
 
-#### Microsoft Visual Studio
+#### Windows issues with Microsoft Visual Studio
 if (MSVC)
     add_compile_options(-bigobj)
-    add_definitions(-DNOMINMAX)
     include_directories(SYSTEM libs/pthreadwin32)
 endif ()
 
