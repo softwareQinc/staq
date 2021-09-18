@@ -17,6 +17,7 @@ endif ()
 #### Microsoft Visual Studio
 if (MSVC)
     add_compile_options(-bigobj)
+    add_definitions(-DNOMINMAX)
     include_directories(SYSTEM libs/pthreadwin32)
 endif ()
 
