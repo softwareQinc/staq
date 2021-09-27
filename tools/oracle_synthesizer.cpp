@@ -24,14 +24,14 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "transformations/oracle_synthesizer.hpp"
 
-using namespace staq;
-using namespace qasm;
-
 int main() {
-    auto program = parser::parse_stdin();
+    using namespace staq;
+    using qasmtools::parser::parse_stdin;
+
+    auto program = parse_stdin();
     if (program) {
         transformations::synthesize_oracles(*program);
         std::cout << *program;

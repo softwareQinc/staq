@@ -24,16 +24,16 @@
  * SOFTWARE.
  */
 
-#include <qasm/ast/ast.hpp>
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/ast/ast.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "tools/resource_estimator.hpp"
 
 #include <CLI/CLI.hpp>
 
-using namespace staq;
-using namespace qasm;
-
 int main(int argc, char** argv) {
+    using namespace staq;
+    using namespace qasmtools;
+
     bool unbox_qelib = false;
     bool box_gates = false;
     bool no_merge_dagger = false;

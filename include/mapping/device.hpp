@@ -31,8 +31,9 @@
 
 #pragma once
 
-#include <qasm/ast/var.hpp>
+#include <qasmtools/ast/var.hpp>
 
+#include <limits>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -42,11 +43,14 @@
 #include <set>
 #include <unordered_map>
 #include <vector>
-
-using namespace qasm;
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 namespace staq {
 namespace mapping {
+
+using json = nlohmann::json;
+namespace ast = qasmtools::ast;
 
 using layout = std::unordered_map<ast::VarAccess, int>;
 using path = std::list<int>;
@@ -54,6 +58,8 @@ using coupling = std::pair<int, int>;
 using cmp_couplings = std::function<bool(std::pair<coupling, double>,
                                          std::pair<coupling, double>)>;
 using spanning_tree = std::list<std::pair<int, int>>;
+
+static double FIDELITY_1 = 1 - std::numeric_limits<double>::epsilon();
 
 /**
  * \class staq::mapping::Device
@@ -83,17 +89,9 @@ class Device {
      * \param dag A digraph, given as a Boolean adjacency matrix
      */
     Device(std::string name, int n, const std::vector<std::vector<bool>>& dag)
-        : name_(name), qubits_(n), couplings_(dag) {
-        single_qubit_fidelities_.resize(n);
-        coupling_fidelities_.resize(n);
-        for (auto i = 0; i < n; i++) {
-            single_qubit_fidelities_[i] = 0.99;
-            coupling_fidelities_[i].resize(n);
-            for (auto j = 0; j < n; j++) {
-                coupling_fidelities_[i][j] = 0.99;
-            }
-        }
-    }
+        : name_(name), qubits_(n), couplings_(dag),
+          single_qubit_fidelities_(n, FIDELITY_1),
+          coupling_fidelities_(n, std::vector<double>(n, FIDELITY_1)) {}
     /**
      * \brief Construct a device from a coupling graph
      * \param name A name for the device
@@ -328,6 +326,32 @@ class Device {
         }
     }
 
+    /**
+     * \brief Serialize to JSON
+     */
+    std::string to_json() {
+        json js;
+        js["name"] = name_;
+        for (int i = 0; i < qubits_; i++) {
+            js["qubits"].push_back(
+                single_qubit_fidelities_[i] == FIDELITY_1
+                ? json{{"id", i}}
+                : json{{"id", i}, {"fidelity", single_qubit_fidelities_[i]}}
+            );
+            for (int j = 0; j < qubits_; j++) {
+                if (i != j && couplings_[i][j]) {
+                    js["couplings"].push_back(
+                        coupling_fidelities_[i][j] == FIDELITY_1
+                        ? json{{"control", i}, {"target", j}}
+                        : json{{"control", i}, {"target", j},
+                            {"fidelity", coupling_fidelities_[i][j]}}
+                    );
+                }
+            }
+        }
+        return js.dump(2);
+    }
+
   private:
     std::vector<std::vector<bool>>
         couplings_; ///< The adjacency matrix of the device topology
@@ -427,183 +451,53 @@ class Device {
 };
 
 /**
- * \var Device Rigetti-Agave
- * \brief The Rigetti 8 qubit Agave qpu
- *
- * Qubits are arranged like so:
-   \verbatim
-   1 -- 0 -- 7
-   |         |
-   2         6
-   |         |
-   3 -- 4 -- 5
-   \endverbatim
+ * \brief JSON deserialization of Device object
+ * The JSON object should have:
+ * - name: string
+ * - qubits: list of {{id: int}, optional {fidelity: double}}
+ * - couplings: list of {{control: int}, {target: int}, optional {fidelity: double}}
+ * Unspecified fidelities are set to a default value
  */
-static Device agave("Rigetti Agave", 8,
-                    {
-                        {0, 1, 0, 0, 0, 0, 0, 1},
-                        {1, 0, 1, 0, 0, 0, 0, 0},
-                        {0, 1, 0, 1, 0, 0, 0, 0},
-                        {0, 0, 1, 0, 1, 0, 0, 0},
-                        {0, 0, 0, 1, 0, 1, 0, 0},
-                        {0, 0, 0, 0, 1, 0, 1, 0},
-                        {0, 0, 0, 0, 0, 1, 0, 1},
-                        {1, 0, 0, 0, 0, 0, 1, 0},
-                    },
-                    {0.957, 0.951, 0.982, 0.970, 0.969, 0.962, 0.969, 0.932},
-                    {
-                        {0, 0.92, 0, 0, 0, 0, 0, 0.92},
-                        {0.91, 0, 0.91, 0, 0, 0, 0, 0},
-                        {0, 0.82, 0, 0.82, 0, 0, 0, 0},
-                        {0, 0, 0.87, 0, 0.87, 0, 0, 0},
-                        {0, 0, 0, 0.67, 0, 0.67, 0, 0},
-                        {0, 0, 0, 0, 0.93, 0, .093, 0},
-                        {0, 0, 0, 0, 0, 0.93, 0, 0.93},
-                        {0.91, 0, 0, 0, 0, 0, 0.91, 0},
-                    });
+inline Device parse_json(std::string fname) {
+    std::ifstream ifs(fname);
+    json j = json::parse(ifs);
 
-/**
- * \var Device Rigetti-Aspen-4
- * \brief A 16-qubit Rigetti lattice
- *
- * Qubits are arranged like so:
-   \verbatim
-     4 -- 3         12 -- 11
-    /      \       /        \
-   5        2 -- 13          10
-   |        |     |          |
-   6        1 -- 14          9
-    \      /       \        /
-     7 -- 0         15 -- 8
-   \endverbatim
- */
-static Device aspen4("16-qubit Rigetti lattice", 16,
-                     {{0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-                      {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-                      {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-                      {0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                      {0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                      {0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                      {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-                      {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-                      {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0},
-                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0},
-                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0},
-                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0},
-                      {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0},
-                      {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-                      {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0}});
+    std::string name = j["name"];
+    int n = j["qubits"].size();
+    std::vector<std::vector<bool>> dag(n, std::vector<bool>(n));
+    std::vector<double> sq_fi(n);
+    std::vector<std::vector<double>> tq_fi(n, std::vector<double>(n));
 
-/**
- * \var Device IBM-Tokyo
- * \brief A 20-qubit IBM device
- *
- * Qubits are arranged like so:
-   \verbatim
-    0 --  1 --  2 --  3 --  4
-    |     |     |     |  X  |
-    5 --  6 --  7 --  8 --  9
-    |  X  |     |  X  |
-   10 -- 11 -- 12 -- 13 -- 14
-    |     |  X        |  X  |
-   15 -- 16 -- 17    18    19
-   \endverbatim
- */
-static Device
-    tokyo("20 qubit IBM Tokyo device", 20,
-          {{0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-           {1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-           {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-           {0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-           {0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-           {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-           {0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-           {0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-           {0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-           {0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-           {0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0},
-           {0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0},
-           {0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0},
-           {0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1},
-           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1},
-           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0},
-           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0},
-           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
-           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0}});
-/**
- * \var Device IBM-Singapore
- * \brief A 20-qubit IBM device
- *
- * Qubits are arranged like so:
-   \verbatim
-    0 --  1 --  2 --  4 --  3
-          |           |
-   12 -- 11 -- 10 --  5 --  6
-    |           |           |
-   13 -- 14 --  9 --  8 --  7
-          |           |
-   15 -- 16 -- 17 -- 18 -- 19
-   \endverbatim
- */
-static Device
-    singapore("20 qubit IBM Singapore device", 20,
-              {{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0},
-               {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}});
-
-/**
- * \var Device square_9q
- * \brief A 9 qubit square lattice
- *
- * Qubits are arranged like so:
-   \verbatim
-   0 -- 1 -- 2
-   |    |    |
-   5 -- 4 -- 3
-   |    |    |
-   6 -- 7 -- 8
-   \endverbatim
- */
-static Device square_9q("9 qubit square lattice", 9,
-                        {
-                            {0, 1, 0, 0, 0, 1, 0, 0, 0},
-                            {1, 0, 1, 0, 1, 0, 0, 0, 0},
-                            {0, 1, 0, 1, 0, 0, 0, 0, 0},
-                            {0, 0, 1, 0, 1, 0, 0, 0, 1},
-                            {0, 1, 0, 1, 0, 1, 0, 1, 0},
-                            {1, 0, 0, 0, 1, 0, 1, 0, 0},
-                            {0, 0, 0, 0, 0, 1, 0, 1, 0},
-                            {0, 0, 0, 0, 1, 0, 1, 0, 1},
-                            {0, 0, 0, 1, 0, 0, 0, 1, 0},
-                        });
-
-/** \brief Generates a fully connected device with a given number of qubits */
-inline Device fully_connected(uint32_t n) {
-    auto tmp = std::vector<std::vector<bool>>(n, std::vector<bool>(n, true));
-    for (uint32_t i = 0; i < n; i++) {
-        tmp[i][i] = false;
+    for (json& qubit : j["qubits"]) {
+        int id = qubit["id"];
+        if (id < 0 || id >= n) {
+            throw std::logic_error("Qubit(s) not in range");
+        }
+        if (sq_fi[id] != 0) {
+            throw std::logic_error("Duplicate qubit id");
+        }
+        auto it = qubit.find("fidelity");
+        if (it != qubit.end()) sq_fi[id] = *it;
+        else sq_fi[id] = FIDELITY_1;
     }
-
-    return Device("Fully connected device", n, tmp);
+    for (json& coupling : j["couplings"]) {
+        int x = coupling["control"];
+        int y = coupling["target"];
+        if (x < 0 || x >= n || y < 0 || y >= n) {
+            throw std::logic_error("Qubit(s) not in range");
+        }
+        if (x == y) {
+            throw std::logic_error("Qubit can't be coupled with itself");
+        }
+        if (dag[x][y]) {
+            throw std::logic_error("Duplicate coupling");
+        }
+        dag[x][y] = true;
+        auto it = coupling.find("fidelity");
+        if (it != coupling.end()) tq_fi[x][y] = *it;
+        else tq_fi[x][y] = FIDELITY_1;
+    }
+    return Device(name, n, dag, sq_fi, tq_fi);
 }
 
 } // namespace mapping

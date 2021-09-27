@@ -31,18 +31,19 @@
 
 #pragma once
 
-#include <qasm/ast/replacer.hpp>
-#include <qasm/ast/traversal.hpp>
+#include <qasmtools/ast/replacer.hpp>
+#include <qasmtools/ast/traversal.hpp>
 #include "transformations/substitution.hpp"
 #include "mapping/device.hpp"
 
 #include <cstddef>
 #include <unordered_map>
 
-using namespace qasm;
-
 namespace staq {
 namespace mapping {
+
+namespace ast = qasmtools::ast;
+namespace parser = qasmtools::parser;
 
 /**
  * \class staq::mapping::LayoutTransformer

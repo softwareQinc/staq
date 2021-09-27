@@ -26,6 +26,9 @@ if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
 endif ()
 
+#### Source directory
+add_compile_definitions(PATH="${CMAKE_SOURCE_DIR}")
+
 #### qasmtools library
 include_directories(SYSTEM libs ${PROJECT_SOURCE_DIR}/qasmtools/include)
 
@@ -33,6 +36,14 @@ include_directories(SYSTEM libs ${PROJECT_SOURCE_DIR}/qasmtools/include)
 add_library(libstaq INTERFACE)
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
+
+#### Enable Qiskit Specs
+option(USE_QISKIT_SPECS "Use Qiskit gate specifications instead of OpenQASM standard" OFF)
+if (${USE_QISKIT_SPECS})
+    target_compile_definitions(libstaq INTERFACE -DUSE_QISKIT_SPECS=true)
+else ()
+    target_compile_definitions(libstaq INTERFACE -DUSE_QISKIT_SPECS=false)
+endif ()
 
 #### Compiler
 set(COMPILER "staq")

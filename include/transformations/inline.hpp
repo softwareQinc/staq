@@ -31,16 +31,16 @@
 
 #pragma once
 
-#include <qasm/ast/replacer.hpp>
+#include <qasmtools/ast/replacer.hpp>
 #include "substitution.hpp"
 
 #include <set>
 #include <unordered_map>
 
-using namespace qasm;
-
 namespace staq {
 namespace transformations {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \brief Inlines gate calls

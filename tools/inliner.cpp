@@ -24,15 +24,15 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "transformations/inline.hpp"
 
 #include <CLI/CLI.hpp>
 
-using namespace staq;
-using namespace qasm;
-
 int main(int argc, char** argv) {
+    using namespace staq;
+    using qasmtools::parser::parse_stdin;
+
     bool clear_decls = false;
     bool inline_stdlib = false;
     std::string ancilla_name = "anc";
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    auto program = parser::parse_stdin();
+    auto program = parse_stdin();
     if (program) {
         std::set<std::string_view> overrides =
             inline_stdlib ? std::set<std::string_view>()

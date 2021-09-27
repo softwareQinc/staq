@@ -31,12 +31,12 @@
 
 #pragma once
 
-#include <qasm/ast/ast.hpp>
-
-using namespace qasm;
+#include <qasmtools/ast/ast.hpp>
 
 namespace staq {
 namespace output {
+
+namespace ast = qasmtools::ast;
 
 /** \brief Equivalent quil standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_quilstd{

@@ -31,13 +31,13 @@
 
 #pragma once
 
-#include <qasm/ast/replacer.hpp>
+#include <qasmtools/ast/replacer.hpp>
 #include "synthesis/logic_synthesis.hpp"
-
-using namespace qasm;
 
 namespace staq {
 namespace transformations {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \brief Synthesizes all declared oracles over standard library gates

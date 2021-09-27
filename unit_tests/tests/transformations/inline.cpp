@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "transformations/inline.hpp"
 
 using namespace staq;
-using namespace qasm;
+using namespace qasmtools;
 
 // Testing inlining
 /******************************************************************************/

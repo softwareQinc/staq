@@ -31,14 +31,14 @@
 
 #pragma once
 
-#include <qasm/ast/ast.hpp>
+#include <qasmtools/ast/ast.hpp>
 
 #include <typeinfo>
 
-using namespace qasm;
-
 namespace staq {
 namespace output {
+
+namespace ast = qasmtools::ast;
 
 /** \brief Equivalent projectQ standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_projectq{

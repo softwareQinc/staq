@@ -1,55 +1,37 @@
+// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// under NSF AWARD 1414736 and by the respective contributors.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #pragma once
 
-// Distributed under the 3-Clause BSD License.  See accompanying
-// file LICENSE or https://github.com/CLIUtils/CLI11 for details.
-
+// [CLI11:public_includes:set]
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+// [CLI11:public_includes:end]
 
-#include "CLI/StringTools.hpp"
+#include "Error.hpp"
+#include "StringTools.hpp"
 
 namespace CLI {
+// [CLI11:config_fwd_hpp:verbatim]
 
 class App;
-
-namespace detail {
-
-/// Comma separated join, adds quotes if needed
-inline std::string ini_join(std::vector<std::string> args) {
-    std::ostringstream s;
-    size_t start = 0;
-    for (const auto& arg : args) {
-        if (start++ > 0)
-            s << " ";
-
-        auto it = std::find_if(arg.begin(), arg.end(), [](char ch) {
-            return std::isspace<char>(ch, std::locale());
-        });
-        if (it == arg.end())
-            s << arg;
-        else if (arg.find_first_of('\"') == std::string::npos)
-            s << '\"' << arg << '\"';
-        else
-            s << '\'' << arg << '\'';
-    }
-
-    return s.str();
-}
-
-} // namespace detail
 
 /// Holds values to load into Options
 struct ConfigItem {
     /// This is the list of parents
-    std::vector<std::string> parents;
+    std::vector<std::string> parents{};
 
     /// This is the name
-    std::string name;
+    std::string name{};
 
     /// Listing of inputs
-    std::vector<std::string> inputs;
+    std::vector<std::string> inputs{};
 
     /// The list of parents and name joined by "."
     std::string fullname() const {
@@ -62,29 +44,27 @@ struct ConfigItem {
 /// This class provides a converter for configuration files.
 class Config {
   protected:
-    std::vector<ConfigItem> items;
+    std::vector<ConfigItem> items{};
 
   public:
     /// Convert an app into a configuration
-    virtual std::string to_config(const App*, bool, bool,
-                                  std::string) const = 0;
+    virtual std::string to_config(const App *, bool, bool, std::string) const = 0;
 
     /// Convert a configuration into an app
-    virtual std::vector<ConfigItem> from_config(std::istream&) const = 0;
+    virtual std::vector<ConfigItem> from_config(std::istream &) const = 0;
 
     /// Get a flag value
-    virtual std::string to_flag(const ConfigItem& item) const {
-        if (item.inputs.size() == 1) {
+    virtual std::string to_flag(const ConfigItem &item) const {
+        if(item.inputs.size() == 1) {
             return item.inputs.at(0);
         }
         throw ConversionError::TooManyInputsFlag(item.fullname());
     }
 
-    /// Parse a config file, throw an error (ParseError:ConfigParseError or
-    /// FileError) on failure
-    std::vector<ConfigItem> from_file(const std::string& name) {
+    /// Parse a config file, throw an error (ParseError:ConfigParseError or FileError) on failure
+    std::vector<ConfigItem> from_file(const std::string &name) {
         std::ifstream input{name};
-        if (!input.good())
+        if(!input.good())
             throw FileError::Missing(name);
 
         return from_config(input);
@@ -94,60 +74,109 @@ class Config {
     virtual ~Config() = default;
 };
 
-/// This converter works with INI files
-class ConfigINI : public Config {
+/// This converter works with INI/TOML files; to write INI files use ConfigINI
+class ConfigBase : public Config {
+  protected:
+    /// the character used for comments
+    char commentChar = '#';
+    /// the character used to start an array '\0' is a default to not use
+    char arrayStart = '[';
+    /// the character used to end an array '\0' is a default to not use
+    char arrayEnd = ']';
+    /// the character used to separate elements in an array
+    char arraySeparator = ',';
+    /// the character used separate the name from the value
+    char valueDelimiter = '=';
+    /// the character to use around strings
+    char stringQuote = '"';
+    /// the character to use around single characters
+    char characterQuote = '\'';
+    /// the maximum number of layers to allow
+    uint8_t maximumLayers{255};
+    /// the separator used to separator parent layers
+    char parentSeparatorChar{'.'};
+    /// Specify the configuration index to use for arrayed sections
+    int16_t configIndex{-1};
+    /// Specify the configuration section that should be used
+    std::string configSection{};
+
   public:
-    std::string to_config(const App*, bool default_also, bool write_description,
-                          std::string prefix) const override;
+    std::string
+    to_config(const App * /*app*/, bool default_also, bool write_description, std::string prefix) const override;
 
-    std::vector<ConfigItem> from_config(std::istream& input) const override {
-        std::string line;
-        std::string section = "default";
+    std::vector<ConfigItem> from_config(std::istream &input) const override;
+    /// Specify the configuration for comment characters
+    ConfigBase *comment(char cchar) {
+        commentChar = cchar;
+        return this;
+    }
+    /// Specify the start and end characters for an array
+    ConfigBase *arrayBounds(char aStart, char aEnd) {
+        arrayStart = aStart;
+        arrayEnd = aEnd;
+        return this;
+    }
+    /// Specify the delimiter character for an array
+    ConfigBase *arrayDelimiter(char aSep) {
+        arraySeparator = aSep;
+        return this;
+    }
+    /// Specify the delimiter between a name and value
+    ConfigBase *valueSeparator(char vSep) {
+        valueDelimiter = vSep;
+        return this;
+    }
+    /// Specify the quote characters used around strings and characters
+    ConfigBase *quoteCharacter(char qString, char qChar) {
+        stringQuote = qString;
+        characterQuote = qChar;
+        return this;
+    }
+    /// Specify the maximum number of parents
+    ConfigBase *maxLayers(uint8_t layers) {
+        maximumLayers = layers;
+        return this;
+    }
+    /// Specify the separator to use for parent layers
+    ConfigBase *parentSeparator(char sep) {
+        parentSeparatorChar = sep;
+        return this;
+    }
+    /// get a reference to the configuration section
+    std::string &sectionRef() { return configSection; }
+    /// get the section
+    const std::string &section() const { return configSection; }
+    /// specify a particular section of the configuration file to use
+    ConfigBase *section(const std::string &sectionName) {
+        configSection = sectionName;
+        return this;
+    }
 
-        std::vector<ConfigItem> output;
-
-        while (getline(input, line)) {
-            std::vector<std::string> items_buffer;
-
-            detail::trim(line);
-            size_t len = line.length();
-            if (len > 1 && line[0] == '[' && line[len - 1] == ']') {
-                section = line.substr(1, len - 2);
-            } else if (len > 0 && line[0] != ';') {
-                output.emplace_back();
-                ConfigItem& out = output.back();
-
-                // Find = in string, split and recombine
-                auto pos = line.find('=');
-                if (pos != std::string::npos) {
-                    out.name = detail::trim_copy(line.substr(0, pos));
-                    std::string item = detail::trim_copy(line.substr(pos + 1));
-                    items_buffer = detail::split_up(item);
-                } else {
-                    out.name = detail::trim_copy(line);
-                    items_buffer = {"ON"};
-                }
-
-                if (detail::to_lower(section) != "default") {
-                    out.parents = {section};
-                }
-
-                if (out.name.find('.') != std::string::npos) {
-                    std::vector<std::string> plist =
-                        detail::split(out.name, '.');
-                    out.name = plist.back();
-                    plist.pop_back();
-                    out.parents.insert(out.parents.end(), plist.begin(),
-                                       plist.end());
-                }
-
-                out.inputs.insert(std::end(out.inputs),
-                                  std::begin(items_buffer),
-                                  std::end(items_buffer));
-            }
-        }
-        return output;
+    /// get a reference to the configuration index
+    int16_t &indexRef() { return configIndex; }
+    /// get the section index
+    int16_t index() const { return configIndex; }
+    /// specify a particular index in the section to use (-1) for all sections to use
+    ConfigBase *index(int16_t sectionIndex) {
+        configIndex = sectionIndex;
+        return this;
     }
 };
 
-} // namespace CLI
+/// the default Config is the TOML file format
+using ConfigTOML = ConfigBase;
+
+/// ConfigINI generates a "standard" INI compliant output
+class ConfigINI : public ConfigTOML {
+
+  public:
+    ConfigINI() {
+        commentChar = ';';
+        arrayStart = '\0';
+        arrayEnd = '\0';
+        arraySeparator = ' ';
+        valueDelimiter = '=';
+    }
+};
+// [CLI11:config_fwd_hpp:end]
+}  // namespace CLI

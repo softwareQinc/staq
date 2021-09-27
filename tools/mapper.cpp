@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "transformations/inline.hpp"
 
 #include "mapping/device.hpp"
@@ -36,52 +36,51 @@
 
 #include <CLI/CLI.hpp>
 
-using namespace staq;
-using namespace qasm;
-
 // TODO: Find or create a format for reading machine definitions
 // and have this tool accept a machine definition as input for mapping
 
 int main(int argc, char** argv) {
-    std::string device_name = "tokyo";
+    using namespace staq;
+    using qasmtools::parser::parse_stdin;
+
+    if (argc == 1) {
+        std::cout << "Usage: staq_mapper [OPTIONS] DEVICE.json\n"
+                  << "Run with --help for more information.\n";
+        return 0;
+    }
+
+    std::string device_json;
     std::string layout = "linear";
     std::string mapper = "swap";
 
     CLI::App app{"QASM physical mapper"};
+    app.get_formatter()->label("REQUIRED", "(REQUIRED)");
+    app.get_formatter()->column_width(40);
 
     app.add_option(
-        "-d", device_name,
-        "Device to map onto (tokyo|agave|aspen-4|singapore|square|fullycon)");
-    app.add_option("-l", layout,
-                   "Layout algorithm to use (linear|eager|bestfit)");
-    app.add_option("-m", mapper, "Mapping algorithm to use (swap|steiner)");
+        "DEVICE.json", device_json,
+        "Device to map onto")
+        ->required()
+        ->check(CLI::ExistingFile);
+    app.add_option(
+        "-l", layout,
+        "Layout algorithm to use. Default=" + layout)
+        ->check(CLI::IsMember({"linear", "eager", "bestfit"}));
+    app.add_option(
+        "-m", mapper,
+        "Mapping algorithm to use. Default=" + mapper)
+        ->check(CLI::IsMember({"swap", "steiner"}));
 
     CLI11_PARSE(app, argc, argv);
 
-    auto program = parser::parse_stdin();
+    auto program = parse_stdin();
     if (program) {
 
         // Inline fully first
         transformations::inline_ast(*program, {false, {}, "anc"});
 
         // Physical device
-        mapping::Device dev;
-        if (device_name == "tokyo") {
-            dev = mapping::tokyo;
-        } else if (device_name == "agave") {
-            dev = mapping::agave;
-        } else if (device_name == "aspen-4") {
-            dev = mapping::aspen4;
-        } else if (device_name == "singapore") {
-            dev = mapping::singapore;
-        } else if (device_name == "square") {
-            dev = mapping::square_9q;
-        } else if (device_name == "fullycon") {
-            dev = mapping::fully_connected(9);
-        } else {
-            std::cerr << "Error: invalid device name\n";
-            return 0;
-        }
+        auto dev = mapping::parse_json(device_json);
 
         // Initial layout
         mapping::layout physical_layout;
@@ -91,9 +90,6 @@ int main(int argc, char** argv) {
             physical_layout = mapping::compute_eager_layout(dev, *program);
         } else if (layout == "bestfit") {
             physical_layout = mapping::compute_bestfit_layout(dev, *program);
-        } else {
-            std::cerr << "Error: invalid layout algorithm\n";
-            return 0;
         }
         mapping::apply_layout(physical_layout, dev, *program);
 
@@ -102,9 +98,6 @@ int main(int argc, char** argv) {
             mapping::map_onto_device(dev, *program);
         } else if (mapper == "steiner") {
             mapping::steiner_mapping(dev, *program);
-        } else {
-            std::cerr << "Error: invalid mapping algorithm\n";
-            return 0;
         }
 
         // Print result

@@ -1,11 +1,14 @@
+// Copyright (c) 2017-2021, University of Cincinnati, developed by Henry Schreiner
+// under NSF AWARD 1414736 and by the respective contributors.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #pragma once
 
-// Distributed under the 3-Clause BSD License.  See accompanying
-// file LICENSE or https://github.com/CLIUtils/CLI11 for details.
+// [CLI11:macros_hpp:verbatim]
 
-// [CLI11:verbatim]
-
-// The following version macro is very similar to the one in PyBind11
+// The following version macro is very similar to the one in pybind11
 #if !(defined(_MSC_VER) && __cplusplus == 199711L) && !defined(__INTEL_COMPILER)
 #if __cplusplus >= 201402L
 #define CLI11_CPP14
@@ -17,9 +20,8 @@
 #endif
 #endif
 #elif defined(_MSC_VER) && __cplusplus == 199711L
-// MSVC sets _MSVC_LANG rather than __cplusplus (supposedly until the standard
-// is fully implemented) Unless you use the /Zc:__cplusplus flag on Visual
-// Studio 2017 15.7 Preview 3 or newer
+// MSVC sets _MSVC_LANG rather than __cplusplus (supposedly until the standard is fully implemented)
+// Unless you use the /Zc:__cplusplus flag on Visual Studio 2017 15.7 Preview 3 or newer
 #if _MSVC_LANG >= 201402L
 #define CLI11_CPP14
 #if _MSVC_LANG > 201402L && _MSC_VER >= 1910
@@ -39,4 +41,4 @@
 #define CLI11_DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
-// [CLI11:verbatim]
+// [CLI11:macros_hpp:end]

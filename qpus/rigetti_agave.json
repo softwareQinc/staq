@@ -1,0 +1,119 @@
+{
+  "couplings": [
+    {
+      "control": 0,
+      "fidelity": 0.92,
+      "target": 1
+    },
+    {
+      "control": 0,
+      "fidelity": 0.91,
+      "target": 7
+    },
+    {
+      "control": 1,
+      "fidelity": 0.92,
+      "target": 0
+    },
+    {
+      "control": 1,
+      "fidelity": 0.91,
+      "target": 2
+    },
+    {
+      "control": 2,
+      "fidelity": 0.91,
+      "target": 1
+    },
+    {
+      "control": 2,
+      "fidelity": 0.82,
+      "target": 3
+    },
+    {
+      "control": 3,
+      "fidelity": 0.82,
+      "target": 2
+    },
+    {
+      "control": 3,
+      "fidelity": 0.87,
+      "target": 4
+    },
+    {
+      "control": 4,
+      "fidelity": 0.87,
+      "target": 3
+    },
+    {
+      "control": 4,
+      "fidelity": 0.67,
+      "target": 5
+    },
+    {
+      "control": 5,
+      "fidelity": 0.67,
+      "target": 4
+    },
+    {
+      "control": 5,
+      "fidelity": 0.93,
+      "target": 6
+    },
+    {
+      "control": 6,
+      "fidelity": 0.93,
+      "target": 5
+    },
+    {
+      "control": 6,
+      "fidelity": 0.93,
+      "target": 7
+    },
+    {
+      "control": 7,
+      "fidelity": 0.91,
+      "target": 0
+    },
+    {
+      "control": 7,
+      "fidelity": 0.93,
+      "target": 6
+    }
+  ],
+  "name": "Rigetti Agave",
+  "qubits": [
+    {
+      "fidelity": 0.957,
+      "id": 0
+    },
+    {
+      "fidelity": 0.951,
+      "id": 1
+    },
+    {
+      "fidelity": 0.982,
+      "id": 2
+    },
+    {
+      "fidelity": 0.97,
+      "id": 3
+    },
+    {
+      "fidelity": 0.969,
+      "id": 4
+    },
+    {
+      "fidelity": 0.962,
+      "id": 5
+    },
+    {
+      "fidelity": 0.969,
+      "id": 6
+    },
+    {
+      "fidelity": 0.932,
+      "id": 7
+    }
+  ]
+}

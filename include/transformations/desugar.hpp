@@ -31,16 +31,16 @@
 
 #pragma once
 
-#include <qasm/ast/replacer.hpp>
+#include <qasmtools/ast/replacer.hpp>
 
 #include <list>
 #include <unordered_map>
 #include <variant>
 
-using namespace qasm;
-
 namespace staq {
 namespace transformations {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \brief Desugars a QASM AST

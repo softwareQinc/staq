@@ -31,8 +31,7 @@
 
 #pragma once
 
-#include <qasm/ast/replacer.hpp>
-#include <qasm/utils/templates.hpp>
+#include <qasmtools/ast/replacer.hpp>
 
 #include <list>
 #include <map>
@@ -40,10 +39,10 @@
 #include <unordered_map>
 #include <variant>
 
-using namespace qasm;
-
 namespace staq {
 namespace transformations {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \brief Node replacement visitor with symbol tracking

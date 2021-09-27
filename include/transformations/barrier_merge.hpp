@@ -31,17 +31,18 @@
 
 #pragma once
 
-#include <qasm/ast/traversal.hpp>
-#include <qasm/ast/replacer.hpp>
+#include <qasmtools/ast/traversal.hpp>
+#include <qasmtools/ast/replacer.hpp>
 
 #include <algorithm>
 #include <set>
 #include <unordered_map>
 
-using namespace qasm;
-
 namespace staq {
 namespace transformations {
+
+namespace ast = qasmtools::ast;
+namespace parser = qasmtools::parser;
 
 /**
  * \brief Merges adjacent barriers

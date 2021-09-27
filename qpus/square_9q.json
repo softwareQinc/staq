@@ -1,0 +1,130 @@
+{
+  "couplings": [
+    {
+      "control": 0,
+      "target": 1
+    },
+    {
+      "control": 0,
+      "target": 3
+    },
+    {
+      "control": 1,
+      "target": 0
+    },
+    {
+      "control": 1,
+      "target": 2
+    },
+    {
+      "control": 1,
+      "target": 4
+    },
+    {
+      "control": 2,
+      "target": 1
+    },
+    {
+      "control": 2,
+      "target": 5
+    },
+    {
+      "control": 3,
+      "target": 0
+    },
+    {
+      "control": 3,
+      "target": 4
+    },
+    {
+      "control": 3,
+      "target": 6
+    },
+    {
+      "control": 4,
+      "target": 1
+    },
+    {
+      "control": 4,
+      "target": 3
+    },
+    {
+      "control": 4,
+      "target": 5
+    },
+    {
+      "control": 4,
+      "target": 7
+    },
+    {
+      "control": 5,
+      "target": 2
+    },
+    {
+      "control": 5,
+      "target": 4
+    },
+    {
+      "control": 5,
+      "target": 8
+    },
+    {
+      "control": 6,
+      "target": 3
+    },
+    {
+      "control": 6,
+      "target": 7
+    },
+    {
+      "control": 7,
+      "target": 4
+    },
+    {
+      "control": 7,
+      "target": 6
+    },
+    {
+      "control": 7,
+      "target": 8
+    },
+    {
+      "control": 8,
+      "target": 5
+    },
+    {
+      "control": 8,
+      "target": 7
+    }
+  ],
+  "name": "Rectangular_3_x_3",
+  "qubits": [
+    {
+      "id": 0
+    },
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    },
+    {
+      "id": 3
+    },
+    {
+      "id": 4
+    },
+    {
+      "id": 5
+    },
+    {
+      "id": 6
+    },
+    {
+      "id": 7
+    },
+    {
+      "id": 8
+    }
+  ]
+}
