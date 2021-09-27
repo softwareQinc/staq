@@ -2,6 +2,7 @@
 #include "gates/channel.hpp"
 
 using namespace staq;
+namespace utils = qasmtools::utils;
 
 // Testing channel gates
 using Gates = gates::ChannelRepr<std::string>;

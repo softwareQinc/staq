@@ -24,24 +24,24 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "transformations/desugar.hpp"
 #include "output/cirq.hpp"
 
 #include <CLI/CLI.hpp>
 
-using namespace staq;
-using namespace qasm;
-
 int main(int argc, char** argv) {
+    using namespace staq;
+    using qasmtools::parser::parse_stdin;
+
     std::string filename = "";
 
     CLI::App app{"QASM to cirq transpiler"};
 
-    app.add_option("-o", filename, "Output to a file");
+    app.add_option("-o,--output", filename, "Output to a file");
 
     CLI11_PARSE(app, argc, argv);
-    auto program = parser::parse_stdin();
+    auto program = parse_stdin();
     if (program) {
         transformations::desugar(*program);
         if (filename == "")

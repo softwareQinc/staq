@@ -33,14 +33,14 @@
 
 // TODO: account for compound gates, i.e. qreg q[n]; reset q;
 
-#include <qasm/ast/ast.hpp>
+#include <qasmtools/ast/ast.hpp>
 
 #include <algorithm>
 
-using namespace qasm;
-
 namespace staq {
 namespace tools {
+
+namespace ast = qasmtools::ast;
 
 using resource_count = std::unordered_map<std::string, int>;
 

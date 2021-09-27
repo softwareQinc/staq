@@ -24,15 +24,15 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "optimization/simplify.hpp"
 
 #include <CLI/CLI.hpp>
 
-using namespace staq;
-using namespace qasm;
-
 int main(int argc, char** argv) {
+    using namespace staq;
+    using qasmtools::parser::parse_stdin;
+
     bool no_fixpoint = false;
 
     CLI::App app{"QASM simplifier"};
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    auto program = parser::parse_stdin();
+    auto program = parse_stdin();
     if (program) {
         optimization::simplify(*program, {!no_fixpoint});
         std::cout << *program;

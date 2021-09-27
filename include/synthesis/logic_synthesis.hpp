@@ -43,14 +43,14 @@
 #include <fstream>
 #include <unordered_map>
 
-#include <qasm/parser/position.hpp>
-#include <qasm/ast/stmt.hpp>
-#include <qasm/utils/angle.hpp>
-
-using namespace qasm;
+#include <qasmtools/parser/position.hpp>
+#include <qasmtools/ast/stmt.hpp>
+#include <qasmtools/utils/angle.hpp>
 
 namespace staq {
 namespace synthesis {
+
+using namespace qasmtools;
 
 enum class Format {
     binary_aiger,

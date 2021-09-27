@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include <qasm/utils/angle.hpp>
+#include <qasmtools/utils/angle.hpp>
 
 #include <iostream>
 #include <map>
@@ -46,10 +46,10 @@
 #include <variant>
 #include <vector>
 
-using namespace qasm;
-
 namespace staq {
 namespace gates {
+
+namespace utils = qasmtools::utils;
 
 /**
  * \struct staq::gates::ChannelRepr

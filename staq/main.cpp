@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 
 #include "transformations/desugar.hpp"
 #include "transformations/inline.hpp"
@@ -49,8 +49,8 @@
 #include "output/quil.hpp"
 #include "output/cirq.hpp"
 
-using namespace staq;
-using namespace qasm;
+#include <sstream>
+#include <CLI/CLI.hpp>
 
 /**
  * \brief Compiler passes
@@ -58,10 +58,10 @@ using namespace qasm;
 enum class Pass { desugar, inln, synth, rotfold, cnotsynth, simplify, map };
 
 /**
- * \brief Command-line options
+ * \brief Command-line passes
  */
 enum class Option {
-    no_op,
+    none,
     i,
     S,
     r,
@@ -70,15 +70,7 @@ enum class Option {
     m,
     O1,
     O2,
-    O3,
-    d,
-    l,
-    M,
-    o,
-    f,
-    h,
-    no_expand,
-    disable_lo
+    O3
 };
 std::unordered_map<std::string_view, Option> cli_map{
     {"-i", Option::i},
@@ -95,99 +87,102 @@ std::unordered_map<std::string_view, Option> cli_map{
     {"--map-to-device", Option::m},
     {"-O1", Option::O1},
     {"-O2", Option::O2},
-    {"-O3", Option::O3},
-    {"-d", Option::d},
-    {"--device", Option::d},
-    {"-l", Option::l},
-    {"--layout", Option::l},
-    {"-M", Option::M},
-    {"--mapping-alg", Option::M},
-    {"-o", Option::o},
-    {"--output", Option::o},
-    {"-f", Option::f},
-    {"--format", Option::f},
-    {"-h", Option::h},
-    {"--help", Option::h},
-    {"--no-expand-registers", Option::no_expand},
-    {"--disable-layout-optimization", Option::disable_lo}};
+    {"-O3", Option::O3}};
 
-enum class Layout { linear, eager, bestfit };
-enum class Mapper { swap, steiner };
-enum class Format { qasm, quil, projectq, qsharp, cirq, resources };
-
-void print_help() {
-    int width = 40;
-
-    std::cout
-        << "staq -- (c) 2019 - 2021 softwareQ Inc. All rights reserved.\n";
-    std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n\n";
-    std::cout << "Compiler passes:\n";
-    std::cout << std::setw(width) << std::left << "-i,--inline"
-              << "Inline all gates\n";
-    std::cout << std::setw(width) << std::left << "-S,--synthesize"
-              << "Synthesize oracles defined by logic files\n";
-    std::cout << std::setw(width) << std::left << "-r,--rotation-fold"
-              << "Apply a rotation optimization pass\n";
-    std::cout << std::setw(width) << std::left << "-c,--cnot-resynth"
-              << "Apply a CNOT optimization pass\n";
-    std::cout << std::setw(width) << std::left << "-s,--simplify"
-              << "Apply a simplification pass\n";
-    std::cout << std::setw(width) << std::left << "-m,--map-to-device"
-              << "Map the circuit to a physical device\n";
-    std::cout << std::setw(width) << std::left << "-O1"
-              << "Standard light optimization pass\n";
-    std::cout << std::setw(width) << std::left << "-O2"
-              << "Standard heavy optimization pass\n";
-    std::cout << std::setw(width) << std::left << "-O3"
-              << "Non-monotonic optimization pass\n\n";
-    std::cout << "Options:\n";
-    std::cout << std::setw(width) << std::left << "-o,--output FILE"
-              << "Output filename. Otherwise prints to stdout.\n";
-    std::cout << std::setw(width) << std::left
-              << "-f,--format (qasm|quil|projectq|qsharp|cirq|resources) "
-              << "Output format. Default=qasm.\n";
-    std::cout << std::setw(width) << std::left
-              << "-d,--device (tokyo|agave|aspen-4|singapore|square|fullycon) "
-              << "Device for physical mapping. Default=tokyo.\n";
-    std::cout << std::setw(width) << std::left
-              << "-l,--layout (linear|eager|bestfit)"
-              << "Initial device layout algorithm. Default=bestfit.\n";
-    std::cout << std::setw(width) << std::left
-              << "-M,--mapping-alg (swap|steiner)"
-              << "Algorithm to use for mapping CNOT gates. Default=steiner.\n";
-    std::cout << std::setw(width) << std::left
-              << "--disable_layout_optimization"
-              << "Disables an expensive layout optimization pass when using "
-                 "the steiner mapper.\n";
-    std::cout << std::setw(width) << std::left << "--no-expand-registers"
-              << "Disables expanding gates applied to registers rather than "
-                 "qubits.\n";
+/* Passes aren't handled by CLI, so manually create help info */
+std::string make_passes_str(int width) {
+    std::ostringstream passes_str;
+    passes_str << "\nCompiler passes:\n";
+    passes_str << std::setw(width) << std::left << "  -i,--inline"
+               << "Inline all gates\n";
+    passes_str << std::setw(width) << std::left << "  -S,--synthesize"
+               << "Synthesize oracles defined by logic files\n";
+    passes_str << std::setw(width) << std::left << "  -r,--rotation-fold"
+               << "Apply a rotation optimization pass\n";
+    passes_str << std::setw(width) << std::left << "  -c,--cnot-resynth"
+               << "Apply a CNOT optimization pass\n";
+    passes_str << std::setw(width) << std::left << "  -s,--simplify"
+               << "Apply a simplification pass\n";
+    passes_str << std::setw(width) << std::left << "  -m,--map-to-device"
+               << "Map the circuit to a physical device\n";
+    passes_str << std::setw(width) << std::left << "  -O1"
+               << "Standard light optimization pass\n";
+    passes_str << std::setw(width) << std::left << "  -O2"
+               << "Standard heavy optimization pass\n";
+    passes_str << std::setw(width) << std::left << "  -O3"
+               << "Non-monotonic optimization pass";
+    return passes_str.str();
 }
 
 int main(int argc, char** argv) {
+    using namespace staq;
+    using qasmtools::parser::parse_file;
+
     if (argc == 1) {
-        std::cout
-            << "staq -- (c) 2019 - 2021 softwareQ Inc. All rights reserved.\n";
-        std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n";
-        std::cout << "Pass --help for additional help\n";
+        std::cout << "Usage: staq [PASSES/OPTIONS] DEVICE.json FILE.qasm\n"
+                  << "Run with --help for more information.\n";
+        return 0;
     }
 
-    std::list<Pass> passes{Pass::desugar};
-
-    mapping::Device dev = mapping::tokyo;
-    Layout layout_alg = Layout::bestfit;
-    Mapper mapper = Mapper::steiner;
-    mapping::layout initial_layout;
-    std::optional<std::map<int, int>> output_perm = std::nullopt;
     std::string ofile = "";
-    std::string mapfile = "layout.txt";
-    Format format = Format::qasm;
-    bool do_lo = true;
-    bool mapped = false;
+    std::string format = "qasm";
+    std::string layout_alg = "bestfit";
+    std::string mapper = "steiner";
+    bool disable_layout_optimization = false;
+    bool no_expand_registers = false;
+    std::string device_json;
+    std::string input_qasm;
 
-    for (int i = 1; i < argc; i++) {
-        switch (cli_map[std::string_view(argv[i])]) {
-            /* Passes */
+    CLI::App app{"staq -- (c) 2019 - 2021 softwareQ Inc. All rights reserved."};
+    app.get_formatter()->label("OPTIONS", "PASSES/OPTIONS");
+    app.get_formatter()->label("REQUIRED", "(REQUIRED)");
+    int width = 43;
+    app.get_formatter()->column_width(width);
+    app.footer(make_passes_str(width));
+    app.allow_extras(); // later call app.remaining() for pass options
+
+    app.add_option(
+        "-o,--output", ofile,
+        "Output filename. Otherwise prints to stdout");
+    app.add_option(
+        "-f,--format", format,
+        "Output format. Default=" + format)
+        ->check(CLI::IsMember({"qasm", "quil", "projectq",
+                               "qsharp", "cirq", "resources"}));
+    app.add_option(
+        "-l,--layout", layout_alg,
+        "Initial device layout algorithm. Default=" + layout_alg)
+        ->check(CLI::IsMember({"linear", "eager", "bestfit"}));
+    app.add_option(
+        "-M,--mapping-alg", mapper,
+        "Algorithm to use for mapping CNOT gates. Default=" + mapper)
+        ->check(CLI::IsMember({"swap", "steiner"}));
+    app.add_flag(
+        "--disable-layout-optimization", disable_layout_optimization,
+        "Disables an expensive layout optimization pass when using the "
+        "steiner mapper");
+    app.add_flag(
+        "--no-expand-registers", no_expand_registers,
+        "Disables expanding gates applied to registers rather than qubits");
+    app.add_option(
+        "DEVICE.json", device_json,
+        "Device to map onto")
+        ->required()
+        ->check(CLI::ExistingFile);
+    app.add_option(
+        "FILE.qasm", input_qasm,
+        "OpenQASM circuit")
+        ->required()
+        ->check(CLI::ExistingFile);
+
+    CLI11_PARSE(app, argc, argv);
+
+    /* Passes */
+    std::list<Pass> passes;
+    if (!no_expand_registers)
+        passes.push_back(Pass::desugar);
+    for (auto& x : app.remaining()) {
+        switch (cli_map[x]) {
             case Option::i:
                 passes.push_back(Pass::inln);
                 break;
@@ -226,242 +221,139 @@ int main(int argc, char** argv) {
                 passes.push_back(Pass::cnotsynth);
                 passes.push_back(Pass::simplify);
                 break;
-            /* Device configuration */
-            case Option::d: {
-                std::string_view arg(argv[++i]);
-                if (arg == "tokyo")
-                    dev = mapping::tokyo;
-                else if (arg == "agave")
-                    dev = mapping::agave;
-                else if (arg == "aspen-4")
-                    dev = mapping::aspen4;
-                else if (arg == "singapore")
-                    dev = mapping::singapore;
-                else if (arg == "square")
-                    dev = mapping::square_9q;
-                else if (arg == "fullycon")
-                    dev = mapping::fully_connected(9);
-                else
-                    std::cout << "Error: unrecognized device \"" << arg
-                              << "\"\n";
-                break;
-            }
-            case Option::l: {
-                std::string_view arg(argv[++i]);
-                if (arg == "linear")
-                    layout_alg = Layout::linear;
-                else if (arg == "eager")
-                    layout_alg = Layout::eager;
-                else if (arg == "bestfit")
-                    layout_alg = Layout::bestfit;
-                else
-                    std::cout << "Unrecognized layout algorithm \"" << arg
-                              << "\"\n";
-                break;
-            }
-            case Option::M: {
-                std::string_view arg(argv[++i]);
-                if (arg == "swap")
-                    mapper = Mapper::swap;
-                else if (arg == "steiner")
-                    mapper = Mapper::steiner;
-                else
-                    std::cout << "Unrecognized mapping algorithm \"" << arg
-                              << "\"\n";
-                break;
-            }
-            /* Output */
-            case Option::o:
-                ofile = std::string(argv[++i]);
-                break;
-            case Option::f: {
-                std::string_view arg(argv[++i]);
-                if (arg == "qasm")
-                    format = Format::qasm;
-                else if (arg == "quil")
-                    format = Format::quil;
-                else if (arg == "projectq")
-                    format = Format::projectq;
-                else if (arg == "qsharp")
-                    format = Format::qsharp;
-                else if (arg == "cirq")
-                    format = Format::cirq;
-                else if (arg == "resources")
-                    format = Format::resources;
-                else
-                    std::cout << "Unrecognized output format \"" << arg
-                              << "\"\n";
-                break;
-            }
-            /* Misc */
-            case Option::no_expand:
-                passes.pop_front();
-                break;
-            case Option::disable_lo:
-                do_lo = false;
-                break;
-            /* Help */
-            case Option::h:
-                print_help();
-                break;
             /* Default */
-            case Option::no_op:
-                std::string_view str(argv[i]);
-                if (str.substr(str.find_last_of(".") + 1) == "qasm") {
+            case Option::none:
+                std::cerr << "Unrecognized option \"" << x << "\"\n";
+        }
+    }
 
-                    /* Parsing */
-                    auto prog = parser::parse_file(argv[i]);
-                    if (!prog) {
-                        std::cout << "Error: failed to parse \"" << str
-                                  << "\"\n";
-                        exit(0);
-                    }
+    mapping::layout initial_layout;
+    std::optional<std::map<int, int>> output_perm = std::nullopt;
+    bool do_lo = !disable_layout_optimization;
+    bool mapped = false;
 
-                    /* Passes */
-                    for (auto pass : passes)
-                        switch (pass) {
-                            case Pass::desugar:
-                                transformations::desugar(*prog);
-                                transformations::merge_barriers(*prog);
-                                break;
-                            case Pass::inln:
-                                transformations::inline_ast(
-                                    *prog,
-                                    {false, transformations::default_overrides,
-                                     "anc"});
-                                break;
-                            case Pass::synth:
-                                transformations::synthesize_oracles(*prog);
-                                break;
-                            case Pass::rotfold:
-                                optimization::fold_rotations(*prog);
-                                break;
-                            case Pass::cnotsynth:
-                                optimization::optimize_CNOT(*prog);
-                                break;
-                            case Pass::simplify:
-                                optimization::simplify(*prog);
-                                break;
-                            case Pass::map: {
-                                mapped = true;
+    /* Deserialization */
+    auto dev = mapping::parse_json(device_json);
 
-                                /* Inline fully first */
-                                transformations::inline_ast(*prog,
-                                                            {false, {}, "anc"});
+    /* Parsing */
+    auto prog = parse_file(input_qasm);
+    if (!prog) {
+        std::cerr << "Error: failed to parse \"" << input_qasm
+                  << "\"\n";
+        return 0;
+    }
 
-                                /* Generate the layout */
-                                switch (layout_alg) {
-                                    case Layout::linear:
-                                        initial_layout =
-                                            mapping::compute_basic_layout(
-                                                dev, *prog);
-                                        break;
-                                    case Layout::eager:
-                                        initial_layout =
-                                            mapping::compute_eager_layout(
-                                                dev, *prog);
-                                        break;
-                                    case Layout::bestfit:
-                                        initial_layout =
-                                            mapping::compute_bestfit_layout(
-                                                dev, *prog);
-                                        break;
-                                }
-
-                                /* (Optional) optimize the layout */
-                                if (mapper == Mapper::steiner && do_lo)
-                                    optimize_steiner_layout(dev, initial_layout,
-                                                            *prog);
-
-                                /* Apply the layout */
-                                mapping::apply_layout(initial_layout, dev,
-                                                      *prog);
-
-                                /* Apply the mapping algorithm */
-                                switch (mapper) {
-                                    case Mapper::swap:
-                                        output_perm = mapping::map_onto_device(
-                                            dev, *prog);
-                                        break;
-                                    case Mapper::steiner:
-                                        mapping::steiner_mapping(dev, *prog);
-                                        break;
-                                }
-                            }
-                        }
-
-                    /* Output */
-                    switch (format) {
-                        case Format::quil:
-                            if (ofile == "")
-                                output::output_quil(*prog);
-                            else
-                                output::write_quil(*prog, ofile);
-                            break;
-                        case Format::projectq:
-                            if (ofile == "")
-                                output::output_projectq(*prog);
-                            else
-                                output::write_projectq(*prog, ofile);
-                            break;
-                        case Format::qsharp:
-                            if (ofile == "")
-                                output::output_qsharp(*prog);
-                            else
-                                output::write_qsharp(*prog, ofile);
-                            break;
-                        case Format::cirq:
-                            if (ofile == "")
-                                output::output_cirq(*prog);
-                            else
-                                output::write_cirq(*prog, ofile);
-                            break;
-                        case Format::resources: {
-                            auto count = tools::estimate_resources(*prog);
-
-                            if (ofile == "") {
-                                std::cout << "Resource estimates for " << str
-                                          << ":\n";
-                                for (auto& [name, num] : count)
-                                    std::cout << "  " << name << ": " << num
-                                              << "\n";
-                            } else {
-                                std::ofstream os;
-                                os.open(ofile);
-
-                                os << "Resource estimates for " << str << ":\n";
-                                for (auto& [name, num] : count)
-                                    os << "  " << name << ": " << num << "\n";
-
-                                os.close();
-                            }
-
-                            break;
-                        }
-                        case Format::qasm:
-                        default:
-                            if (ofile == "") {
-                                if (mapped)
-                                    dev.print_layout(initial_layout, std::cout,
-                                                     "// ", output_perm);
-                                std::cout << *prog << "\n";
-                            } else {
-                                std::ofstream os;
-                                os.open(ofile);
-
-                                if (mapped)
-                                    dev.print_layout(initial_layout, os, "// ",
-                                                     output_perm);
-                                os << *prog;
-
-                                os.close();
-                            }
-                    }
-                } else {
-                    std::cout << "Unrecognized option \"" << str << "\"\n";
-                    print_help();
-                }
+    /* Passes */
+    for (auto pass : passes)
+        switch (pass) {
+            case Pass::desugar:
+                transformations::desugar(*prog);
+                transformations::merge_barriers(*prog);
                 break;
+            case Pass::inln:
+                transformations::inline_ast(
+                    *prog,
+                    {false, transformations::default_overrides, "anc"});
+                break;
+            case Pass::synth:
+                transformations::synthesize_oracles(*prog);
+                break;
+            case Pass::rotfold:
+                optimization::fold_rotations(*prog);
+                break;
+            case Pass::cnotsynth:
+                optimization::optimize_CNOT(*prog);
+                break;
+            case Pass::simplify:
+                optimization::simplify(*prog);
+                break;
+            case Pass::map: {
+                mapped = true;
+
+                /* Inline fully first */
+                transformations::inline_ast(*prog, {false, {}, "anc"});
+
+                /* Generate the layout */
+                if (layout_alg == "linear") {
+                    initial_layout = mapping::compute_basic_layout(dev, *prog);
+                } else if (layout_alg == "eager") {
+                    initial_layout = mapping::compute_eager_layout(dev, *prog);
+                } else if (layout_alg == "bestfit") {
+                    initial_layout = mapping::compute_bestfit_layout(dev, *prog);
+                }
+
+                /* (Optional) optimize the layout */
+                if (mapper == "steiner" && do_lo)
+                    optimize_steiner_layout(dev, initial_layout, *prog);
+
+                /* Apply the layout */
+                mapping::apply_layout(initial_layout, dev, *prog);
+
+                /* Apply the mapping algorithm */
+                if (mapper == "swap") {
+                    output_perm = mapping::map_onto_device(dev, *prog);
+                } else if (mapper == "steiner") {
+                    mapping::steiner_mapping(dev, *prog);
+                }
+            }
+        }
+
+    /* Output */
+    if (format == "quil") {
+        if (ofile == "")
+            output::output_quil(*prog);
+        else
+            output::write_quil(*prog, ofile);
+    } else if (format == "projectq") {
+        if (ofile == "")
+            output::output_projectq(*prog);
+        else
+            output::write_projectq(*prog, ofile);
+    } else if (format == "qsharp") {
+        if (ofile == "")
+            output::output_qsharp(*prog);
+        else
+            output::write_qsharp(*prog, ofile);
+    } else if (format == "cirq") {
+        if (ofile == "")
+            output::output_cirq(*prog);
+        else
+            output::write_cirq(*prog, ofile);
+    } else if (format == "resources") {
+        auto count = tools::estimate_resources(*prog);
+
+        if (ofile == "") {
+            std::cout << "Resource estimates for " << input_qasm
+                      << ":\n";
+            for (auto& [name, num] : count)
+                std::cout << "  " << name << ": " << num
+                          << "\n";
+        } else {
+            std::ofstream os;
+            os.open(ofile);
+
+            os << "Resource estimates for " << input_qasm << ":\n";
+            for (auto& [name, num] : count)
+                os << "  " << name << ": " << num << "\n";
+
+            os.close();
+        }
+    } else { // qasm format
+        if (ofile == "") {
+            if (mapped)
+                dev.print_layout(initial_layout, std::cout,
+                                 "// ", output_perm);
+            std::cout << *prog << "\n";
+        } else {
+            std::ofstream os;
+            os.open(ofile);
+
+            if (mapped)
+                dev.print_layout(initial_layout, os, "// ",
+                                 output_perm);
+            os << *prog;
+
+            os.close();
         }
     }
 }

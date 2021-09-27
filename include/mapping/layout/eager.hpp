@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include <qasm/ast/traversal.hpp>
+#include <qasmtools/ast/traversal.hpp>
 #include "mapping/device.hpp"
 
 #include <cstddef>
@@ -39,10 +39,10 @@
 #include <set>
 #include <vector>
 
-using namespace qasm;
-
 namespace staq {
 namespace mapping {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \class staq::mapping::LayoutTransformer

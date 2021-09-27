@@ -31,15 +31,15 @@
 
 #pragma once
 
-#include <qasm/ast/visitor.hpp>
-#include <qasm/ast/replacer.hpp>
+#include <qasmtools/ast/visitor.hpp>
+#include <qasmtools/ast/replacer.hpp>
 
 #include <tuple>
 
-using namespace qasm;
-
 namespace staq {
 namespace optimization {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \brief Basic adjacent gate cancellation algorithm

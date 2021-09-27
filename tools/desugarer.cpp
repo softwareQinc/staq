@@ -24,15 +24,14 @@
  * SOFTWARE.
  */
 
-#include <qasm/parser/parser.hpp>
+#include <qasmtools/parser/parser.hpp>
 #include "transformations/desugar.hpp"
 
-using namespace staq;
-using namespace qasm;
-
 int main() {
+    using namespace staq;
+    using qasmtools::parser::parse_stdin;
 
-    auto program = parser::parse_stdin();
+    auto program = parse_stdin();
     if (program) {
         transformations::desugar(*program);
         std::cout << *program;

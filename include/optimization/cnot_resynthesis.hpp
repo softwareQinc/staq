@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <qasm/ast/visitor.hpp>
-#include <qasm/ast/replacer.hpp>
+#include <qasmtools/ast/visitor.hpp>
+#include <qasmtools/ast/replacer.hpp>
 #include "synthesis/cnot_dihedral.hpp"
 
 #include <cstddef>
@@ -40,10 +40,10 @@
 #include <sstream>
 #include <unordered_map>
 
-using namespace qasm;
-
 namespace staq {
 namespace optimization {
+
+using namespace qasmtools;
 
 /**
  * \class staq::optimization::CNOTResynthesizer

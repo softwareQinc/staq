@@ -31,15 +31,15 @@
 
 #pragma once
 
-#include <qasm/ast/traversal.hpp>
+#include <qasmtools/ast/traversal.hpp>
 #include "mapping/device.hpp"
 
 #include <map>
 
-using namespace qasm;
-
 namespace staq {
 namespace mapping {
+
+namespace ast = qasmtools::ast;
 
 /**
  * \class staq::mapping::BestFit
