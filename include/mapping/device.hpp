@@ -500,5 +500,15 @@ inline Device parse_json(std::string fname) {
     return Device(name, n, dag, sq_fi, tq_fi);
 }
 
+/** \brief Generates a fully connected device with a given number of qubits */
+inline Device fully_connected(uint32_t n) {
+    auto tmp = std::vector<std::vector<bool>>(n, std::vector<bool>(n, true));
+    for (uint32_t i = 0; i < n; i++) {
+        tmp[i][i] = false;
+    }
+
+    return Device("Fully connected device", n, tmp);
+}
+
 } // namespace mapping
 } // namespace staq
