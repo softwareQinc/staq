@@ -43,6 +43,7 @@
 #include "mapping/mapping/steiner.hpp"
 
 #include "tools/resource_estimator.hpp"
+#include "tools/qubit_estimator.hpp"
 
 #include "output/projectq.hpp"
 #include "output/qsharp.hpp"
@@ -119,7 +120,7 @@ int main(int argc, char** argv) {
     using qasmtools::parser::parse_file;
 
     if (argc == 1) {
-        std::cout << "Usage: staq [PASSES/OPTIONS] DEVICE.json FILE.qasm\n"
+        std::cout << "Usage: staq [PASSES/OPTIONS] FILE.qasm\n"
                   << "Run with --help for more information.\n";
         return 0;
     }
@@ -164,10 +165,9 @@ int main(int argc, char** argv) {
     app.add_flag(
         "--no-expand-registers", no_expand_registers,
         "Disables expanding gates applied to registers rather than qubits");
-    app.add_option(
-        "DEVICE.json", device_json,
-        "Device to map onto")
-        ->required()
+    CLI::Option* device_opt = app.add_option(
+        "-d,--device", device_json,
+        "Device to map onto (.json)")
         ->check(CLI::ExistingFile);
     app.add_option(
         "FILE.qasm", input_qasm,
@@ -233,7 +233,10 @@ int main(int argc, char** argv) {
     bool mapped = false;
 
     /* Deserialization */
-    auto dev = mapping::parse_json(device_json);
+    mapping::Device dev;
+    if (*device_opt) {
+        dev = mapping::parse_json(device_json);
+    }
 
     /* Parsing */
     auto prog = parse_file(input_qasm);
@@ -272,6 +275,13 @@ int main(int argc, char** argv) {
 
                 /* Inline fully first */
                 transformations::inline_ast(*prog, {false, {}, "anc"});
+
+                /* Device */
+                if (!(*device_opt)) {
+                    dev = mapping::fully_connected(
+                        tools::estimate_qubits(*prog)
+                    );
+                }
 
                 /* Generate the layout */
                 if (layout_alg == "linear") {
