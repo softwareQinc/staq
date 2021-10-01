@@ -26,6 +26,7 @@
 
 #include <qasmtools/parser/parser.hpp>
 #include "transformations/inline.hpp"
+#include "tools/qubit_estimator.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
     using qasmtools::parser::parse_stdin;
 
     if (argc == 1) {
-        std::cout << "Usage: staq_mapper [OPTIONS] DEVICE.json\n"
+        std::cout << "Usage: staq_mapper [OPTIONS]\n"
                   << "Run with --help for more information.\n";
         return 0;
     }
@@ -57,10 +58,9 @@ int main(int argc, char** argv) {
     app.get_formatter()->label("REQUIRED", "(REQUIRED)");
     app.get_formatter()->column_width(40);
 
-    app.add_option(
-        "DEVICE.json", device_json,
-        "Device to map onto")
-        ->required()
+    CLI::Option* device_opt = app.add_option(
+        "-d,--device", device_json,
+        "Device to map onto (.json)")
         ->check(CLI::ExistingFile);
     app.add_option(
         "-l", layout,
@@ -80,7 +80,12 @@ int main(int argc, char** argv) {
         transformations::inline_ast(*program, {false, {}, "anc"});
 
         // Physical device
-        auto dev = mapping::parse_json(device_json);
+        mapping::Device dev;
+        if (*device_opt) {
+            dev = mapping::parse_json(device_json);
+        } else {
+            dev = mapping::fully_connected(tools::estimate_qubits(*program));
+        }
 
         // Initial layout
         mapping::layout physical_layout;
