@@ -31,11 +31,11 @@
 
 #pragma once
 
-#include <qasmtools/ast/traversal.hpp>
+#include "qasmtools/ast/traversal.hpp"
+#include "qasmtools/utils/templates.hpp"
 #include "synthesis/linear_reversible.hpp"
 #include "synthesis/cnot_dihedral.hpp"
 #include "mapping/device.hpp"
-#include <qasmtools/utils/templates.hpp>
 
 #include <vector>
 

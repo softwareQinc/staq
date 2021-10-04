@@ -43,9 +43,9 @@
 #include <fstream>
 #include <unordered_map>
 
-#include <qasmtools/parser/position.hpp>
-#include <qasmtools/ast/stmt.hpp>
-#include <qasmtools/utils/angle.hpp>
+#include "qasmtools/parser/position.hpp"
+#include "qasmtools/ast/stmt.hpp"
+#include "qasmtools/utils/angle.hpp"
 
 namespace staq {
 namespace synthesis {

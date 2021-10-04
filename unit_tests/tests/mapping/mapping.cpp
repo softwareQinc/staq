@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "mapping/device.hpp"
 
 #include "mapping/mapping/swap.hpp"

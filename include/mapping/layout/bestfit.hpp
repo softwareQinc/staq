@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include <qasmtools/ast/traversal.hpp>
+#include "qasmtools/ast/traversal.hpp"
 #include "mapping/device.hpp"
 
 #include <map>

@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "transformations/inline.hpp"
 #include "tools/qubit_estimator.hpp"
 

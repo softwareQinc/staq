@@ -33,7 +33,7 @@
 
 // TODO: account for compound gates, i.e. qreg q[n]; reset q;
 
-#include <qasmtools/ast/ast.hpp>
+#include "qasmtools/ast/ast.hpp"
 
 #include <algorithm>
 

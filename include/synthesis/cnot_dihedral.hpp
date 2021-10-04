@@ -33,7 +33,7 @@
 
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
-#include <qasmtools/ast/expr.hpp>
+#include "qasmtools/ast/expr.hpp"
 
 #include <cstddef>
 #include <list>

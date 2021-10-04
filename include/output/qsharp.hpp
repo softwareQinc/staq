@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include <qasmtools/ast/ast.hpp>
+#include "qasmtools/ast/ast.hpp"
 
 #include <iomanip>
 #include <typeinfo>

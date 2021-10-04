@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include <qasmtools/ast/var.hpp>
+#include "qasmtools/ast/var.hpp"
 
 #include <limits>
 #include <cmath>
