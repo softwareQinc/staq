@@ -30,6 +30,7 @@
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
 #include "transformations/barrier_merge.hpp"
+#include "transformations/expression_simplifier.hpp"
 
 #include "optimization/simplify.hpp"
 #include "optimization/rotation_folding.hpp"
@@ -56,7 +57,7 @@
 /**
  * \brief Compiler passes
  */
-enum class Pass { desugar, inln, synth, rotfold, cnotsynth, simplify, map };
+enum class Pass { desugar, inln, synth, rotfold, cnotsynth, simplify, map, rewrite };
 
 /**
  * \brief Command-line passes
@@ -93,7 +94,7 @@ std::unordered_map<std::string_view, Option> cli_map{
 /* Passes aren't handled by CLI, so manually create help info */
 std::string make_passes_str(int width) {
     std::ostringstream passes_str;
-    passes_str << "\nCompiler passes:\n";
+    passes_str << "Compiler passes:\n";
     passes_str << std::setw(width) << std::left << "  -i,--inline"
                << "Inline all gates\n";
     passes_str << std::setw(width) << std::left << "  -S,--synthesize"
@@ -131,6 +132,7 @@ int main(int argc, char** argv) {
     std::string mapper = "steiner";
     bool disable_layout_optimization = false;
     bool no_expand_registers = false;
+    bool no_rewrite_expressions = false;
     std::string device_json;
     std::string input_qasm;
 
@@ -165,6 +167,9 @@ int main(int argc, char** argv) {
     app.add_flag(
         "--no-expand-registers", no_expand_registers,
         "Disables expanding gates applied to registers rather than qubits");
+    app.add_flag(
+        "--no-rewrite-expressions", no_rewrite_expressions,
+        "Disables evaluation of parameter expressions");
     CLI::Option* device_opt = app.add_option(
         "-d,--device", device_json,
         "Device to map onto (.json)")
@@ -179,12 +184,17 @@ int main(int argc, char** argv) {
 
     /* Passes */
     std::list<Pass> passes;
-    if (!no_expand_registers)
+    if (!no_rewrite_expressions) {
+        passes.push_back(Pass::rewrite);
+    }
+    if (!no_expand_registers) {
         passes.push_back(Pass::desugar);
+    }
     for (auto& x : app.remaining()) {
         switch (cli_map[x]) {
             case Option::i:
                 passes.push_back(Pass::inln);
+                if (!no_rewrite_expressions) passes.push_back(Pass::rewrite);
                 break;
             case Option::S:
                 passes.push_back(Pass::synth);
@@ -206,14 +216,12 @@ int main(int argc, char** argv) {
                 passes.push_back(Pass::simplify);
                 break;
             case Option::O2:
-                passes.push_back(Pass::simplify);
                 passes.push_back(Pass::inln);
                 passes.push_back(Pass::simplify);
                 passes.push_back(Pass::rotfold);
                 passes.push_back(Pass::simplify);
                 break;
             case Option::O3:
-                passes.push_back(Pass::simplify);
                 passes.push_back(Pass::inln);
                 passes.push_back(Pass::simplify);
                 passes.push_back(Pass::rotfold);
@@ -268,6 +276,7 @@ int main(int argc, char** argv) {
                 optimization::optimize_CNOT(*prog);
                 break;
             case Pass::simplify:
+                transformations::expr_simplify(*prog);
                 optimization::simplify(*prog);
                 break;
             case Pass::map: {
@@ -305,7 +314,11 @@ int main(int argc, char** argv) {
                 } else if (mapper == "steiner") {
                     mapping::steiner_mapping(dev, *prog);
                 }
+                break;
             }
+            case Pass::rewrite:
+                transformations::expr_simplify(*prog);
+                break;
         }
 
     /* Output */
