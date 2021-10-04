@@ -76,8 +76,8 @@ class QubitEstimator final : public ast::Visitor {
             qubits_ += decl.size();
     }
     void visit(ast::AncillaDecl& decl) {
-        if (!decl.is_dirty())
-            qubits_ += decl.size();
+        // count all ancillas as freshly allocated
+        qubits_ += decl.size();
     }
 
     /* Program */
