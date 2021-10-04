@@ -118,7 +118,7 @@ TEST(Rotation_folding, Rz_Merge) {
                        "include \"qelib1.inc\";\n"
                        "\n"
                        "qreg q[1];\n"
-                       "rz(0.392699) q[0];\n"; // pi/8 = 0.392699
+                       "rz(0.392699081698724) q[0];\n";  // pi/8 to 15 decimals
 
     auto program = parser::parse_string(pre, "rz_merge.qasm");
     optimization::fold_rotations(*program);
@@ -142,7 +142,7 @@ TEST(Rotation_folding, Rx_Merge) {
                        "include \"qelib1.inc\";\n"
                        "\n"
                        "qreg q[1];\n"
-                       "rx(0.392699) q[0];\n"; // pi/8 = 0.392699
+                       "rx(0.392699081698724) q[0];\n"; // pi/8 to 15 decimals
 
     auto program = parser::parse_string(pre, "rx_merge.qasm");
     optimization::fold_rotations(*program);
