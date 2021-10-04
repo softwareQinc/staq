@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
 #include "transformations/barrier_merge.hpp"
 

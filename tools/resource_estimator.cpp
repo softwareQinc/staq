@@ -24,8 +24,7 @@
  * SOFTWARE.
  */
 
-#include <qasmtools/ast/ast.hpp>
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "tools/resource_estimator.hpp"
 
 #include <CLI/CLI.hpp>

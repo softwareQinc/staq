@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
 
 int main() {

@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <qasmtools/ast/visitor.hpp>
-#include <qasmtools/utils/angle.hpp>
+#include "qasmtools/ast/visitor.hpp"
+#include "qasmtools/utils/angle.hpp"
 
 #include <cmath>
 #include <variant>

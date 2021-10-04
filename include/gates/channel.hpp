@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include <qasmtools/utils/angle.hpp>
+#include "qasmtools/utils/angle.hpp"
 
 #include <iostream>
 #include <map>

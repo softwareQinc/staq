@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <qasmtools/ast/traversal.hpp>
-#include <qasmtools/ast/replacer.hpp>
+#include "qasmtools/ast/traversal.hpp"
+#include "qasmtools/ast/replacer.hpp"
 
 #include <algorithm>
 #include <set>

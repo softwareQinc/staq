@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "optimization/rotation_folding.hpp"
 
 #include <CLI/CLI.hpp>

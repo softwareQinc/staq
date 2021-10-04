@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include <qasmtools/parser/parser.hpp>
+#include "qasmtools/parser/parser.hpp"
 #include "optimization/rotation_folding.hpp"
 
 using namespace staq;

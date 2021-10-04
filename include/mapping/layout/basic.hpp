@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <qasmtools/ast/replacer.hpp>
-#include <qasmtools/ast/traversal.hpp>
+#include "qasmtools/ast/replacer.hpp"
+#include "qasmtools/ast/traversal.hpp"
 #include "transformations/substitution.hpp"
 #include "mapping/device.hpp"
 

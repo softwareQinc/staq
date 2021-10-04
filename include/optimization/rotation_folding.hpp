@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <qasmtools/ast/visitor.hpp>
-#include <qasmtools/ast/replacer.hpp>
+#include "qasmtools/ast/visitor.hpp"
+#include "qasmtools/ast/replacer.hpp"
 #include "gates/channel.hpp"
 
 #include <list>
