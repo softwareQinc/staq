@@ -96,7 +96,7 @@ TEST(ExprSimplify, Mixed) {
                       "\tu1((1*a)+(c/1)) q;\n"
                       "}\n"
                       "qreg q[2];\n"
-                      "u1(exp(ln(0.4+0.05+0.006))) q;\n";
+                      "u1(exp(ln(4+0.5))) q;\n";
 
     std::string post = "OPENQASM 2.0;\n"
                        "include \"qelib1.inc\";\n"
@@ -108,7 +108,7 @@ TEST(ExprSimplify, Mixed) {
                        "\tu1(a+c) q;\n"
                        "}\n"
                        "qreg q[2];\n"
-                       "u1(0.456) q;\n";
+                       "u1(4.5) q;\n";
 
     auto program = parser::parse_string(pre, "mixed.qasm");
     transformations::expr_simplify(*program);
