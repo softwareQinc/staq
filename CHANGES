@@ -1,17 +1,10 @@
 Pre-release - in progress
-    - Decoupled the OpenQASM parser and GoogleTest from the main codebase, now
-      they are submodules, https://github.com/softwareQinc/qasmtools and
-      https://github.com/softwareQinc/googletest, respectively. The OpenQASM
-      parser submodule is now common to both staq and Quantum++, and by default
-      uses standard OpenQASM gate definitions in Quantum++. To switch to Qiskit
-      definitions (which are also the usual ones used in QC textbooks),
-      configure the project with `cmake -DUSE_QISKIT_SPECS=ON`. For a list of
-      discrepancies between Qiskit and standard OpenQASM, please see the newly
-      added ["DISCREPANCIES.md"] file. DO NOT FORGET to clone the repository
-      with `--recursive` (or `--recurse-submodules`), i.e.
-      `git clone --recurse-submodules https://github.com/softwareqinc/staq`.
-      Alternatively, type `git submodule update --init` if you didn't clone the
-      repository recursively.
+    - Decoupled the OpenQASM parser from the main codebase. A hard copy of
+      qasmtools (https://github.com/softwareQinc/qasmtools) is now common to
+      both staq and Quantum++, and by default uses standard OpenQASM 2.0 gate
+      definitions. To switch to Qiskit definitions (which are also the usual
+      ones used in QC textbooks), configure the project with
+      `cmake -DUSE_QISKIT_SPECS=ON`.
     - Added CMake installation support
     - Switched continuous integration from Travis CI to CircleCI
     - CMake minimum required version bumped to 3.12 for automatic unit tests
@@ -22,6 +15,9 @@ Pre-release - in progress
       'make test' (after explicitly built with 'make unit_tests'). Use
       'GTEST_COLOR=1 ARGS="-V" make test' or 'GTEST_COLOR=1 ctest -V' for
       coloured verbose testing output.
+    - QPU specifications (qubits, couplings, fidelities) are now stored in a
+      JSON file format (https://github.com/softwareQinc/staq/tree/main/qpus).
+      Added a device generator to easily create these JSON files.
 
 Version 1.4 - 5 December 2020
     - Bugfixes
