@@ -92,6 +92,14 @@ class Simplifier final : public ast::Visitor {
 
     /* Gates */
     void visit(ast::UGate& gate) {
+        auto theta = gate.theta().constant_eval();
+        auto phi = gate.phi().constant_eval();
+        auto lambda = gate.lambda().constant_eval();
+        if (theta && phi && lambda && (*theta == 0) && (*phi + *lambda == 0)) {
+            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate>>());
+            return;
+        }
+
         last_[gate.arg()] = {"U", {gate.arg()}, gate.uid()};
     }
     void visit(ast::CNOTGate& gate) {
@@ -125,6 +133,39 @@ class Simplifier final : public ast::Visitor {
     }
     void visit(ast::DeclaredGate& gate) {
         auto name = gate.name();
+
+        if (name == "u3") {
+            auto theta = gate.carg(0).constant_eval();
+            auto phi = gate.carg(1).constant_eval();
+            auto lambda = gate.carg(2).constant_eval();
+            if (theta && phi && lambda && (*theta == 0)
+                && (*phi + *lambda == 0)) {
+                erasures_[gate.uid()] =
+                    std::move(std::list<ast::ptr<ast::Gate>>());
+                return;
+            }
+        } else if (name == "u1" || name == "rx" || name == "ry" || name == "rz"
+                   || name == "crz" || name == "cu1") {
+            auto lambda = gate.carg(0).constant_eval();
+            if (lambda && (*lambda == 0)) {
+                erasures_[gate.uid()] =
+                    std::move(std::list<ast::ptr<ast::Gate>>());
+                return;
+            }
+        } else if (name == "id" || name == "u0") {
+            erasures_[gate.uid()] = std::move(std::list<ast::ptr<ast::Gate>>());
+            return;
+        } else if (name == "cu3") {
+            auto theta = gate.carg(0).constant_eval();
+            auto phi = gate.carg(1).constant_eval();
+            auto lambda = gate.carg(2).constant_eval();
+            if (theta && phi && lambda && (*theta == 0) && (*phi == 0)
+                && (*lambda == 0)) {
+                erasures_[gate.uid()] =
+                    std::move(std::list<ast::ptr<ast::Gate>>());
+                return;
+            }
+        }
 
         if (mergeable_) {
             if (name == "cx") {
