@@ -1,3 +1,6 @@
+Pre-release - work in progress
+    - 
+
 Version 2.0 - 5 October 2021
     - Decoupled the OpenQASM parser from the main codebase. A hard copy of
       qasmtools (https://github.com/softwareQinc/qasmtools) is now common to
