@@ -40,6 +40,7 @@ namespace ast = qasmtools::ast;
 
 class QubitEstimator final : public ast::Visitor {
     int qubits_;
+
   public:
     QubitEstimator() : qubits_(0) {}
     ~QubitEstimator() = default;

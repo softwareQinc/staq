@@ -58,17 +58,12 @@ int main(int argc, char** argv) {
     app.get_formatter()->label("REQUIRED", "(REQUIRED)");
     app.get_formatter()->column_width(40);
 
-    CLI::Option* device_opt = app.add_option(
-        "-d,--device", device_json,
-        "Device to map onto (.json)")
-        ->check(CLI::ExistingFile);
-    app.add_option(
-        "-l", layout,
-        "Layout algorithm to use. Default=" + layout)
+    CLI::Option* device_opt =
+        app.add_option("-d,--device", device_json, "Device to map onto (.json)")
+            ->check(CLI::ExistingFile);
+    app.add_option("-l", layout, "Layout algorithm to use. Default=" + layout)
         ->check(CLI::IsMember({"linear", "eager", "bestfit"}));
-    app.add_option(
-        "-m", mapper,
-        "Mapping algorithm to use. Default=" + mapper)
+    app.add_option("-m", mapper, "Mapping algorithm to use. Default=" + mapper)
         ->check(CLI::IsMember({"swap", "steiner"}));
 
     CLI11_PARSE(app, argc, argv);

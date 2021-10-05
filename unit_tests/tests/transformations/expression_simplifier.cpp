@@ -8,11 +8,12 @@ using namespace qasmtools;
 // Testing collecting multiples of pi
 /******************************************************************************/
 TEST(ExprSimplify, CollectPi) {
-    std::string pre = "OPENQASM 2.0;\n"
-                      "include \"qelib1.inc\";\n"
-                      "\n"
-                      "qreg q[2];\n"
-                      "rz((((-(pi/4)/2)+(-(pi/4)/2))+(-(pi/4)/2))+(-(pi/4)/2)) q[0];\n";
+    std::string pre =
+        "OPENQASM 2.0;\n"
+        "include \"qelib1.inc\";\n"
+        "\n"
+        "qreg q[2];\n"
+        "rz((((-(pi/4)/2)+(-(pi/4)/2))+(-(pi/4)/2))+(-(pi/4)/2)) q[0];\n";
 
     std::string post = "OPENQASM 2.0;\n"
                        "include \"qelib1.inc\";\n"
@@ -90,25 +91,28 @@ TEST(ExprSimplify, Mixed) {
                       "include \"qelib1.inc\";\n"
                       "\n"
                       "gate mygate(a,b,c) q {\n"
-                      "\tu1(-(3*(pi-5))/2*(pi+8/1.5)*(1-1.0)+(2+a*(5/2-1.5)*(b^(c^(2-1))))) q;\n"
-                      "\tu1(sin((4*(3+(2-(1/c))))/(b*(3+(2-1/2)))^((0.5^(-2))+(1+(2+(3+4)))^a))) q;\n"
+                      "\tu1(-(3*(pi-5))/2*(pi+8/1.5)*(1-1.0)+(2+a*(5/"
+                      "2-1.5)*(b^(c^(2-1))))) q;\n"
+                      "\tu1(sin((4*(3+(2-(1/c))))/(b*(3+(2-1/"
+                      "2)))^((0.5^(-2))+(1+(2+(3+4)))^a))) q;\n"
                       "\tu1(ln(tan((4-pi)+(pi-4))-cos(1+2*(c+0)))) q;\n"
                       "\tu1((1*a)+(c/1)) q;\n"
                       "}\n"
                       "qreg q[2];\n"
                       "u1(exp(ln(4+0.5))) q;\n";
 
-    std::string post = "OPENQASM 2.0;\n"
-                       "include \"qelib1.inc\";\n"
-                       "\n"
-                       "gate mygate(a,b,c) q {\n"
-                       "\tu1(2+(a*(b^c))) q;\n"
-                       "\tu1(sin((4*(3+(2-(1/c))))/((b*(9/2))^(4+(10^a))))) q;\n"
-                       "\tu1(ln(-cos(1+(2*c)))) q;\n"
-                       "\tu1(a+c) q;\n"
-                       "}\n"
-                       "qreg q[2];\n"
-                       "u1(4.5) q;\n";
+    std::string post =
+        "OPENQASM 2.0;\n"
+        "include \"qelib1.inc\";\n"
+        "\n"
+        "gate mygate(a,b,c) q {\n"
+        "\tu1(2+(a*(b^c))) q;\n"
+        "\tu1(sin((4*(3+(2-(1/c))))/((b*(9/2))^(4+(10^a))))) q;\n"
+        "\tu1(ln(-cos(1+(2*c)))) q;\n"
+        "\tu1(a+c) q;\n"
+        "}\n"
+        "qreg q[2];\n"
+        "u1(4.5) q;\n";
 
     auto program = parser::parse_string(pre, "mixed.qasm");
     transformations::expr_simplify(*program);

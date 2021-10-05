@@ -97,11 +97,9 @@ class ExprSimplifier final : public ast::Visitor {
         bool is_zero() const { return n_ == 0; }
         int numerator() const { return n_; }
         int denominator() const { return d_; }
-        double value() const { return (double)n_ / (double)d_; }
+        double value() const { return (double) n_ / (double) d_; }
 
-        Rational operator-() const {
-            return Rational(-n_, d_);
-        }
+        Rational operator-() const { return Rational(-n_, d_); }
 
         Rational& operator+=(const Rational& rhs) {
             int new_n = n_ * rhs.d_ + d_ * rhs.n_;
@@ -149,18 +147,14 @@ class ExprSimplifier final : public ast::Visitor {
             ast::ptr<ast::Expr> tmp = ast::IntExpr::create({}, std::abs(n_));
             if (n_ < 0) {
                 // unary minus
-                tmp = ast::UExpr::create({},
-                                         ast::UnaryOp::Neg,
-                                         std::move(tmp));
+                tmp = ast::UExpr::create({}, ast::UnaryOp::Neg, std::move(tmp));
             }
             // expression is an integer
             if (d_ == 1) {
                 return tmp;
             }
             // expression has a demonimator
-            return ast::BExpr::create({},
-                                      std::move(tmp),
-                                      ast::BinaryOp::Divide,
+            return ast::BExpr::create({}, std::move(tmp), ast::BinaryOp::Divide,
                                       ast::IntExpr::create({}, d_));
         }
 
@@ -195,22 +189,16 @@ class ExprSimplifier final : public ast::Visitor {
         T constant_;
 
       public:
-        LinearExpr(T coefficient, T constant) :
-            coefficient_(coefficient), constant_(constant) {}
+        LinearExpr(T coefficient, T constant)
+            : coefficient_(coefficient), constant_(constant) {}
 
         bool is_zero() const {
             return coefficient_.is_zero() && constant_.is_zero();
         }
-        const T& coefficient() const {
-            return coefficient_;
-        }
-        const T& constant() const {
-            return constant_;
-        }
+        const T& coefficient() const { return coefficient_; }
+        const T& constant() const { return constant_; }
 
-        D operator-() const {
-            return D(-coefficient_, -constant_);
-        }
+        D operator-() const { return D(-coefficient_, -constant_); }
 
         LinearExpr<T, D>& operator+=(const LinearExpr<T, D>& rhs) {
             coefficient_ += rhs.coefficient_;
@@ -257,8 +245,8 @@ class ExprSimplifier final : public ast::Visitor {
             }
             return std::nullopt;
         }
-        friend std::optional<D> operator/(const LinearExpr<T,D>& lhs,
-                                          const LinearExpr<T,D>& rhs) {
+        friend std::optional<D> operator/(const LinearExpr<T, D>& lhs,
+                                          const LinearExpr<T, D>& rhs) {
             // divisor is constant
             if (rhs.coefficient_.is_zero()) {
                 if (rhs.constant_.is_zero()) {
@@ -281,6 +269,7 @@ class ExprSimplifier final : public ast::Visitor {
      */
     class LinearPiExpr : public LinearExpr<Rational, LinearPiExpr> {
         using LinearExpr<Rational, LinearPiExpr>::LinearExpr;
+
       public:
         ast::ptr<ast::Expr> to_ast() {
             if (coefficient_.is_zero()) {
@@ -290,33 +279,28 @@ class ExprSimplifier final : public ast::Visitor {
             ast::ptr<ast::Expr> tmp = ast::PiExpr::create({});
             // numerator
             int a = coefficient_.numerator();
-            if (a == 1) {} // multiplication by 1 is omitted
+            if (a == 1) {
+            } // multiplication by 1 is omitted
             else if (a == -1) {
                 // -pi
-                tmp = ast::UExpr::create({},
-                                         ast::UnaryOp::Neg,
-                                         std::move(tmp));
+                tmp = ast::UExpr::create({}, ast::UnaryOp::Neg, std::move(tmp));
             } else {
-                ast::ptr<ast::Expr>
-                    a_ast = ast::IntExpr::create({}, std::abs(a));
+                ast::ptr<ast::Expr> a_ast =
+                    ast::IntExpr::create({}, std::abs(a));
                 if (a < 0) {
                     // unary minus
-                    a_ast = ast::UExpr::create({},
-                                               ast::UnaryOp::Neg,
+                    a_ast = ast::UExpr::create({}, ast::UnaryOp::Neg,
                                                std::move(a_ast));
                 }
                 // a*pi
-                tmp = ast::BExpr::create({},
-                                         std::move(a_ast),
-                                         ast::BinaryOp::Times,
-                                         std::move(tmp));
+                tmp = ast::BExpr::create({}, std::move(a_ast),
+                                         ast::BinaryOp::Times, std::move(tmp));
             }
             // denominator
             int b = coefficient_.denominator();
             if (b != 1) {
                 // a*pi/b
-                tmp = ast::BExpr::create({},
-                                         std::move(tmp),
+                tmp = ast::BExpr::create({}, std::move(tmp),
                                          ast::BinaryOp::Divide,
                                          ast::IntExpr::create({}, std::abs(b)));
             }
@@ -326,22 +310,20 @@ class ExprSimplifier final : public ast::Visitor {
                 return tmp;
             } else if (constant_.numerator() < 0) {
                 // - c/d
-                return ast::BExpr::create({},
-                                          std::move(tmp),
+                return ast::BExpr::create({}, std::move(tmp),
                                           ast::BinaryOp::Minus,
                                           (-constant_).to_ast());
             } else {
                 // + c/d
-                return ast::BExpr::create({},
-                                          std::move(tmp),
+                return ast::BExpr::create({}, std::move(tmp),
                                           ast::BinaryOp::Plus,
                                           constant_.to_ast());
             }
         }
 
         double value() {
-            return coefficient_.value() * qasmtools::utils::pi
-                    + constant_.value();
+            return coefficient_.value() * qasmtools::utils::pi +
+                   constant_.value();
         }
     };
 
@@ -349,6 +331,7 @@ class ExprSimplifier final : public ast::Visitor {
 
     Expression temp_value;
     std::optional<ast::ptr<ast::Expr>> replacement_expr;
+
   public:
     ExprSimplifier() = default;
 
@@ -415,11 +398,9 @@ class ExprSimplifier final : public ast::Visitor {
                 }
             } else if (std::holds_alternative<double>(rval)) {
                 // LPE op REAL
-                temp_value = evaluate_double_bexpr(
-                    std::get<LinearPiExpr>(lval).value(),
-                    expr.op(),
-                    std::get<double>(rval)
-                );
+                temp_value =
+                    evaluate_double_bexpr(std::get<LinearPiExpr>(lval).value(),
+                                          expr.op(), std::get<double>(rval));
             } else {
                 // LPE op ???
                 switch (expr.op()) {
@@ -429,18 +410,19 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.rexp().clone());
                         } else {
-                            expr.set_lexp(std::get<LinearPiExpr>(lval).to_ast());
+                            expr.set_lexp(
+                                std::get<LinearPiExpr>(lval).to_ast());
                         }
                         break;
                     case ast::BinaryOp::Minus:
                         if (std::get<LinearPiExpr>(lval).is_zero()) {
                             // 0 - x
-                            replacement_expr = ast::UExpr::create({},
-                                ast::UnaryOp::Neg,
-                                ast::ptr<ast::Expr>(expr.rexp().clone())
-                            );
+                            replacement_expr = ast::UExpr::create(
+                                {}, ast::UnaryOp::Neg,
+                                ast::ptr<ast::Expr>(expr.rexp().clone()));
                         } else {
-                            expr.set_lexp(std::get<LinearPiExpr>(lval).to_ast());
+                            expr.set_lexp(
+                                std::get<LinearPiExpr>(lval).to_ast());
                         }
                         break;
                     case ast::BinaryOp::Times:
@@ -449,7 +431,8 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.rexp().clone());
                         } else {
-                            expr.set_lexp(std::get<LinearPiExpr>(lval).to_ast());
+                            expr.set_lexp(
+                                std::get<LinearPiExpr>(lval).to_ast());
                         }
                         break;
                     case ast::BinaryOp::Divide:
@@ -463,18 +446,13 @@ class ExprSimplifier final : public ast::Visitor {
         } else if (std::holds_alternative<double>(lval)) {
             if (std::holds_alternative<LinearPiExpr>(rval)) {
                 // REAL op LPE
-                temp_value = evaluate_double_bexpr(
-                    std::get<double>(lval),
-                    expr.op(),
-                    std::get<LinearPiExpr>(rval).value()
-                );
+                temp_value =
+                    evaluate_double_bexpr(std::get<double>(lval), expr.op(),
+                                          std::get<LinearPiExpr>(rval).value());
             } else if (std::holds_alternative<double>(rval)) {
                 // REAL op REAL
                 temp_value = evaluate_double_bexpr(
-                    std::get<double>(lval),
-                    expr.op(),
-                    std::get<double>(rval)
-                );
+                    std::get<double>(lval), expr.op(), std::get<double>(rval));
             } else {
                 // REAL op ???
                 switch (expr.op()) {
@@ -484,22 +462,19 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.rexp().clone());
                         } else {
-                            expr.set_lexp(
-                                ast::RealExpr::create({}, std::get<double>(lval))
-                            );
+                            expr.set_lexp(ast::RealExpr::create(
+                                {}, std::get<double>(lval)));
                         }
                         break;
                     case ast::BinaryOp::Minus:
                         if (std::get<double>(lval) == 0) {
                             // 0 - x
-                            replacement_expr = ast::UExpr::create({},
-                                ast::UnaryOp::Neg,
-                                ast::ptr<ast::Expr>(expr.rexp().clone())
-                            );
+                            replacement_expr = ast::UExpr::create(
+                                {}, ast::UnaryOp::Neg,
+                                ast::ptr<ast::Expr>(expr.rexp().clone()));
                         } else {
-                            expr.set_lexp(
-                                ast::RealExpr::create({}, std::get<double>(lval))
-                            );
+                            expr.set_lexp(ast::RealExpr::create(
+                                {}, std::get<double>(lval)));
                         }
                         break;
                     case ast::BinaryOp::Times:
@@ -508,20 +483,17 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.rexp().clone());
                         } else {
-                            expr.set_lexp(
-                                ast::RealExpr::create({}, std::get<double>(lval))
-                            );
+                            expr.set_lexp(ast::RealExpr::create(
+                                {}, std::get<double>(lval)));
                         }
                         break;
                     case ast::BinaryOp::Divide:
                         expr.set_lexp(
-                            ast::RealExpr::create({}, std::get<double>(lval))
-                        );
+                            ast::RealExpr::create({}, std::get<double>(lval)));
                         break;
                     case ast::BinaryOp::Pow:
                         expr.set_lexp(
-                            ast::RealExpr::create({}, std::get<double>(lval))
-                        );
+                            ast::RealExpr::create({}, std::get<double>(lval)));
                         break;
                 }
             }
@@ -536,7 +508,8 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.lexp().clone());
                         } else {
-                            expr.set_rexp(std::get<LinearPiExpr>(rval).to_ast());
+                            expr.set_rexp(
+                                std::get<LinearPiExpr>(rval).to_ast());
                         }
                         break;
                     case ast::BinaryOp::Times:
@@ -547,7 +520,8 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.lexp().clone());
                         } else {
-                            expr.set_rexp(std::get<LinearPiExpr>(rval).to_ast());
+                            expr.set_rexp(
+                                std::get<LinearPiExpr>(rval).to_ast());
                         }
                         break;
                 }
@@ -561,9 +535,8 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.lexp().clone());
                         } else {
-                            expr.set_rexp(
-                                ast::RealExpr::create({}, std::get<double>(rval))
-                            );
+                            expr.set_rexp(ast::RealExpr::create(
+                                {}, std::get<double>(rval)));
                         }
                         break;
                     case ast::BinaryOp::Times:
@@ -574,9 +547,8 @@ class ExprSimplifier final : public ast::Visitor {
                             replacement_expr =
                                 ast::ptr<ast::Expr>(expr.lexp().clone());
                         } else {
-                            expr.set_rexp(
-                                ast::RealExpr::create({}, std::get<double>(rval))
-                            );
+                            expr.set_rexp(ast::RealExpr::create(
+                                {}, std::get<double>(rval)));
                         }
                         break;
                 }
@@ -601,15 +573,11 @@ class ExprSimplifier final : public ast::Visitor {
                 default:
                     // evaluate as real expression
                     temp_value = evaluate_double_uexpr(
-                        expr.op(),
-                        std::get<LinearPiExpr>(val).value()
-                    );
+                        expr.op(), std::get<LinearPiExpr>(val).value());
             }
         } else if (std::holds_alternative<double>(val)) {
-            temp_value = evaluate_double_uexpr(
-                expr.op(),
-                std::get<double>(val)
-            );
+            temp_value =
+                evaluate_double_uexpr(expr.op(), std::get<double>(val));
         }
     }
 
@@ -627,13 +595,11 @@ class ExprSimplifier final : public ast::Visitor {
     void visit(ast::MeasureStmt&) {}
     void visit(ast::ResetStmt&) {}
 
-    void visit(ast::IfStmt& stmt) {
-        stmt.then().accept(*this);
-    }
+    void visit(ast::IfStmt& stmt) { stmt.then().accept(*this); }
 
     // Gates
     void visit(ast::UGate& gate) {
-         gate.theta().accept(*this);
+        gate.theta().accept(*this);
         if (replacement_expr) {
             gate.set_theta(std::move(*replacement_expr));
             replacement_expr = std::nullopt;
@@ -682,8 +648,8 @@ class ExprSimplifier final : public ast::Visitor {
             } else if (std::holds_alternative<LinearPiExpr>(temp_value)) {
                 gate.set_carg(i, std::get<LinearPiExpr>(temp_value).to_ast());
             } else if (std::holds_alternative<double>(temp_value)) {
-                gate.set_carg(i,
-                    ast::RealExpr::create({}, std::get<double>(temp_value)));
+                gate.set_carg(
+                    i, ast::RealExpr::create({}, std::get<double>(temp_value)));
             }
             temp_value = std::monostate();
         }
