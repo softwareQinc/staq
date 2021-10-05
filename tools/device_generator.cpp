@@ -31,26 +31,26 @@
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
 
 void write_to_stream(const std::vector<std::vector<bool>>& adj,
-                     const std::string& device_name,
-                     std::ostream& out) {
+                     const std::string& device_name, std::ostream& out) {
     using Device = staq::mapping::Device;
     Device dev(device_name, adj.size(), adj);
     out << dev.to_json() << "\n";
 }
 
 void add_edge(std::vector<std::vector<bool>>& adj,
-              std::vector<std::vector<double>>& tq_fi,
-              int target, int control, double fidelity = FIDELITY_1) {
-    if (target < 0 || target >= adj.size()
-        || control < 0 || control >= adj.size())
-        std::cerr << "Qubit(s) out of range: "
-                  << target << "," << control << "\n";
+              std::vector<std::vector<double>>& tq_fi, int target, int control,
+              double fidelity = FIDELITY_1) {
+    if (target < 0 || target >= adj.size() || control < 0 ||
+        control >= adj.size())
+        std::cerr << "Qubit(s) out of range: " << target << "," << control
+                  << "\n";
     else {
         adj[target][control] = true;
         if (fidelity != FIDELITY_1) {
             if (fidelity < 0 || fidelity > 1)
                 std::cerr << "Fidelity out of range: " << fidelity << "\n";
-            else tq_fi[target][control] = fidelity;
+            else
+                tq_fi[target][control] = fidelity;
         }
     }
 }
@@ -66,60 +66,47 @@ int main(int argc, char** argv) {
     int circular = 0;             // qubit count for circular QPU
     int linear = 0;               // qubit count for linear QPU
 
-    int qubits = 0;                                     // qubit count for graph
-    std::vector<std::pair<int, double>> fidels;         // single qubit fidelities
-    std::vector<std::pair<int, int>> d_edges;           // directed edges
-    std::vector<std::pair<int, int>> u_edges;           // undirected edges
-    std::vector<std::tuple<int, int, double>> df_edges; // d-edges with fidelities
-    std::vector<std::tuple<int, int, double>> uf_edges; // u-edges with fidelities
-    std::string name = "Custom device";                 // name of custom device
+    int qubits = 0;                             // qubit count for graph
+    std::vector<std::pair<int, double>> fidels; // single qubit fidelities
+    std::vector<std::pair<int, int>> d_edges;   // directed edges
+    std::vector<std::pair<int, int>> u_edges;   // undirected edges
+    std::vector<std::tuple<int, int, double>>
+        df_edges; // d-edges with fidelities
+    std::vector<std::tuple<int, int, double>>
+        uf_edges;                       // u-edges with fidelities
+    std::string name = "Custom device"; // name of custom device
 
     CLI::App app{"Device JSON generator"};
     app.get_formatter()->column_width(43);
 
-    CLI::Option_group* ogroup = app.add_option_group("Layout", "Device qubit layout");
-    ogroup->add_option(
-            "-r,--rectangle", rectangular,
-            "Rectangular QPU dimensions (e.g. -r 3 4) (>= 2)")
-            ->expected(1, 2);
-    ogroup->add_option(
-            "-c,--circle", circular,
-            "Circular QPU qubit count (>= 3)");
-    ogroup->add_option(
-            "-l,--line", linear,
-            "Linear QPU qubit count (>= 2)");
+    CLI::Option_group* ogroup =
+        app.add_option_group("Layout", "Device qubit layout");
+    ogroup
+        ->add_option("-r,--rectangle", rectangular,
+                     "Rectangular QPU dimensions (e.g. -r 3 4) (>= 2)")
+        ->expected(1, 2);
+    ogroup->add_option("-c,--circle", circular,
+                       "Circular QPU qubit count (>= 3)");
+    ogroup->add_option("-l,--line", linear, "Linear QPU qubit count (>= 2)");
     ogroup->require_option(0, 1);
 
     /* Allow user to specify qubits, couplings, and fidelities */
     CLI::App* graph = app.add_subcommand("graph", "Customized device");
     graph->get_formatter()->label("REQUIRED", "(REQUIRED)");
-    graph->add_option(
-            "-n,--qubits", qubits,
-            "Number of qubits")
-            ->required();
-    graph->add_option(
-            "--name", name,
-            "Device name");
-    graph->add_option(
-            "-f,--fidelity", fidels,
-            "Single qubit fidelity")
-            ->take_all();
-    graph->add_option(
-            "-d,--directed", d_edges,
-            "Directed edge")
-            ->take_all();
-    graph->add_option(
-            "-D,--directed-f", df_edges,
-            "Directed edge with fidelity")
-            ->take_all();
-    graph->add_option(
-            "-u,--undirected", u_edges,
-            "Undirected edge")
-            ->take_all();
-    graph->add_option(
-            "-U,--undirected-f", uf_edges,
-            "Undirected edge with fidelity")
-            ->take_all();
+    graph->add_option("-n,--qubits", qubits, "Number of qubits")->required();
+    graph->add_option("--name", name, "Device name");
+    graph->add_option("-f,--fidelity", fidels, "Single qubit fidelity")
+        ->take_all();
+    graph->add_option("-d,--directed", d_edges, "Directed edge")->take_all();
+    graph
+        ->add_option("-D,--directed-f", df_edges, "Directed edge with fidelity")
+        ->take_all();
+    graph->add_option("-u,--undirected", u_edges, "Undirected edge")
+        ->take_all();
+    graph
+        ->add_option("-U,--undirected-f", uf_edges,
+                     "Undirected edge with fidelity")
+        ->take_all();
 
     CLI11_PARSE(app, argc, argv);
 
@@ -129,27 +116,31 @@ int main(int argc, char** argv) {
             // compute adjacency matrix
             std::vector<double> sq_fi(n, FIDELITY_1);
             std::vector<std::vector<bool>> adj(n, std::vector<bool>(n));
-            std::vector<std::vector<double>>
-                tq_fi(n, std::vector<double>(n, FIDELITY_1));
+            std::vector<std::vector<double>> tq_fi(
+                n, std::vector<double>(n, FIDELITY_1));
 
             for (auto& x : fidels) {
                 if (x.first < 0 || x.first >= n)
                     std::cerr << "Qubit out of range: " << x.first;
                 else if (x.second < 0 || x.second > 1)
                     std::cerr << "Fidelity out of range: " << x.second;
-                else sq_fi[x.first] = x.second;
+                else
+                    sq_fi[x.first] = x.second;
             }
             for (auto& x : d_edges)
                 add_edge(adj, tq_fi, x.first, x.second);
             for (auto& x : df_edges)
-                add_edge(adj, tq_fi, std::get<0>(x), std::get<1>(x), std::get<2>(x));
+                add_edge(adj, tq_fi, std::get<0>(x), std::get<1>(x),
+                         std::get<2>(x));
             for (auto& x : u_edges) {
                 add_edge(adj, tq_fi, x.first, x.second);
                 add_edge(adj, tq_fi, x.second, x.first);
             }
             for (auto& x : uf_edges) {
-                add_edge(adj, tq_fi, std::get<0>(x), std::get<1>(x), std::get<2>(x));
-                add_edge(adj, tq_fi, std::get<1>(x), std::get<0>(x), std::get<2>(x));
+                add_edge(adj, tq_fi, std::get<0>(x), std::get<1>(x),
+                         std::get<2>(x));
+                add_edge(adj, tq_fi, std::get<1>(x), std::get<0>(x),
+                         std::get<2>(x));
             }
 
             staq::mapping::Device dev(name, n, adj, sq_fi, tq_fi);
@@ -160,7 +151,9 @@ int main(int argc, char** argv) {
         l = rectangular[0];
         if (rectangular.size() >= 2) {
             w = rectangular[1];
-        } else { w = l; }
+        } else {
+            w = l;
+        }
         if (l >= 2 && w >= 2) {
             /** Qubits are arranged as follows:
              *    0           1        ...     l-1
@@ -176,14 +169,17 @@ int main(int argc, char** argv) {
                 for (int j = 0; j < w; j++) {
                     int id = i + j * l;
                     // connect to the left
-                    if (i > 0) adj[id][id - 1] = adj[id - 1][id] = true;
+                    if (i > 0)
+                        adj[id][id - 1] = adj[id - 1][id] = true;
                     // connect up
-                    if (j > 0) adj[id][id - l] = adj[id - l][id] = true;
+                    if (j > 0)
+                        adj[id][id - l] = adj[id - l][id] = true;
                 }
             }
 
             write_to_stream(adj,
-                            "Rectangular_" + std::to_string(l) + "_x_" + std::to_string(w),
+                            "Rectangular_" + std::to_string(l) + "_x_" +
+                                std::to_string(w),
                             std::cout);
         }
     } else if (circular >= 3) {

@@ -335,17 +335,17 @@ class Device {
         for (int i = 0; i < qubits_; i++) {
             js["qubits"].push_back(
                 single_qubit_fidelities_[i] == FIDELITY_1
-                ? json{{"id", i}}
-                : json{{"id", i}, {"fidelity", single_qubit_fidelities_[i]}}
-            );
+                    ? json{{"id", i}}
+                    : json{{"id", i},
+                           {"fidelity", single_qubit_fidelities_[i]}});
             for (int j = 0; j < qubits_; j++) {
                 if (i != j && couplings_[i][j]) {
                     js["couplings"].push_back(
                         coupling_fidelities_[i][j] == FIDELITY_1
-                        ? json{{"control", i}, {"target", j}}
-                        : json{{"control", i}, {"target", j},
-                            {"fidelity", coupling_fidelities_[i][j]}}
-                    );
+                            ? json{{"control", i}, {"target", j}}
+                            : json{{"control", i},
+                                   {"target", j},
+                                   {"fidelity", coupling_fidelities_[i][j]}});
                 }
             }
         }
@@ -455,8 +455,8 @@ class Device {
  * The JSON object should have:
  * - name: string
  * - qubits: list of {{id: int}, optional {fidelity: double}}
- * - couplings: list of {{control: int}, {target: int}, optional {fidelity: double}}
- * Unspecified fidelities are set to a default value
+ * - couplings: list of {{control: int}, {target: int}, optional {fidelity:
+ * double}} Unspecified fidelities are set to a default value
  */
 inline Device parse_json(std::string fname) {
     std::ifstream ifs(fname);
@@ -477,8 +477,10 @@ inline Device parse_json(std::string fname) {
             throw std::logic_error("Duplicate qubit id");
         }
         auto it = qubit.find("fidelity");
-        if (it != qubit.end()) sq_fi[id] = *it;
-        else sq_fi[id] = FIDELITY_1;
+        if (it != qubit.end())
+            sq_fi[id] = *it;
+        else
+            sq_fi[id] = FIDELITY_1;
     }
     for (json& coupling : j["couplings"]) {
         int x = coupling["control"];
@@ -494,8 +496,10 @@ inline Device parse_json(std::string fname) {
         }
         dag[x][y] = true;
         auto it = coupling.find("fidelity");
-        if (it != coupling.end()) tq_fi[x][y] = *it;
-        else tq_fi[x][y] = FIDELITY_1;
+        if (it != coupling.end())
+            tq_fi[x][y] = *it;
+        else
+            tq_fi[x][y] = FIDELITY_1;
     }
     return Device(name, n, dag, sq_fi, tq_fi);
 }

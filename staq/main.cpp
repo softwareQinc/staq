@@ -57,38 +57,29 @@
 /**
  * \brief Compiler passes
  */
-enum class Pass { desugar, inln, synth, rotfold, cnotsynth, simplify, map, rewrite };
+enum class Pass {
+    desugar,
+    inln,
+    synth,
+    rotfold,
+    cnotsynth,
+    simplify,
+    map,
+    rewrite
+};
 
 /**
  * \brief Command-line passes
  */
-enum class Option {
-    none,
-    i,
-    S,
-    r,
-    c,
-    s,
-    m,
-    O1,
-    O2,
-    O3
-};
+enum class Option { none, i, S, r, c, s, m, O1, O2, O3 };
 std::unordered_map<std::string_view, Option> cli_map{
-    {"-i", Option::i},
-    {"--inline", Option::i},
-    {"-S", Option::S},
-    {"--synthesize", Option::S},
-    {"-r", Option::r},
-    {"--rotation-fold", Option::r},
-    {"-c", Option::c},
-    {"--cnot-resynth", Option::c},
-    {"-s", Option::s},
-    {"--simplify", Option::s},
-    {"-m", Option::m},
-    {"--map-to-device", Option::m},
-    {"-O1", Option::O1},
-    {"-O2", Option::O2},
+    {"-i", Option::i},   {"--inline", Option::i},
+    {"-S", Option::S},   {"--synthesize", Option::S},
+    {"-r", Option::r},   {"--rotation-fold", Option::r},
+    {"-c", Option::c},   {"--cnot-resynth", Option::c},
+    {"-s", Option::s},   {"--simplify", Option::s},
+    {"-m", Option::m},   {"--map-to-device", Option::m},
+    {"-O1", Option::O1}, {"-O2", Option::O2},
     {"-O3", Option::O3}};
 
 /* Passes aren't handled by CLI, so manually create help info */
@@ -144,21 +135,16 @@ int main(int argc, char** argv) {
     app.footer(make_passes_str(width));
     app.allow_extras(); // later call app.remaining() for pass options
 
-    app.add_option(
-        "-o,--output", ofile,
-        "Output filename. Otherwise prints to stdout");
-    app.add_option(
-        "-f,--format", format,
-        "Output format. Default=" + format)
-        ->check(CLI::IsMember({"qasm", "quil", "projectq",
-                               "qsharp", "cirq", "resources"}));
-    app.add_option(
-        "-l,--layout", layout_alg,
-        "Initial device layout algorithm. Default=" + layout_alg)
+    app.add_option("-o,--output", ofile,
+                   "Output filename. Otherwise prints to stdout");
+    app.add_option("-f,--format", format, "Output format. Default=" + format)
+        ->check(CLI::IsMember(
+            {"qasm", "quil", "projectq", "qsharp", "cirq", "resources"}));
+    app.add_option("-l,--layout", layout_alg,
+                   "Initial device layout algorithm. Default=" + layout_alg)
         ->check(CLI::IsMember({"linear", "eager", "bestfit"}));
-    app.add_option(
-        "-M,--mapping-alg", mapper,
-        "Algorithm to use for mapping CNOT gates. Default=" + mapper)
+    app.add_option("-M,--mapping-alg", mapper,
+                   "Algorithm to use for mapping CNOT gates. Default=" + mapper)
         ->check(CLI::IsMember({"swap", "steiner"}));
     app.add_flag(
         "--disable-layout-optimization", disable_layout_optimization,
@@ -167,16 +153,12 @@ int main(int argc, char** argv) {
     app.add_flag(
         "--no-expand-registers", no_expand_registers,
         "Disables expanding gates applied to registers rather than qubits");
-    app.add_flag(
-        "--no-rewrite-expressions", no_rewrite_expressions,
-        "Disables evaluation of parameter expressions");
-    CLI::Option* device_opt = app.add_option(
-        "-d,--device", device_json,
-        "Device to map onto (.json)")
-        ->check(CLI::ExistingFile);
-    app.add_option(
-        "FILE.qasm", input_qasm,
-        "OpenQASM circuit")
+    app.add_flag("--no-rewrite-expressions", no_rewrite_expressions,
+                 "Disables evaluation of parameter expressions");
+    CLI::Option* device_opt =
+        app.add_option("-d,--device", device_json, "Device to map onto (.json)")
+            ->check(CLI::ExistingFile);
+    app.add_option("FILE.qasm", input_qasm, "OpenQASM circuit")
         ->required()
         ->check(CLI::ExistingFile);
 
@@ -194,7 +176,8 @@ int main(int argc, char** argv) {
         switch (cli_map[x]) {
             case Option::i:
                 passes.push_back(Pass::inln);
-                if (!no_rewrite_expressions) passes.push_back(Pass::rewrite);
+                if (!no_rewrite_expressions)
+                    passes.push_back(Pass::rewrite);
                 break;
             case Option::S:
                 passes.push_back(Pass::synth);
@@ -249,8 +232,7 @@ int main(int argc, char** argv) {
     /* Parsing */
     auto prog = parse_file(input_qasm);
     if (!prog) {
-        std::cerr << "Error: failed to parse \"" << input_qasm
-                  << "\"\n";
+        std::cerr << "Error: failed to parse \"" << input_qasm << "\"\n";
         return 0;
     }
 
@@ -263,8 +245,7 @@ int main(int argc, char** argv) {
                 break;
             case Pass::inln:
                 transformations::inline_ast(
-                    *prog,
-                    {false, transformations::default_overrides, "anc"});
+                    *prog, {false, transformations::default_overrides, "anc"});
                 break;
             case Pass::synth:
                 transformations::synthesize_oracles(*prog);
@@ -287,9 +268,8 @@ int main(int argc, char** argv) {
 
                 /* Device */
                 if (!(*device_opt)) {
-                    dev = mapping::fully_connected(
-                        tools::estimate_qubits(*prog)
-                    );
+                    dev =
+                        mapping::fully_connected(tools::estimate_qubits(*prog));
                 }
 
                 /* Generate the layout */
@@ -298,7 +278,8 @@ int main(int argc, char** argv) {
                 } else if (layout_alg == "eager") {
                     initial_layout = mapping::compute_eager_layout(dev, *prog);
                 } else if (layout_alg == "bestfit") {
-                    initial_layout = mapping::compute_bestfit_layout(dev, *prog);
+                    initial_layout =
+                        mapping::compute_bestfit_layout(dev, *prog);
                 }
 
                 /* (Optional) optimize the layout */
@@ -346,11 +327,9 @@ int main(int argc, char** argv) {
         auto count = tools::estimate_resources(*prog);
 
         if (ofile == "") {
-            std::cout << "Resource estimates for " << input_qasm
-                      << ":\n";
+            std::cout << "Resource estimates for " << input_qasm << ":\n";
             for (auto& [name, num] : count)
-                std::cout << "  " << name << ": " << num
-                          << "\n";
+                std::cout << "  " << name << ": " << num << "\n";
         } else {
             std::ofstream os;
             os.open(ofile);
@@ -364,16 +343,14 @@ int main(int argc, char** argv) {
     } else { // qasm format
         if (ofile == "") {
             if (mapped)
-                dev.print_layout(initial_layout, std::cout,
-                                 "// ", output_perm);
+                dev.print_layout(initial_layout, std::cout, "// ", output_perm);
             std::cout << *prog << "\n";
         } else {
             std::ofstream os;
             os.open(ofile);
 
             if (mapped)
-                dev.print_layout(initial_layout, os, "// ",
-                                 output_perm);
+                dev.print_layout(initial_layout, os, "// ", output_perm);
             os << *prog;
 
             os.close();

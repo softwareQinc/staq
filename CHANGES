@@ -1,4 +1,4 @@
-Pre-release - in progress
+Version 2.0 - 5 October 2021
     - Decoupled the OpenQASM parser from the main codebase. A hard copy of
       qasmtools (https://github.com/softwareQinc/qasmtools) is now common to
       both staq and Quantum++, and by default uses standard OpenQASM 2.0 gate
@@ -17,7 +17,8 @@ Pre-release - in progress
       coloured verbose testing output.
     - QPU specifications (qubits, couplings, fidelities) are now stored in a
       JSON file format (https://github.com/softwareQinc/staq/tree/main/qpus).
-      Added a device generator to easily create these JSON files.
+      Added a device generator to easily create these JSON files under
+      ['tools/device_generator.cpp'].
 
 Version 1.4 - 5 December 2020
     - Bugfixes

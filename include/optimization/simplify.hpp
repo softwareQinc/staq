@@ -138,14 +138,14 @@ class Simplifier final : public ast::Visitor {
             auto theta = gate.carg(0).constant_eval();
             auto phi = gate.carg(1).constant_eval();
             auto lambda = gate.carg(2).constant_eval();
-            if (theta && phi && lambda && (*theta == 0)
-                && (*phi + *lambda == 0)) {
+            if (theta && phi && lambda && (*theta == 0) &&
+                (*phi + *lambda == 0)) {
                 erasures_[gate.uid()] =
                     std::move(std::list<ast::ptr<ast::Gate>>());
                 return;
             }
-        } else if (name == "u1" || name == "rx" || name == "ry" || name == "rz"
-                   || name == "crz" || name == "cu1") {
+        } else if (name == "u1" || name == "rx" || name == "ry" ||
+                   name == "rz" || name == "crz" || name == "cu1") {
             auto lambda = gate.carg(0).constant_eval();
             if (lambda && (*lambda == 0)) {
                 erasures_[gate.uid()] =
@@ -159,8 +159,8 @@ class Simplifier final : public ast::Visitor {
             auto theta = gate.carg(0).constant_eval();
             auto phi = gate.carg(1).constant_eval();
             auto lambda = gate.carg(2).constant_eval();
-            if (theta && phi && lambda && (*theta == 0) && (*phi == 0)
-                && (*lambda == 0)) {
+            if (theta && phi && lambda && (*theta == 0) && (*phi == 0) &&
+                (*lambda == 0)) {
                 erasures_[gate.uid()] =
                     std::move(std::list<ast::ptr<ast::Gate>>());
                 return;
