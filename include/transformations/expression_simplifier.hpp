@@ -331,9 +331,10 @@ class ExprSimplifier final : public ast::Visitor {
 
     Expression temp_value;
     std::optional<ast::ptr<ast::Expr>> replacement_expr;
+    bool evaluate_all;
 
   public:
-    ExprSimplifier() = default;
+    ExprSimplifier(bool evaluate_all = false) : evaluate_all(evaluate_all) {}
 
     // Variables
     void visit(ast::VarAccess&) {}
@@ -581,10 +582,20 @@ class ExprSimplifier final : public ast::Visitor {
         }
     }
 
-    void visit(ast::PiExpr&) { temp_value = LinearPiExpr(1, 0); }
+    void visit(ast::PiExpr&) {
+        if (evaluate_all) {
+            temp_value = qasmtools::utils::pi;
+        } else {
+            temp_value = LinearPiExpr(1, 0);
+        }
+    }
 
     void visit(ast::IntExpr& expr) {
-        temp_value = LinearPiExpr(0, expr.value());
+        if (evaluate_all) {
+            temp_value = (double) expr.value();
+        } else {
+            temp_value = LinearPiExpr(0, expr.value());
+        }
     }
 
     void visit(ast::RealExpr& expr) { temp_value = expr.value(); }
@@ -708,8 +719,8 @@ class ExprSimplifier final : public ast::Visitor {
     }
 };
 
-inline void expr_simplify(ast::ASTNode& node) {
-    ExprSimplifier es;
+inline void expr_simplify(ast::ASTNode& node, bool evaluate_all = false) {
+    ExprSimplifier es(evaluate_all);
     node.accept(es);
 }
 
