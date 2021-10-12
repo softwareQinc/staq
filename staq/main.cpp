@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
     bool disable_layout_optimization = false;
     bool no_expand_registers = false;
     bool no_rewrite_expressions = false;
+    bool evaluate_all = false;
     std::string device_json;
     std::string input_qasm;
 
@@ -155,6 +156,8 @@ int main(int argc, char** argv) {
         "Disables expanding gates applied to registers rather than qubits");
     app.add_flag("--no-rewrite-expressions", no_rewrite_expressions,
                  "Disables evaluation of parameter expressions");
+    app.add_flag("--evaluate-all", evaluate_all,
+                 "Evaluate all expressions as real numbers");
     CLI::Option* device_opt =
         app.add_option("-d,--device", device_json, "Device to map onto (.json)")
             ->check(CLI::ExistingFile);
@@ -257,7 +260,7 @@ int main(int argc, char** argv) {
                 optimization::optimize_CNOT(*prog);
                 break;
             case Pass::simplify:
-                transformations::expr_simplify(*prog);
+                transformations::expr_simplify(*prog, evaluate_all);
                 optimization::simplify(*prog);
                 break;
             case Pass::map: {
@@ -298,7 +301,7 @@ int main(int argc, char** argv) {
                 break;
             }
             case Pass::rewrite:
-                transformations::expr_simplify(*prog);
+                transformations::expr_simplify(*prog, evaluate_all);
                 break;
         }
 
