@@ -105,7 +105,16 @@ class SwapMapper final : public ast::Replacer {
             auto i = ctrl;
             for (auto j : cnot_chain) {
                 if (j == tgt) {
-                    ret.emplace_back(generate_cnot(i, j, gate.pos()));
+                    if (device_.coupled(i, j)) {
+                        ret.emplace_back(generate_cnot(i, j, gate.pos()));
+                    } else {
+                        auto swapped_cnot = generate_swapped_cnot(
+                            i, j, gate.pos());
+                        ret.insert(ret.end(),
+                            std::make_move_iterator(swapped_cnot.begin()),
+                            std::make_move_iterator(swapped_cnot.end()));
+                    }
+                        
                     break;
                 } else if (j != i) {
                     // Swap i and j
@@ -124,12 +133,11 @@ class SwapMapper final : public ast::Replacer {
                         ret.emplace_back(
                             generate_cnot(swap_j, swap_i, gate.pos()));
                     } else {
-                        ret.emplace_back(generate_hadamard(swap_i, gate.pos()));
-                        ret.emplace_back(generate_hadamard(swap_j, gate.pos()));
-                        ret.emplace_back(
-                            generate_cnot(swap_i, swap_j, gate.pos()));
-                        ret.emplace_back(generate_hadamard(swap_i, gate.pos()));
-                        ret.emplace_back(generate_hadamard(swap_j, gate.pos()));
+                        auto swapped_cnot = generate_swapped_cnot(
+                            swap_j, swap_i, gate.pos());
+                        ret.insert(ret.end(),
+                            std::make_move_iterator(swapped_cnot.begin()),
+                            std::make_move_iterator(swapped_cnot.end()));
                     }
 
                     // CNOT 3
@@ -174,6 +182,17 @@ class SwapMapper final : public ast::Replacer {
         return std::make_unique<ast::UGate>(
             ast::UGate(pos, std::move(theta), std::move(phi), std::move(lambda),
                        std::move(tgt)));
+    }
+
+    std::list<ast::ptr<ast::Gate>> generate_swapped_cnot(int i, int j,
+                                                         parser::Position pos) {
+        std::list<ast::ptr<ast::Gate>> result;
+        result.emplace_back(generate_hadamard(i, pos));
+        result.emplace_back(generate_hadamard(j, pos));
+        result.emplace_back(generate_cnot(j, i, pos));
+        result.emplace_back(generate_hadamard(i, pos));
+        result.emplace_back(generate_hadamard(j, pos));
+        return result;
     }
 };
 
