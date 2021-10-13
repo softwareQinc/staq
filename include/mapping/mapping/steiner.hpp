@@ -86,16 +86,11 @@ class SteinerMapper final : public ast::Replacer {
                             prog.body().emplace_back(
                                 generate_cnot(cx.first, cx.second, prog.pos()));
                         } else if (device_.coupled(cx.second, cx.first)) {
-                            prog.body().emplace_back(
-                                generate_hadamard(cx.first, prog.pos()));
-                            prog.body().emplace_back(
-                                generate_hadamard(cx.second, prog.pos()));
-                            prog.body().emplace_back(
-                                generate_cnot(cx.first, cx.second, prog.pos()));
-                            prog.body().emplace_back(
-                                generate_hadamard(cx.first, prog.pos()));
-                            prog.body().emplace_back(
-                                generate_hadamard(cx.second, prog.pos()));
+                            auto swapped_cnot = generate_swapped_cnot(
+                                cx.first, cx.second, prog.pos());
+                            prog.body().insert(prog.body().end(),
+                                std::make_move_iterator(swapped_cnot.begin()),
+                                std::make_move_iterator(swapped_cnot.end()));
                         } else {
                             throw std::logic_error(
                                 "CNOT between non-coupled vertices!");
@@ -279,16 +274,11 @@ class SteinerMapper final : public ast::Replacer {
                             ret.emplace_back(
                                 generate_cnot(cx.first, cx.second, node.pos()));
                         } else if (device_.coupled(cx.second, cx.first)) {
-                            ret.emplace_back(
-                                generate_hadamard(cx.first, node.pos()));
-                            ret.emplace_back(
-                                generate_hadamard(cx.second, node.pos()));
-                            ret.emplace_back(
-                                generate_cnot(cx.first, cx.second, node.pos()));
-                            ret.emplace_back(
-                                generate_hadamard(cx.first, node.pos()));
-                            ret.emplace_back(
-                                generate_hadamard(cx.second, node.pos()));
+                            auto swapped_cnot = generate_swapped_cnot(
+                                cx.first, cx.second, node.pos());
+                            ret.insert(ret.end(),
+                                std::make_move_iterator(swapped_cnot.begin()),
+                                std::make_move_iterator(swapped_cnot.end()));
                         } else {
                             throw std::logic_error(
                                 "CNOT between non-coupled vertices!");
@@ -350,6 +340,17 @@ class SteinerMapper final : public ast::Replacer {
         return std::make_unique<ast::UGate>(
             ast::UGate(pos, std::move(theta), std::move(phi), std::move(lambda),
                        std::move(tgt)));
+    }
+
+    std::list<ast::ptr<ast::Gate>> generate_swapped_cnot(int i, int j,
+                                                         parser::Position pos) {
+        std::list<ast::ptr<ast::Gate>> result;
+        result.emplace_back(generate_hadamard(i, pos));
+        result.emplace_back(generate_hadamard(j, pos));
+        result.emplace_back(generate_cnot(j, i, pos));
+        result.emplace_back(generate_hadamard(i, pos));
+        result.emplace_back(generate_hadamard(j, pos));
+        return result;
     }
 
     ast::ptr<ast::UGate> generate_rz(ast::ptr<ast::Expr> angle, int i,
