@@ -358,203 +358,158 @@ class ExprSimplifier final : public ast::Visitor {
         auto rval = temp_value;
         temp_value = std::monostate();
 
-        if (std::holds_alternative<LinearPiExpr>(lval)) {
-            if (std::holds_alternative<LinearPiExpr>(rval)) {
-                // LPE op LPE
-                switch (expr.op()) {
-                    case ast::BinaryOp::Plus:
-                        temp_value = std::get<LinearPiExpr>(lval) +
-                                     std::get<LinearPiExpr>(rval);
-                        break;
-                    case ast::BinaryOp::Minus:
-                        temp_value = std::get<LinearPiExpr>(lval) -
-                                     std::get<LinearPiExpr>(rval);
-                        break;
-                    case ast::BinaryOp::Times: {
-                        auto prod = std::get<LinearPiExpr>(lval) *
-                                    std::get<LinearPiExpr>(rval);
-                        if (prod) {
-                            temp_value = *prod;
-                        } else {
-                            temp_value = std::get<LinearPiExpr>(lval).value() *
-                                         std::get<LinearPiExpr>(rval).value();
+        std::visit(
+            qasmtools::utils::overloaded{
+                [this, &expr](LinearPiExpr& lpe1, LinearPiExpr& lpe2) {
+                    switch (expr.op()) {
+                        case ast::BinaryOp::Plus:
+                            temp_value = lpe1 + lpe2;
+                            break;
+                        case ast::BinaryOp::Minus:
+                            temp_value = lpe1 - lpe2;
+                            break;
+                        case ast::BinaryOp::Times: {
+                            auto prod = lpe1 * lpe2;
+                            if (prod)
+                                temp_value = *prod;
+                            else
+                                temp_value = lpe1.value() * lpe2.value();
+                            break;
                         }
-                        break;
+                        case ast::BinaryOp::Divide: {
+                            auto quot = lpe1 / lpe2;
+                            if (quot)
+                                temp_value = *quot;
+                            else
+                                temp_value = lpe1.value() / lpe2.value();
+                            break;
+                        }
+                        case ast::BinaryOp::Pow:
+                            temp_value = pow(lpe1.value(), lpe2.value());
+                            break;
                     }
-                    case ast::BinaryOp::Divide: {
-                        auto quot = std::get<LinearPiExpr>(lval) /
-                                    std::get<LinearPiExpr>(rval);
-                        if (quot) {
-                            temp_value = *quot;
-                        } else {
-                            temp_value = std::get<LinearPiExpr>(lval).value() /
-                                         std::get<LinearPiExpr>(rval).value();
-                        }
-                        break;
+                },
+                [this, &expr](LinearPiExpr& lpe1, double real2) {
+                    temp_value = evaluate_double_bexpr(lpe1.value(), expr.op(),
+                                                       real2);
+                },
+                [this, &expr](LinearPiExpr& lpe1, auto) {
+                    switch (expr.op()) {
+                        case ast::BinaryOp::Plus:
+                            if (lpe1.is_zero()) // 0 + x
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                            else
+                                expr.set_lexp(lpe1.to_ast());
+                            break;
+                        case ast::BinaryOp::Minus:
+                            if (lpe1.is_zero()) // 0 - x
+                                replacement_expr = ast::UExpr::create(
+                                    {}, ast::UnaryOp::Neg,
+                                    ast::ptr<ast::Expr>(expr.rexp().clone()));
+                            else
+                                expr.set_lexp(lpe1.to_ast());
+                            break;
+                        case ast::BinaryOp::Times:
+                            if (lpe1.value() == 1) // 1 * x
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                            else
+                                expr.set_lexp(lpe1.to_ast());
+                            break;
+                        case ast::BinaryOp::Divide:
+                            expr.set_lexp(lpe1.to_ast());
+                            break;
+                        case ast::BinaryOp::Pow:
+                            expr.set_lexp(lpe1.to_ast());
+                            break;
                     }
-                    case ast::BinaryOp::Pow:
-                        temp_value = pow(std::get<LinearPiExpr>(lval).value(),
-                                         std::get<LinearPiExpr>(rval).value());
-                        break;
-                }
-            } else if (std::holds_alternative<double>(rval)) {
-                // LPE op REAL
-                temp_value =
-                    evaluate_double_bexpr(std::get<LinearPiExpr>(lval).value(),
-                                          expr.op(), std::get<double>(rval));
-            } else {
-                // LPE op ???
-                switch (expr.op()) {
-                    case ast::BinaryOp::Plus:
-                        if (std::get<LinearPiExpr>(lval).is_zero()) {
-                            // 0 + x
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.rexp().clone());
-                        } else {
-                            expr.set_lexp(
-                                std::get<LinearPiExpr>(lval).to_ast());
-                        }
-                        break;
-                    case ast::BinaryOp::Minus:
-                        if (std::get<LinearPiExpr>(lval).is_zero()) {
-                            // 0 - x
-                            replacement_expr = ast::UExpr::create(
-                                {}, ast::UnaryOp::Neg,
-                                ast::ptr<ast::Expr>(expr.rexp().clone()));
-                        } else {
-                            expr.set_lexp(
-                                std::get<LinearPiExpr>(lval).to_ast());
-                        }
-                        break;
-                    case ast::BinaryOp::Times:
-                        if (std::get<LinearPiExpr>(lval).value() == 1) {
-                            // 1 * x
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.rexp().clone());
-                        } else {
-                            expr.set_lexp(
-                                std::get<LinearPiExpr>(lval).to_ast());
-                        }
-                        break;
-                    case ast::BinaryOp::Divide:
-                        expr.set_lexp(std::get<LinearPiExpr>(lval).to_ast());
-                        break;
-                    case ast::BinaryOp::Pow:
-                        expr.set_lexp(std::get<LinearPiExpr>(lval).to_ast());
-                        break;
-                }
-            }
-        } else if (std::holds_alternative<double>(lval)) {
-            if (std::holds_alternative<LinearPiExpr>(rval)) {
-                // REAL op LPE
-                temp_value =
-                    evaluate_double_bexpr(std::get<double>(lval), expr.op(),
-                                          std::get<LinearPiExpr>(rval).value());
-            } else if (std::holds_alternative<double>(rval)) {
-                // REAL op REAL
-                temp_value = evaluate_double_bexpr(
-                    std::get<double>(lval), expr.op(), std::get<double>(rval));
-            } else {
-                // REAL op ???
-                switch (expr.op()) {
-                    case ast::BinaryOp::Plus:
-                        if (std::get<double>(lval) == 0) {
-                            // 0 + x
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.rexp().clone());
-                        } else {
-                            expr.set_lexp(ast::RealExpr::create(
-                                {}, std::get<double>(lval)));
-                        }
-                        break;
-                    case ast::BinaryOp::Minus:
-                        if (std::get<double>(lval) == 0) {
-                            // 0 - x
-                            replacement_expr = ast::UExpr::create(
-                                {}, ast::UnaryOp::Neg,
-                                ast::ptr<ast::Expr>(expr.rexp().clone()));
-                        } else {
-                            expr.set_lexp(ast::RealExpr::create(
-                                {}, std::get<double>(lval)));
-                        }
-                        break;
-                    case ast::BinaryOp::Times:
-                        if (std::get<double>(lval) == 1) {
-                            // 1 * x
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.rexp().clone());
-                        } else {
-                            expr.set_lexp(ast::RealExpr::create(
-                                {}, std::get<double>(lval)));
-                        }
-                        break;
-                    case ast::BinaryOp::Divide:
-                        expr.set_lexp(
-                            ast::RealExpr::create({}, std::get<double>(lval)));
-                        break;
-                    case ast::BinaryOp::Pow:
-                        expr.set_lexp(
-                            ast::RealExpr::create({}, std::get<double>(lval)));
-                        break;
-                }
-            }
-        } else {
-            if (std::holds_alternative<LinearPiExpr>(rval)) {
-                // ??? op LPE
-                switch (expr.op()) {
-                    case ast::BinaryOp::Plus:
-                    case ast::BinaryOp::Minus:
-                        if (std::get<LinearPiExpr>(rval).is_zero()) {
-                            // x + 0  or  x - 0
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.lexp().clone());
-                        } else {
-                            expr.set_rexp(
-                                std::get<LinearPiExpr>(rval).to_ast());
-                        }
-                        break;
-                    case ast::BinaryOp::Times:
-                    case ast::BinaryOp::Divide:
-                    case ast::BinaryOp::Pow:
-                        if (std::get<LinearPiExpr>(rval).value() == 1) {
-                            // x * 1  or  x / 1  or  x ^ 1
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.lexp().clone());
-                        } else {
-                            expr.set_rexp(
-                                std::get<LinearPiExpr>(rval).to_ast());
-                        }
-                        break;
-                }
-            } else if (std::holds_alternative<double>(rval)) {
-                // ??? op REAL
-                switch (expr.op()) {
-                    case ast::BinaryOp::Plus:
-                    case ast::BinaryOp::Minus:
-                        if (std::get<double>(rval) == 0) {
-                            // x + 0  or  x - 0
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.lexp().clone());
-                        } else {
-                            expr.set_rexp(ast::RealExpr::create(
-                                {}, std::get<double>(rval)));
-                        }
-                        break;
-                    case ast::BinaryOp::Times:
-                    case ast::BinaryOp::Divide:
-                    case ast::BinaryOp::Pow:
-                        if (std::get<double>(rval) == 1) {
-                            // x * 1  or  x / 1  or  x ^ 1
-                            replacement_expr =
-                                ast::ptr<ast::Expr>(expr.lexp().clone());
-                        } else {
-                            expr.set_rexp(ast::RealExpr::create(
-                                {}, std::get<double>(rval)));
-                        }
-                        break;
-                }
-            }
-        }
+                },
+                [this, &expr](double real1, LinearPiExpr& lpe2) {
+                    temp_value = evaluate_double_bexpr(real1, expr.op(),
+                                                       lpe2.value());
+                },
+                [this, &expr](double real1, double real2) {
+                    temp_value = evaluate_double_bexpr(real1, expr.op(), real2);
+                },
+                [this, &expr](double real1, auto) {
+                    switch (expr.op()) {
+                        case ast::BinaryOp::Plus:
+                            if (real1 == 0) // 0 + x
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                            else
+                                expr.set_lexp(ast::RealExpr::create({}, real1));
+                            break;
+                        case ast::BinaryOp::Minus:
+                            if (real1 == 0) // 0 - x
+                                replacement_expr = ast::UExpr::create(
+                                    {}, ast::UnaryOp::Neg,
+                                    ast::ptr<ast::Expr>(expr.rexp().clone()));
+                            else
+                                expr.set_lexp(ast::RealExpr::create({}, real1));
+                            break;
+                        case ast::BinaryOp::Times:
+                            if (real1 == 1) // 1 * x
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                            else
+                                expr.set_lexp(ast::RealExpr::create({}, real1));
+                            break;
+                        case ast::BinaryOp::Divide:
+                            expr.set_lexp(ast::RealExpr::create({}, real1));
+                            break;
+                        case ast::BinaryOp::Pow:
+                            expr.set_lexp(ast::RealExpr::create({}, real1));
+                            break;
+                    }
+                },
+                [this, &expr](auto, LinearPiExpr& lpe2) {
+                    switch (expr.op()) {
+                        case ast::BinaryOp::Plus:
+                        case ast::BinaryOp::Minus:
+                            if (lpe2.is_zero()) // x + 0  or  x - 0
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                            else
+                                expr.set_rexp(lpe2.to_ast());
+                            break;
+                        case ast::BinaryOp::Times:
+                        case ast::BinaryOp::Divide:
+                        case ast::BinaryOp::Pow:
+                            if (lpe2.value() == 1) // x * 1 or x / 1 or x ^ 1
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                            else
+                                expr.set_rexp(lpe2.to_ast());
+                            break;
+                    }
+                },
+                [this, &expr](auto, double real2) {
+                    switch (expr.op()) {
+                        case ast::BinaryOp::Plus:
+                        case ast::BinaryOp::Minus:
+                            if (real2 == 0) // x + 0  or  x - 0
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                            else
+                                expr.set_rexp(ast::RealExpr::create({}, real2));
+                            break;
+                        case ast::BinaryOp::Times:
+                        case ast::BinaryOp::Divide:
+                        case ast::BinaryOp::Pow:
+                            if (real2 == 1) // x * 1 or x / 1 or x ^ 1
+                                replacement_expr =
+                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                            else
+                                expr.set_rexp(ast::RealExpr::create({}, real2));
+                            break;
+                    }
+                },
+                [](auto, auto) {}
+            },
+            lval,
+            rval);
     }
 
     void visit(ast::UExpr& expr) {
@@ -566,20 +521,25 @@ class ExprSimplifier final : public ast::Visitor {
         auto val = temp_value;
         temp_value = std::monostate();
 
-        if (std::holds_alternative<LinearPiExpr>(val)) {
-            switch (expr.op()) {
-                case ast::UnaryOp::Neg:
-                    temp_value = -std::get<LinearPiExpr>(val);
-                    break;
-                default:
-                    // evaluate as real expression
-                    temp_value = evaluate_double_uexpr(
-                        expr.op(), std::get<LinearPiExpr>(val).value());
-            }
-        } else if (std::holds_alternative<double>(val)) {
-            temp_value =
-                evaluate_double_uexpr(expr.op(), std::get<double>(val));
-        }
+        std::visit(
+            qasmtools::utils::overloaded{
+                [this, &expr](LinearPiExpr& lpe) {
+                    switch (expr.op()) {
+                        case ast::UnaryOp::Neg:
+                            temp_value = -lpe;
+                            break;
+                        default:
+                            // evaluate as real expression
+                            temp_value = evaluate_double_uexpr(expr.op(),
+                                                               lpe.value());
+                    }
+                },
+                [this, &expr](double real) {
+                    temp_value = evaluate_double_uexpr(expr.op(), real);
+                },
+                [](auto) {}
+            },
+            val);
     }
 
     void visit(ast::PiExpr&) {
