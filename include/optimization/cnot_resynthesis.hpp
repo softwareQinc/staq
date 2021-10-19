@@ -66,19 +66,19 @@ class CNOTOptimizer final : public ast::Replacer {
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::MeasureStmt& stmt) override {
         auto tmp = flush<ast::Stmt>();
-        tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
+        tmp.emplace_back(ast::object::clone(stmt));
         return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::ResetStmt& stmt) override {
         auto tmp = flush<ast::Stmt>();
-        tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
+        tmp.emplace_back(ast::object::clone(stmt));
         return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::IfStmt& stmt) override {
         auto tmp = flush<ast::Stmt>();
-        tmp.emplace_back(ast::ptr<ast::Stmt>(stmt.clone()));
+        tmp.emplace_back(ast::object::clone(stmt));
         return std::move(tmp);
     }
 
@@ -90,14 +90,13 @@ class CNOTOptimizer final : public ast::Replacer {
             auto idx = get_index(gate.arg());
 
             // Add the phase
-            add_phase(permutation_[idx],
-                      ast::ptr<ast::Expr>(gate.lambda().clone()));
+            add_phase(permutation_[idx], ast::object::clone(gate.lambda()));
 
             // Delete the gate
             return std::list<ast::ptr<ast::Gate>>();
         } else {
             auto tmp = flush<ast::Gate>();
-            tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
+            tmp.emplace_back(ast::object::clone(gate));
             return std::move(tmp);
         }
     }
@@ -115,7 +114,7 @@ class CNOTOptimizer final : public ast::Replacer {
     std::optional<std::list<ast::ptr<ast::Gate>>>
     replace(ast::BarrierGate& gate) override {
         auto tmp = flush<ast::Gate>();
-        tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
+        tmp.emplace_back(ast::object::clone(gate));
         return std::move(tmp);
     }
     std::optional<std::list<ast::ptr<ast::Gate>>>
@@ -124,8 +123,7 @@ class CNOTOptimizer final : public ast::Replacer {
 
         if (name == "rz" || name == "u1") {
             auto idx = get_index(gate.qarg(0));
-            add_phase(permutation_[idx],
-                      ast::ptr<ast::Expr>(gate.carg(0).clone()));
+            add_phase(permutation_[idx], ast::object::clone(gate.carg(0)));
 
             return std::list<ast::ptr<ast::Gate>>();
         } else if (name == "cx") {
@@ -165,7 +163,7 @@ class CNOTOptimizer final : public ast::Replacer {
             return std::list<ast::ptr<ast::Gate>>();
         } else {
             auto tmp = flush<ast::Gate>();
-            tmp.emplace_back(ast::ptr<ast::Gate>(gate.clone()));
+            tmp.emplace_back(ast::object::clone(gate));
             return std::move(tmp);
         }
     }

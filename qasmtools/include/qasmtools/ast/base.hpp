@@ -45,11 +45,35 @@ using ptr = std::unique_ptr<T>;
 
 using symbol = std::string;
 
+namespace object {
+template <typename T>
+ptr<T> clone(const T& object) {
+    using base_type = typename T::base_type;
+    static_assert(std::is_base_of<base_type, T>::value,
+                  "T object has to derived from T::base_type");
+    auto ptrr = static_cast<const base_type&>(object).clone();
+    return ptr<T>(static_cast<T*>(ptrr));
+}
+
+template <typename T>
+struct cloneable {
+    using base_type = T;
+
+    virtual ~cloneable() = default;
+
+  protected:
+    virtual T* clone() const = 0;
+
+    template <typename X>
+    friend ptr<X> object::clone(const X&);
+};
+} // namespace object
+
 /**
  * \class qasmtools::ast::ASTNode
  * \brief Base class for AST nodes
  */
-class ASTNode {
+class ASTNode : public object::cloneable<ASTNode> {
     static int& max_uid_() {
         static int v;
         return v;
@@ -88,11 +112,6 @@ class ASTNode {
      * \param os Output stream
      */
     virtual std::ostream& pretty_print(std::ostream& os) const = 0;
-
-    /**
-     * \brief Generate a deep copy of the node
-     */
-    virtual ASTNode* clone() const = 0;
 
     /**
      * \brief Extraction operator override

@@ -104,7 +104,6 @@ class Expr : public ASTNode {
   public:
     Expr(parser::Position pos) : ASTNode(pos) {}
     virtual ~Expr() = default;
-    virtual Expr* clone() const override = 0;
 
     /**
      * \brief Evaluate constant expressions
@@ -231,9 +230,10 @@ class BExpr final : public Expr {
 
         return os;
     }
+  protected:
     BExpr* clone() const override {
-        return new BExpr(pos_, ptr<Expr>(lexp_->clone()), op_,
-                         ptr<Expr>(rexp_->clone()));
+        return new BExpr(pos_, object::clone(*lexp_), op_,
+                         object::clone(*rexp_));
     }
 };
 
@@ -325,8 +325,9 @@ class UExpr final : public Expr {
 
         return os;
     }
+  protected:
     UExpr* clone() const override {
-        return new UExpr(pos_, op_, ptr<Expr>(exp_->clone()));
+        return new UExpr(pos_, op_, object::clone(*exp_));
     }
 };
 
@@ -360,6 +361,7 @@ class PiExpr final : public Expr {
         os << "pi";
         return os;
     }
+  protected:
     PiExpr* clone() const override { return new PiExpr(pos_); }
 };
 
@@ -404,6 +406,7 @@ class IntExpr final : public Expr {
         os << value_;
         return os;
     }
+  protected:
     IntExpr* clone() const override { return new IntExpr(pos_, value_); }
 };
 
@@ -447,6 +450,7 @@ class RealExpr final : public Expr {
         os << std::setprecision(15) << value_ << std::setprecision(ss);
         return os;
     }
+  protected:
     RealExpr* clone() const override { return new RealExpr(pos_, value_); }
 };
 
@@ -490,6 +494,7 @@ class VarExpr final : public Expr {
         os << var_;
         return os;
     }
+  protected:
     VarExpr* clone() const override { return new VarExpr(pos_, var_); }
 };
 
