@@ -123,7 +123,7 @@ class SteinerMapper final : public ast::Replacer {
     replace(ast::UGate& gate) override {
         if (is_zero(gate.theta()) && is_zero(gate.phi())) {
             // It's a z-axis rotation
-            auto angle = ast::ptr<ast::Expr>(gate.lambda().clone());
+            auto angle = ast::object::clone(gate.lambda());
             auto idx = get_index(gate.arg());
 
             if (in_bounds(idx)) {
@@ -143,7 +143,7 @@ class SteinerMapper final : public ast::Replacer {
         auto name = gate.name();
 
         if (name == "rz" || name == "u1") {
-            auto angle = ast::ptr<ast::Expr>(gate.carg(0).clone());
+            auto angle = ast::object::clone(gate.carg(0));
             auto idx = get_index(gate.qarg(0));
             if (in_bounds(idx)) {
                 add_phase(permutation_[idx], std::move(angle));
@@ -291,7 +291,7 @@ class SteinerMapper final : public ast::Replacer {
                     }},
                 gate);
         }
-        ret.emplace_back(ast::ptr<T>(node.clone()));
+        ret.emplace_back(ast::object::clone(node));
 
         // Reset the cnot-dihedral circuit
         phases_.clear();

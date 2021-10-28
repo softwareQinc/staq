@@ -201,10 +201,10 @@ class Inliner final : public ast::Replacer {
             std::list<ast::ptr<ast::Gate>> body;
 
             for (auto gate : it->second.body) {
-                auto new_gate = gate->clone();
+                auto new_gate = ast::object::clone(*gate);
                 new_gate->accept(var_subst);
                 new_gate->accept(ap_subst);
-                body.emplace_back(ast::ptr<ast::Gate>(new_gate));
+                body.emplace_back(std::move(new_gate));
             }
 
             return std::move(body);

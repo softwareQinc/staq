@@ -398,7 +398,7 @@ class ExprSimplifier final : public ast::Visitor {
                         case ast::BinaryOp::Plus:
                             if (lpe1.is_zero()) // 0 + x
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                                    ast::object::clone(expr.rexp());
                             else
                                 expr.set_lexp(lpe1.to_ast());
                             break;
@@ -406,14 +406,14 @@ class ExprSimplifier final : public ast::Visitor {
                             if (lpe1.is_zero()) // 0 - x
                                 replacement_expr = ast::UExpr::create(
                                     {}, ast::UnaryOp::Neg,
-                                    ast::ptr<ast::Expr>(expr.rexp().clone()));
+                                    ast::object::clone(expr.rexp()));
                             else
                                 expr.set_lexp(lpe1.to_ast());
                             break;
                         case ast::BinaryOp::Times:
                             if (lpe1.value() == 1) // 1 * x
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                                    ast::object::clone(expr.rexp());
                             else
                                 expr.set_lexp(lpe1.to_ast());
                             break;
@@ -437,7 +437,7 @@ class ExprSimplifier final : public ast::Visitor {
                         case ast::BinaryOp::Plus:
                             if (real1 == 0) // 0 + x
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                                    ast::object::clone(expr.rexp());
                             else
                                 expr.set_lexp(ast::RealExpr::create({}, real1));
                             break;
@@ -445,14 +445,14 @@ class ExprSimplifier final : public ast::Visitor {
                             if (real1 == 0) // 0 - x
                                 replacement_expr = ast::UExpr::create(
                                     {}, ast::UnaryOp::Neg,
-                                    ast::ptr<ast::Expr>(expr.rexp().clone()));
+                                    ast::object::clone(expr.rexp()));
                             else
                                 expr.set_lexp(ast::RealExpr::create({}, real1));
                             break;
                         case ast::BinaryOp::Times:
                             if (real1 == 1) // 1 * x
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.rexp().clone());
+                                    ast::object::clone(expr.rexp());
                             else
                                 expr.set_lexp(ast::RealExpr::create({}, real1));
                             break;
@@ -470,7 +470,7 @@ class ExprSimplifier final : public ast::Visitor {
                         case ast::BinaryOp::Minus:
                             if (lpe2.is_zero()) // x + 0  or  x - 0
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                                    ast::object::clone(expr.lexp());
                             else
                                 expr.set_rexp(lpe2.to_ast());
                             break;
@@ -479,7 +479,7 @@ class ExprSimplifier final : public ast::Visitor {
                         case ast::BinaryOp::Pow:
                             if (lpe2.value() == 1) // x * 1 or x / 1 or x ^ 1
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                                    ast::object::clone(expr.lexp());
                             else
                                 expr.set_rexp(lpe2.to_ast());
                             break;
@@ -491,7 +491,7 @@ class ExprSimplifier final : public ast::Visitor {
                         case ast::BinaryOp::Minus:
                             if (real2 == 0) // x + 0  or  x - 0
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                                    ast::object::clone(expr.lexp());
                             else
                                 expr.set_rexp(ast::RealExpr::create({}, real2));
                             break;
@@ -500,7 +500,7 @@ class ExprSimplifier final : public ast::Visitor {
                         case ast::BinaryOp::Pow:
                             if (real2 == 1) // x * 1 or x / 1 or x ^ 1
                                 replacement_expr =
-                                    ast::ptr<ast::Expr>(expr.lexp().clone());
+                                    ast::object::clone(expr.lexp());
                             else
                                 expr.set_rexp(ast::RealExpr::create({}, real2));
                             break;
