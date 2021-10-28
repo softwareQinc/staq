@@ -6,7 +6,11 @@ ext_modules = [
     Pybind11Extension(
         "pystaq",
         ["pystaq/staq_wrapper.cpp"],
-        extra_compile_args=["-Ilibs", "-Iinclude", "-Iqasmtools/include"],
+        extra_compile_args=["-Ipybind11/include",
+                            "-Ilibs",
+                            "-Iinclude",
+                            "-Iqasmtools/include",
+                            ],
         cxx_std=17,
         include_pybind11=False,
     ),
