@@ -108,7 +108,7 @@ class SubstVar final : public ScopedReplacer {
     std::optional<ast::ptr<ast::Expr>> replace(ast::VarExpr& expr) override {
         auto v = expr.var();
         if (free(v) && subst_.find(v) != subst_.end()) {
-            return ast::ptr<ast::Expr>(subst_[v]->clone());
+            return ast::object::clone(*subst_[v]);
         }
 
         return std::nullopt;

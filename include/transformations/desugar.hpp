@@ -139,9 +139,9 @@ class DesugarImpl final : public ast::Replacer {
 
             // Do the expansion
             for (int i = 0; i < *num; i++) {
-                auto theta = ast::ptr<ast::Expr>(gate.theta().clone());
-                auto phi = ast::ptr<ast::Expr>(gate.phi().clone());
-                auto lambda = ast::ptr<ast::Expr>(gate.lambda().clone());
+                auto theta = ast::object::clone(gate.theta());
+                auto phi = ast::object::clone(gate.phi());
+                auto lambda = ast::object::clone(gate.lambda());
                 auto arg = expand(gate.arg(), i);
 
                 ret.emplace_back(std::make_unique<ast::UGate>(
@@ -165,7 +165,7 @@ class DesugarImpl final : public ast::Replacer {
                 std::vector<ast::ptr<ast::Expr>> c_args;
                 std::vector<ast::VarAccess> q_args;
                 gate.foreach_carg([&c_args, this](auto& arg) {
-                    c_args.emplace_back(arg.clone());
+                    c_args.emplace_back(ast::object::clone(arg));
                 });
                 gate.foreach_qarg([&q_args, this, i](auto& arg) {
                     q_args.emplace_back(expand(arg, i));
