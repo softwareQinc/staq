@@ -62,6 +62,8 @@ class Stmt : public ASTNode {
     std::ostream& pretty_print(std::ostream& os) const override {
         return pretty_print(os, false);
     }
+  protected:
+    virtual Stmt* clone() const override = 0;
 };
 
 /**
@@ -259,6 +261,8 @@ class Gate : public Stmt {
   public:
     Gate(parser::Position pos) : Stmt(pos) {}
     virtual ~Gate() = default;
+  protected:
+    virtual Gate* clone() const = 0;
 };
 
 /**

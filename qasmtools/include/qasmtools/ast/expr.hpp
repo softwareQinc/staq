@@ -124,6 +124,8 @@ class Expr : public ASTNode {
     std::ostream& pretty_print(std::ostream& os) const override {
         return pretty_print(os, false);
     }
+  protected:
+    virtual Expr* clone() const override = 0;
 };
 
 /**
