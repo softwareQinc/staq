@@ -25,6 +25,8 @@
  * SOFTWARE.
  */
 
+#pragma once
+
 #include <memory>
 
 namespace qasmtools {
@@ -35,7 +37,7 @@ using ptr = std::unique_ptr<T>;
 
 namespace object {
 template <typename T>
-ptr<T> clone(const T& object) {
+inline ptr<T> clone(const T& object) {
     using base_type = typename T::base_type;
     static_assert(std::is_base_of<base_type, T>::value,
                   "T object has to derived from T::base_type");
