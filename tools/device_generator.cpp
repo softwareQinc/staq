@@ -38,19 +38,19 @@ void write_to_stream(const std::vector<std::vector<bool>>& adj,
 }
 
 void add_edge(std::vector<std::vector<bool>>& adj,
-              std::vector<std::vector<double>>& tq_fi, int target, int control,
+              std::vector<std::vector<double>>& tq_fi, int control, int target,
               double fidelity = FIDELITY_1) {
-    if (target < 0 || target >= adj.size() || control < 0 ||
-        control >= adj.size())
-        std::cerr << "Qubit(s) out of range: " << target << "," << control
+    if (control < 0 || control >= adj.size() || target < 0 ||
+        target >= adj.size())
+        std::cerr << "Qubit(s) out of range: " << control << "," << target
                   << "\n";
     else {
-        adj[target][control] = true;
+        adj[control][target] = true;
         if (fidelity != FIDELITY_1) {
             if (fidelity < 0 || fidelity > 1)
                 std::cerr << "Fidelity out of range: " << fidelity << "\n";
             else
-                tq_fi[target][control] = fidelity;
+                tq_fi[control][target] = fidelity;
         }
     }
 }
