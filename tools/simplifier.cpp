@@ -26,6 +26,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 #include "optimization/simplify.hpp"
+#include "transformations/expression_simplifier.hpp"
 
 #include <CLI/CLI.hpp>
 
@@ -44,6 +45,7 @@ int main(int argc, char** argv) {
 
     auto program = parse_stdin();
     if (program) {
+        transformations::expr_simplify(*program);
         optimization::simplify(*program, {!no_fixpoint});
         std::cout << *program;
     } else {
