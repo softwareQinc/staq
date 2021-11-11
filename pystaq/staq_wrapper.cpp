@@ -81,7 +81,7 @@ class Program {
                                     {!clear_decls, overrides, ancilla_name});
     }
     void map(const std::string& layout = "linear",
-             const std::string& mapper = "swap",
+             const std::string& mapper = "swap", bool evaluate_all = false,
              const std::string& device_json = "") {
         using namespace staq;
         // Inline fully first
@@ -118,11 +118,17 @@ class Program {
             std::cerr << "Error: invalid mapping algorithm\n";
             return;
         }
+
+        /* Evaluating symbolic expressions */
+        if (evaluate_all) {
+            transformations::expr_simplify(*prog_, true);
+        }
     }
     void rotation_fold(bool no_correction = false) {
         staq::optimization::fold_rotations(*prog_, {!no_correction});
     }
     void simplify(bool no_fixpoint = false) {
+        staq::transformations::expr_simplify(*prog_);
         staq::optimization::simplify(*prog_, {!no_fixpoint});
     }
     void synthesize_oracles() {
@@ -175,29 +181,26 @@ Program parse_file(const std::string& fname) {
 void desugar(Program& prog) {
     prog.desugar();
 }
-void inline_prog(Program& prog, bool clear_decls = false,
-                 bool inline_stdlib = false,
-                 const std::string& ancilla_name = "anc") {
+void inline_prog(Program& prog, bool clear_decls, bool inline_stdlib,
+                 const std::string& ancilla_name) {
     prog.inline_prog(clear_decls, inline_stdlib, ancilla_name);
 }
-void map(Program& prog, const std::string& layout = "linear",
-         const std::string& mapper = "swap",
-         const std::string& device_json = "") {
-    prog.map(layout, mapper, device_json);
+void map(Program& prog, const std::string& layout, const std::string& mapper,
+         bool evaluate_all, const std::string& device_json) {
+    prog.map(layout, mapper, evaluate_all, device_json);
 }
-void rotation_fold(Program& prog, bool no_correction = false) {
+void rotation_fold(Program& prog, bool no_correction) {
     prog.rotation_fold(no_correction);
 }
-void simplify(Program& prog, bool no_fixpoint = false) {
+void simplify(Program& prog, bool no_fixpoint) {
     prog.simplify(no_fixpoint);
 }
 void synthesize_oracles(Program& prog) {
     prog.synthesize_oracles();
 }
 
-void estimate_resources(Program& prog, bool box_gates = false,
-                        bool unbox_qelib = false,
-                        bool no_merge_dagger = false) {
+void estimate_resources(Program& prog, bool box_gates, bool unbox_qelib,
+                        bool no_merge_dagger) {
     prog.estimate_resources(box_gates, unbox_qelib, no_merge_dagger);
 }
 void output_cirq(Program& prog) {
@@ -278,12 +281,13 @@ PYBIND11_MODULE(pystaq, m) {
     m.def("parse_str", &parse_str, "Parse openQASM program string");
     m.def("parse_file", &parse_file, "Parse openQASM program file");
     m.def("desugar", &desugar, "Expand out gates applied to registers");
-    m.def("inline_prog", &inline_prog, "Inline the OpenQASM source code",
+    m.def("inline", &inline_prog, "Inline the OpenQASM source code",
           py::arg("prog"), py::arg("clear_decls") = false,
           py::arg("inline_stdlib") = false, py::arg("ancilla_name") = "anc");
     m.def("map", &map, "Map circuit to a physical device",
           py::arg("prog"), py::arg("layout") = "linear",
-          py::arg("mapper") = "swap", py::arg("device_json") = "");
+          py::arg("mapper") = "swap", py::arg("evaluate_all") = false,
+          py::arg("device_json") = "");
     m.def("rotation_fold", &rotation_fold,
           "Reduce the number of small-angle rotation gates in all Pauli bases",
           py::arg("prog"), py::arg("no_correction") = false);
