@@ -278,8 +278,8 @@ PYBIND11_MODULE(pystaq, m) {
             return oss.str();
         });
 
-    m.def("parse_str", &parse_str, "Parse openQASM program string");
-    m.def("parse_file", &parse_file, "Parse openQASM program file");
+    m.def("parse_str", &parse_str, "Parse OpenQASM program string");
+    m.def("parse_file", &parse_file, "Parse OpenQASM program file");
     m.def("desugar", &desugar, "Expand out gates applied to registers");
     m.def("inline", &inline_prog, "Inline the OpenQASM source code",
           py::arg("prog"), py::arg("clear_decls") = false,

@@ -211,7 +211,7 @@ class QuilOutputter final : public ast::Visitor {
         if (circuit_local_)
             os_ << "    ";
 
-        // An approximation to openQASM's barrier
+        // An approximation to OpenQASM's barrier
         os_ << "PRAGMA parallelization_barrier\n";
     }
 
