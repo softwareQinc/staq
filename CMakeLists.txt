@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
-project(staq VERSION 1.4 LANGUAGES CXX)
-enable_testing()
-
+project(staq VERSION 2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
+enable_testing()
+
+#### staq root directory
+add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
 if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
@@ -25,9 +27,6 @@ endif ()
 if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
 endif ()
-
-#### Source directory
-add_compile_definitions(PATH="${CMAKE_SOURCE_DIR}")
 
 #### Libs
 include_directories(SYSTEM libs)
