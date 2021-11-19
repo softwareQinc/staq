@@ -1,5 +1,6 @@
 Pre-release - work in progress
-    - 
+    - Added a pystaq, a Python wrapper around staq. See
+      https://github.com/softwareQinc/staq/wiki/pystaq for more details.
 
 Version 2.0 - 5 October 2021
     - Decoupled the OpenQASM parser from the main codebase. A hard copy of
