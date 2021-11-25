@@ -134,40 +134,46 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
-    // output (these methods print to std::cout)
-    void estimate_resources(bool box_gates = false,
-                            bool unbox_qelib = false,
-                            bool no_merge_dagger = false) {
+    // output (these methods return a string)
+    std::string get_resources(bool box_gates = false,
+                              bool unbox_qelib = false,
+                              bool no_merge_dagger = false) {
         std::set<std::string_view> overrides =
                 unbox_qelib ? std::set<std::string_view>()
                             : qasmtools::ast::qelib_defs;
         auto count = staq::tools::estimate_resources(
                 *prog_, {!box_gates, !no_merge_dagger, overrides});
 
-        std::cout << "Resources used:\n";
+        std::ostringstream oss;
+        oss << "Resources used:\n";
         for (auto& [name, num] : count) {
-            std::cout << "  " << name << ": " << num << "\n";
+            oss << "  " << name << ": " << num << "\n";
         }
+        return oss.str();
     }
-    void output_cirq() {
-        desugar();
-        staq::output::output_cirq(*prog_);
-        std::cout << "\n";
+    std::string to_cirq() {
+        std::ostringstream oss;
+        staq::output::CirqOutputter outputter(oss);
+        outputter.run(*prog_);
+        return oss.str();
     }
-    void output_projectq() {
-        desugar();
-        staq::output::output_projectq(*prog_);
-        std::cout << "\n";
+    std::string to_projectq() {
+        std::ostringstream oss;
+        staq::output::ProjectQOutputter outputter(oss);
+        outputter.run(*prog_);
+        return oss.str();
     }
-    void output_qsharp() {
-        desugar();
-        staq::output::output_qsharp(*prog_);
-        std::cout << "\n";
+    std::string to_qsharp() {
+        std::ostringstream oss;
+        staq::output::QSharpOutputter outputter(oss);
+        outputter.run(*prog_);
+        return oss.str();
     }
-    void output_quil() {
-        desugar();
-        staq::output::output_quil(*prog_);
-        std::cout << "\n";
+    std::string to_quil() {
+        std::ostringstream oss;
+        staq::output::QuilOutputter outputter(oss);
+        outputter.run(*prog_);
+        return oss.str();
     }
 };
 
@@ -197,23 +203,6 @@ void simplify(Program& prog, bool no_fixpoint) {
 }
 void synthesize_oracles(Program& prog) {
     prog.synthesize_oracles();
-}
-
-void estimate_resources(Program& prog, bool box_gates, bool unbox_qelib,
-                        bool no_merge_dagger) {
-    prog.estimate_resources(box_gates, unbox_qelib, no_merge_dagger);
-}
-void output_cirq(Program& prog) {
-    prog.output_cirq();
-}
-void output_projectq(Program& prog) {
-    prog.output_projectq();
-}
-void output_qsharp(Program& prog) {
-    prog.output_qsharp();
-}
-void output_quil(Program& prog) {
-    prog.output_quil();
 }
 
 
@@ -272,6 +261,14 @@ PYBIND11_MODULE(pystaq, m) {
     m.doc() = "Python wrapper for staq (https://github.com/softwareQinc/staq)";
 
     py::class_<Program>(m, "Program")
+        .def("get_resources", &Program::get_resources, "Get circuit statistics",
+             py::arg("box_gates") = false, py::arg("unbox_qelib") = false,
+             py::arg("no_merge_dagger") = false)
+        .def("to_cirq", &Program::to_cirq, "Get the Cirq representation")
+        .def("to_projectq", &Program::to_projectq,
+             "Get the ProjectQ representation")
+        .def("to_qsharp", &Program::to_qsharp, "Get the Q# representation")
+        .def("to_quil", &Program::to_quil, "Get the Quil representation")
         .def("__repr__", [](const Program& p){
             std::ostringstream oss;
             oss << p;
@@ -295,13 +292,6 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-    m.def("estimate_resources", &estimate_resources, "Output circuit statistics",
-          py::arg("prog"), py::arg("box_gates") = false,
-          py::arg("unbox_qelib") = false, py::arg("no_merge_dagger") = false);
-    m.def("output_cirq", &output_cirq, "Output circuit to Cirq");
-    m.def("output_projectq", &output_projectq, "Output circuit to ProjectQ");
-    m.def("output_qsharp", &output_qsharp, "Output circuit to Q#");
-    m.def("output_quil", &output_quil, "Output circuit to Quil");
 
     py::class_<Device>(m, "Device")
         .def(py::init<int>())
