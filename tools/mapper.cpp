@@ -26,6 +26,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/inline.hpp"
+#include "transformations/expression_simplifier.hpp"
 #include "tools/qubit_estimator.hpp"
 
 #include "mapping/device.hpp"
@@ -44,15 +45,10 @@ int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    if (argc == 1) {
-        std::cout << "Usage: staq_mapper [OPTIONS]\n"
-                  << "Run with --help for more information.\n";
-        return 0;
-    }
-
     std::string device_json;
     std::string layout = "linear";
     std::string mapper = "swap";
+    bool evaluate_all = false;
 
     CLI::App app{"QASM physical mapper"};
     app.get_formatter()->label("REQUIRED", "(REQUIRED)");
@@ -65,6 +61,8 @@ int main(int argc, char** argv) {
         ->check(CLI::IsMember({"linear", "eager", "bestfit"}));
     app.add_option("-m", mapper, "Mapping algorithm to use. Default=" + mapper)
         ->check(CLI::IsMember({"swap", "steiner"}));
+    app.add_flag("--evaluate-all", evaluate_all,
+                 "Evaluate all expressions as real numbers");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -98,6 +96,11 @@ int main(int argc, char** argv) {
             mapping::map_onto_device(dev, *program);
         } else if (mapper == "steiner") {
             mapping::steiner_mapping(dev, *program);
+        }
+
+        /* Evaluating symbolic expressions */
+        if (evaluate_all) {
+            transformations::expr_simplify(*program, true);
         }
 
         // Print result

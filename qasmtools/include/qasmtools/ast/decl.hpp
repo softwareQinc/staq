@@ -26,7 +26,7 @@
 
 /**
  * \file qasmtools/ast/decl.hpp
- * \brief openQASM declarations
+ * \brief OpenQASM declarations
  */
 
 #pragma once
@@ -55,10 +55,10 @@ static const std::set<std::string_view> qelib_defs{
 #endif
 
 /**
- * \brief Tests whether identifier is part of the standard openQASM qelib or not
+ * \brief Tests whether identifier is part of the standard OpenQASM qelib or not
  *
  * \param id Identifier
- * \return True if \a id is part of the standard openQASM qelib, false otherwise
+ * \return True if \a id is part of the standard OpenQASM qelib, false otherwise
  */
 inline bool is_std_qelib(const std::string& id) {
     return qelib_defs.find(id) != qelib_defs.end();
@@ -66,7 +66,7 @@ inline bool is_std_qelib(const std::string& id) {
 
 /**
  * \class qasmtools::ast::Decl
- * \brief Base class for openQASM declarations
+ * \brief Base class for OpenQASM declarations
  *
  * Declarations are attribute classes as they can occur in different
  * statement contexts. To avoid diamond inheritance, any derived declaration
@@ -208,6 +208,7 @@ class GateDecl final : public Stmt, public Decl {
         }
         return os;
     }
+
   protected:
     GateDecl* clone() const override {
         std::list<ptr<Gate>> tmp;
@@ -272,6 +273,7 @@ class OracleDecl final : public Stmt, public Decl {
         os << " { \"" << fname_ << "\" }\n";
         return os;
     }
+
   protected:
     OracleDecl* clone() const override {
         return new OracleDecl(pos_, id_, params_, fname_);
@@ -326,6 +328,7 @@ class RegisterDecl final : public Stmt, public Decl {
         os << (quantum_ ? "qreg " : "creg ") << id_ << "[" << size_ << "];\n";
         return os;
     }
+
   protected:
     RegisterDecl* clone() const override {
         return new RegisterDecl(pos_, id_, quantum_, size_);
@@ -382,6 +385,7 @@ class AncillaDecl final : public Gate, public Decl {
         os << "ancilla " << id_ << "[" << size_ << "];\n";
         return os;
     }
+
   protected:
     AncillaDecl* clone() const override {
         return new AncillaDecl(pos_, id_, dirty_, size_);

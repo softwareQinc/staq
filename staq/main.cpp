@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
                 optimization::optimize_CNOT(*prog);
                 break;
             case Pass::simplify:
-                transformations::expr_simplify(*prog, evaluate_all);
+                transformations::expr_simplify(*prog);
                 optimization::simplify(*prog);
                 break;
             case Pass::map: {
@@ -304,6 +304,12 @@ int main(int argc, char** argv) {
                 transformations::expr_simplify(*prog, evaluate_all);
                 break;
         }
+
+
+    /* Evaluating symbolic expressions */
+    if (evaluate_all) {
+        transformations::expr_simplify(*prog, true);
+    }
 
     /* Output */
     if (format == "quil") {

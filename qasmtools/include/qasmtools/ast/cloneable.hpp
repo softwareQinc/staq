@@ -1,9 +1,10 @@
 /*
- * This file is part of staq.
+ * Covariance and smart pointers. Adapted from
+ * https://github.com/CppCodeReviewers/Covariant-Return-Types-and-Smart-Pointers
  *
- * Copyright (c) 2019 - 2021 softwareQ Inc. All rights reserved.
+ * The MIT License (MIT)
  *
- * MIT License
+ * Copyright (c) 2014 C++ Code Revievers
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +25,39 @@
  * SOFTWARE.
  */
 
-#include "qasmtools/parser/parser.hpp"
-#include "optimization/simplify.hpp"
-#include "transformations/expression_simplifier.hpp"
+#pragma once
 
-#include <CLI/CLI.hpp>
+#include <memory>
 
-int main(int argc, char** argv) {
-    using namespace staq;
-    using qasmtools::parser::parse_stdin;
+namespace qasmtools {
+namespace ast {
 
-    bool no_fixpoint = false;
+template <typename T>
+using ptr = std::unique_ptr<T>;
 
-    CLI::App app{"QASM simplifier"};
-
-    app.add_flag("--no-fixpoint", no_fixpoint,
-                 "Stops the simplifier after one iteration");
-
-    CLI11_PARSE(app, argc, argv);
-
-    auto program = parse_stdin();
-    if (program) {
-        transformations::expr_simplify(*program);
-        optimization::simplify(*program, {!no_fixpoint});
-        std::cout << *program;
-    } else {
-        std::cerr << "Parsing failed\n";
-    }
+namespace object {
+template <typename T>
+inline ptr<T> clone(const T& object) {
+    using base_type = typename T::base_type;
+    static_assert(std::is_base_of<base_type, T>::value,
+                  "T object has to derived from T::base_type");
+    auto ptrr = static_cast<const base_type&>(object).clone();
+    return ptr<T>(static_cast<T*>(ptrr));
 }
+
+template <typename T>
+struct cloneable {
+    using base_type = T;
+
+    virtual ~cloneable() = default;
+
+  protected:
+    virtual T* clone() const = 0;
+
+    template <typename X>
+    friend ptr<X> object::clone(const X&);
+};
+} // namespace object
+
+} // namespace ast
+} // namespace qasmtools

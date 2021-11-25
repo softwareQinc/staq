@@ -26,7 +26,7 @@
 
 /**
  * \file qasmtools/ast/program.hpp
- * \brief openQASM programs
+ * \brief OpenQASM programs
  */
 
 #pragma once
@@ -128,6 +128,7 @@ class Program : public ASTNode {
 
         return os;
     }
+
   protected:
     Program* clone() const override {
         std::list<ptr<Stmt>> tmp;
