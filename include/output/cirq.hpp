@@ -353,7 +353,7 @@ class CirqOutputter final : public ast::Visitor {
                 stmt.accept(*this);
         });
 
-        os_ << "])\n\nprint(" << config_.circuit_name << ")";
+        os_ << "])\n";
         prefix_ = "";
     }
 
