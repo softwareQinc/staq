@@ -49,3 +49,6 @@ CMakeSettings.json
 
 # Documentation source files 
 doc/
+
+# Misc
+.DS_store
