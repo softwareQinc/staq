@@ -39,12 +39,12 @@ target_include_directories(libstaq INTERFACE
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/qasmtools/include/>)
 
-#### Enable Qiskit Specs
-option(USE_QISKIT_SPECS "Use Qiskit gate specifications instead of OpenQASM standard" OFF)
-if (${USE_QISKIT_SPECS})
-    target_compile_definitions(libstaq INTERFACE -DUSE_QISKIT_SPECS=true)
+#### Enable OpenQASM 2.0 Specs
+option(USE_OPENQASM2_SPECS "Use OpenQASM 2.0 standard instead of Qiskit gate specifications" OFF)
+if (${USE_OPENQASM2_SPECS})
+    target_compile_definitions(libstaq INTERFACE -DUSE_OPENQASM2_SPECS=true)
 else ()
-    target_compile_definitions(libstaq INTERFACE -DUSE_QISKIT_SPECS=false)
+    target_compile_definitions(libstaq INTERFACE -DUSE_OPENQASM2_SPECS=false)
 endif ()
 
 #### Compiler
