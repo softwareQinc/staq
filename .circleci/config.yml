@@ -40,7 +40,7 @@ jobs:
   macOS:
     description: A template for building and testing staq on macOS
     macos:
-      xcode: "11.3.0"
+      xcode: "13.0"
     steps:
       - checkout # change this from "checkout" to "*localCheckout" when running CircleCI locally
       - run:
