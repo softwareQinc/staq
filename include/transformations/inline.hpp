@@ -53,7 +53,7 @@ namespace ast = qasmtools::ast;
 /* \brief Default overrides */
 static const std::set<std::string_view> default_overrides{
     "x",  "y",  "z",  "h",  "s",  "sdg",  "t", "tdg",
-    "rx", "ry", "rz", "cz", "cy", "swap", "cx"};
+    "rx", "ry", "rz", "cz", "cy", "swap", "cx", "u1"};
 
 /* Implementation */
 class Inliner final : public ast::Replacer {
