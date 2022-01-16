@@ -408,7 +408,7 @@ struct ChannelRepr {
     }
 
     /**
-     * \classs staq::gates::ChannelRepr::Clifford
+     * \class staq::gates::ChannelRepr::Clifford
      * \brief Class representing an n-qubit Clifford operator as the normalizer
      * of the Pauli group
      *
