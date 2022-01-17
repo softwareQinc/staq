@@ -265,9 +265,9 @@ class CNOTOptimizer final : public ast::Replacer {
                     [&ret, this](std::pair<int, int>& cx) {
                         ret.emplace_back(generate_cnot(cx.first, cx.second));
                     },
-                    [&ret, this](std::pair<ast::ptr<ast::Expr>, int>& rz) {
+                    [&ret, this](std::pair<ast::ptr<ast::Expr>, int>& u1) {
                         ret.emplace_back(
-                            generate_rz(std::move(rz.first), rz.second));
+                            generate_u1(std::move(u1.first), u1.second));
                     }},
                 gate);
         }
@@ -312,8 +312,8 @@ class CNOTOptimizer final : public ast::Replacer {
     }
 
     /* Gate generation */
-    // Assumes basic gates (x, y, z, s, sdg, t, tdg, rz) are defined
-    ast::ptr<ast::DeclaredGate> generate_rz(ast::ptr<ast::Expr> theta, int i) {
+    // Assumes basic gates (x, y, z, s, sdg, t, tdg, u1) are defined
+    ast::ptr<ast::DeclaredGate> generate_u1(ast::ptr<ast::Expr> theta, int i) {
         auto c = theta->constant_eval();
 
         parser::Position pos;
@@ -325,7 +325,7 @@ class CNOTOptimizer final : public ast::Replacer {
         // Determine the name & classical arguments
         if (!c) {
             // Angle is conditional
-            name = "rz";
+            name = "u1";
             cargs.emplace_back(std::move(theta));
         } else {
             // Angle is constant
@@ -345,8 +345,8 @@ class CNOTOptimizer final : public ast::Replacer {
                 // Tdg gate
                 name = "tdg";
             } else {
-                // Rz gate
-                name = "rz";
+                // U1 gate
+                name = "u1";
                 cargs.emplace_back(std::move(theta));
             }
         }

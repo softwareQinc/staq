@@ -96,9 +96,9 @@ class SteinerMapper final : public ast::Replacer {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& rz) {
-                        prog.body().emplace_back(generate_rz(
-                            std::move(rz.first), rz.second, prog.pos()));
+                    [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& u1) {
+                        prog.body().emplace_back(generate_u1(
+                            std::move(u1.first), u1.second, prog.pos()));
                     }},
                 gate);
         }
@@ -285,9 +285,9 @@ class SteinerMapper final : public ast::Replacer {
                         }
                     },
                     [&ret, this,
-                     &node](std::pair<ast::ptr<ast::Expr>, int>& rz) {
-                        ret.emplace_back(generate_rz(std::move(rz.first),
-                                                     rz.second, node.pos()));
+                     &node](std::pair<ast::ptr<ast::Expr>, int>& u1) {
+                        ret.emplace_back(generate_u1(std::move(u1.first),
+                                                     u1.second, node.pos()));
                     }},
                 gate);
         }
@@ -353,7 +353,7 @@ class SteinerMapper final : public ast::Replacer {
         return result;
     }
 
-    ast::ptr<ast::UGate> generate_rz(ast::ptr<ast::Expr> angle, int i,
+    ast::ptr<ast::UGate> generate_u1(ast::ptr<ast::Expr> angle, int i,
                                      parser::Position pos) {
         auto tgt = ast::VarAccess(pos, config_.register_name, i);
 
@@ -412,7 +412,7 @@ class SteinerDry final : public ast::Traverse {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& rz) {}},
+                    [this, &prog](std::pair<ast::ptr<ast::Expr>, int>& u1) {}},
                 gate);
         }
 
@@ -568,7 +568,7 @@ class SteinerDry final : public ast::Traverse {
                                 "CNOT between non-coupled vertices!");
                         }
                     },
-                    [this, &node](std::pair<ast::ptr<ast::Expr>, int>& rz) {}},
+                    [this, &node](std::pair<ast::ptr<ast::Expr>, int>& u1) {}},
                 gate);
         }
 
