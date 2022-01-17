@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
-project(staq VERSION 2.0 LANGUAGES CXX)
+set(STAQ_VERSION_NUM 2.1)
+set(STAQ_VERSION_STR "${STAQ_VERSION_NUM}")
+project(staq VERSION ${STAQ_VERSION_NUM} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 enable_testing()
+
+#### staq version
+add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
+add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 
 #### staq root directory
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
@@ -20,7 +26,7 @@ endif ()
 if (MSVC)
     include_directories(SYSTEM libs/pthreadwin32)
     add_compile_options(-bigobj)
-    add_definitions(-DNOMINMAX)
+    add_compile_definitions(NOMINMAX)
 endif ()
 
 #### MinGW or Cygwin have issues with object files that are too large

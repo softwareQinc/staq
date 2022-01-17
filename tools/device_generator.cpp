@@ -33,7 +33,7 @@ static double FIDELITY_1 = staq::mapping::FIDELITY_1;
 void write_to_stream(const std::vector<std::vector<bool>>& adj,
                      const std::string& device_name, std::ostream& out) {
     using Device = staq::mapping::Device;
-    Device dev(device_name, adj.size(), adj);
+    Device dev(device_name, static_cast<int>(adj.size()), adj);
     out << dev.to_json() << "\n";
 }
 

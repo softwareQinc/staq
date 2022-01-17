@@ -88,7 +88,8 @@ class SteinerMapper final : public ast::Replacer {
                         } else if (device_.coupled(cx.second, cx.first)) {
                             auto swapped_cnot = generate_swapped_cnot(
                                 cx.first, cx.second, prog.pos());
-                            prog.body().insert(prog.body().end(),
+                            prog.body().insert(
+                                prog.body().end(),
                                 std::make_move_iterator(swapped_cnot.begin()),
                                 std::make_move_iterator(swapped_cnot.end()));
                         } else {
@@ -276,7 +277,8 @@ class SteinerMapper final : public ast::Replacer {
                         } else if (device_.coupled(cx.second, cx.first)) {
                             auto swapped_cnot = generate_swapped_cnot(
                                 cx.first, cx.second, node.pos());
-                            ret.insert(ret.end(),
+                            ret.insert(
+                                ret.end(),
                                 std::make_move_iterator(swapped_cnot.begin()),
                                 std::make_move_iterator(swapped_cnot.end()));
                         } else {

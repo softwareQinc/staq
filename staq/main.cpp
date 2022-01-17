@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    std::string ofile = "";
+    std::string ofile{};
     std::string format = "qasm";
     std::string layout_alg = "bestfit";
     std::string mapper = "steiner";
@@ -136,6 +136,13 @@ int main(int argc, char** argv) {
     app.footer(make_passes_str(width));
     app.allow_extras(); // later call app.remaining() for pass options
 
+    app.add_flag_function(
+        "-v,--version",
+        [](auto) {
+            std::cout << "staq version " << STAQ_VERSION_STR << "\n";
+            exit(EXIT_SUCCESS);
+        },
+        "Print version information");
     app.add_option("-o,--output", ofile,
                    "Output filename. Otherwise prints to stdout");
     app.add_option("-f,--format", format, "Output format. Default=" + format)
@@ -305,7 +312,6 @@ int main(int argc, char** argv) {
                 break;
         }
 
-
     /* Evaluating symbolic expressions */
     if (evaluate_all) {
         transformations::expr_simplify(*prog, true);
@@ -313,29 +319,29 @@ int main(int argc, char** argv) {
 
     /* Output */
     if (format == "quil") {
-        if (ofile == "")
+        if (ofile.empty())
             output::output_quil(*prog);
         else
             output::write_quil(*prog, ofile);
     } else if (format == "projectq") {
-        if (ofile == "")
+        if (ofile.empty())
             output::output_projectq(*prog);
         else
             output::write_projectq(*prog, ofile);
     } else if (format == "qsharp") {
-        if (ofile == "")
+        if (ofile.empty())
             output::output_qsharp(*prog);
         else
             output::write_qsharp(*prog, ofile);
     } else if (format == "cirq") {
-        if (ofile == "")
+        if (ofile.empty())
             output::output_cirq(*prog);
         else
             output::write_cirq(*prog, ofile);
     } else if (format == "resources") {
         auto count = tools::estimate_resources(*prog);
 
-        if (ofile == "") {
+        if (ofile.empty()) {
             std::cout << "Resource estimates for " << input_qasm << ":\n";
             for (auto& [name, num] : count)
                 std::cout << "  " << name << ": " << num << "\n";
@@ -350,7 +356,7 @@ int main(int argc, char** argv) {
             os.close();
         }
     } else { // qasm format
-        if (ofile == "") {
+        if (ofile.empty()) {
             if (mapped)
                 dev.print_layout(initial_layout, std::cout, "// ", output_perm);
             std::cout << *prog << "\n";

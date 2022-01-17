@@ -1,6 +1,6 @@
 # staq
 
-## Version 2.0 - 5 October 2021
+## Version 2.1 - 17 January 2022
 
 **Build status:**
 
@@ -31,16 +31,23 @@ information about the library and included tools.
 
 ---
 
-## Installation
+## License
+
+**staq** is distributed under the MIT license. Please see the
+[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for more details.
+
+---
+
+## Installation instructions
 
 ### Linux/UNIX
 
 **staq** uses [CMake](https://cmake.org/) for its build system. To build both tool suite and the **staq** executable, execute under the root directory
 
-  ```bash
-  mkdir build && cd build
-  cmake ..
-  make -j8
+```bash
+mkdir build && cd build
+cmake ..
+make -j8
   ```
 
 To build only the **staq** tool suite, from the `build` directory, enter
@@ -61,11 +68,11 @@ or later for cmake support. In Visual Studio, open
 as a cmake project, then simply build as a regular Visual Studio project or,
 from a Developer Command Prompt, execute under the root directory 
 
-  ```
-  mkdir build && cd build
-  cmake .. 
-  msbuild -m:8 -p:Configuration=Release staq.sln
-````
+```
+mkdir build && cd build
+cmake .. 
+msbuild -m:8 -p:Configuration=Release staq.sln
+```
 
 assuming you are building from an out of source directory. 
 
@@ -75,12 +82,14 @@ To (un)install, type
 cmake --build . --target (UN)INSTALL
 ```
 
----
-
-## License
-
-**staq** is distributed under the MIT license. Please see the
-[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for more details.
+## Python3 wrapper
+pystaq is a Python wrapper for staq.
+pystaq can be installed using `pip`:
+```
+pip install git+https://github.com/softwareQinc/staq
+```
+For more details, please see 
+[pystaq/README.md](https://github.com/softwareQinc/staq/blob/main/pystaq/README.md).
 
 ---
 

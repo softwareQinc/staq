@@ -108,13 +108,14 @@ class SwapMapper final : public ast::Replacer {
                     if (device_.coupled(i, j)) {
                         ret.emplace_back(generate_cnot(i, j, gate.pos()));
                     } else {
-                        auto swapped_cnot = generate_swapped_cnot(
-                            i, j, gate.pos());
-                        ret.insert(ret.end(),
+                        auto swapped_cnot =
+                            generate_swapped_cnot(i, j, gate.pos());
+                        ret.insert(
+                            ret.end(),
                             std::make_move_iterator(swapped_cnot.begin()),
                             std::make_move_iterator(swapped_cnot.end()));
                     }
-                        
+
                     break;
                 } else if (j != i) {
                     // Swap i and j
@@ -133,9 +134,10 @@ class SwapMapper final : public ast::Replacer {
                         ret.emplace_back(
                             generate_cnot(swap_j, swap_i, gate.pos()));
                     } else {
-                        auto swapped_cnot = generate_swapped_cnot(
-                            swap_j, swap_i, gate.pos());
-                        ret.insert(ret.end(),
+                        auto swapped_cnot =
+                            generate_swapped_cnot(swap_j, swap_i, gate.pos());
+                        ret.insert(
+                            ret.end(),
                             std::make_move_iterator(swapped_cnot.begin()),
                             std::make_move_iterator(swapped_cnot.end()));
                     }

@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     auto program = parse_stdin();
     if (program) {
         transformations::desugar(*program);
-        if (filename == "")
+        if (filename.empty())
             output::output_projectq(*program);
         else
             output::write_projectq(*program, filename);

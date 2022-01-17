@@ -390,8 +390,8 @@ class ExprSimplifier final : public ast::Visitor {
                     }
                 },
                 [this, &expr](LinearPiExpr& lpe1, double real2) {
-                    temp_value = evaluate_double_bexpr(lpe1.value(), expr.op(),
-                                                       real2);
+                    temp_value =
+                        evaluate_double_bexpr(lpe1.value(), expr.op(), real2);
                 },
                 [this, &expr](LinearPiExpr& lpe1, auto) {
                     switch (expr.op()) {
@@ -426,8 +426,8 @@ class ExprSimplifier final : public ast::Visitor {
                     }
                 },
                 [this, &expr](double real1, LinearPiExpr& lpe2) {
-                    temp_value = evaluate_double_bexpr(real1, expr.op(),
-                                                       lpe2.value());
+                    temp_value =
+                        evaluate_double_bexpr(real1, expr.op(), lpe2.value());
                 },
                 [this, &expr](double real1, double real2) {
                     temp_value = evaluate_double_bexpr(real1, expr.op(), real2);
@@ -506,10 +506,8 @@ class ExprSimplifier final : public ast::Visitor {
                             break;
                     }
                 },
-                [](auto, auto) {}
-            },
-            lval,
-            rval);
+                [](auto, auto) {}},
+            lval, rval);
     }
 
     void visit(ast::UExpr& expr) {
@@ -521,25 +519,23 @@ class ExprSimplifier final : public ast::Visitor {
         auto val = temp_value;
         temp_value = std::monostate();
 
-        std::visit(
-            qasmtools::utils::overloaded{
-                [this, &expr](LinearPiExpr& lpe) {
-                    switch (expr.op()) {
-                        case ast::UnaryOp::Neg:
-                            temp_value = -lpe;
-                            break;
-                        default:
-                            // evaluate as real expression
-                            temp_value = evaluate_double_uexpr(expr.op(),
-                                                               lpe.value());
-                    }
-                },
-                [this, &expr](double real) {
-                    temp_value = evaluate_double_uexpr(expr.op(), real);
-                },
-                [](auto) {}
-            },
-            val);
+        std::visit(qasmtools::utils::overloaded{
+                       [this, &expr](LinearPiExpr& lpe) {
+                           switch (expr.op()) {
+                               case ast::UnaryOp::Neg:
+                                   temp_value = -lpe;
+                                   break;
+                               default:
+                                   // evaluate as real expression
+                                   temp_value = evaluate_double_uexpr(
+                                       expr.op(), lpe.value());
+                           }
+                       },
+                       [this, &expr](double real) {
+                           temp_value = evaluate_double_uexpr(expr.op(), real);
+                       },
+                       [](auto) {}},
+                   val);
     }
 
     void visit(ast::PiExpr&) {
