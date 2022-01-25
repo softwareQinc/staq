@@ -14,7 +14,7 @@ ext_modules = [
 setup(
     name='pystaq',
     version='2.1',
-    description='Python wrapper for staq',
+    description='Python 3 wrapper for staq',
     author='softwareQ',
     author_email='info@softwareq.ca',
     url='https://github.com/softwareQinc/staq',

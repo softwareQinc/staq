@@ -42,7 +42,7 @@ To (un)install, type
 cmake --build . --target (UN)INSTALL
 ```
 
-## Python3 wrapper
+## Python 3 wrapper
 pystaq is a Python wrapper for staq.
 pystaq can be installed using `pip`:
 ```
