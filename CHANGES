@@ -1,3 +1,6 @@
+Pre-release:
+    - Added full Windows support for pystaq
+
 Version 2.1 - 17 January 2022
     - Added pystaq, a Python wrapper around staq. See
       https://github.com/softwareQinc/staq/wiki/pystaq for more details.
