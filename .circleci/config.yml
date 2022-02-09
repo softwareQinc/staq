@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Clone submodules
           command: |
-            git submodule update --init
+            git submodule update --init --recursive
       - run:
           name: Build the staq toolkit
           command: |
@@ -46,7 +46,7 @@ jobs:
       - run:
           name: Clone submodules
           command: |
-            git submodule update --init
+            git submodule update --init --recursive
       - run:
           name: Build the staq toolkit
           command: |
