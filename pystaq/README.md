@@ -15,6 +15,7 @@ inline
 synthesize_oracles
 simplify
 rotation_fold
+cnot_resynth
 map
 estimate_resources
 output_cirq

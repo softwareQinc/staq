@@ -131,6 +131,9 @@ class Program {
     void rotation_fold(bool no_correction = false) {
         staq::optimization::fold_rotations(*prog_, {!no_correction});
     }
+    void cnot_resynth() {
+        staq::optimization::optimize_CNOT(*prog_);
+    }
     void simplify(bool no_fixpoint = false) {
         staq::transformations::expr_simplify(*prog_);
         staq::optimization::simplify(*prog_, {!no_fixpoint});
@@ -201,6 +204,9 @@ void map(Program& prog, const std::string& layout, const std::string& mapper,
 }
 void rotation_fold(Program& prog, bool no_correction) {
     prog.rotation_fold(no_correction);
+}
+void cnot_resynth(Program& prog) {
+    prog.cnot_resynth();
 }
 void simplify(Program& prog, bool no_fixpoint) {
     prog.simplify(no_fixpoint);
@@ -292,6 +298,8 @@ PYBIND11_MODULE(pystaq, m) {
     m.def("rotation_fold", &rotation_fold,
           "Reduce the number of small-angle rotation gates in all Pauli bases",
           py::arg("prog"), py::arg("no_correction") = false);
+    m.def("cnot_resynth", &cnot_resynth,
+          "Re-synthesize CNOT-dihedral subcircuits to reduce CNOT gates");
     m.def("simplify", &simplify, "Apply basic circuit simplifications",
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
