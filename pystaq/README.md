@@ -17,7 +17,7 @@ simplify
 rotation_fold
 cnot_resynth
 map
-estimate_resources
+get_resources
 output_cirq
 output_projectq
 output_qsharp
