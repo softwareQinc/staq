@@ -36,6 +36,10 @@
 #include "transformations/desugar.hpp"
 #include "transformations/inline.hpp"
 
+#include <algorithm>
+#include <complex>
+#include <map>
+#include <set>
 #include <typeinfo>
 #include <nlohmann/json.hpp>
 
@@ -57,8 +61,29 @@ static const std::set<std::string_view> ls_inline_overrides{
 enum class PauliOperator : char { I = 'I', X = 'X', Y = 'Y', Z = 'Z' };
 
 /**
+ * \brief Anticommute multiplication table
+ */
+static const std::map<std::pair<PauliOperator, PauliOperator>,
+                      std::pair<std::complex<double>, PauliOperator>>
+    PauliOperator_anticommute_tbl{
+        {{PauliOperator::Z, PauliOperator::X},
+         {std::complex<double>(0, 1), PauliOperator::Y}},
+        {{PauliOperator::X, PauliOperator::Z},
+         {std::complex<double>(0, -1), PauliOperator::Y}},
+        {{PauliOperator::Y, PauliOperator::Z},
+         {std::complex<double>(0, 1), PauliOperator::X}},
+        {{PauliOperator::Z, PauliOperator::Y},
+         {std::complex<double>(0, -1), PauliOperator::X}},
+        {{PauliOperator::X, PauliOperator::Y},
+         {std::complex<double>(0, 1), PauliOperator::Z}},
+        {{PauliOperator::Y, PauliOperator::X},
+         {std::complex<double>(0, -1), PauliOperator::Z}}};
+
+/**
  * \class staq::output::PauliOpCircuit
  * \brief Representation of Pauli Op circuits
+ * This class is mostly a translation from here:
+ * https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/dev/src/lsqecc/pauli_rotations/circuit.py#L30
  */
 class PauliOpCircuit {
   public:
@@ -73,6 +98,7 @@ class PauliOpCircuit {
     }
     json to_json() {
         json result;
+        result["n"] = qubit_num_;
         result["layers"];
         for (const auto& op : ops_) {
             json layer;
@@ -85,10 +111,6 @@ class PauliOpCircuit {
         }
         return result;
     }
-    /**
-     * \brief Copied from PauliOpCircuit.to_y_free_equivalent here:
-     * https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/dev/src/lsqecc/pauli_rotations/circuit.py#L135
-     */
     PauliOpCircuit to_y_free_equivalent() {
         PauliOpCircuit ans{qubit_num_};
         for (const auto& block : ops_) {
@@ -97,15 +119,73 @@ class PauliOpCircuit {
         }
         return ans;
     }
+    void apply_transformation() {
+        std::vector<std::list<Op>::iterator> quarter_rotation;
+        bool circuit_has_measurements = false;
+
+        for (auto it = ops_.begin(); it != ops_.end(); ++it) {
+            if (it->second == "M" || it->second == "-M") {
+                circuit_has_measurements = true;
+            } else if (it->second == "1/4" || it->second == "-1/4") {
+                quarter_rotation.push_back(it);
+            }
+        }
+
+        for (auto it = quarter_rotation.rbegin(); it != quarter_rotation.rend();
+             ++it) {
+            auto index = *it;
+            while (index != ops_.end()) {
+                auto next_block = index;
+                ++next_block;
+                if (next_block == ops_.end()) {
+                    break;
+                }
+                swap_adjacent_blocks(index);
+                ++index;
+            }
+            if (circuit_has_measurements)
+                ops_.pop_back();
+        }
+    }
+
+    static bool are_commuting(const Op& block1, const Op& block2) {
+        if (block1.first.size() != block2.first.size()) {
+            throw std::logic_error("Blocks must have same number of qubits");
+        }
+        bool ret_val = true;
+        for (int i = 0; i < block1.first.size(); i++) {
+            if (!are_commuting(block1.first[i], block2.first[i])) {
+                ret_val = !ret_val;
+            }
+        }
+        return ret_val;
+    }
+    static bool are_commuting(PauliOperator a, PauliOperator b) {
+        if (PauliOperator_anticommute_tbl.find({a, b}) ==
+            PauliOperator_anticommute_tbl.end()) {
+            return true;
+        }
+        return false;
+    }
+    static std::pair<std::complex<double>, PauliOperator>
+    multiply_operators(PauliOperator a, PauliOperator b) {
+        auto it = PauliOperator_anticommute_tbl.find({a, b});
+        if (it != PauliOperator_anticommute_tbl.end()) {
+            return it->second;
+        }
+        if (a == b) {
+            return {1, PauliOperator::I};
+        }
+        if (a == PauliOperator::I || b == PauliOperator::I) {
+            return {1, a == PauliOperator::I ? b : a};
+        }
+        throw std::logic_error("Uncaught multiply case");
+    }
 
   private:
     int qubit_num_;
     std::list<Op> ops_;
 
-    /**
-     * \brief Copied from PauliProductOperation.to_y_free_equivalent here:
-     * https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/dev/src/lsqecc/pauli_rotations/rotation.py#L171
-     */
     static std::list<Op> get_y_free_equivalent(const Op& block) {
         std::list<int> y_op_indices;
         Op y_free_block = block;
@@ -141,6 +221,48 @@ class PauliOpCircuit {
         left_rotations.push_back(std::move(y_free_block));
         left_rotations.splice(left_rotations.end(), right_rotations);
         return left_rotations;
+    }
+
+    void swap_adjacent_blocks(std::list<Op>::iterator index) {
+        auto next_block = index;
+        ++next_block;
+        if (are_commuting(*index, *next_block)) {
+            swap_adjacent_commuting_blocks(index);
+        } else {
+            swap_adjacent_anticommuting_blocks(index);
+        }
+    }
+    void swap_adjacent_commuting_blocks(std::list<Op>::iterator index) {
+        auto next_block = index;
+        ++next_block;
+        std::iter_swap(index, next_block);
+    }
+    void swap_adjacent_anticommuting_blocks(std::list<Op>::iterator index) {
+        auto next_block = index;
+        ++next_block;
+        std::complex<double> product_of_coefficients(1, 0);
+
+        for (int i = 0; i < qubit_num_; i++) {
+            auto [coeff, op] =
+                multiply_operators(index->first[i], next_block->first[i]);
+            next_block->first[i] = op;
+            product_of_coefficients *= coeff;
+        }
+        product_of_coefficients *= std::complex<double>(0, 1);
+        if (next_block->second == "M" || next_block->second == "-M") {
+            if (product_of_coefficients.real() < 0) { // flip phase
+                next_block->second = next_block->second == "M" ? "-M" : "M";
+            }
+        } else {
+            if (product_of_coefficients.real() < 0) { // flip phase
+                if (next_block->second.front() == '-') {
+                    next_block->second = next_block->second.substr(1);
+                } else {
+                    next_block->second = "-" + next_block->second;
+                }
+            }
+        }
+        std::iter_swap(index, next_block);
     }
 };
 
@@ -367,8 +489,14 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
 
 /** \brief Compiles an AST into lattice surgery instructions to a stdout */
 void output_lattice_surgery(ast::Program& prog) {
+    json out;
     auto circuit = PauliOpCircuitCompiler().run(prog);
-    std::cout << circuit.to_json().dump(2) << "\n";
+    out["Circuit as Pauli rotations"] = circuit.to_json();
+    circuit = circuit.to_y_free_equivalent();
+    circuit.apply_transformation();
+    circuit = circuit.to_y_free_equivalent();
+    out["Circuit after the Litinski Transform"] = circuit.to_json();
+    std::cout << out.dump(2) << "\n";
 }
 
 /** \brief Compiles an AST into lattice surgery instructions to a given output
@@ -380,8 +508,14 @@ void write_lattice_surgery(ast::Program& prog, std::string fname) {
     if (!ofs.good()) {
         std::cerr << "Error: failed to open output file " << fname << "\n";
     } else {
+        json out;
         auto circuit = PauliOpCircuitCompiler().run(prog);
-        ofs << circuit.to_json().dump(2) << "\n";
+        out["Circuit as Pauli rotations"] = circuit.to_json();
+        circuit = circuit.to_y_free_equivalent();
+        circuit.apply_transformation();
+        circuit = circuit.to_y_free_equivalent();
+        out["Circuit after the Litinski Transform"] = circuit.to_json();
+        std::cout << out.dump(2) << "\n";
     }
 
     ofs.close();
