@@ -79,6 +79,8 @@ static const std::map<std::pair<PauliOperator, PauliOperator>,
         {{PauliOperator::Y, PauliOperator::X},
          {std::complex<double>(0, -1), PauliOperator::Z}}};
 
+class LayeredPauliOpCircuit;
+
 /**
  * \class staq::output::PauliOpCircuit
  * \brief Representation of Pauli Op circuits
@@ -96,11 +98,11 @@ class PauliOpCircuit {
         }
         ops_.push_back(std::move(op));
     }
-    json to_json() {
+    json to_json() const {
         json result;
         result["n"] = qubit_num_;
         result["layers"];
-        for (const auto& op : ops_) {
+        for (auto& op : ops_) {
             json layer;
             for (int i = 0; i < qubit_num_; i++) {
                 layer["q" + std::to_string(i)] =
@@ -111,9 +113,9 @@ class PauliOpCircuit {
         }
         return result;
     }
-    PauliOpCircuit to_y_free_equivalent() {
+    PauliOpCircuit to_y_free_equivalent() const {
         PauliOpCircuit ans{qubit_num_};
-        for (const auto& block : ops_) {
+        for (auto& block : ops_) {
             auto y_free = get_y_free_equivalent(block);
             ans.ops_.splice(ans.ops_.end(), y_free);
         }
@@ -182,10 +184,13 @@ class PauliOpCircuit {
         throw std::logic_error("Uncaught multiply case");
     }
 
-  private:
+    friend class LayeredPauliOpCircuit;
+
+  protected:
     int qubit_num_;
     std::list<Op> ops_;
 
+  private:
     static std::list<Op> get_y_free_equivalent(const Op& block) {
         std::list<int> y_op_indices;
         Op y_free_block = block;
@@ -263,6 +268,123 @@ class PauliOpCircuit {
             }
         }
         std::iter_swap(index, next_block);
+    }
+};
+
+/**
+ * \class staq::output::LayeredPauliOpCircuit
+ * \brief Representation used for T count/depth and related optimizations
+ */
+class LayeredPauliOpCircuit {
+    using Op = PauliOpCircuit::Op;
+    int qubit_num_;
+    std::list<std::list<Op>> layers_;
+    std::list<Op> final_;
+
+  public:
+    explicit LayeredPauliOpCircuit(const PauliOpCircuit& c)
+        : qubit_num_(c.qubit_num_) {
+        std::string mode = "pi/8"; // pi/8 --> pi/4 --> meas
+        for (auto op : c.ops_) {
+            if (op.second == "1/8" || op.second == "-1/8") {
+                if (mode == "pi/8") {
+                    layers_.push_back({op});
+                } else {
+                    throw std::logic_error("π/8 rotations must come before any "
+                                           "π/4 rotations and measurements");
+                }
+            } else if (op.second == "1/4" || op.second == "-1/4") {
+                if (mode == "pi/8")
+                    mode = "pi/4";
+                if (mode == "pi/4") {
+                    final_.push_back(op);
+                } else {
+                    throw std::logic_error(
+                        "π/4 rotations must come before any measurements");
+                }
+            } else if (op.second == "M" || op.second == "-M") {
+                mode = "meas";
+                final_.push_back(op);
+            } else {
+                throw std::logic_error("Unsupported phase: " + op.second);
+            }
+        }
+    }
+    json to_json() const {
+        json result;
+        result["n"] = qubit_num_;
+        int t_count = 0;
+        for (auto& layer : layers_) {
+            t_count += layer.size();
+        }
+        result["T count"] = t_count;
+        result["T depth"] = layers_.size();
+
+        result["T layers"];
+        for (auto& layer : layers_) {
+            json layer_json;
+            for (auto& op : layer) {
+                json op_json;
+                for (int i = 0; i < qubit_num_; i++) {
+                    op_json["q" + std::to_string(i)] =
+                        std::string(1, static_cast<char>(op.first[i]));
+                }
+                op_json["pi*"] = op.second;
+                layer_json.push_back(std::move(op_json));
+            }
+            result["T layers"].push_back(std::move(layer_json));
+        }
+
+        result["pi/4 rotations and measurements"];
+        for (auto& op : final_) {
+            json op_json;
+            for (int i = 0; i < qubit_num_; i++) {
+                op_json["q" + std::to_string(i)] =
+                    std::string(1, static_cast<char>(op.first[i]));
+            }
+            op_json["pi*"] = op.second;
+            result["pi/4 rotations and measurements"].push_back(
+                std::move(op_json));
+        }
+
+        return result;
+    }
+    /* greedy algorithm from page 6 of https://arxiv.org/pdf/1808.02892.pdf */
+    void reduce() {
+        bool changed = true;
+        while (changed) {
+            changed = false;
+            for (auto it = layers_.begin(); it != layers_.end();) {
+                auto next_it = it;
+                ++next_it;
+                if (next_it == layers_.end()) {
+                    break;
+                }
+                for (auto op = next_it->begin(); op != next_it->end();) {
+                    bool commutes = true;
+                    for (auto& op2 : *it) {
+                        if (!PauliOpCircuit::are_commuting(*op, op2)) {
+                            commutes = false;
+                            break;
+                        }
+                    }
+                    if (commutes) {
+                        auto next_op = op;
+                        ++next_op;
+                        it->splice(it->end(), *next_it, op);
+                        changed = true;
+                        op = next_op;
+                    } else {
+                        ++op;
+                    }
+                }
+                if (next_it->empty()) {
+                    layers_.erase(next_it);
+                } else {
+                    it = next_it;
+                }
+            }
+        }
     }
 };
 
@@ -492,10 +614,14 @@ void output_lattice_surgery(ast::Program& prog) {
     json out;
     auto circuit = PauliOpCircuitCompiler().run(prog);
     out["Circuit as Pauli rotations"] = circuit.to_json();
-    circuit = circuit.to_y_free_equivalent();
     circuit.apply_transformation();
-    circuit = circuit.to_y_free_equivalent();
     out["Circuit after the Litinski Transform"] = circuit.to_json();
+    try {
+        LayeredPauliOpCircuit lcircuit(circuit);
+        lcircuit.reduce();
+        out["Circuit after T depth reduction"] = lcircuit.to_json();
+    } catch (...) {
+    }
     std::cout << out.dump(2) << "\n";
 }
 
@@ -511,10 +637,14 @@ void write_lattice_surgery(ast::Program& prog, std::string fname) {
         json out;
         auto circuit = PauliOpCircuitCompiler().run(prog);
         out["Circuit as Pauli rotations"] = circuit.to_json();
-        circuit = circuit.to_y_free_equivalent();
         circuit.apply_transformation();
-        circuit = circuit.to_y_free_equivalent();
         out["Circuit after the Litinski Transform"] = circuit.to_json();
+        try {
+            LayeredPauliOpCircuit lcircuit(circuit);
+            lcircuit.reduce();
+            out["Circuit after T depth reduction"] = lcircuit.to_json();
+        } catch (...) {
+        }
         std::cout << out.dump(2) << "\n";
     }
 
