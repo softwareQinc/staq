@@ -92,13 +92,13 @@ class PauliOpCircuit {
     using Op = std::pair<std::vector<PauliOperator>, std::string>;
 
     explicit PauliOpCircuit(int no_of_qubit) : qubit_num_(no_of_qubit) {}
-    void add_pauli_block(Op op) {
+    void add_pauli_block(Op op) { // add operation to end of circuit
         if (op.first.size() != qubit_num_) {
             throw std::logic_error("len(ops_list) != number of qubits");
         }
         ops_.push_back(std::move(op));
     }
-    json to_json() const {
+    json to_json() const { // get circuit in json format
         json result;
         result["n"] = qubit_num_;
         result["layers"];
@@ -113,7 +113,7 @@ class PauliOpCircuit {
         }
         return result;
     }
-    PauliOpCircuit to_y_free_equivalent() const {
+    PauliOpCircuit to_y_free_equivalent() const { // y-free equivalent circuit
         PauliOpCircuit ans{qubit_num_};
         for (auto& block : ops_) {
             auto y_free = get_y_free_equivalent(block);
@@ -121,19 +121,21 @@ class PauliOpCircuit {
         }
         return ans;
     }
-    void apply_transformation() {
-        std::vector<std::list<Op>::iterator> quarter_rotation;
+    void apply_transformation() { // push pi/4 rotations to end of circuit
+        decompose();
+        std::vector<std::list<Op>::iterator> pushed_rotations;
         bool circuit_has_measurements = false;
 
         for (auto it = ops_.begin(); it != ops_.end(); ++it) {
             if (it->second == "M" || it->second == "-M") {
                 circuit_has_measurements = true;
-            } else if (it->second == "1/4" || it->second == "-1/4") {
-                quarter_rotation.push_back(it);
+            } else if (it->second == "1/4" || it->second == "-1/4" ||
+                       it->second == "1/2" || it->second == "-1/2") {
+                pushed_rotations.push_back(it);
             }
         }
 
-        for (auto it = quarter_rotation.rbegin(); it != quarter_rotation.rend();
+        for (auto it = pushed_rotations.rbegin(); it != pushed_rotations.rend();
              ++it) {
             auto index = *it;
             while (index != ops_.end()) {
@@ -245,29 +247,71 @@ class PauliOpCircuit {
     void swap_adjacent_anticommuting_blocks(std::list<Op>::iterator index) {
         auto next_block = index;
         ++next_block;
-        std::complex<double> product_of_coefficients(1, 0);
 
-        for (int i = 0; i < qubit_num_; i++) {
-            auto [coeff, op] =
-                multiply_operators(index->first[i], next_block->first[i]);
-            next_block->first[i] = op;
-            product_of_coefficients *= coeff;
-        }
-        product_of_coefficients *= std::complex<double>(0, 1);
-        if (next_block->second == "M" || next_block->second == "-M") {
-            if (product_of_coefficients.real() < 0) { // flip phase
-                next_block->second = next_block->second == "M" ? "-M" : "M";
+        if (index->second == "1/4" || index->second == "-1/4") {
+            std::complex<double> product_of_coefficients(1, 0);
+
+            for (int i = 0; i < qubit_num_; i++) {
+                auto [coeff, op] =
+                    multiply_operators(index->first[i], next_block->first[i]);
+                next_block->first[i] = op;
+                product_of_coefficients *= coeff;
             }
-        } else {
-            if (product_of_coefficients.real() < 0) { // flip phase
+            product_of_coefficients *= std::complex<double>(0, 1);
+            if (next_block->second == "M" || next_block->second == "-M") {
+                if (product_of_coefficients.real() < 0) { // flip phase
+                    next_block->second = next_block->second == "M" ? "-M" : "M";
+                }
+            } else {
+                if (product_of_coefficients.real() < 0) { // flip phase
+                    if (next_block->second.front() == '-') {
+                        next_block->second = next_block->second.substr(1);
+                    } else {
+                        next_block->second = "-" + next_block->second;
+                    }
+                }
+            }
+            std::iter_swap(index, next_block);
+        } else if (index->second == "1/2" || index->second == "-1/2") {
+            if (next_block->second == "M" || next_block->second == "-M") {
+                next_block->second = next_block->second == "M" ? "-M" : "M";
+            } else {
                 if (next_block->second.front() == '-') {
                     next_block->second = next_block->second.substr(1);
                 } else {
                     next_block->second = "-" + next_block->second;
                 }
             }
+            std::iter_swap(index, next_block);
+        } else {
+            throw std::logic_error("Can only swap pi/2 or pi/4 rotations");
         }
-        std::iter_swap(index, next_block);
+    }
+    void decompose() { // decompose into { pi/2, pi/4, pi/8 } wherever possible
+        std::list<Op> result;
+        for (const auto& op : ops_) {
+            for (const auto& p : decompose_phase(op.second)) {
+                result.push_back({op.first, p});
+            }
+        }
+        ops_.swap(result);
+    }
+    static std::vector<std::string> decompose_phase(const std::string& phase) {
+        // since utils::Angle is in [0,2pi), Angle/2 will be in [0,pi)
+        // we care about pi times { 0/1, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8 }
+        if (phase == "0/1") {
+            return {}; // identity
+        } else if (phase == "3/8") {
+            return {"1/4", "1/8"};
+        } else if (phase == "5/8") {
+            return {"1/2", "1/8"};
+        } else if (phase == "3/4") {
+            return {"1/2", "1/4"};
+        } else if (phase == "7/8") {
+            return {"1/2", "1/4", "1/8"};
+        } else {
+            return {phase}; // leave as-is
+        }
     }
 };
 
@@ -284,33 +328,26 @@ class LayeredPauliOpCircuit {
   public:
     explicit LayeredPauliOpCircuit(const PauliOpCircuit& c)
         : qubit_num_(c.qubit_num_) {
-        std::string mode = "pi/8"; // pi/8 --> pi/4 --> meas
+        bool expect_no_more_Ts = false; // pi/8 rotations come before all else
         for (auto op : c.ops_) {
             if (op.second == "1/8" || op.second == "-1/8") {
-                if (mode == "pi/8") {
-                    layers_.push_back({op});
-                } else {
-                    throw std::logic_error("π/8 rotations must come before any "
+                if (expect_no_more_Ts) {
+                    throw std::logic_error("π/8 rotations must come before all "
                                            "π/4 rotations and measurements");
-                }
-            } else if (op.second == "1/4" || op.second == "-1/4") {
-                if (mode == "pi/8")
-                    mode = "pi/4";
-                if (mode == "pi/4") {
-                    final_.push_back(op);
                 } else {
-                    throw std::logic_error(
-                        "π/4 rotations must come before any measurements");
+                    layers_.push_back({op});
                 }
-            } else if (op.second == "M" || op.second == "-M") {
-                mode = "meas";
+            } else if (op.second == "1/4" || op.second == "-1/4" ||
+                       op.second == "1/2" || op.second == "-1/2" ||
+                       op.second == "M" || op.second == "-M") {
+                expect_no_more_Ts = true;
                 final_.push_back(op);
             } else {
                 throw std::logic_error("Unsupported phase: " + op.second);
             }
         }
     }
-    json to_json() const {
+    json to_json() const { // get circuit in json format, with T layers grouped
         json result;
         result["n"] = qubit_num_;
         int t_count = 0;
@@ -613,14 +650,16 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
 void output_lattice_surgery(ast::Program& prog) {
     json out;
     auto circuit = PauliOpCircuitCompiler().run(prog);
-    out["Circuit as Pauli rotations"] = circuit.to_json();
+    out["1. Circuit as Pauli rotations"] = circuit.to_json();
     circuit.apply_transformation();
-    out["Circuit after the Litinski Transform"] = circuit.to_json();
+    out["2. Circuit after the Litinski Transform"] = circuit.to_json();
     try {
         LayeredPauliOpCircuit lcircuit(circuit);
         lcircuit.reduce();
-        out["Circuit after T depth reduction"] = lcircuit.to_json();
+        out["3. Circuit after T depth reduction"] = lcircuit.to_json();
     } catch (...) {
+        std::cerr << "Warning: Circuit is not in Clifford + T\n";
+        out["3. Circuit after T depth reduction"];
     }
     std::cout << out.dump(2) << "\n";
 }
@@ -636,16 +675,18 @@ void write_lattice_surgery(ast::Program& prog, std::string fname) {
     } else {
         json out;
         auto circuit = PauliOpCircuitCompiler().run(prog);
-        out["Circuit as Pauli rotations"] = circuit.to_json();
+        out["1. Circuit as Pauli rotations"] = circuit.to_json();
         circuit.apply_transformation();
-        out["Circuit after the Litinski Transform"] = circuit.to_json();
+        out["2. Circuit after the Litinski Transform"] = circuit.to_json();
         try {
             LayeredPauliOpCircuit lcircuit(circuit);
             lcircuit.reduce();
-            out["Circuit after T depth reduction"] = lcircuit.to_json();
+            out["3. Circuit after T depth reduction"] = lcircuit.to_json();
         } catch (...) {
+            std::cerr << "Warning: Circuit is not in Clifford + T\n";
+            out["3. Circuit after T depth reduction"];
         }
-        std::cout << out.dump(2) << "\n";
+        ofs << out.dump(2) << "\n";
     }
 
     ofs.close();
