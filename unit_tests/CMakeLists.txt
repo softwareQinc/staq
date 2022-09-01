@@ -29,7 +29,6 @@ foreach (filename ${TEST_FILES})
     target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${TARGET_NAME} PUBLIC gmock)
-target_link_libraries(${TARGET_NAME} PUBLIC libstaq)
+target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq)
 
 gtest_discover_tests(${TARGET_NAME})
