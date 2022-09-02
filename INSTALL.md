@@ -43,7 +43,7 @@ cmake --build . --target (UN)INSTALL
 ```
 
 ## Python 3 wrapper
-pystaq is a Python wrapper for staq.
+[pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python wrapper for staq.
 pystaq can be installed using `pip`:
 ```
 pip install git+https://github.com/softwareQinc/staq
