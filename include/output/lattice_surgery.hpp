@@ -105,8 +105,10 @@ class PauliOpCircuit {
         for (auto& op : ops_) {
             json layer;
             for (int i = 0; i < qubit_num_; i++) {
-                layer["q" + std::to_string(i)] =
-                    std::string(1, static_cast<char>(op.first[i]));
+                auto op_name = static_cast<char>(op.first[i]);
+                if (op_name == 'I')
+                    continue;
+                layer["q" + std::to_string(i)] = std::string(1, op_name);
             }
             layer["pi*"] = op.second;
             result["layers"].push_back(std::move(layer));
@@ -363,8 +365,10 @@ class LayeredPauliOpCircuit {
             for (auto& op : layer) {
                 json op_json;
                 for (int i = 0; i < qubit_num_; i++) {
-                    op_json["q" + std::to_string(i)] =
-                        std::string(1, static_cast<char>(op.first[i]));
+                    auto op_name = static_cast<char>(op.first[i]);
+                    if (op_name == 'I')
+                        continue;
+                    op_json["q" + std::to_string(i)] = std::string(1, op_name);
                 }
                 op_json["pi*"] = op.second;
                 layer_json.push_back(std::move(op_json));
@@ -376,8 +380,10 @@ class LayeredPauliOpCircuit {
         for (auto& op : final_) {
             json op_json;
             for (int i = 0; i < qubit_num_; i++) {
-                op_json["q" + std::to_string(i)] =
-                    std::string(1, static_cast<char>(op.first[i]));
+                auto op_name = static_cast<char>(op.first[i]);
+                if (op_name == 'I')
+                    continue;
+                op_json["q" + std::to_string(i)] = std::string(1, op_name);
             }
             op_json["pi*"] = op.second;
             result["pi/4 rotations and measurements"].push_back(
