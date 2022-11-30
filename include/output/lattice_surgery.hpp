@@ -43,8 +43,7 @@
 #include <typeinfo>
 #include <nlohmann/json.hpp>
 
-namespace staq {
-namespace output {
+namespace staq::output {
 
 using json = nlohmann::json;
 using Angle = qasmtools::utils::Angle;
@@ -215,8 +214,8 @@ class PauliOpCircuit {
             std::vector<PauliOperator> new_rotation_ops(block.first.size(),
                                                         PauliOperator::I);
             new_rotation_ops[first_y_operator] = PauliOperator::Z;
-            left_rotations.push_back({new_rotation_ops, "1/4"});
-            right_rotations.push_back({new_rotation_ops, "-1/4"});
+            left_rotations.emplace_back(new_rotation_ops, "1/4");
+            right_rotations.emplace_back(new_rotation_ops, "-1/4");
         }
 
         std::vector<PauliOperator> new_rotation_ops(block.first.size(),
@@ -224,8 +223,8 @@ class PauliOpCircuit {
         for (int i : y_op_indices) {
             new_rotation_ops[i] = PauliOperator::Z;
         }
-        left_rotations.push_back({new_rotation_ops, "1/4"});
-        right_rotations.push_back({new_rotation_ops, "-1/4"});
+        left_rotations.emplace_back(new_rotation_ops, "1/4");
+        right_rotations.emplace_back(new_rotation_ops, "-1/4");
         // return left_rotations + [y_free_block] + right_rotations
         left_rotations.push_back(std::move(y_free_block));
         left_rotations.splice(left_rotations.end(), right_rotations);
@@ -241,12 +240,13 @@ class PauliOpCircuit {
             swap_adjacent_anticommuting_blocks(index);
         }
     }
-    void swap_adjacent_commuting_blocks(std::list<Op>::iterator index) {
+    static void swap_adjacent_commuting_blocks(std::list<Op>::iterator index) {
         auto next_block = index;
         ++next_block;
         std::iter_swap(index, next_block);
     }
-    void swap_adjacent_anticommuting_blocks(std::list<Op>::iterator index) {
+    void
+    swap_adjacent_anticommuting_blocks(std::list<Op>::iterator index) const {
         auto next_block = index;
         ++next_block;
 
@@ -293,7 +293,7 @@ class PauliOpCircuit {
         std::list<Op> result;
         for (const auto& op : ops_) {
             for (const auto& p : decompose_phase(op.second)) {
-                result.push_back({op.first, p});
+                result.emplace_back(op.first, p);
             }
         }
         ops_.swap(result);
@@ -331,7 +331,7 @@ class LayeredPauliOpCircuit {
     explicit LayeredPauliOpCircuit(const PauliOpCircuit& c)
         : qubit_num_(c.qubit_num_) {
         bool expect_no_more_Ts = false; // pi/8 rotations come before all else
-        for (auto op : c.ops_) {
+        for (auto const& op : c.ops_) {
             if (op.second == "1/8" || op.second == "-1/8") {
                 if (expect_no_more_Ts) {
                     throw std::logic_error("π/8 rotations must come before all "
@@ -447,31 +447,31 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
     }
 
     // Variables
-    void visit(ast::VarAccess&) {}
+    void visit(ast::VarAccess&) override {}
 
     // Expressions
-    void visit(ast::BExpr&) {}
-    void visit(ast::UExpr&) {}
-    void visit(ast::PiExpr&) {}
-    void visit(ast::IntExpr&) {}
-    void visit(ast::RealExpr&) {}
-    void visit(ast::VarExpr&) {}
+    void visit(ast::BExpr&) override {}
+    void visit(ast::UExpr&) override {}
+    void visit(ast::PiExpr&) override {}
+    void visit(ast::IntExpr&) override {}
+    void visit(ast::RealExpr&) override {}
+    void visit(ast::VarExpr&) override {}
 
     // Statements
-    void visit(ast::MeasureStmt& stmt) {
+    void visit(ast::MeasureStmt& stmt) override {
         add_layer({stmt.q_arg()}, {PauliOperator::Z}, "M");
     }
 
-    void visit(ast::ResetStmt& stmt) {
+    void visit(ast::ResetStmt& stmt) override {
         throw std::logic_error("Qubit reset not supported");
     }
 
-    void visit(ast::IfStmt& stmt) {
+    void visit(ast::IfStmt& stmt) override {
         throw std::logic_error("Classical control not supported");
     }
 
     // Gates
-    void visit(ast::UGate& gate) {
+    void visit(ast::UGate& gate) override {
         std::vector<ast::VarAccess> qargs{gate.arg()};
         auto phase1 = get_phase(gate.lambda());
         auto phase2 = get_phase(gate.theta());
@@ -481,16 +481,16 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
         add_layer(qargs, {PauliOperator::Z}, to_phase_string(phase3 / 2));
     }
 
-    void visit(ast::CNOTGate& gate) {
+    void visit(ast::CNOTGate& gate) override {
         std::vector<ast::VarAccess> qargs{gate.ctrl(), gate.tgt()};
         add_layer(qargs, {PauliOperator::Z, PauliOperator::X}, "1/4");
         add_layer(qargs, {PauliOperator::Z, PauliOperator::I}, "-1/4");
         add_layer(qargs, {PauliOperator::I, PauliOperator::X}, "-1/4");
     }
 
-    void visit(ast::BarrierGate&) {}
+    void visit(ast::BarrierGate&) override {}
 
-    void visit(ast::DeclaredGate& gate) {
+    void visit(ast::DeclaredGate& gate) override {
         if (gate.name() == "u3") {
             auto phase1 = get_phase(gate.carg(2));
             auto phase2 = Angle(1, 2);
@@ -575,25 +575,25 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
     }
 
     // Declarations
-    void visit(ast::GateDecl& decl) {}
+    void visit(ast::GateDecl& decl) override {}
 
-    void visit(ast::OracleDecl& decl) {
+    void visit(ast::OracleDecl& decl) override {
         throw std::logic_error("Oracle declarations not supported");
     }
 
-    void visit(ast::RegisterDecl& decl) {
+    void visit(ast::RegisterDecl& decl) override {
         if (decl.is_quantum()) {
             ids_[decl.id()] = num_qubits_;
             num_qubits_ += decl.size();
         }
     }
 
-    void visit(ast::AncillaDecl& decl) {
+    void visit(ast::AncillaDecl& decl) override {
         throw std::logic_error("Local ancillas not supported");
     }
 
     // Program
-    void visit(ast::Program& prog) {
+    void visit(ast::Program& prog) override {
         // Gate & qubit declarations
         prog.foreach_stmt([this](auto& stmt) {
             if (typeid(stmt) == typeid(ast::GateDecl) ||
@@ -618,6 +618,7 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
         return ids_[va.var()] + (*va.offset());
     }
 
+    // TODO check this and remove I if possible
     void add_layer(const std::vector<ast::VarAccess>& vas,
                    const std::vector<PauliOperator>& ops,
                    const std::string& phase) {
@@ -633,10 +634,10 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
         auto val = expr.constant_eval();
         if (val) {
             double phase_times_4 = (*val * 4.0) / qasmtools::utils::pi;
-            if (lrint(phase_times_4) == phase_times_4) {
-                return Angle(lrint(phase_times_4), 4);
+            if (static_cast<double>(lrint(phase_times_4)) == phase_times_4) {
+                return {static_cast<int>(lrint(phase_times_4)), 4};
             } else {
-                return Angle(*val / qasmtools::utils::pi);
+                return {*val / qasmtools::utils::pi};
             }
         }
         throw std::logic_error("Could not evaluate expression");
@@ -672,7 +673,7 @@ void output_lattice_surgery(ast::Program& prog) {
 
 /** \brief Compiles an AST into lattice surgery instructions to a given output
  * stream */
-void write_lattice_surgery(ast::Program& prog, std::string fname) {
+void write_lattice_surgery(ast::Program& prog, const std::string& fname) {
     std::ofstream ofs;
     ofs.open(fname);
 
@@ -698,5 +699,4 @@ void write_lattice_surgery(ast::Program& prog, std::string fname) {
     ofs.close();
 }
 
-} // namespace output
-} // namespace staq
+} // namespace staq::output
