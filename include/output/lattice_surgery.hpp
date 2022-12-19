@@ -653,7 +653,7 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
     }
 };
 
-/** \brief Compiles an AST into lattice surgery instructions to a stdout */
+/** \brief Compiles an AST into lattice surgery instructions to stdout */
 void output_lattice_surgery(ast::Program& prog) {
     json out;
     auto circuit = PauliOpCircuitCompiler().run(prog);
@@ -672,31 +672,51 @@ void output_lattice_surgery(ast::Program& prog) {
 }
 
 /** \brief Compiles an AST into lattice surgery instructions to a given output
- * stream */
+ * file */
 void write_lattice_surgery(ast::Program& prog, const std::string& fname) {
     std::ofstream ofs;
     ofs.open(fname);
 
     if (!ofs.good()) {
         std::cerr << "Error: failed to open output file " << fname << "\n";
-    } else {
-        json out;
-        auto circuit = PauliOpCircuitCompiler().run(prog);
-        out["1. Circuit as Pauli rotations"] = circuit.to_json();
-        circuit.apply_transformation();
-        out["2. Circuit after the Litinski Transform"] = circuit.to_json();
-        try {
-            LayeredPauliOpCircuit lcircuit(circuit);
-            lcircuit.reduce();
-            out["3. Circuit after T depth reduction"] = lcircuit.to_json();
-        } catch (...) {
-            std::cerr << "Warning: Circuit is not in Clifford + T\n";
-            out["3. Circuit after T depth reduction"];
-        }
-        ofs << out.dump(2) << "\n";
     }
 
-    ofs.close();
+    json out;
+    auto circuit = PauliOpCircuitCompiler().run(prog);
+    out["1. Circuit as Pauli rotations"] = circuit.to_json();
+    circuit.apply_transformation();
+    out["2. Circuit after the Litinski Transform"] = circuit.to_json();
+    try {
+        LayeredPauliOpCircuit lcircuit(circuit);
+        lcircuit.reduce();
+        out["3. Circuit after T depth reduction"] = lcircuit.to_json();
+    } catch (...) {
+        std::cerr << "Warning: Circuit is not in Clifford + T\n";
+        out["3. Circuit after T depth reduction"];
+    }
+    ofs << out.dump(2) << "\n";
+}
+
+/** \brief Compiles an AST into lattice surgery instructions to a json object */
+std::string json_lattice_surgery(ast::Program& prog) {
+    json result;
+    auto circuit = PauliOpCircuitCompiler().run(prog);
+    result["1. Circuit as Pauli rotations"] = circuit.to_json();
+    circuit.apply_transformation();
+    result["2. Circuit after the Litinski Transform"] = circuit.to_json();
+    try {
+        LayeredPauliOpCircuit lcircuit(circuit);
+        lcircuit.reduce();
+        result["3. Circuit after T depth reduction"] = lcircuit.to_json();
+    } catch (...) {
+        std::cerr << "Warning: Circuit is not in Clifford + T\n";
+        result["3. Circuit after T depth reduction"];
+    }
+
+    std::ostringstream oss;
+    oss << result.dump(2) << "\n";
+
+    return oss.str();
 }
 
 } // namespace staq::output
