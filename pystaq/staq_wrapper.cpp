@@ -179,8 +179,8 @@ class Program {
         outputter.run(*prog_);
         return oss.str();
     }
-    std::string json_lattice_surgery() {
-        return staq::output::json_lattice_surgery(*prog_);
+    std::string lattice_surgery() {
+        return staq::output::lattice_surgery(*prog_);
     }
 };
 
@@ -207,8 +207,8 @@ void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
 
-std::string json_lattice_surgery(Program& prog) {
-    return prog.json_lattice_surgery();
+std::string lattice_surgery(Program& prog) {
+    return prog.lattice_surgery();
 }
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
@@ -296,7 +296,7 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-    m.def("json_lattice_surgery", &json_lattice_surgery,
+    m.def("lattice_surgery", &lattice_surgery,
           "Compiles OpenQASM2 to lattice surgery instruction set",
           py::arg("prog"));
 

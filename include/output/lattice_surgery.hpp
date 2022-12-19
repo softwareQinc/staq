@@ -697,8 +697,10 @@ void write_lattice_surgery(ast::Program& prog, const std::string& fname) {
     ofs << out.dump(2) << "\n";
 }
 
-/** \brief Compiles an AST into lattice surgery instructions to a json object */
-std::string json_lattice_surgery(ast::Program& prog) {
+/** \brief Compiles an AST into lattice surgery instructions to a std::string
+ * representing a json object
+ */
+std::string lattice_surgery(ast::Program& prog) {
     json result;
     auto circuit = PauliOpCircuitCompiler().run(prog);
     result["1. Circuit as Pauli rotations"] = circuit.to_json();
