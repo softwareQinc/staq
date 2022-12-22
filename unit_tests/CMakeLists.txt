@@ -6,7 +6,7 @@ if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif ()
 
-add_subdirectory(lib/googletest/googletest-release-1.10.0 EXCLUDE_FROM_ALL)
+add_subdirectory(lib/googletest-release-1.12.1 EXCLUDE_FROM_ALL)
 
 aux_source_directory(tests TEST_FILES)
 aux_source_directory(tests/parser TEST_FILES)
@@ -29,7 +29,6 @@ foreach (filename ${TEST_FILES})
     target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${TARGET_NAME} PUBLIC gmock)
-target_link_libraries(${TARGET_NAME} PUBLIC libstaq)
+target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq)
 
 gtest_discover_tests(${TARGET_NAME})

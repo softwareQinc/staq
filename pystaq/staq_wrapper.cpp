@@ -57,11 +57,13 @@
 #include "output/qsharp.hpp"
 #include "output/quil.hpp"
 #include "output/cirq.hpp"
+#include "output/lattice_surgery.hpp"
 
 namespace py = pybind11;
 
 class Program {
     qasmtools::ast::ptr<qasmtools::ast::Program> prog_;
+
   public:
     Program(qasmtools::ast::ptr<qasmtools::ast::Program> prog)
         : prog_(std::move(prog)) {}
@@ -72,15 +74,13 @@ class Program {
         return os << *(p.prog_);
     }
     // transformations/optimizations/etc.
-    void desugar() {
-        staq::transformations::desugar(*prog_);
-    }
+    void desugar() { staq::transformations::desugar(*prog_); }
     void inline_prog(bool clear_decls = false, bool inline_stdlib = false,
                      const std::string& ancilla_name = "anc") {
         using namespace staq;
         std::set<std::string_view> overrides =
-                inline_stdlib ? std::set<std::string_view>()
-                              : transformations::default_overrides;
+            inline_stdlib ? std::set<std::string_view>()
+                          : transformations::default_overrides;
         transformations::inline_ast(*prog_,
                                     {!clear_decls, overrides, ancilla_name});
     }
@@ -131,9 +131,7 @@ class Program {
     void rotation_fold(bool no_correction = false) {
         staq::optimization::fold_rotations(*prog_, {!no_correction});
     }
-    void cnot_resynth() {
-        staq::optimization::optimize_CNOT(*prog_);
-    }
+    void cnot_resynth() { staq::optimization::optimize_CNOT(*prog_); }
     void simplify(bool no_fixpoint = false) {
         staq::transformations::expr_simplify(*prog_);
         staq::optimization::simplify(*prog_, {!no_fixpoint});
@@ -142,14 +140,13 @@ class Program {
         staq::transformations::synthesize_oracles(*prog_);
     }
     // output (these methods return a string)
-    std::string get_resources(bool box_gates = false,
-                              bool unbox_qelib = false,
+    std::string get_resources(bool box_gates = false, bool unbox_qelib = false,
                               bool no_merge_dagger = false) {
         std::set<std::string_view> overrides =
-                unbox_qelib ? std::set<std::string_view>()
-                            : qasmtools::ast::qelib_defs;
+            unbox_qelib ? std::set<std::string_view>()
+                        : qasmtools::ast::qelib_defs;
         auto count = staq::tools::estimate_resources(
-                *prog_, {!box_gates, !no_merge_dagger, overrides});
+            *prog_, {!box_gates, !no_merge_dagger, overrides});
 
         std::ostringstream oss;
         oss << "Resources used:\n";
@@ -182,6 +179,9 @@ class Program {
         outputter.run(*prog_);
         return oss.str();
     }
+    std::string lattice_surgery() {
+        return staq::output::lattice_surgery(*prog_);
+    }
 };
 
 Program parse_str(const std::string& s) {
@@ -191,9 +191,7 @@ Program parse_file(const std::string& fname) {
     return qasmtools::parser::parse_file(fname);
 }
 
-void desugar(Program& prog) {
-    prog.desugar();
-}
+void desugar(Program& prog) { prog.desugar(); }
 void inline_prog(Program& prog, bool clear_decls, bool inline_stdlib,
                  const std::string& ancilla_name) {
     prog.inline_prog(clear_decls, inline_stdlib, ancilla_name);
@@ -205,17 +203,13 @@ void map(Program& prog, const std::string& layout, const std::string& mapper,
 void rotation_fold(Program& prog, bool no_correction) {
     prog.rotation_fold(no_correction);
 }
-void cnot_resynth(Program& prog) {
-    prog.cnot_resynth();
-}
-void simplify(Program& prog, bool no_fixpoint) {
-    prog.simplify(no_fixpoint);
-}
-void synthesize_oracles(Program& prog) {
-    prog.synthesize_oracles();
-}
+void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
+void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
+void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
 
-
+std::string lattice_surgery(Program& prog) {
+    return prog.lattice_surgery();
+}
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
 
@@ -224,6 +218,7 @@ class Device {
     std::vector<double> sq_fi_;
     std::vector<std::vector<bool>> adj_;
     std::vector<std::vector<double>> tq_fi_;
+
   public:
     Device(int n)
         : n_(n), sq_fi_(n_, FIDELITY_1), adj_(n_, std::vector<bool>(n_)),
@@ -265,8 +260,6 @@ class Device {
     }
 };
 
-
-
 PYBIND11_MODULE(pystaq, m) {
     m.doc() = "Python wrapper for staq (https://github.com/softwareQinc/staq)";
 
@@ -279,7 +272,7 @@ PYBIND11_MODULE(pystaq, m) {
              "Get the ProjectQ representation")
         .def("to_qsharp", &Program::to_qsharp, "Get the Q# representation")
         .def("to_quil", &Program::to_quil, "Get the Quil representation")
-        .def("__repr__", [](const Program& p){
+        .def("__repr__", [](const Program& p) {
             std::ostringstream oss;
             oss << p;
             return oss.str();
@@ -291,10 +284,9 @@ PYBIND11_MODULE(pystaq, m) {
     m.def("inline", &inline_prog, "Inline the OpenQASM source code",
           py::arg("prog"), py::arg("clear_decls") = false,
           py::arg("inline_stdlib") = false, py::arg("ancilla_name") = "anc");
-    m.def("map", &map, "Map circuit to a physical device",
-          py::arg("prog"), py::arg("layout") = "linear",
-          py::arg("mapper") = "swap", py::arg("evaluate_all") = false,
-          py::arg("device_json") = "");
+    m.def("map", &map, "Map circuit to a physical device", py::arg("prog"),
+          py::arg("layout") = "linear", py::arg("mapper") = "swap",
+          py::arg("evaluate_all") = false, py::arg("device_json") = "");
     m.def("rotation_fold", &rotation_fold,
           "Reduce the number of small-angle rotation gates in all Pauli bases",
           py::arg("prog"), py::arg("no_correction") = false);
@@ -304,6 +296,9 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
+    m.def("lattice_surgery", &lattice_surgery,
+          "Compiles OpenQASM2 to lattice surgery instruction set",
+          py::arg("prog"));
 
     py::class_<Device>(m, "Device")
         .def(py::init<int>())
@@ -311,7 +306,5 @@ PYBIND11_MODULE(pystaq, m) {
              py::arg("control"), py::arg("target"), py::arg("directed") = false,
              py::arg("fidelity") = FIDELITY_1)
         .def("set_fidelity", &Device::set_fidelity, "Set single qubit fidelity")
-        .def("__repr__", [](const Device& d){
-            return d.to_string();
-        });
+        .def("__repr__", [](const Device& d) { return d.to_string(); });
 }
