@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
     std::string device_json;
     std::string input_qasm;
 
-    CLI::App app{"staq -- (c) 2019 - 2022 softwareQ Inc. All rights reserved."};
+    CLI::App app{"staq -- (c) 2019 - 2023 softwareQ Inc. All rights reserved."};
     app.get_formatter()->label("OPTIONS", "PASSES/OPTIONS");
     app.get_formatter()->label("REQUIRED", "(REQUIRED)");
     int width = 43;
