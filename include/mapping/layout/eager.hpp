@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Eager hardware layout generation
  */
 
-#pragma once
+#ifndef MAPPING_LAYOUT_EAGER_HPP_
+#define MAPPING_LAYOUT_EAGER_HPP_
 
 #include "qasmtools/ast/traversal.hpp"
 #include "mapping/device.hpp"
@@ -148,5 +149,7 @@ layout compute_eager_layout(Device& device, ast::Program& prog) {
     return gen.generate(prog);
 }
 
-} // namespace mapping
-} // namespace staq
+} /* namespace mapping */
+} /* namespace staq */
+
+#endif /* MAPPING_LAYOUT_EAGER_HPP_ */

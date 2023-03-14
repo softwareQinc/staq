@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -31,7 +31,8 @@
  * \brief Manages includes for OpenQASM parsing
  */
 
-#pragma once
+#ifndef QASMTOOLS_PARSER_PREPROCESSOR_HPP_
+#define QASMTOOLS_PARSER_PREPROCESSOR_HPP_
 
 #include "lexer.hpp"
 
@@ -267,5 +268,7 @@ class Preprocessor {
     }
 };
 
-} // namespace parser
-} // namespace qasmtools
+} /* namespace parser */
+} /* namespace qasmtools */
+
+#endif /* QASMTOOLS_PARSER_PREPROCESSOR_HPP_ */

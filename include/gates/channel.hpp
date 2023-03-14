@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -36,7 +36,8 @@
  * for an overview of the representation.
  */
 
-#pragma once
+#ifndef GATES_CHANNEL_HPP_
+#define GATES_CHANNEL_HPP_
 
 #include "qasmtools/utils/angle.hpp"
 
@@ -719,5 +720,7 @@ struct ChannelRepr {
     }
 };
 
-} // namespace gates
-} // namespace staq
+} /* namespace gates */
+} /* namespace staq */
+
+#endif /* GATES_CHANNEL_HPP_ */

@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -31,7 +31,8 @@
  * \brief Either symbolic or concrete representation of rotation angles
  */
 
-#pragma once
+#ifndef QASMTOOLS_UTILS_ANGLE_HPP_
+#define QASMTOOLS_UTILS_ANGLE_HPP_
 
 #include "templates.hpp"
 
@@ -262,7 +263,9 @@ constexpr Angle pi_quarter(1, 4);
 constexpr Angle pi_half(1, 2);
 /*! \brief rotation angle of a Pauli-Z gate, Pauli-X (NOT) */
 constexpr Angle pi(1, 1);
-} // namespace angles
+} /* namespace angles */
 
-} // namespace utils
-} // namespace qasmtools
+} /* namespace utils */
+} /* namespace qasmtools */
+
+#endif /* QASMTOOLS_UTILS_ANGLE_HPP_ */

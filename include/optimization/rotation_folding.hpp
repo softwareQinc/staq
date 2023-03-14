@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Rotation folding algorithm
  */
 
-#pragma once
+#ifndef OPTIMIZATION_ROTATIONFOLDING_HPP_
+#define OPTIMIZATION_ROTATIONFOLDING_HPP_
 
 #include "qasmtools/ast/visitor.hpp"
 #include "qasmtools/ast/replacer.hpp"
@@ -523,5 +524,7 @@ inline void fold_rotations(ast::ASTNode& node,
     replace_gates(node, std::move(res));
 }
 
-} // namespace optimization
-} // namespace staq
+} /* namespace optimization */
+} /* namespace staq */
+
+#endif /* OPTIMIZATION_ROTATIONFOLDING_HPP_ */

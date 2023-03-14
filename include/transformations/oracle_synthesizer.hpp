@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Elaboration of oracles into regular gates
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_ORACLESYNTHESIZER_HPP_
+#define TRANSFORMATIONS_ORACLESYNTHESIZER_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 #include "synthesis/logic_synthesis.hpp"
@@ -70,5 +71,7 @@ void synthesize_oracles(ast::ASTNode& node) {
     node.accept(alg);
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_ORACLESYNTHESIZER_HPP_ */

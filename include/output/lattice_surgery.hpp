@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Lattice surgery compiler
  */
 
-#pragma once
+#ifndef OUTPUT_LATTICESURGERY_HPP_
+#define OUTPUT_LATTICESURGERY_HPP_
 
 #include "qasmtools/ast/ast.hpp"
 #include "qasmtools/utils/angle.hpp"
@@ -721,4 +722,6 @@ std::string lattice_surgery(ast::Program& prog) {
     return oss.str();
 }
 
-} // namespace staq::output
+} /* namespace staq::output */
+
+#endif /* OUTPUT_LATTICESURGERY_HPP_ */

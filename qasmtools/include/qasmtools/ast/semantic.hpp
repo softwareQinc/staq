@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Semantic analysis for syntax trees
  */
 
-#pragma once
+#ifndef QASMTOOLS_AST_SEMANTIC_HPP_
+#define QASMTOOLS_AST_SEMANTIC_HPP_
 
 #include "ast.hpp"
 #include "visitor.hpp"
@@ -470,5 +471,7 @@ inline void check_source(Program& prog) {
         throw SemanticError();
 }
 
-} // namespace ast
-} // namespace qasmtools
+} /* namespace ast */
+} /* namespace qasmtools */
+
+#endif /* QASMTOOLS_AST_SEMANTIC_HPP_ */

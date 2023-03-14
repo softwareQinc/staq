@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Quil outputter
  */
 
-#pragma once
+#ifndef OUTPUT_QUIL_HPP_
+#define OUTPUT_QUIL_HPP_
 
 #include "qasmtools/ast/ast.hpp"
 
@@ -360,5 +361,7 @@ void write_quil(ast::Program& prog, std::string fname) {
     ofs.close();
 }
 
-} // namespace output
-} // namespace staq
+} /* namespace output */
+} /* namespace staq */
+
+#endif /* OUTPUT_QUIL_HPP_ */

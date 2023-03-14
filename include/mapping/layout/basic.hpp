@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Simple hardware layout generation
  */
 
-#pragma once
+#ifndef MAPPING_LAYOUT_BASIC_HPP_
+#define MAPPING_LAYOUT_BASIC_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 #include "qasmtools/ast/traversal.hpp"
@@ -154,5 +155,7 @@ inline layout compute_basic_layout(Device& device, ast::Program& prog) {
     return gen.generate(prog);
 }
 
-} // namespace mapping
-} // namespace staq
+} /* namespace mapping */
+} /* namespace staq */
+
+#endif /* MAPPING_LAYOUT_BASIC_HPP_ */

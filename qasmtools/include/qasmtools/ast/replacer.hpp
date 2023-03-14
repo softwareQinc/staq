@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Node replacement for syntax trees
  */
 
-#pragma once
+#ifndef QASMTOOLS_AST_REPLACER_HPP_
+#define QASMTOOLS_AST_REPLACER_HPP_
 
 #include "program.hpp"
 #include "visitor.hpp"
@@ -381,5 +382,7 @@ replace_gates(ASTNode& node,
     node.accept(replacer);
 }
 
-} // namespace ast
-} // namespace qasmtools
+} /* namespace ast */
+} /* namespace qasmtools */
+
+#endif /* QASMTOOLS_AST_REPLACER_HPP_ */

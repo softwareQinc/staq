@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief CNOT re-synthesis based on Gray-Synth
  */
 
-#pragma once
+#ifndef OPTIMIZATION_CNOTRESYNTHESIS_HPP_
+#define OPTIMIZATION_CNOTRESYNTHESIS_HPP_
 
 #include "qasmtools/ast/visitor.hpp"
 #include "qasmtools/ast/replacer.hpp"
@@ -380,5 +381,7 @@ static void optimize_CNOT(ast::ASTNode& node,
     optimizer.run(node);
 }
 
-} // namespace optimization
-} // namespace staq
+} /* namespace optimization */
+} /* namespace staq */
+
+#endif /* OPTIMIZATION_CNOTRESYNTHESIS_HPP_ */

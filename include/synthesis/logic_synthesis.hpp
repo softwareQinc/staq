@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Synthesis of classical logic
  */
 
-#pragma once
+#ifndef SYNTHESIS_LOGICSYNTHESIS_HPP_
+#define SYNTHESIS_LOGICSYNTHESIS_HPP_
 
 #define FMT_HEADER_ONLY = true
 
@@ -318,5 +319,7 @@ synthesize_net(parser::Position pos, T& l_net,
     return std::move(ret);
 }
 
-} // namespace synthesis
-} // namespace staq
+} /* namespace synthesis */
+} /* namespace staq */
+
+#endif /* SYNTHESIS_LOGICSYNTHESIS_HPP_ */

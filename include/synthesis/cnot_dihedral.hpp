@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Synthesis of CNOT-dihedral circuits
  */
 
-#pragma once
+#ifndef SYNTHESIS_CNOTDIHEDRAL_HPP_
+#define SYNTHESIS_CNOTDIHEDRAL_HPP_
 
 #include "mapping/device.hpp"
 #include "synthesis/linear_reversible.hpp"
@@ -318,5 +319,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
     return ret;
 }
 
-} // namespace synthesis
-} // namespace staq
+} /* namespace synthesis */
+} /* namespace staq */
+
+#endif /* SYNTHESIS_CNOTDIHEDRAL_HPP_ */

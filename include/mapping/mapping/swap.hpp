@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Local swapping hardware mapper
  */
 
-#pragma once
+#ifndef MAPPING_MAPPING_SWAP_HPP_
+#define MAPPING_MAPPING_SWAP_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 #include "transformations/substitution.hpp"
@@ -204,5 +205,7 @@ std::map<int, int> map_onto_device(Device& device, ast::Program& prog) {
     return mapper.run(prog);
 }
 
-} // namespace mapping
-} // namespace staq
+} /* namespace mapping */
+} /* namespace staq */
+
+#endif /* MAPPING_MAPPING_SWAP_HPP_ */

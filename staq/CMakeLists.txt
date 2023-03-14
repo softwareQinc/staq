@@ -1,6 +1,6 @@
 set(target "staq")
 
-if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
 endif ()
 

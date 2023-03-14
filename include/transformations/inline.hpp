@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief AST inlining
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_INLINE_HPP_
+#define TRANSFORMATIONS_INLINE_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 #include "substitution.hpp"
@@ -279,5 +280,7 @@ static void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
     node.accept(alg);
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_INLINE_HPP_ */

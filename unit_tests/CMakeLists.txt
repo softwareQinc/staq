@@ -20,7 +20,7 @@ aux_source_directory(tests/synthesis TEST_FILES)
 add_executable(${TARGET_NAME} EXCLUDE_FROM_ALL tests/main.cpp)
 add_dependencies(unit_tests ${TARGET_NAME})
 
-if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
 endif ()
 

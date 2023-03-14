@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2022 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,7 +29,8 @@
  * \brief Direct AST printer for debugging
  */
 
-#pragma once
+#ifndef QASMTOOLS_TOOLS_ASTPRINTER_HPP_
+#define QASMTOOLS_TOOLS_ASTPRINTER_HPP_
 
 #include "../ast/ast.hpp"
 
@@ -205,5 +206,7 @@ void print_tree(ast::ASTNode& node, std::ostream& os = std::cout) {
     node.accept(printer);
 }
 
-} // namespace tools
-} // namespace qasmtools
+} /* namespace tools */
+} /* namespace qasmtools */
+
+#endif /* QASMTOOLS_TOOLS_ASTPRINTER_HPP_ */
