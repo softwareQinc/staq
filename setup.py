@@ -20,7 +20,7 @@ ext_modules = [
 
 setup(
     name='pystaq',
-    version='2.1',
+    version='3.0',
     description='Python 3 wrapper for staq',
     long_description=open('pystaq/README.md').read(),
     long_description_content_type='text/markdown',

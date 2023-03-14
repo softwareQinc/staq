@@ -29,7 +29,8 @@
  * \brief Synthesis of CNOT circuits
  */
 
-#pragma once
+#ifndef SYNTHESIS_LINEARREVERSIBLE_HPP_
+#define SYNTHESIS_LINEARREVERSIBLE_HPP_
 
 #include "mapping/device.hpp"
 
@@ -328,5 +329,7 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
     return ret;
 }
 
-} // namespace synthesis
-} // namespace staq
+} /* namespace synthesis */
+} /* namespace staq */
+
+#endif /* SYNTHESIS_LINEARREVERSIBLE_HPP_ */

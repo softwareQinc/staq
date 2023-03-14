@@ -29,7 +29,8 @@
  * \brief Synthesis of classical logic
  */
 
-#pragma once
+#ifndef SYNTHESIS_LOGICSYNTHESIS_HPP_
+#define SYNTHESIS_LOGICSYNTHESIS_HPP_
 
 #define FMT_HEADER_ONLY = true
 
@@ -318,5 +319,7 @@ synthesize_net(parser::Position pos, T& l_net,
     return std::move(ret);
 }
 
-} // namespace synthesis
-} // namespace staq
+} /* namespace synthesis */
+} /* namespace staq */
+
+#endif /* SYNTHESIS_LOGICSYNTHESIS_HPP_ */

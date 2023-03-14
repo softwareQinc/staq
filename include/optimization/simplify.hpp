@@ -29,7 +29,8 @@
  * \brief Gate cancellation optimization
  */
 
-#pragma once
+#ifndef OPTIMIZATION_SIMPLIFY_HPP_
+#define OPTIMIZATION_SIMPLIFY_HPP_
 
 #include "qasmtools/ast/visitor.hpp"
 #include "qasmtools/ast/replacer.hpp"
@@ -379,5 +380,7 @@ inline void simplify(ast::ASTNode& node, const Simplifier::config& params) {
     optimizer.run(node);
 }
 
-} // namespace optimization
-} // namespace staq
+} /* namespace optimization */
+} /* namespace staq */
+
+#endif /* OPTIMIZATION_SIMPLIFY_HPP_ */

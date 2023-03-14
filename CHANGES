@@ -1,7 +1,9 @@
-Pre-release:
+Version 3.0 - 14 March 2023
     - Added full Windows support for pystaq
     - Bumped GoogleTest version to 1.12.1
           https://github.com/google/googletest/commit/58d77fa8070e8cec2dc1ed015d66b454c8d78850
+    - Implemented a lattice surgery compiler
+      ["include/output/lattice_surgery.hpp"]
 
 Version 2.1 - 17 January 2022
     - Added pystaq, a Python wrapper around staq. See
@@ -9,7 +11,7 @@ Version 2.1 - 17 January 2022
     - Due to phase discrepancies, by default the parser now uses Qiskit
       definitions (which are also the usual ones used in QC textbooks). To
       switch to standard OpenQASM 2.0 gate definitions, configure the project
-      with `cmake -DUSE_OPENQASM2_SPECS=ON`.
+      with 'cmake -DUSE_OPENQASM2_SPECS=ON'.
     - When building with CMake, the new STAQ_VERSION_NUM (numeric) and
       STAQ_VERSION_STR (string) preprocessor definitions are automatically
       injected in the code
@@ -20,7 +22,7 @@ Version 2.0 - 5 October 2021
       both staq and Quantum++, and by default uses standard OpenQASM 2.0 gate
       definitions. To switch to Qiskit definitions (which are also the usual
       ones used in QC textbooks), configure the project with
-      `cmake -DUSE_QISKIT_SPECS=ON`.
+      'cmake -DUSE_QISKIT_SPECS=ON'.
     - Added CMake installation support
     - Switched continuous integration from Travis CI to CircleCI
     - CMake minimum required version bumped to 3.12 for automatic unit tests

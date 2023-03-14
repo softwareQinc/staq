@@ -29,7 +29,8 @@
  * \brief Merge adjacent barriers
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_BARRIERMERGE_HPP_
+#define TRANSFORMATIONS_BARRIERMERGE_HPP_
 
 #include "qasmtools/ast/traversal.hpp"
 #include "qasmtools/ast/replacer.hpp"
@@ -120,5 +121,7 @@ static void merge_barriers(ast::ASTNode& node) {
     replace_gates(node, std::move(res));
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_BARRIERMERGE_HPP_ */

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-set(STAQ_VERSION_NUM 2.1)
+set(STAQ_VERSION_NUM 3.0)
 set(STAQ_VERSION_STR "${STAQ_VERSION_NUM}")
 project(staq VERSION ${STAQ_VERSION_NUM} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
@@ -13,7 +13,7 @@ add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 #### staq root directory
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
-if (NOT ${CMAKE_VERSION} VERSION_LESS "3.13")
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
     CMAKE_POLICY(SET CMP0076 NEW)
 endif ()
 

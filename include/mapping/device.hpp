@@ -29,7 +29,8 @@
  * \brief Representation & tools for restricted device topologies
  */
 
-#pragma once
+#ifndef MAPPING_DEVICE_HPP_
+#define MAPPING_DEVICE_HPP_
 
 #include "qasmtools/ast/var.hpp"
 
@@ -514,5 +515,7 @@ inline Device fully_connected(uint32_t n) {
     return Device("Fully connected device", n, tmp);
 }
 
-} // namespace mapping
-} // namespace staq
+} /* namespace mapping */
+} /* namespace staq */
+
+#endif /* MAPPING_DEVICE_HPP_ */

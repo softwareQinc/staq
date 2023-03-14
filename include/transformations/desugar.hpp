@@ -29,7 +29,8 @@
  * \brief AST desugaring
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_DESUGAR_HPP_
+#define TRANSFORMATIONS_DESUGAR_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 
@@ -292,5 +293,7 @@ void desugar(ast::ASTNode& node) {
     alg.run(node);
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_DESUGAR_HPP_ */

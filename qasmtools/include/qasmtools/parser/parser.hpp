@@ -31,7 +31,8 @@
  * \brief OpenQASM parsing
  */
 
-#pragma once
+#ifndef QASMTOOLS_PARSER_PARSER_HPP_
+#define QASMTOOLS_PARSER_PARSER_HPP_
 
 #include "../ast/ast.hpp"
 #include "preprocessor.hpp"
@@ -1015,7 +1016,7 @@ inline ast::ptr<ast::Program> parse_stdin(std::string name = "") {
     Parser parser(pp);
 
     // This is a bad idea, but it's necessary for automatic bookkeeping
-    // across all different forms and sources of source streams
+    // accross all different forms and sources of source streams
     pp.add_target_stream(
         std::shared_ptr<std::istream>(&std::cin, [](std::istream*) {}), name);
 
@@ -1052,5 +1053,7 @@ inline ast::ptr<ast::Program> parse_string(const std::string& str,
     return parser.parse();
 }
 
-} // namespace parser
-} // namespace qasmtools
+} /* namespace parser */
+} /* namespace qasmtools */
+
+#endif /* QASMTOOLS_PARSER_PARSER_HPP_ */

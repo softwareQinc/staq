@@ -29,7 +29,8 @@
  * \brief Utilities for performing substitutions
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_SUBSTITUTION_HPP_
+#define TRANSFORMATIONS_SUBSTITUTION_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 
@@ -185,5 +186,7 @@ subst_ap_ap(std::unordered_map<ast::VarAccess, ast::VarAccess>& subst,
     node.accept(alg);
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_SUBSTITUTION_HPP_ */

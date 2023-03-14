@@ -29,7 +29,8 @@
  * \brief Simplify certain constant expressions
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_
+#define TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_
 
 #include "qasmtools/ast/visitor.hpp"
 #include "qasmtools/utils/angle.hpp"
@@ -680,5 +681,7 @@ inline void expr_simplify(ast::ASTNode& node, bool evaluate_all = false) {
     node.accept(es);
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_ */

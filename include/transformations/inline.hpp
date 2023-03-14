@@ -29,7 +29,8 @@
  * \brief AST inlining
  */
 
-#pragma once
+#ifndef TRANSFORMATIONS_INLINE_HPP_
+#define TRANSFORMATIONS_INLINE_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 #include "substitution.hpp"
@@ -279,5 +280,7 @@ static void inline_ast(ast::ASTNode& node, const Inliner::config& params) {
     node.accept(alg);
 }
 
-} // namespace transformations
-} // namespace staq
+} /* namespace transformations */
+} /* namespace staq */
+
+#endif /* TRANSFORMATIONS_INLINE_HPP_ */

@@ -1,6 +1,6 @@
 # staq
 
-## Version 2.1 - 17 January 2022
+## Version 3.0 - 14 March 2023
 
 **Build status:**
 

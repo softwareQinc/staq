@@ -29,7 +29,8 @@
  * \brief ProjectQ outputter
  */
 
-#pragma once
+#ifndef OUTPUT_PROJECTQ_HPP_
+#define OUTPUT_PROJECTQ_HPP_
 
 #include "qasmtools/ast/ast.hpp"
 
@@ -451,5 +452,7 @@ void write_projectq(ast::Program& prog, std::string fname) {
     ofs.close();
 }
 
-} // namespace output
-} // namespace staq
+} /* namespace output */
+} /* namespace staq */
+
+#endif /* OUTPUT_PROJECTQ_HPP_ */

@@ -29,7 +29,8 @@
  * \brief Steiner tree-based hardware mapping
  */
 
-#pragma once
+#ifndef MAPPING_MAPPING_STEINER_HPP_
+#define MAPPING_MAPPING_STEINER_HPP_
 
 #include "qasmtools/ast/traversal.hpp"
 #include "qasmtools/utils/templates.hpp"
@@ -620,5 +621,7 @@ void steiner_mapping(Device& device, ast::Program& prog) {
     SteinerMapper mapper(device);
     prog.accept(mapper);
 }
-} // namespace mapping
-} // namespace staq
+} /* namespace mapping */
+} /* namespace staq */
+
+#endif /* MAPPING_MAPPING_STEINER_HPP_ */

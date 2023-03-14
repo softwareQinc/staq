@@ -29,7 +29,8 @@
  * \brief Histogram-optimizing layout generation
  */
 
-#pragma once
+#ifndef MAPPING_LAYOUT_BESTFIT_HPP_
+#define MAPPING_LAYOUT_BESTFIT_HPP_
 
 #include "qasmtools/ast/traversal.hpp"
 #include "mapping/device.hpp"
@@ -166,5 +167,7 @@ layout compute_bestfit_layout(Device& device, ast::Program& prog) {
     return gen.generate(prog);
 }
 
-} // namespace mapping
-} // namespace staq
+} /* namespace mapping */
+} /* namespace staq */
+
+#endif /* MAPPING_LAYOUT_BESTFIT_HPP_ */

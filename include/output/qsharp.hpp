@@ -29,7 +29,8 @@
  * \brief Q# outputter
  */
 
-#pragma once
+#ifndef OUTPUT_QSHARP_HPP_
+#define OUTPUT_QSHARP_HPP_
 
 #include "qasmtools/ast/ast.hpp"
 
@@ -392,5 +393,7 @@ void write_qsharp(ast::Program& prog, std::string fname) {
     ofs.close();
 }
 
-} // namespace output
-} // namespace staq
+} /* namespace output */
+} /* namespace staq */
+
+#endif /* OUTPUT_QSHARP_HPP_ */
