@@ -1,5 +1,5 @@
-Version 3.0 - 14 March 2023
-    - Added full Windows support for pystaq
+Version 3.0 - 20 March 2023
+    - Complete Windows support for pystaq
     - Bumped GoogleTest version to 1.12.1
           https://github.com/google/googletest/commit/58d77fa8070e8cec2dc1ed015d66b454c8d78850
     - Implemented a lattice surgery compiler

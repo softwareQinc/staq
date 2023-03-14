@@ -128,7 +128,10 @@ int main(int argc, char** argv) {
     std::string device_json;
     std::string input_qasm;
 
-    CLI::App app{"staq -- (c) 2019 - 2023 softwareQ Inc. All rights reserved."};
+    const std::string copyright_notice{
+        "(c) 2019 - 2023 softwareQ Inc. All rights reserved."};
+    CLI::App app{"staq -- A full-stack quantum processing toolkit\n" +
+                 copyright_notice};
     app.get_formatter()->label("OPTIONS", "PASSES/OPTIONS");
     app.get_formatter()->label("REQUIRED", "(REQUIRED)");
     int width = 43;
@@ -138,8 +141,9 @@ int main(int argc, char** argv) {
 
     app.add_flag_function(
         "-v,--version",
-        [](auto) {
+        [&copyright_notice](auto) {
             std::cout << "staq version " << STAQ_VERSION_STR << "\n";
+            std::cout << copyright_notice << "\n";
             exit(EXIT_SUCCESS);
         },
         "Print version information");
