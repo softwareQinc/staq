@@ -5,7 +5,7 @@ from setuptools import setup
 
 extra_compile_args = ["-Ilibs", "-Iinclude", "-Iqasmtools/include"]
 
-# MSVC most likely
+# If the platform seem to be MSVC
 if sys.platform == "win32" and not sys.platform == "cygwin" and not sys.platform == "msys":
     extra_compile_args.append("-Ilibs/pthreadwin32")
 
