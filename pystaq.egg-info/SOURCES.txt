@@ -1,9 +1,0 @@
-LICENSE
-README.md
-setup.py
-pystaq/staq_wrapper.cpp
-pystaq.egg-info/PKG-INFO
-pystaq.egg-info/SOURCES.txt
-pystaq.egg-info/dependency_links.txt
-pystaq.egg-info/requires.txt
-pystaq.egg-info/top_level.txt
