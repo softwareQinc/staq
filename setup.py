@@ -1,6 +1,7 @@
 import sys
-from setuptools import setup
+
 from pybind11.setup_helpers import Pybind11Extension
+from setuptools import setup
 
 extra_compile_args = ["-Ilibs", "-Iinclude", "-Iqasmtools/include"]
 
