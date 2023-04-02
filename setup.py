@@ -1,6 +1,7 @@
 import sys
-from setuptools import setup
+
 from pybind11.setup_helpers import Pybind11Extension
+from setuptools import setup
 
 extra_compile_args = ["-Ilibs", "-Iinclude", "-Iqasmtools/include"]
 
@@ -20,7 +21,7 @@ ext_modules = [
 
 setup(
     name='pystaq',
-    version='3.0',
+    version='3.0.1',
     description='Python 3 wrapper for staq',
     long_description=open('pystaq/README.md').read(),
     long_description_content_type='text/markdown',
