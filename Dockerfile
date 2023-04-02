@@ -20,7 +20,7 @@ WORKDIR softwareq/staq
 COPY . .
 
 
-RUN pip3 install jupyter
+RUN pip3 install jupyter matplotlib numpy
 RUN pip3 install git+https://github.com/softwareqinc/staq
 
 WORKDIR /src/notebooks
