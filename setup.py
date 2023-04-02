@@ -1,6 +1,6 @@
 import sys
 from setuptools import setup
-from libs.pybind11.setup_helpers import Pybind11Extension
+from pybind11.setup_helpers import Pybind11Extension
 
 extra_compile_args = ["-Ilibs", "-Iinclude", "-Iqasmtools/include"]
 
@@ -29,4 +29,7 @@ setup(
     url='https://github.com/softwareQinc/staq',
     license='MIT',
     platforms=sys.platform,
+    install_requires=[
+        'pybind11',
+    ],
     ext_modules=ext_modules)
