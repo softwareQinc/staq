@@ -1,3 +1,6 @@
+Pre-release
+    - Migrated pystaq installation to pyproject.toml
+
 Version 3.0.1 - 2 April 2023
     - This is a maintenance release with minor changes
     - Updated pybind11 to version 2.4.10
