@@ -20,17 +20,5 @@ ext_modules = [
 ]
 
 setup(
-    name='pystaq',
-    version='3.0.1',
-    description='Python 3 wrapper for staq',
-    long_description=open('pystaq/README.md').read(),
-    long_description_content_type='text/markdown',
-    author='softwareQ',
-    author_email='info@softwareq.ca',
-    url='https://github.com/softwareQinc/staq',
-    license='MIT',
     platforms=sys.platform,
-    install_requires=[
-        'pybind11',
-    ],
     ext_modules=ext_modules)
