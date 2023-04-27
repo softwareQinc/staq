@@ -26,6 +26,14 @@
 *.a
 *.lib
 
+# Emacs
+\#*\#
+*~
+
+# clangd
+.cache/
+compile_commands.json
+
 # Vim
 *.swp
 
@@ -46,6 +54,18 @@ cmake-build*/
 .vs
 /out*
 CMakeSettings.json
+
+# VS Code
+.vscode/
+
+# pystaq
+Makefile
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles/
+pystaq.egg-info/
+
+
 
 # Documentation source files 
 doc/
