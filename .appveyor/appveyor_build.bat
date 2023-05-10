@@ -2,16 +2,18 @@
 IF %COMPILER%==msvc2019 (
     @echo on
     CALL "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-    mkdir build
-    cd build
-    cmake ..
-    msbuild -verbosity:minimal -m:4 staq.sln
+
+    cd %APPVEYOR_BUILD_FOLDER%
+    cmake -B build
+    cmake --build build --parallel 4
+    cmake --build build --target unit_tests --parallel 4
 )
 IF %COMPILER%==msys2 (
     @echo on
     SET "PATH=C:\msys64\mingw64\bin;%PATH%"
+
     cd %APPVEYOR_BUILD_FOLDER%
-    mkdir build
-    cd build
-    bash -lc "cmake .. -GNinja && ninja && ninja unit_tests"
+    bash -lc "cmake -B build"
+    bash -lc "cmake --build build --parallel 4"
+    bash -lc "cmake --build build --target unit_tests --parallel 4"
 )
