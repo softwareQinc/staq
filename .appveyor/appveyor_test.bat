@@ -1,7 +1,7 @@
 @echo off
 IF %COMPILER%==msvc2019 (
-    ctest
+    ctest --test-dir build
 )
 IF %COMPILER%==msys2 (
-    ctest
+    ctest --test-dir build
 )
