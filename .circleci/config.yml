@@ -24,18 +24,16 @@ jobs:
       - run:
           name: Build the staq toolkit
           command: |
-            mkdir build && cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
+            cmake -B build -DCMAKE_BUILD_TYPE=Debug
+            cmake --build build --parallel 4
       - run:
           name: Build the unit tests
           command: |
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4 unit_tests
+            cmake --build build --target unit_tests --parallel 4
       - run:
           name: Run the unit tests
           command: |
-            cd build
-            ctest
+            ctest --test-dir build
 
   macOS:
     description: A template for building and testing staq on macOS
@@ -50,18 +48,16 @@ jobs:
       - run:
           name: Build the staq toolkit
           command: |
-            mkdir build && cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4
+            cmake -B build -DCMAKE_BUILD_TYPE=Debug
+            cmake --build build --parallel 4
       - run:
           name: Build the unit tests
           command: |
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug && make -j4 unit_tests
+            cmake --build build --target unit_tests --parallel 4
       - run:
           name: Run the unit tests
           command: |
-            cd build
-            ctest
+            ctest --test-dir build
 
 workflows:
   build:

@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.12)
-set(STAQ_VERSION_NUM 3.0.1)
+cmake_minimum_required(VERSION 3.15)
+set(STAQ_VERSION_NUM 3.1)
 set(STAQ_VERSION_STR "${STAQ_VERSION_NUM}")
 project(staq VERSION ${STAQ_VERSION_NUM} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 enable_testing()
 
 #### staq version
@@ -13,8 +15,11 @@ add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 #### staq root directory
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
-    CMAKE_POLICY(SET CMP0076 NEW)
+#### Guard against in-source builds (snippet from Eigen's CMakeLists.txt)
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "In-source builds not allowed. Please instruct CMake to use an out-of-source build, e.g.,
+    cmake --build build [...]
+You may need to remove CMakeCache.txt.")
 endif ()
 
 #### Force clang to use libc++
@@ -94,8 +99,8 @@ install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #### Uninstall
 #### https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
-#### UNIX/Linux: sudo make uninstall (or sudo cmake --build . --target uninstall)
-#### Windows:    cmake --build . --target UNINSTALL
+#### UNIX/Linux: sudo cmake --build build --target uninstall
+#### Windows:    cmake --build build --target UNINSTALL
 if (NOT TARGET uninstall)
     configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake/staq_uninstall.cmake.in"

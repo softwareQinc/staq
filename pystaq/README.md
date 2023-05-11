@@ -1,11 +1,16 @@
-pystaq is a Python wrapper for the staq tool suite.
+# Installation instructions
 
-# Installation
-pystaq can be installed using `pip`:
+[pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
+wrapper for **staq**. pystaq can be installed using `pip`
+
 ```
 pip install git+https://github.com/softwareQinc/staq
 ```
-# Overview
+
+For more details, please see
+[pystaq/README.md](https://github.com/softwareQinc/staq/blob/main/pystaq/README.md).
+
+## Overview
 To parse a circuit, use the function `pystaq.parse_file`, which takes a file path as input, or `pystaq.parse_str`, which accepts an OpenQASM 2.0 program string.
 
 The library provides the following tools:
@@ -108,7 +113,7 @@ This produces the following `device.json` file, which can then be used by `pysta
 }
 ```
 
-# Custom Bindings
+## Custom Bindings
 pystaq was created using pybind11. See [`pystaq/staq_wrapper.cpp`](https://github.com/softwareQinc/staq/blob/main/pystaq/staq_wrapper.cpp) for many examples of how to wrap a circuit transformation.
 
 For more details, see also our Quantum++ wrapper [pyqpp](https://github.com/softwareQinc/qpp/wiki/8.-pyqpp#custom-bindings).
