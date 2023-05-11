@@ -26,6 +26,9 @@
 *.a
 *.lib
 
+# Vim
+*.swp
+
 # Emacs
 \#*\#
 *~
@@ -34,16 +37,10 @@
 .cache/
 compile_commands.json
 
-# Vim
-*.swp
-
 # Executables
 *.exe
 *.out
 *.app
-
-# CMake build directory
-build/*
 
 # CLion
 .idea/

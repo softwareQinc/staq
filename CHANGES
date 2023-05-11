@@ -6,7 +6,7 @@ Version 3.1 - 13 May 2023
 
 Version 3.0.1 - 2 April 2023
     - This is a maintenance release with minor changes
-    - Updated pybind11 to version 2.4.10
+    - Updated pybind11 to version 2.10.4
 
 Version 3.0 - 20 March 2023
     - Complete Windows support for pystaq
