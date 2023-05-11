@@ -71,3 +71,4 @@ doc/
 # Misc
 .DS_store
 .cmake/
+Testing/
