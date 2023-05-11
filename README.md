@@ -52,6 +52,7 @@ wrapper for **staq**. pystaq can be installed using `pip`
 ```
 pip install git+https://github.com/softwareQinc/staq
 ```
+
 For more details, please see
 [pystaq/README.md](https://github.com/softwareQinc/staq/blob/main/pystaq/README.md).
 

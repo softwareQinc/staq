@@ -1,6 +1,6 @@
-## Installation instructions
+# Installation instructions
 
-### Linux/UNIX
+## Linux/UNIX
 
 **staq** uses [CMake](https://cmake.org/) for its build system. To build both 
 tool suite and the **staq** executable, execute under the root directory
@@ -22,7 +22,7 @@ To (un)install, execute
 sudo cmake --build build --target (un)install
 ```
 
-### Windows
+## Windows
 
 Building on Windows requires [Visual Studio](https://www.visualstudio.com) 2017
 or later for CMake support. In Visual Studio, open
