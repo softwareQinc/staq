@@ -1,6 +1,6 @@
 # Installation instructions
 
-## Linux/UNIX
+## UNIX/UNIX-like
 
 **staq** uses [CMake](https://cmake.org/) for its build system. To build both 
 tool suite and the **staq** executable, execute under the root directory
@@ -40,6 +40,13 @@ To (un)install, execute
 ```
 cmake --build build --target (UN)INSTALL
 ```
+
+### macOS/Linux
+
+If you are running macOS or Linux, you can install **staq** via
+[Homebrew](https://brew.sh) with
+
+    brew install staq
 
 ## Python 3 wrapper
 [pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3 
