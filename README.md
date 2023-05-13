@@ -17,7 +17,7 @@ optimization and compilation of quantum circuits.
 It is usable either through the provided binary tools, or as a header-only 
 library that can be included to provide direct support for 
 parsing & manipulating circuits written in the 
-[OpenQASM](https://github.com/Qiskit/openqasm) circuit description language.
+[OpenQASM](https://github.com/openqasm/openqasm) circuit description language.
 
 Inspired by Clang, **staq** is designed to manipulate OpenQASM syntax trees
 directly, rather than through an intermediate representation which makes
