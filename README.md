@@ -31,6 +31,8 @@ closely follow the OpenQASM source.
 Check out the [Wiki](https://github.com/softwareQinc/staq/wiki) for more
 information about the library and included tools.
 
+Copyright (c) 2013 - 2023 softwareQ Inc. All rights reserved.
+
 ---
 
 ## License
