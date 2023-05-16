@@ -61,7 +61,7 @@ static const std::set<std::string_view> ls_inline_overrides{
 enum class PauliOperator : char { I = 'I', X = 'X', Y = 'Y', Z = 'Z' };
 
 /**
- * \brief Anticommute multiplication table
+ * \brief Anti-commute multiplication table
  */
 static const std::map<std::pair<PauliOperator, PauliOperator>,
                       std::pair<std::complex<double>, PauliOperator>>
@@ -92,12 +92,14 @@ class PauliOpCircuit {
     using Op = std::pair<std::vector<PauliOperator>, std::string>;
 
     explicit PauliOpCircuit(int no_of_qubit) : qubit_num_(no_of_qubit) {}
+
     void add_pauli_block(Op op) { // add operation to end of circuit
         if (op.first.size() != qubit_num_) {
             throw std::logic_error("len(ops_list) != number of qubits");
         }
         ops_.push_back(std::move(op));
     }
+
     json to_json() const { // get circuit in json format
         json result;
         result["n"] = qubit_num_;
@@ -115,7 +117,9 @@ class PauliOpCircuit {
         }
         return result;
     }
-    PauliOpCircuit to_y_free_equivalent() const { // y-free equivalent circuit
+
+    // y-free equivalent circuit
+    PauliOpCircuit to_y_free_equivalent() const {
         PauliOpCircuit ans{qubit_num_};
         for (auto& block : ops_) {
             auto y_free = get_y_free_equivalent(block);
@@ -123,7 +127,10 @@ class PauliOpCircuit {
         }
         return ans;
     }
-    void apply_transformation() { // push pi/4 rotations to end of circuit
+
+    // TODO optimize this
+    // push pi/4 rotations to end of circuit
+    void litinski_transform() {
         decompose();
         std::vector<std::list<Op>::iterator> pushed_rotations;
         bool circuit_has_measurements = false;
@@ -140,13 +147,14 @@ class PauliOpCircuit {
         for (auto it = pushed_rotations.rbegin(); it != pushed_rotations.rend();
              ++it) {
             auto index = *it;
+            // TODO optimize this
             while (index != ops_.end()) {
                 auto next_block = index;
                 ++next_block;
                 if (next_block == ops_.end()) {
                     break;
                 }
-                swap_adjacent_blocks(index);
+                swap_adjacent_blocks(index); // TODO optimize this
                 ++index;
             }
             if (circuit_has_measurements)
@@ -166,6 +174,7 @@ class PauliOpCircuit {
         }
         return ret_val;
     }
+
     static bool are_commuting(PauliOperator a, PauliOperator b) {
         if (PauliOperator_anticommute_tbl.find({a, b}) ==
             PauliOperator_anticommute_tbl.end()) {
@@ -173,6 +182,7 @@ class PauliOpCircuit {
         }
         return false;
     }
+
     static std::pair<std::complex<double>, PauliOperator>
     multiply_operators(PauliOperator a, PauliOperator b) {
         auto it = PauliOperator_anticommute_tbl.find({a, b});
@@ -224,6 +234,7 @@ class PauliOpCircuit {
         for (int i : y_op_indices) {
             new_rotation_ops[i] = PauliOperator::Z;
         }
+
         left_rotations.emplace_back(new_rotation_ops, "1/4");
         right_rotations.emplace_back(new_rotation_ops, "-1/4");
         // return left_rotations + [y_free_block] + right_rotations
@@ -241,11 +252,13 @@ class PauliOpCircuit {
             swap_adjacent_anticommuting_blocks(index);
         }
     }
+
     static void swap_adjacent_commuting_blocks(std::list<Op>::iterator index) {
         auto next_block = index;
         ++next_block;
         std::iter_swap(index, next_block);
     }
+
     void
     swap_adjacent_anticommuting_blocks(std::list<Op>::iterator index) const {
         auto next_block = index;
@@ -290,6 +303,7 @@ class PauliOpCircuit {
             throw std::logic_error("Can only swap pi/2 or pi/4 rotations");
         }
     }
+
     void decompose() { // decompose into { pi/2, pi/4, pi/8 } wherever possible
         std::list<Op> result;
         for (const auto& op : ops_) {
@@ -299,6 +313,7 @@ class PauliOpCircuit {
         }
         ops_.swap(result);
     }
+
     static std::vector<std::string> decompose_phase(const std::string& phase) {
         // since utils::Angle is in [0,2pi), Angle/2 will be in [0,pi)
         // we care about pi times { 0/1, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8 }
@@ -350,7 +365,9 @@ class LayeredPauliOpCircuit {
             }
         }
     }
-    json to_json() const { // get circuit in json format, with T layers grouped
+
+    // get circuit in json format, with T layers grouped
+    json to_json() const {
         json result;
         result["n"] = qubit_num_;
         int t_count = 0;
@@ -393,6 +410,8 @@ class LayeredPauliOpCircuit {
 
         return result;
     }
+
+    // TODO optimize this
     /* greedy algorithm from page 6 of https://arxiv.org/pdf/1808.02892.pdf */
     void reduce() {
         bool changed = true;
@@ -437,7 +456,11 @@ class LayeredPauliOpCircuit {
  * \brief Visitor for converting a QASM AST into Pauli Op circuit
  */
 class PauliOpCircuitCompiler final : public ast::Visitor {
+    bool skip_clifford_{false};
+
   public:
+    PauliOpCircuitCompiler(bool skip_clifford = false)
+        : skip_clifford_{skip_clifford} {}
     PauliOpCircuit run(ast::Program& prog) {
         transformations::desugar(prog);
         transformations::inline_ast(prog, {false, ls_inline_overrides, "anc"});
@@ -483,6 +506,8 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
     }
 
     void visit(ast::CNOTGate& gate) override {
+        if (skip_clifford_)
+            return;
         std::vector<ast::VarAccess> qargs{gate.ctrl(), gate.tgt()};
         add_layer(qargs, {PauliOperator::Z, PauliOperator::X}, "1/4");
         add_layer(qargs, {PauliOperator::Z, PauliOperator::I}, "-1/4");
@@ -523,27 +548,41 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
             add_layer(gate.qargs(), {PauliOperator::Z},
                       to_phase_string(phase / 2));
         } else if (gate.name() == "cx") {
-            add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::X},
-                      "1/4");
-            add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::I},
-                      "-1/4");
-            add_layer(gate.qargs(), {PauliOperator::I, PauliOperator::X},
-                      "-1/4");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::X},
+                          "1/4");
+                add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::I},
+                          "-1/4");
+                add_layer(gate.qargs(), {PauliOperator::I, PauliOperator::X},
+                          "-1/4");
+            }
         } else if (gate.name() == "id" || gate.name() == "u0") {
         } else if (gate.name() == "x") {
-            add_layer(gate.qargs(), {PauliOperator::X}, "1/2");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::X}, "1/2");
+            }
         } else if (gate.name() == "y") {
-            add_layer(gate.qargs(), {PauliOperator::Y}, "1/2");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Y}, "1/2");
+            }
         } else if (gate.name() == "z") {
-            add_layer(gate.qargs(), {PauliOperator::Z}, "1/2");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Z}, "1/2");
+            }
         } else if (gate.name() == "h") {
-            add_layer(gate.qargs(), {PauliOperator::Z}, "1/4");
-            add_layer(gate.qargs(), {PauliOperator::X}, "1/4");
-            add_layer(gate.qargs(), {PauliOperator::Z}, "1/4");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Z}, "1/4");
+                add_layer(gate.qargs(), {PauliOperator::X}, "1/4");
+                add_layer(gate.qargs(), {PauliOperator::Z}, "1/4");
+            }
         } else if (gate.name() == "s") {
-            add_layer(gate.qargs(), {PauliOperator::Z}, "1/4");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Z}, "1/4");
+            }
         } else if (gate.name() == "sdg") {
-            add_layer(gate.qargs(), {PauliOperator::Z}, "-1/4");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Z}, "-1/4");
+            }
         } else if (gate.name() == "t") {
             add_layer(gate.qargs(), {PauliOperator::Z}, "1/8");
         } else if (gate.name() == "tdg") {
@@ -557,12 +596,14 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
             add_layer(gate.qargs(), {PauliOperator::Y},
                       to_phase_string(phase / 2));
         } else if (gate.name() == "cz") {
-            add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::Z},
-                      "1/4");
-            add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::I},
-                      "-1/4");
-            add_layer(gate.qargs(), {PauliOperator::I, PauliOperator::Z},
-                      "-1/4");
+            if (!skip_clifford_) {
+                add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::Z},
+                          "1/4");
+                add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::I},
+                          "-1/4");
+                add_layer(gate.qargs(), {PauliOperator::I, PauliOperator::Z},
+                          "-1/4");
+            }
         } else if (gate.name() == "cy") {
             add_layer(gate.qargs(), {PauliOperator::Z, PauliOperator::Y},
                       "1/4");
@@ -655,71 +696,71 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
 };
 
 /** \brief Compiles an AST into lattice surgery instructions to stdout */
-void output_lattice_surgery(ast::Program& prog) {
+void output_lattice_surgery(ast::Program& prog, bool skip_clifford = false,
+                            bool skip_litinski = false,
+                            bool skip_reduce = false,
+
+                            std::ostream& os = std::cout) {
+    // JSON parts
+    const std::string FIRST{"1. Circuit as Pauli rotations"};
+    const std::string SECOND{"2. Circuit after the Litinski Transform"};
+    const std::string THIRD{"3. T-layered circuit"};
+
     json out;
-    auto circuit = PauliOpCircuitCompiler().run(prog);
-    out["1. Circuit as Pauli rotations"] = circuit.to_json();
-    circuit.apply_transformation();
-    out["2. Circuit after the Litinski Transform"] = circuit.to_json();
+    out[FIRST];
+    auto circuit = PauliOpCircuitCompiler(skip_clifford).run(prog);
+    out[FIRST] = circuit.to_json();
+
+    out[SECOND];
+    if (!skip_clifford && !skip_litinski) {
+        circuit.litinski_transform();
+        out[SECOND] = circuit.to_json();
+    }
+
+    out[THIRD];
     try {
-        LayeredPauliOpCircuit lcircuit(circuit);
-        lcircuit.reduce();
-        out["3. Circuit after T depth reduction"] = lcircuit.to_json();
-    } catch (...) {
-        std::cerr << "Warning: Circuit is not in Clifford + T\n";
-        out["3. Circuit after T depth reduction"];
+        if (!skip_litinski || skip_clifford) {
+            LayeredPauliOpCircuit lcircuit(circuit);
+            if (!skip_reduce) {
+                lcircuit.reduce();
+            }
+            out[THIRD] = lcircuit.to_json();
+        }
+    } catch (std::logic_error& err) {
+        std::string err_msg(err.what());
+        if (err_msg.find("Unsupported phase: ") != std::string::npos) {
+            std::cerr << "Warning: Circuit is not in Clifford + T\n";
+        } else
+            throw;
     }
     std::cout << out.dump(2) << "\n";
 }
 
 /** \brief Compiles an AST into lattice surgery instructions to a given output
  * file */
-void write_lattice_surgery(ast::Program& prog, const std::string& fname) {
-    std::ofstream ofs;
-    ofs.open(fname);
+void write_lattice_surgery(ast::Program& prog, const std::string& fname,
+                           bool skip_clifford = false,
+                           bool skip_litinski = false,
+                           bool skip_reduce = false) {
+    std::ofstream ofs{fname};
 
     if (!ofs.good()) {
         std::cerr << "Error: failed to open output file " << fname << "\n";
+        exit(-1);
     }
-
-    json out;
-    auto circuit = PauliOpCircuitCompiler().run(prog);
-    out["1. Circuit as Pauli rotations"] = circuit.to_json();
-    circuit.apply_transformation();
-    out["2. Circuit after the Litinski Transform"] = circuit.to_json();
-    try {
-        LayeredPauliOpCircuit lcircuit(circuit);
-        lcircuit.reduce();
-        out["3. Circuit after T depth reduction"] = lcircuit.to_json();
-    } catch (...) {
-        std::cerr << "Warning: Circuit is not in Clifford + T\n";
-        out["3. Circuit after T depth reduction"];
-    }
-    ofs << out.dump(2) << "\n";
+    output_lattice_surgery(prog, skip_clifford, skip_litinski, skip_reduce,
+                           ofs);
 }
 
 /** \brief Compiles an AST into lattice surgery instructions to a std::string
  * representing a json object
  */
-std::string lattice_surgery(ast::Program& prog) {
-    json result;
-    auto circuit = PauliOpCircuitCompiler().run(prog);
-    result["1. Circuit as Pauli rotations"] = circuit.to_json();
-    circuit.apply_transformation();
-    result["2. Circuit after the Litinski Transform"] = circuit.to_json();
-    try {
-        LayeredPauliOpCircuit lcircuit(circuit);
-        lcircuit.reduce();
-        result["3. Circuit after T depth reduction"] = lcircuit.to_json();
-    } catch (...) {
-        std::cerr << "Warning: Circuit is not in Clifford + T\n";
-        result["3. Circuit after T depth reduction"];
-    }
-
-    std::ostringstream oss;
-    oss << result.dump(2) << "\n";
-
-    return oss.str();
+std::string lattice_surgery(ast::Program& prog, bool skip_clifford = false,
+                            bool skip_litinski = false,
+                            bool skip_reduce = false) {
+    std::stringstream ss;
+    output_lattice_surgery(prog, skip_clifford, skip_litinski, skip_reduce, ss);
+    return ss.str();
 }
 
 } /* namespace staq::output */
