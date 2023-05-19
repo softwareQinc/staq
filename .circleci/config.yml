@@ -33,7 +33,8 @@ jobs:
       - run:
           name: Run the unit tests
           command: |
-            ctest --test-dir build
+            cd test
+            ctest
 
   macOS:
     description: A template for building and testing staq on macOS
@@ -57,7 +58,8 @@ jobs:
       - run:
           name: Run the unit tests
           command: |
-            ctest --test-dir build
+            cd test
+            ctest
 
 workflows:
   build:
