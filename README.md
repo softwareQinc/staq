@@ -2,8 +2,6 @@
 
 ## Version 3.1 - 13 May 2023
 
-**Build status:**
-
 [![GitHub actions](https://github.com/softwareqinc/staq/actions/workflows/cmake.yml/badge.svg)](https://github.com/softwareQinc/staq/actions)
 
 ---
