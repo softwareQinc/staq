@@ -8,13 +8,30 @@ tool suite and the **staq** executable, execute under the root directory
 ```bash
 cmake -B build
 cmake --build build --parallel 8
-  ```
+```
 
-To build only the **staq** tool suite, execute 
-`cmake --build build --target tools --parallel 8`. To build only the **staq** 
-executable, execute `cmake --build build --target staq --parallel 8`.
-Unit tests can be built with the command 
-`cmake --build build --target unit_tests --parallel 8`.
+To build only the **staq** tool suite, execute
+
+```bash
+cmake --build build --target tools --parallel 8
+````
+To build only the **staq** executable, execute
+
+```bash
+cmake --build build --target staq --parallel 8
+```
+
+Unit tests can be built with the command
+
+```bash
+cmake --build build --target unit_tests --parallel 8
+```
+
+Tu run the unit tests, execute
+
+```bash
+ctest --test-dir build
+```
 
 To (un)install, execute 
 
@@ -51,8 +68,10 @@ If you are running macOS or Linux, you can install **staq** via
 ## Python 3 wrapper
 [pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3 
 wrapper for **staq**. pystaq can be installed using `pip`
+
 ```
 pip install git+https://github.com/softwareQinc/staq
 ```
+
 For more details, please see 
 [pystaq/README.md](https://github.com/softwareQinc/staq/blob/main/pystaq/README.md).
