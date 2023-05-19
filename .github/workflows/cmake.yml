@@ -20,7 +20,8 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Configure staq
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: cmake -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build staq
         run: cmake --build ${{github.workspace}}/build
@@ -39,6 +40,4 @@ jobs:
 
       - name: Run unit tests
         working-directory: ${{github.workspace}}/build
-        # Execute tests defined by the CMake configuration.
-        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: ctest -C ${{env.BUILD_TYPE}}
