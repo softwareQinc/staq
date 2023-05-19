@@ -7,6 +7,8 @@
 [![Build status - CircleCI Linux/macOS](https://circleci.com/gh/softwareQinc/staq.svg?style=svg)](https://circleci.com/gh/softwareQinc/staq)
 [![Build status](https://ci.appveyor.com/api/projects/status/gwc8fde2jdp3tol7?svg=true)](https://ci.appveyor.com/project/vsoftco/staq)
 
+[![GitHub actions](https://github.com/softwareqinc/staq/actions/workflows/cmake.yml/badge.svg)](https://github.com/softwareQinc/staq/actions)
+
 ---
 
 ## About
