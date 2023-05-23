@@ -1,9 +1,25 @@
 # Installation instructions
 
+**staq** is a full-stack quantum processing toolkit that uses 
+[CMake](https://cmake.org/) as its build/install system. **staq** is 
+platform-independent, supporting 
+[UNIX](https://www.opengroup.org/membership/forums/platform/unix)
+(including
+[macOS](https://www.apple.com/macos/)) and UNIX-like operating systems
+(e.g., [Linux](https://www.linux.org)), as well
+as [Windows](https://www.microsoft.com/en-us/windows).
+
+## Pre-requisites
+
+- [CMake](https://cmake.org/)
+- C++17 compliant compiler, e.g., [gcc](https://gcc.gnu.org/)
+  , [clang](https://clang.llvm.org)
+  , [MSVC](https://visualstudio.microsoft.com/vs/) etc.
+
 ## UNIX/UNIX-like
 
-**staq** uses [CMake](https://cmake.org/) for its build system. To build both 
-tool suite and the **staq** executable, execute under the root directory
+To build both tool suite and the **staq** executable, execute 
+(in a terminal/console/command prompt) under the project's root directory
 
 ```bash
 cmake -B build
