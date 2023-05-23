@@ -22,9 +22,17 @@ To build both tool suite and the **staq** executable, execute
 (in a terminal/console/command prompt) under the project's root directory
 
 ```bash
-cmake -B build
+cmake -B build && cmake --build build --parallel 8
+```
+
+followed by
+
+```bash
 cmake --build build --parallel 8
 ```
+
+The `--parallel 8` instructs CMake to build in parallel using 8 threads, modify 
+accordingly.
 
 To build only the **staq** tool suite, execute
 
