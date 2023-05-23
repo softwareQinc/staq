@@ -22,7 +22,7 @@ To build both tool suite and the **staq** executable, execute
 (in a terminal/console/command prompt) under the project's root directory
 
 ```bash
-cmake -B build && cmake --build build --parallel 8
+cmake -B build
 ```
 
 followed by
