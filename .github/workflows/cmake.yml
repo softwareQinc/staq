@@ -44,4 +44,4 @@ jobs:
 
       - name: Install pystaq
         working-directory: ${{github.workspace}}
-        run: pip3 install .
+        run: pip3 install --user .
