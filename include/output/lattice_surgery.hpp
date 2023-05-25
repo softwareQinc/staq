@@ -350,8 +350,8 @@ class LayeredPauliOpCircuit {
         for (auto const& op : c.ops_) {
             if (op.second == "1/8" || op.second == "-1/8") {
                 if (expect_no_more_Ts) {
-                    throw std::logic_error("π/8 rotations must come before all "
-                                           "π/4 rotations and measurements");
+                    throw std::logic_error("pi/8 rotations must come before all "
+                                           "pi/4 rotations and measurements");
                 } else {
                     layers_.push_back({op});
                 }
