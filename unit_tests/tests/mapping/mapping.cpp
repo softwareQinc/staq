@@ -1,10 +1,12 @@
 #include "gtest/gtest.h"
 
-#include "mapping/device.hpp"
 #include "qasmtools/parser/parser.hpp"
 
-#include "mapping/mapping/steiner.hpp"
+// clang-format off
+#include "mapping/device.hpp"
 #include "mapping/mapping/swap.hpp"
+#include "mapping/mapping/steiner.hpp"
+// clang-format on
 
 using namespace staq;
 using namespace qasmtools;

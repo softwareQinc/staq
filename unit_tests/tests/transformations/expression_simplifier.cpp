@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "transformations/expression_simplifier.hpp"
 #include "qasmtools/parser/parser.hpp"
+
+#include "transformations/expression_simplifier.hpp"
 
 using namespace staq;
 using namespace qasmtools;

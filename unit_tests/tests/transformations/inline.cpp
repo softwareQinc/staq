@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "transformations/inline.hpp"
 #include "qasmtools/parser/parser.hpp"
+
+#include "transformations/inline.hpp"
 
 using namespace staq;
 using namespace qasmtools;

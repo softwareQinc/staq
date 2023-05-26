@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "mapping/device.hpp"
 #include "qasmtools/parser/parser.hpp"
 
+#include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
 #include "mapping/layout/bestfit.hpp"
 #include "mapping/layout/eager.hpp"
