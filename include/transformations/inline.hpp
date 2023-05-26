@@ -32,11 +32,11 @@
 #ifndef TRANSFORMATIONS_INLINE_HPP_
 #define TRANSFORMATIONS_INLINE_HPP_
 
-#include "qasmtools/ast/replacer.hpp"
-#include "substitution.hpp"
-
 #include <set>
 #include <unordered_map>
+
+#include "qasmtools/ast/replacer.hpp"
+#include "substitution.hpp"
 
 namespace staq {
 namespace transformations {

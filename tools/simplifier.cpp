@@ -24,11 +24,11 @@
  * SOFTWARE.
  */
 
-#include "qasmtools/parser/parser.hpp"
-#include "optimization/simplify.hpp"
-#include "transformations/expression_simplifier.hpp"
-
 #include <CLI/CLI.hpp>
+
+#include "optimization/simplify.hpp"
+#include "qasmtools/parser/parser.hpp"
+#include "transformations/expression_simplifier.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

@@ -24,11 +24,11 @@
  * SOFTWARE.
  */
 
+#include <CLI/CLI.hpp>
+
+#include "output/cirq.hpp"
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
-#include "output/cirq.hpp"
-
-#include <CLI/CLI.hpp>
 
 int main(int argc, char** argv) {
     using namespace staq;

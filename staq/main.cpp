@@ -24,35 +24,36 @@
  * SOFTWARE.
  */
 
+#include <sstream>
+
+#include <CLI/CLI.hpp>
+
 #include "qasmtools/parser/parser.hpp"
 
+#include "transformations/barrier_merge.hpp"
 #include "transformations/desugar.hpp"
+#include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
-#include "transformations/barrier_merge.hpp"
-#include "transformations/expression_simplifier.hpp"
 
-#include "optimization/simplify.hpp"
-#include "optimization/rotation_folding.hpp"
 #include "optimization/cnot_resynthesis.hpp"
+#include "optimization/rotation_folding.hpp"
+#include "optimization/simplify.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
-#include "mapping/layout/eager.hpp"
 #include "mapping/layout/bestfit.hpp"
-#include "mapping/mapping/swap.hpp"
+#include "mapping/layout/eager.hpp"
 #include "mapping/mapping/steiner.hpp"
+#include "mapping/mapping/swap.hpp"
 
-#include "tools/resource_estimator.hpp"
 #include "tools/qubit_estimator.hpp"
+#include "tools/resource_estimator.hpp"
 
+#include "output/cirq.hpp"
 #include "output/projectq.hpp"
 #include "output/qsharp.hpp"
 #include "output/quil.hpp"
-#include "output/cirq.hpp"
-
-#include <sstream>
-#include <CLI/CLI.hpp>
 
 /**
  * \brief Compiler passes

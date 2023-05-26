@@ -32,13 +32,13 @@
 #ifndef MAPPING_LAYOUT_BASIC_HPP_
 #define MAPPING_LAYOUT_BASIC_HPP_
 
+#include <cstddef>
+#include <unordered_map>
+
+#include "mapping/device.hpp"
 #include "qasmtools/ast/replacer.hpp"
 #include "qasmtools/ast/traversal.hpp"
 #include "transformations/substitution.hpp"
-#include "mapping/device.hpp"
-
-#include <cstddef>
-#include <unordered_map>
 
 namespace staq {
 namespace mapping {

@@ -1,9 +1,10 @@
 #include "gtest/gtest.h"
-#include "qasmtools/parser/parser.hpp"
-#include "mapping/device.hpp"
 
-#include "mapping/mapping/swap.hpp"
+#include "mapping/device.hpp"
+#include "qasmtools/parser/parser.hpp"
+
 #include "mapping/mapping/steiner.hpp"
+#include "mapping/mapping/swap.hpp"
 
 using namespace staq;
 using namespace qasmtools;

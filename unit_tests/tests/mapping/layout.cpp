@@ -1,10 +1,11 @@
 #include "gtest/gtest.h"
-#include "qasmtools/parser/parser.hpp"
+
 #include "mapping/device.hpp"
+#include "qasmtools/parser/parser.hpp"
 
 #include "mapping/layout/basic.hpp"
-#include "mapping/layout/eager.hpp"
 #include "mapping/layout/bestfit.hpp"
+#include "mapping/layout/eager.hpp"
 
 using namespace staq;
 using namespace qasmtools;

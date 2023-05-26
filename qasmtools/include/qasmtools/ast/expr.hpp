@@ -32,11 +32,11 @@
 #ifndef QASMTOOLS_AST_EXPR_HPP_
 #define QASMTOOLS_AST_EXPR_HPP_
 
-#include "../utils/angle.hpp"
-#include "base.hpp"
-
 #include <cmath>
 #include <iomanip>
+
+#include "../utils/angle.hpp"
+#include "base.hpp"
 
 namespace qasmtools {
 namespace ast {

@@ -32,14 +32,14 @@
 #ifndef OPTIMIZATION_CNOTRESYNTHESIS_HPP_
 #define OPTIMIZATION_CNOTRESYNTHESIS_HPP_
 
-#include "qasmtools/ast/visitor.hpp"
-#include "qasmtools/ast/replacer.hpp"
-#include "synthesis/cnot_dihedral.hpp"
-
 #include <cstddef>
 #include <list>
 #include <sstream>
 #include <unordered_map>
+
+#include "qasmtools/ast/replacer.hpp"
+#include "qasmtools/ast/visitor.hpp"
+#include "synthesis/cnot_dihedral.hpp"
 
 namespace staq {
 namespace optimization {

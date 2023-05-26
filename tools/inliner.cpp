@@ -24,10 +24,10 @@
  * SOFTWARE.
  */
 
+#include <CLI/CLI.hpp>
+
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/inline.hpp"
-
-#include <CLI/CLI.hpp>
 
 int main(int argc, char** argv) {
     using namespace staq;

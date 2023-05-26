@@ -32,13 +32,13 @@
 #ifndef MAPPING_MAPPING_STEINER_HPP_
 #define MAPPING_MAPPING_STEINER_HPP_
 
+#include <vector>
+
+#include "mapping/device.hpp"
 #include "qasmtools/ast/traversal.hpp"
 #include "qasmtools/utils/templates.hpp"
-#include "synthesis/linear_reversible.hpp"
 #include "synthesis/cnot_dihedral.hpp"
-#include "mapping/device.hpp"
-
-#include <vector>
+#include "synthesis/linear_reversible.hpp"
 
 namespace staq {
 namespace mapping {

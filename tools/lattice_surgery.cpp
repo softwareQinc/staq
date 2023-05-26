@@ -24,10 +24,10 @@
  * SOFTWARE.
  */
 
-#include "qasmtools/parser/parser.hpp"
-#include "output/lattice_surgery.hpp"
-
 #include <CLI/CLI.hpp>
+
+#include "output/lattice_surgery.hpp"
+#include "qasmtools/parser/parser.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

@@ -24,9 +24,10 @@
  * SOFTWARE.
  */
 
-#include "mapping/device.hpp"
 #include <CLI/CLI.hpp>
 #include <tuple>
+
+#include "mapping/device.hpp"
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
 

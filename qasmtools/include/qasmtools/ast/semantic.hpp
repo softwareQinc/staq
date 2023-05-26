@@ -32,13 +32,13 @@
 #ifndef QASMTOOLS_AST_SEMANTIC_HPP_
 #define QASMTOOLS_AST_SEMANTIC_HPP_
 
-#include "ast.hpp"
-#include "visitor.hpp"
-
 #include <algorithm>
 #include <cstddef>
 #include <set>
 #include <unordered_map>
+
+#include "ast.hpp"
+#include "visitor.hpp"
 
 namespace qasmtools {
 namespace ast {

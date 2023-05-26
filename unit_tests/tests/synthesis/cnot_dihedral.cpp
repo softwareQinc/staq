@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
-#include "mapping/device.hpp"
+
 #include "synthesis/cnot_dihedral.hpp"
-#include "qasmtools/utils/templates.hpp"
+#include "mapping/device.hpp"
 #include "qasmtools/ast/expr.hpp"
+#include "qasmtools/utils/templates.hpp"
 
 using namespace staq;
 using namespace qasmtools::utils;

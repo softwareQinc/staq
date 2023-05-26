@@ -32,11 +32,11 @@
 #ifndef SYNTHESIS_LINEARREVERSIBLE_HPP_
 #define SYNTHESIS_LINEARREVERSIBLE_HPP_
 
-#include "mapping/device.hpp"
-
 #include <cstddef>
 #include <list>
 #include <vector>
+
+#include "mapping/device.hpp"
 
 namespace staq {
 namespace synthesis {

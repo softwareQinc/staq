@@ -39,13 +39,13 @@
 #ifndef GATES_CHANNEL_HPP_
 #define GATES_CHANNEL_HPP_
 
-#include "qasmtools/utils/angle.hpp"
-
 #include <iostream>
 #include <map>
 #include <unordered_map>
 #include <variant>
 #include <vector>
+
+#include "qasmtools/utils/angle.hpp"
 
 namespace staq {
 namespace gates {

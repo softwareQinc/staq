@@ -32,12 +32,12 @@
 #ifndef TRANSFORMATIONS_BARRIERMERGE_HPP_
 #define TRANSFORMATIONS_BARRIERMERGE_HPP_
 
-#include "qasmtools/ast/traversal.hpp"
-#include "qasmtools/ast/replacer.hpp"
-
 #include <algorithm>
 #include <set>
 #include <unordered_map>
+
+#include "qasmtools/ast/replacer.hpp"
+#include "qasmtools/ast/traversal.hpp"
 
 namespace staq {
 namespace transformations {

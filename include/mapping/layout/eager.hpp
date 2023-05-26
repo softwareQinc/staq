@@ -32,13 +32,13 @@
 #ifndef MAPPING_LAYOUT_EAGER_HPP_
 #define MAPPING_LAYOUT_EAGER_HPP_
 
-#include "qasmtools/ast/traversal.hpp"
-#include "mapping/device.hpp"
-
 #include <cstddef>
 #include <map>
 #include <set>
 #include <vector>
+
+#include "mapping/device.hpp"
+#include "qasmtools/ast/traversal.hpp"
 
 namespace staq {
 namespace mapping {

@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
-#include "qasmtools/parser/parser.hpp"
+
 #include "transformations/barrier_merge.hpp"
+#include "qasmtools/parser/parser.hpp"
 
 using namespace staq;
 using namespace qasmtools;
