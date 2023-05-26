@@ -69,16 +69,16 @@ Building on Windows requires [Visual Studio](https://www.visualstudio.com) 2017
 or later for CMake support. In Visual Studio, open
 [CMakeLists.txt](https://github.com/softwareQinc/staq/blob/main/CMakeLists.txt)
 as a CMake project, then simply build as a regular Visual Studio project or,
-from an Administrator Developer Command Prompt, execute under the root directory 
+in a Command Prompt, execute under the root directory 
 
-```
+```shell
 cmake -B build
 cmake --build build --parallel 8
 ```
 
-To (un)install, execute 
+To (un)install, execute in an Administrator Command Prompt
 
-```
+```shell
 cmake --build build --target (UN)INSTALL
 ```
 

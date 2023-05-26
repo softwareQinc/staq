@@ -32,20 +32,20 @@
 #ifndef MAPPING_DEVICE_HPP_
 #define MAPPING_DEVICE_HPP_
 
-#include "qasmtools/ast/var.hpp"
-
-#include <limits>
 #include <cmath>
+#include <fstream>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <list>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <queue>
 #include <set>
 #include <unordered_map>
 #include <vector>
-#include <fstream>
-#include <nlohmann/json.hpp>
+
+#include "qasmtools/ast/var.hpp"
 
 namespace staq {
 namespace mapping {

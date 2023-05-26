@@ -24,19 +24,19 @@
  * SOFTWARE.
  */
 
+#include <CLI/CLI.hpp>
+
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/inline.hpp"
-#include "transformations/expression_simplifier.hpp"
 #include "tools/qubit_estimator.hpp"
+#include "transformations/expression_simplifier.hpp"
+#include "transformations/inline.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
-#include "mapping/layout/eager.hpp"
 #include "mapping/layout/bestfit.hpp"
-#include "mapping/mapping/swap.hpp"
+#include "mapping/layout/eager.hpp"
 #include "mapping/mapping/steiner.hpp"
-
-#include <CLI/CLI.hpp>
+#include "mapping/mapping/swap.hpp"
 
 // TODO: Find or create a format for reading machine definitions
 // and have this tool accept a machine definition as input for mapping

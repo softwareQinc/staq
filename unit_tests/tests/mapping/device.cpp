@@ -1,6 +1,8 @@
-#include "gtest/gtest.h"
-#include "mapping/device.hpp"
 #include <set>
+
+#include "gtest/gtest.h"
+
+#include "mapping/device.hpp"
 
 using namespace staq;
 

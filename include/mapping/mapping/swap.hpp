@@ -32,11 +32,11 @@
 #ifndef MAPPING_MAPPING_SWAP_HPP_
 #define MAPPING_MAPPING_SWAP_HPP_
 
+#include <map>
+
+#include "mapping/device.hpp"
 #include "qasmtools/ast/replacer.hpp"
 #include "transformations/substitution.hpp"
-#include "mapping/device.hpp"
-
-#include <map>
 
 // TODO: figure out what to do with if statements
 

@@ -24,10 +24,10 @@
  * SOFTWARE.
  */
 
-#include "qasmtools/parser/parser.hpp"
-#include "optimization/rotation_folding.hpp"
-
 #include <CLI/CLI.hpp>
+
+#include "optimization/rotation_folding.hpp"
+#include "qasmtools/parser/parser.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

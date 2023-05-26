@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Configure staq
-        run: cmake -B ${{github.workspace}}/build 
+        run: cmake -B ${{github.workspace}}/build
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build staq
@@ -41,3 +41,7 @@ jobs:
       - name: Run unit tests
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}}
+
+      - name: Install pystaq
+        working-directory: ${{github.workspace}}
+        run: pip3 install --user .

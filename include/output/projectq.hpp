@@ -32,9 +32,9 @@
 #ifndef OUTPUT_PROJECTQ_HPP_
 #define OUTPUT_PROJECTQ_HPP_
 
-#include "qasmtools/ast/ast.hpp"
-
 #include <typeinfo>
+
+#include "qasmtools/ast/ast.hpp"
 
 namespace staq {
 namespace output {

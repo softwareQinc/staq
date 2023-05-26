@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
-#include "mapping/device.hpp"
+
 #include "synthesis/linear_reversible.hpp"
+#include "mapping/device.hpp"
 
 using namespace staq;
 using circuit = std::list<std::pair<int, int>>;

@@ -32,11 +32,11 @@
 #ifndef TRANSFORMATIONS_DESUGAR_HPP_
 #define TRANSFORMATIONS_DESUGAR_HPP_
 
-#include "qasmtools/ast/replacer.hpp"
-
 #include <list>
 #include <unordered_map>
 #include <variant>
+
+#include "qasmtools/ast/replacer.hpp"
 
 namespace staq {
 namespace transformations {

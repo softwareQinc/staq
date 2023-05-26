@@ -24,11 +24,11 @@
  * SOFTWARE.
  */
 
+#include <CLI/CLI.hpp>
+
+#include "output/qsharp.hpp"
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
-#include "output/qsharp.hpp"
-
-#include <CLI/CLI.hpp>
 
 int main(int argc, char** argv) {
     using namespace staq;

@@ -1,6 +1,6 @@
 # staq
 
-## Version 3.1 - 13 May 2023
+## Version 3.2 - 26 May 2023
 
 [![GitHub actions](https://github.com/softwareqinc/staq/actions/workflows/cmake.yml/badge.svg)](https://github.com/softwareQinc/staq/actions)
 

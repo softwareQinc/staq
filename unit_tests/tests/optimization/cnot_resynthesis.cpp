@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
+
 #include "qasmtools/parser/parser.hpp"
+
 #include "optimization/cnot_resynthesis.hpp"
 
 using namespace staq;

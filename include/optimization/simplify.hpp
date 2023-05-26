@@ -32,10 +32,10 @@
 #ifndef OPTIMIZATION_SIMPLIFY_HPP_
 #define OPTIMIZATION_SIMPLIFY_HPP_
 
-#include "qasmtools/ast/visitor.hpp"
-#include "qasmtools/ast/replacer.hpp"
-
 #include <tuple>
+
+#include "qasmtools/ast/replacer.hpp"
+#include "qasmtools/ast/visitor.hpp"
 
 namespace staq {
 namespace optimization {

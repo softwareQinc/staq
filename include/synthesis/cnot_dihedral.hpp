@@ -32,14 +32,14 @@
 #ifndef SYNTHESIS_CNOTDIHEDRAL_HPP_
 #define SYNTHESIS_CNOTDIHEDRAL_HPP_
 
-#include "mapping/device.hpp"
-#include "synthesis/linear_reversible.hpp"
-#include "qasmtools/ast/expr.hpp"
-
 #include <cstddef>
 #include <list>
 #include <variant>
 #include <vector>
+
+#include "mapping/device.hpp"
+#include "qasmtools/ast/expr.hpp"
+#include "synthesis/linear_reversible.hpp"
 
 namespace staq {
 namespace synthesis {

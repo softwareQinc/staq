@@ -32,10 +32,10 @@
 #ifndef MAPPING_LAYOUT_BESTFIT_HPP_
 #define MAPPING_LAYOUT_BESTFIT_HPP_
 
-#include "qasmtools/ast/traversal.hpp"
-#include "mapping/device.hpp"
-
 #include <map>
+
+#include "mapping/device.hpp"
+#include "qasmtools/ast/traversal.hpp"
 
 namespace staq {
 namespace mapping {

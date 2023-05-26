@@ -33,31 +33,31 @@
 
 #include "qasmtools/parser/parser.hpp"
 
+#include "transformations/barrier_merge.hpp"
 #include "transformations/desugar.hpp"
+#include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
-#include "transformations/barrier_merge.hpp"
-#include "transformations/expression_simplifier.hpp"
 
-#include "optimization/simplify.hpp"
-#include "optimization/rotation_folding.hpp"
 #include "optimization/cnot_resynthesis.hpp"
+#include "optimization/rotation_folding.hpp"
+#include "optimization/simplify.hpp"
 
 #include "mapping/device.hpp"
 #include "mapping/layout/basic.hpp"
-#include "mapping/layout/eager.hpp"
 #include "mapping/layout/bestfit.hpp"
-#include "mapping/mapping/swap.hpp"
+#include "mapping/layout/eager.hpp"
 #include "mapping/mapping/steiner.hpp"
+#include "mapping/mapping/swap.hpp"
 
-#include "tools/resource_estimator.hpp"
 #include "tools/qubit_estimator.hpp"
+#include "tools/resource_estimator.hpp"
 
+#include "output/cirq.hpp"
+#include "output/lattice_surgery.hpp"
 #include "output/projectq.hpp"
 #include "output/qsharp.hpp"
 #include "output/quil.hpp"
-#include "output/cirq.hpp"
-#include "output/lattice_surgery.hpp"
 
 namespace py = pybind11;
 
@@ -207,9 +207,7 @@ void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
 
-std::string lattice_surgery(Program& prog) {
-    return prog.lattice_surgery();
-}
+std::string lattice_surgery(Program& prog) { return prog.lattice_surgery(); }
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
 

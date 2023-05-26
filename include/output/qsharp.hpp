@@ -32,10 +32,10 @@
 #ifndef OUTPUT_QSHARP_HPP_
 #define OUTPUT_QSHARP_HPP_
 
-#include "qasmtools/ast/ast.hpp"
-
 #include <iomanip>
 #include <typeinfo>
+
+#include "qasmtools/ast/ast.hpp"
 
 namespace staq {
 namespace output {

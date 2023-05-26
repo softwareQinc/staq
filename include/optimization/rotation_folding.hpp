@@ -32,13 +32,13 @@
 #ifndef OPTIMIZATION_ROTATIONFOLDING_HPP_
 #define OPTIMIZATION_ROTATIONFOLDING_HPP_
 
-#include "qasmtools/ast/visitor.hpp"
-#include "qasmtools/ast/replacer.hpp"
-#include "gates/channel.hpp"
-
 #include <list>
 #include <sstream>
 #include <unordered_map>
+
+#include "gates/channel.hpp"
+#include "qasmtools/ast/replacer.hpp"
+#include "qasmtools/ast/visitor.hpp"
 
 namespace staq {
 namespace optimization {

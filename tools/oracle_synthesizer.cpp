@@ -25,6 +25,7 @@
  */
 
 #include "qasmtools/parser/parser.hpp"
+
 #include "transformations/oracle_synthesizer.hpp"
 
 int main() {

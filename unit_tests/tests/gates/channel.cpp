@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "gates/channel.hpp"
 
 using namespace staq;

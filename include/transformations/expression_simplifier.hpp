@@ -32,12 +32,12 @@
 #ifndef TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_
 #define TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_
 
+#include <cmath>
+#include <optional>
+#include <variant>
+
 #include "qasmtools/ast/visitor.hpp"
 #include "qasmtools/utils/angle.hpp"
-
-#include <cmath>
-#include <variant>
-#include <optional>
 
 namespace staq {
 namespace transformations {
@@ -53,7 +53,7 @@ namespace ast = qasmtools::ast;
  *     LPE + LPE -> LPE
  *     LPE - LPE -> LPE
  *     LPE * LPE -> LPE only if one of the LPEs has no pi term
- *                      (i.e. can't simplify π*π)
+ *                      (i.e. can't simplify pi*pi)
  *           ... -> REAL otherwise
  *     LPE / LPE -> LPE only if (i) the denominator has no pi term; or
  *                              (ii) we have (a*pi/b) / (c*pi/d)

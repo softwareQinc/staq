@@ -32,17 +32,17 @@
 #ifndef OUTPUT_LATTICESURGERY_HPP_
 #define OUTPUT_LATTICESURGERY_HPP_
 
+#include <algorithm>
+#include <complex>
+#include <map>
+#include <nlohmann/json.hpp>
+#include <set>
+#include <typeinfo>
+
 #include "qasmtools/ast/ast.hpp"
 #include "qasmtools/utils/angle.hpp"
 #include "transformations/desugar.hpp"
 #include "transformations/inline.hpp"
-
-#include <algorithm>
-#include <complex>
-#include <map>
-#include <set>
-#include <typeinfo>
-#include <nlohmann/json.hpp>
 
 namespace staq::output {
 
@@ -350,8 +350,9 @@ class LayeredPauliOpCircuit {
         for (auto const& op : c.ops_) {
             if (op.second == "1/8" || op.second == "-1/8") {
                 if (expect_no_more_Ts) {
-                    throw std::logic_error("π/8 rotations must come before all "
-                                           "π/4 rotations and measurements");
+                    throw std::logic_error(
+                        "pi/8 rotations must come before all "
+                        "pi/4 rotations and measurements");
                 } else {
                     layers_.push_back({op});
                 }
