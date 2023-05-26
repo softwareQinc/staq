@@ -98,7 +98,7 @@ class ExprSimplifier final : public ast::Visitor {
         bool is_zero() const { return n_ == 0; }
         int numerator() const { return n_; }
         int denominator() const { return d_; }
-        double value() const { return (double)n_ / (double)d_; }
+        double value() const { return (double) n_ / (double) d_; }
 
         Rational operator-() const { return Rational(-n_, d_); }
 
@@ -549,7 +549,7 @@ class ExprSimplifier final : public ast::Visitor {
 
     void visit(ast::IntExpr& expr) {
         if (evaluate_all) {
-            temp_value = (double)expr.value();
+            temp_value = (double) expr.value();
         } else {
             temp_value = LinearPiExpr(0, expr.value());
         }
