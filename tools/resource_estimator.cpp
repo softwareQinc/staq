@@ -26,8 +26,8 @@
 
 #include <CLI/CLI.hpp>
 
-#include "tools/resource_estimator.hpp"
 #include "qasmtools/parser/parser.hpp"
+#include "tools/resource_estimator.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

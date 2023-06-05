@@ -182,7 +182,7 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
 
             for (std::size_t ctrl = 0; ctrl < vec.size(); ctrl++) {
                 if (ctrl != tgt && vec[ctrl]) {
-                    ret.emplace_back(std::make_pair((int) ctrl, (int) tgt));
+                    ret.emplace_back(std::make_pair((int)ctrl, (int)tgt));
 
                     // Adjust remaining vectors & output function
                     adjust_vectors(static_cast<int>(ctrl),
@@ -265,7 +265,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
             for (auto it = s_tree.begin(); it != s_tree.end(); it++) {
                 if (vec[it->second] == 0) {
                     ret.emplace_back(
-                        std::make_pair((int) (it->second), (int) (it->first)));
+                        std::make_pair((int)(it->second), (int)(it->first)));
                     adjust_vectors(it->second, it->first, stack);
                     for (std::size_t i = 0; i < A.size(); i++) {
                         A[i][it->second] = A[i][it->second] ^ A[i][it->first];
@@ -276,7 +276,7 @@ static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
             // Zero out each row except for the root
             for (auto it = s_tree.rbegin(); it != s_tree.rend(); it++) {
                 ret.emplace_back(
-                    std::make_pair((int) (it->second), (int) (it->first)));
+                    std::make_pair((int)(it->second), (int)(it->first)));
                 adjust_vectors(it->second, it->first, stack);
                 for (std::size_t i = 0; i < A.size(); i++) {
                     A[i][it->second] = A[i][it->second] ^ A[i][it->first];

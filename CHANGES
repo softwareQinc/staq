@@ -1,4 +1,5 @@
-Pre-release
+Version 3.2.1
+    - This is a maintenance release
     - CMake dependent flag name changes
           USE_OPENQASM2_SPECS -> QASMTOOLS_QASM2_SPECS
 

@@ -1,6 +1,6 @@
 # staq
 
-## Version 3.2 - 26 May 2023
+## Version 3.2.1 - 5 June 2023
 
 [![GitHub actions](https://github.com/softwareqinc/staq/actions/workflows/cmake.yml/badge.svg)](https://github.com/softwareQinc/staq/actions)
 
@@ -9,11 +9,11 @@
 ## About
 
 **staq** is a modern C++ library for the synthesis, transformation,
-optimization and compilation of quantum circuits. 
-**staq** is written in standard C++17 and has very low external dependencies. 
-It is usable either through the provided binary tools, or as a header-only 
-library that can be included to provide direct support for 
-parsing & manipulating circuits written in the 
+optimization and compilation of quantum circuits.
+**staq** is written in standard C++17 and has very low external dependencies.
+It is usable either through the provided binary tools, or as a header-only
+library that can be included to provide direct support for
+parsing & manipulating circuits written in the
 [OpenQASM](https://github.com/openqasm/openqasm) circuit description language.
 
 Inspired by Clang, **staq** is designed to manipulate OpenQASM syntax trees
@@ -35,18 +35,21 @@ Copyright (c) 2013 - 2023 softwareQ Inc. All rights reserved.
 ## License
 
 **staq** is distributed under the MIT license. Please see the
-[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for more details.
+[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for
+more details.
 
 ---
 
 ## Installation instructions
 
 Please see the installation guide
-[`INSTALL.md`](https://github.com/softwareQinc/staq/blob/main/INSTALL.md) and the
+[`INSTALL.md`](https://github.com/softwareQinc/staq/blob/main/INSTALL.md) and
+the
 comprehensive [Wiki](https://github.com/softwareQinc/staq/wiki) for further
 documentation and detailed examples.
 
 ## Python 3 wrapper
+
 [pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
 wrapper for **staq**. pystaq can be installed using `pip`
 

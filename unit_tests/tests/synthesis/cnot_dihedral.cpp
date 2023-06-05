@@ -3,8 +3,8 @@
 #include "qasmtools/ast/expr.hpp"
 #include "qasmtools/utils/templates.hpp"
 
-#include "synthesis/cnot_dihedral.hpp"
 #include "mapping/device.hpp"
+#include "synthesis/cnot_dihedral.hpp"
 
 using namespace staq;
 using namespace qasmtools::utils;

@@ -2,8 +2,8 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "transformations/desugar.hpp"
 #include "transformations/barrier_merge.hpp"
+#include "transformations/desugar.hpp"
 
 using namespace staq;
 using namespace qasmtools;
