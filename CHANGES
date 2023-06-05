@@ -1,3 +1,7 @@
+Pre-release
+    - CMake dependent flag name changes
+          USE_OPENQASM2_SPECS -> QASMTOOLS_QASM2_SPECS
+
 Version 3.2 - 26 May 2023
     - This is a maintenance release
     - Migrated all continuous integration to GitHub actions
