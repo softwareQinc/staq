@@ -26,6 +26,11 @@
 *.a
 *.lib
 
+# Executables
+*.exe
+*.out
+*.app
+
 # Vim
 *.swp
 
@@ -37,23 +42,26 @@
 .cache/
 compile_commands.json
 
-# Executables
-*.exe
-*.out
-*.app
+# MSVC
+.vs/
+/out*
+CMakeSettings.json
+
+# VS Code
+.vscode/
 
 # CLion
 .idea/
 build/
 cmake-build*/
 
-# MSVC
-.vs
-/out*
-CMakeSettings.json
+# Documentation source files
+doc/
 
-# VS Code
-.vscode/
+# Misc
+.DS_Store
+.cmake/
+Testing/
 
 # pystaq
 Makefile
@@ -61,11 +69,3 @@ cmake_install.cmake
 CMakeCache.txt
 CMakeFiles/
 pystaq.egg-info/
-
-# Documentation source files 
-doc/
-
-# Misc
-.DS_store
-.cmake/
-Testing/
