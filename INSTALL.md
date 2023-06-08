@@ -22,13 +22,13 @@ as [Windows](https://www.microsoft.com/en-us/windows).
 To build both tool suite and the **staq** executable, execute
 (in a terminal/console/command prompt) under the project's root directory
 
-```bash
+```shell
 cmake -B build
 ```
 
 followed by
 
-```bash
+```shell
 cmake --build build --parallel 8
 ```
 
@@ -37,37 +37,37 @@ accordingly.
 
 To build only the **staq** tool suite, execute
 
-```bash
+```shell
 cmake --build build --target tools --parallel 8
 ````
 
 To build only the **staq** executable, execute
 
-```bash
+```shell
 cmake --build build --target staq --parallel 8
 ```
 
 Unit tests can be built with the command
 
-```bash
+```shell
 cmake --build build --target unit_tests --parallel 8
 ```
 
 and run with
 
-```bash
+```shell
 ctest --test-dir build
 ```
 
 To (un)install, execute in a terminal/console (UNIX/UNIX-like systems)
 
-```bash
+```shell
 sudo cmake --build build --target (un)install
 ```
 
 or in an Administrator Command Prompt (Windows)
 
-```bash
+```shell
 cmake --build build --target (un)install
 ```
 
@@ -76,7 +76,7 @@ cmake --build build --target (un)install
 If you are running macOS or Linux, you can install **staq** via
 [Homebrew](https://brew.sh) with
 
-```bash
+```shell
 brew install staq
 ```
 
