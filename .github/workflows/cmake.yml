@@ -38,7 +38,7 @@ jobs:
         run: cmake --build build --target unit_tests
 
       - name: Run unit tests
-        run: ctest --test-dir build -C ${{env.BUILD_TYPE}}
+        run: ctest --test-dir build
 
       - name: Install pystaq
         run: pip3 install --user .
