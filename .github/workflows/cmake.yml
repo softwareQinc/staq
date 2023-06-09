@@ -35,7 +35,7 @@ jobs:
           fi
 
       - name: Build unit tests
-        run: cmake --build build --target unit_tests
+        run: cmake --build build --target unit_tests --parallel 4
 
       - name: Run unit tests
         run: ctest --test-dir build
