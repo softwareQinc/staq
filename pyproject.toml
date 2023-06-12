@@ -11,10 +11,10 @@ name = "pystaq"
 version = "3.2.1"
 description = "Python 3 wrapper for staq"
 authors = [
-    {name = "softwareQ Inc.", email = "info@softwareq.ca"},
+    { name = "softwareQ Inc.", email = "info@softwareq.ca" },
 ]
 readme = "pystaq/README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 dependencies = []
 
 [project.urls]
