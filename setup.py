@@ -19,6 +19,4 @@ ext_modules = [
     ),
 ]
 
-setup(
-    platforms=sys.platform,
-    ext_modules=ext_modules)
+setup()

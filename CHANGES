@@ -1,5 +1,6 @@
-Pre-release
-    -
+Version 3.2.2 - 12 June 2023
+    - This is a maintenance release
+    - Compiling errors fixed on SunOS/OpenIndiana
 
 Version 3.2.1
     - This is a maintenance release
