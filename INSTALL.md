@@ -9,6 +9,8 @@ platform-independent, supporting
 (e.g., [Linux](https://www.linux.org)), as well
 as [Windows](https://www.microsoft.com/en-us/windows).
 
+---
+
 ## Pre-requisites
 
 - [CMake](https://cmake.org/)
@@ -16,6 +18,8 @@ as [Windows](https://www.microsoft.com/en-us/windows).
   [gcc](https://gcc.gnu.org/),
   [clang](https://clang.llvm.org),
   [MSVC](https://visualstudio.microsoft.com/vs/)
+
+---
 
 ## UNIX/UNIX-like/Windows
 
@@ -71,6 +75,8 @@ or in an Administrator Command Prompt (Windows)
 cmake --build build --target (un)install
 ```
 
+---
+
 ## macOS/Linux
 
 If you are running macOS or Linux, you can install **staq** via
@@ -79,6 +85,8 @@ If you are running macOS or Linux, you can install **staq** via
 ```shell
 brew install staq
 ```
+
+---
 
 ## Python 3 wrapper
 

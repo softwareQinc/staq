@@ -48,6 +48,8 @@ the
 comprehensive [Wiki](https://github.com/softwareQinc/staq/wiki) for further
 documentation and detailed examples.
 
+---
+
 ## Python 3 wrapper
 
 [pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
