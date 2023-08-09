@@ -1,7 +1,7 @@
 ## Docker
 
 A self-explanatory minimalistic Docker file is provided
-in [`Dockerfile`](https://github.com/softwareqinc/staq/tree/main/docker/Dockerfile).
+in [`Dockerfile`](https://github.com/softwareQinc/staq/tree/main/docker/Dockerfile).
 
 Build the image by executing
 
