@@ -1,3 +1,7 @@
+Pre-release
+    - Minor bugfix in pystaq setup.py that prevented pip install from remote
+    - Docker update, see the ["docker/"] directory
+
 Version 3.2.2 - 12 June 2023
     - This is a maintenance release
     - Compiling errors fixed on SunOS/OpenIndiana
