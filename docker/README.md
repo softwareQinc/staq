@@ -9,11 +9,15 @@ Build the image by executing
 docker build -t softwareq-staq .
 ```
 
+---
+
 Run the Jupyter server in a container by executing
 
 ```shell
-docker run -p8888:8888 -it --workdir=/home/sq/notebooks softwareq-staq sh -c "jupyter notebook --port=8888 --no-browser --ip=0.0.0.0"
+docker run -p8889:8889 -it --workdir=/home/sq/notebooks softwareq-staq sh -c "jupyter notebook --port=8889 --no-browser --ip=0.0.0.0"
 ```
+
+---
 
 In case you want to use the Docker container as a development environment, mount
 your directory (in this case the current directory) in a Docker container with
