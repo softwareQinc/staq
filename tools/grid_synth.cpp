@@ -43,7 +43,6 @@ int main(int argc, char** argv) {
     real_t eps;
 
     CLI::App app{"Grid Synthesis"};
-    app.set_help_all_flag("--help-all", "Expand all help");
 
     app.add_option<real_t,float>("-t, --theta", theta, "Z-rotation angle in units of PI")
        ->required();
