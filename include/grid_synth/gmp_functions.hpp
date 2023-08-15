@@ -1,0 +1,112 @@
+#ifndef GMP_FUNCTIONS_HPP
+#define GMP_FUNCTIONS_HPP
+
+#include <cmath>
+#include <gmpxx.h>
+
+#include "complex.hpp"
+
+namespace staq{
+namespace grid_synth {
+
+// TODO add high precision sine and cosine functions
+
+inline mpz_class min(const mpz_class& x, const mpz_class& y) noexcept {
+    return mpz_class(x * (x < y) + (1 - (x < y)) * y);
+}
+
+inline mpz_class max(const mpz_class& x, const mpz_class& y) noexcept {
+    return mpz_class(x * (x > y) + (1 - (x > y)) * y);
+}
+
+inline mpf_class min(const mpf_class& x, const mpf_class& y) noexcept {
+    return mpf_class(x * (x < y) + (1 - (x < y)) * y);
+}
+
+inline mpf_class max(const mpf_class& x, const mpf_class& y) noexcept {
+    return mpf_class(x * (x > y) + (1 - (x > y)) * y);
+}
+
+inline mpz_class floor(const mpf_class& x) {
+    mpf_class f;
+    mpf_floor(f.get_mpf_t(), x.get_mpf_t());
+
+    return mpz_class(f);
+}
+
+inline mpz_class ceil(const mpf_class& x) {
+    mpf_class f;
+    mpf_ceil(f.get_mpf_t(), x.get_mpf_t());
+
+    return mpz_class(f);
+}
+
+inline mpz_class round(const mpf_class& x) {
+    mpf_class f, c;
+
+    mpf_floor(f.get_mpf_t(), x.get_mpf_t());
+    mpf_ceil(c.get_mpf_t(), x.get_mpf_t());
+
+    bool b = (abs(f - x) < abs(c - x));
+
+    return mpz_class(b * f + (1 - b) * c);
+}
+
+inline mpf_class pow(const mpf_class& base, mpz_class exponent) {
+    mpf_class output;
+
+    mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), exponent.get_ui());
+
+    return output;
+}
+
+inline mpf_class pow(const mpf_class& base, signed long int exponent) {
+    mpf_class output;
+    mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), abs(exponent));
+
+    if (exponent < 0)
+        return 1 / output;
+
+    return output;
+}
+
+/*
+ * Get the decimal part of an mpf_class element.
+ */
+inline mpf_class decimal_part(const mpf_class& x, mpz_class& intpart) {
+    intpart = mpz_class(x);
+
+    return x - intpart;
+}
+
+inline mpf_class log(const mpf_class& x) {
+    if (x <= 0) {
+        std::cout << "mpf_class log(const mpf_class& x) expects x > 0"
+                  << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    mpf_class m;
+    mp_exp_t exp;
+    std::string mantissa = x.get_str(exp);
+    mantissa.insert(1, ".");
+    int b = mpf_set_str(m.get_mpf_t(), mantissa.c_str(), 10);
+    if (b == -1) {
+        std::cout
+            << "mpf_class log(mpf_class& x) failed to set m to mantissa string"
+            << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    double l, d = mpf_get_d(m.get_mpf_t());
+    l = std::log10(d);
+
+    return mpf_class(l + exp - 1);
+}
+
+inline mpf_class abs(const complex<mpf_class>& z) {
+    return sqrt(z.real() * z.real() + z.imag() * z.imag());
+}
+
+} // namespace grid_synth
+} // namespace staq
+
+#endif // GMP_FUNCTIONS_HPP

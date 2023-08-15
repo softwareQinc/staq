@@ -6,7 +6,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 enable_testing()
+
+find_package(GMP REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 #### staq version
 add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
@@ -61,7 +66,7 @@ endif ()
 #### Compiler
 set(COMPILER "staq")
 add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
-target_link_libraries(${COMPILER} PUBLIC libstaq)
+target_link_libraries(${COMPILER} PUBLIC libstaq ${Eigen_LIBRARIES})
 
 #### Additional command line tools
 add_subdirectory(tools)
