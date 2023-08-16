@@ -13,7 +13,7 @@
 #include "rings.hpp"
 #include "utils.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 /*
@@ -223,10 +223,10 @@ class Ellipse {
 
         mat_t M;
 
-        M << ct * ct * inva * inva + st * st * invb * invb,
-            ct * st * (inva * inva - invb * invb),
-            ct * st * (inva * inva - invb * invb),
-            st * st * inva * inva + ct * ct * invb * invb;
+        M = {ct * ct * inva * inva + st * st * invb * invb,
+             ct * st * (inva * inva - invb * invb),
+             ct * st * (inva * inva - invb * invb),
+             st * st * inva * inva + ct * ct * invb * invb};
 
         return M;
     }
@@ -286,7 +286,7 @@ class Ellipse {
             const real_t& semi_minor_axis, const real_t& angle)
         : center_(vec_t{{x0, y0}}), semi_major_axis_(semi_major_axis),
           semi_minor_axis_(semi_minor_axis), angle_(angle) {
-        center_ << x0, y0;
+        center_ = {x0, y0};
         D_ = get_mat_from_axes_(semi_major_axis_, semi_minor_axis_, angle_);
         get_z_and_e_();
     }

@@ -60,8 +60,8 @@ class GridOperator {
             exit(EXIT_FAILURE);
         }
 
-        mat_rep_ << a_ + INV_SQRT2 * ap_, b_ + INV_SQRT2 * bp_,
-            c_ + INV_SQRT2 * cp_, d_ + INV_SQRT2 * dp_;
+        mat_rep_ ={ a_ + INV_SQRT2 * ap_, b_ + INV_SQRT2 * bp_,
+            c_ + INV_SQRT2 * cp_, d_ + INV_SQRT2 * dp_};
     }
 
     int_t a() const { return a_; }

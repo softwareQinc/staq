@@ -10,7 +10,7 @@
 #include "regions.hpp"
 #include "rings.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 using state_t = std::array<Ellipse, 2>;
@@ -33,19 +33,17 @@ inline int_t determine_shift(const state_t state) {
 inline mat_t sigma(int_t k) {
     if (k < 0)
         return pow(SQRT_LAMBDA_INV, -k) *
-               mat_t{{1, 0}, {0, pow(LAMBDA.decimal(), -k)}};
+               mat_t{1, 0, 0, pow(LAMBDA.decimal(), -k)};
 
-    return pow(SQRT_LAMBDA_INV, k) *
-           mat_t{{pow(LAMBDA.decimal(), k), 0}, {0, 1}};
+    return pow(SQRT_LAMBDA_INV, k) * mat_t{pow(LAMBDA.decimal(), k), 0, 0, 1};
 }
 
 inline mat_t tau(int_t k) {
     if (k < 0)
         return pow(SQRT_LAMBDA_INV, -k) *
-               mat_t{{pow(LAMBDA.decimal(), -k), 0}, {0, pow(-1, -k)}};
+               mat_t{pow(LAMBDA.decimal(), -k), 0, 0, pow(-1, -k)};
 
-    return pow(SQRT_LAMBDA_INV, k) *
-           mat_t{{1, 0}, {0, pow(-LAMBDA.decimal(), k)}};
+    return pow(SQRT_LAMBDA_INV, k) * mat_t{1, 0, 0, pow(-LAMBDA.decimal(), k)};
 }
 
 /*
