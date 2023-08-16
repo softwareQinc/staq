@@ -354,11 +354,11 @@ class Ellipse {
     }
 
     bool contains(const real_t& x, const real_t& y, const real_t& tol=TOL) const {
-        return contains(vec_t{{x, y}},tol);
+        return contains(vec_t{x, y},tol);
     }
 
     bool contains(const cplx_t& z, const real_t& tol=TOL) const {
-        return contains(vec_t{{z.real(), z.imag()}},tol);
+        return contains(vec_t{z.real(), z.imag()},tol);
     }
 
     UprightRectangle<real_t> bounding_box() const {

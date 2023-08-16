@@ -58,14 +58,7 @@ int main(int argc, char** argv) {
     
     CLI11_PARSE(app,argc,argv);
 
-<<<<<<< HEAD
-    RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
-
-    domega_matrix_table s3_table = generate_s3_table();
-    str_t op_str = synthesize(rz_approx.matrix(), s3_table);
-=======
     if(verbose) cout << "Finding approximation" << endl;
->>>>>>> 79d5716 (Now read/write s3_table from file or generate if file doesn't exist)
 
     RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
 
@@ -86,7 +79,6 @@ int main(int argc, char** argv) {
         s3_table = generate_s3_table();
         write_s3_table(DEFAULT_TABLE_FILE,s3_table);
     } 
-    cout << "here" << endl;
     
     if(not rz_approx.solution_found()) {
       cout << "No approximation found for RzApproximation." << endl; 
@@ -96,7 +88,7 @@ int main(int argc, char** argv) {
     str_t op_str = synthesize(rz_approx.matrix(), s3_table);
     
     if(check) {
-      cout << (rz_approx.matrix() == domega_matrix_from_str(full_simplify_str(op_str))) << endl;
+      cout << "Check flag = " << (rz_approx.matrix() == domega_matrix_from_str(full_simplify_str(op_str))) << endl;
     }
 
     if(details) {
@@ -106,7 +98,7 @@ int main(int argc, char** argv) {
       cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
       cout << "error = " << rz_approx.error() << endl;
     }
-
+    
     for(auto &ch : full_simplify_str(op_str)) {
       cout << ch << " "; 
     }

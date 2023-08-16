@@ -16,9 +16,6 @@ using real_t = mpf_class;
 using cplx_t = complex<real_t>;
 using str_t = std::string;
 
-// using vec_t = Eigen::Matrix<real_t, 2, 1>;
-// using mat_t = Eigen::Matrix<real_t, 2, 2>;
-
 using vec_t = col_vec2_t<real_t>;
 using mat_t = mat2_t<real_t>;
 

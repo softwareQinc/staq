@@ -219,7 +219,8 @@ inline str_t simplify_str(str_t str) {
  *  Reduce a string containing H, T, and S as far as is possible
  */
 inline str_t full_simplify_str(str_t str) {
-    str.erase(std::remove(str.begin(),str.end(),'I'),str.end());
+    if(str.size() == 1) 
+      return str;
     size_t last_len = str.size();  
     size_t curr_len = 0;
     str_t curr_str=str;
