@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 enable_testing()
 
-# disable grid_synth on MSVC
+# disable GMP on MSVC
 if (NOT MSVC)
     find_package(GMP REQUIRED)
 endif ()

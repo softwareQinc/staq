@@ -18,7 +18,7 @@ aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
 
 # disable grid_synth for MSVC
-if (NOT MSCV)
+if (NOT MSVC)
     aux_source_directory(tests/grid_synth TEST_FILES)
 endif ()
 
@@ -35,7 +35,8 @@ foreach (filename ${TEST_FILES})
     target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq gmp gmpxx)
+target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq)
+# disable GMP on MSVC
 if (NOT MSVC)
     target_link_libraries(${TARGET_NAME} PUBLIC gmp gmpxx)
 endif ()
