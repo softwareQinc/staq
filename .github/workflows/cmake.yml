@@ -35,7 +35,8 @@ jobs:
 
       - name: Configure staq
         shell: bash
-        run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build staq
         shell: bash
@@ -62,7 +63,7 @@ jobs:
             export CPATH=$LIBRARY_PATH:/usr/local/include
             export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
           fi
-          cmake --build build --target unit_tests --parallel 4
+          cmake --build build --target unit_tests
 
       - name: Run unit tests
         run: ctest --test-dir build
