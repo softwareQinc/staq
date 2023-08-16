@@ -37,7 +37,12 @@ jobs:
         run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build staq
-        run: cmake --build build
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
+          fi
+          cmake --build build
 
       - name: Install staq
         shell: bash
