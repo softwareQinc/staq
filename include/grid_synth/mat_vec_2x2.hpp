@@ -151,8 +151,8 @@ class mat2_t {
                             ((b - c) * (b - c) + (a + d) * (a + d)))) /
                   sqrt(2);
 
-        // TODO doesn't look like we need max here, expr1 > expr2 always; the max
-        // comes from Mathematica: FullSimplify[Norm[{{a, b}, {c, d}}],
+        // TODO doesn't look like we need max here, expr1 > expr2 always; the
+        // max comes from Mathematica: FullSimplify[Norm[{{a, b}, {c, d}}],
         //  Assumptions -> Element[a, Reals] && Element[b, Reals] &&
         //  Element[c, Reals] && Element[d, Reals]]
         return std::max(expr1, expr2);
@@ -190,17 +190,13 @@ class mat2_t {
     }
 
     mat2_t operator-(const mat2_t& rhs) const {
-        return {
-            data_[0][0] - rhs.data_[0][0], data_[0][1] - rhs.data_[0][1],
-                data_[1][0] - rhs.data_[1][0], data_[1][1] - rhs.data_[1][1]
-        };
+        return {data_[0][0] - rhs.data_[0][0], data_[0][1] - rhs.data_[0][1],
+                data_[1][0] - rhs.data_[1][0], data_[1][1] - rhs.data_[1][1]};
     }
 
     mat2_t operator+(const mat2_t& rhs) const {
-        return {
-            data_[0][0] + rhs.data_[0][0], data_[0][1] + rhs.data_[0][1],
-                data_[1][0] + rhs.data_[1][0], data_[1][1] + rhs.data_[1][1]
-        };
+        return {data_[0][0] + rhs.data_[0][0], data_[0][1] + rhs.data_[0][1],
+                data_[1][0] + rhs.data_[1][0], data_[1][1] + rhs.data_[1][1]};
     }
 
     bool operator==(const mat2_t& other) const { return data_ == other.data_; }
