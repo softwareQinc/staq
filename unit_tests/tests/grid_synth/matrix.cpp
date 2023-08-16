@@ -33,7 +33,7 @@ TEST(Matrix, Dagger) {
 }
 
 TEST(Matrix, S3Table) {
-    domega_matrix_table s3_table = generate_s3_table();
+    domega_matrix_table_t s3_table = generate_s3_table();
     EXPECT_TRUE(str_t("S") == s3_table[T * T]);
     EXPECT_TRUE(str_t("H") == s3_table[H]);
     EXPECT_TRUE(str_t("SHST") == s3_table[S * H * T * T * T]);

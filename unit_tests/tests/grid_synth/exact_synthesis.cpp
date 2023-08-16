@@ -9,7 +9,7 @@ using namespace staq;
 using namespace grid_synth;
 
 TEST(ExactSynthesis, RangeOfAngle) {
-    domega_matrix_table s3_table = generate_s3_table();
+    domega_matrix_table_t s3_table = generate_s3_table();
 
     real_t eps = 1e-3;
     real_t phi = PI / 128;

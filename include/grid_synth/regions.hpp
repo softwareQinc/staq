@@ -12,6 +12,7 @@
 #include "grid_operators.hpp"
 #include "rings.hpp"
 #include "utils.hpp"
+#include "gmp_functions.hpp"
 
 namespace staq {
 namespace grid_synth {
@@ -63,7 +64,9 @@ class Interval {
         hi_ = hi_ + shift_factor;
     }
 
-    bool contains(const bound_t& x) const { return (hi_ - x) * (x - lo_) >= 0; }
+    bool contains(const bound_t& x, const real_t tol=TOL) const { 
+      return ((hi_ - x) * (x - lo_) > 0) or (abs((hi_-x)*(x-lo_)) < tol); 
+    }
 
     Interval operator+(const bound_t& shift_factor) const {
         return Interval<bound_t>(lo_ + shift_factor, hi_ + shift_factor);
@@ -344,17 +347,18 @@ class Ellipse {
         return scale;
     }
 
-    bool contains(const vec_t& point) const {
+    bool contains(const vec_t& point, const real_t& tol=TOL) const {
+        using namespace std;
         real_t x = (point - center_).transpose() * D_ * (point - center_);
-        return (x <= real_t(1));
+        return (x < real_t(1)) or (abs(x-real_t(1)) < tol);
     }
 
-    bool contains(const real_t& x, const real_t& y) const {
-        return contains(vec_t{x, y});
+    bool contains(const real_t& x, const real_t& y, const real_t& tol=TOL) const {
+        return contains(vec_t{{x, y}},tol);
     }
 
-    bool contains(const cplx_t& z) const {
-        return contains(vec_t{z.real(), z.imag()});
+    bool contains(const cplx_t& z, const real_t& tol=TOL) const {
+        return contains(vec_t{{z.real(), z.imag()}},tol);
     }
 
     UprightRectangle<real_t> bounding_box() const {

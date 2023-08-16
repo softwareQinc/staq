@@ -5,6 +5,7 @@
 #include <gmpxx.h>
 
 #include "complex.hpp"
+#include "utils.hpp"
 
 namespace staq{
 namespace grid_synth {
@@ -104,6 +105,10 @@ inline mpf_class log(const mpf_class& x) {
 
 inline mpf_class abs(const complex<mpf_class>& z) {
     return sqrt(z.real() * z.real() + z.imag() * z.imag());
+}
+
+inline mpf_class abs(const mpf_class& x) {
+  return sgn<mpf_class>(x)*x;
 }
 
 } // namespace grid_synth

@@ -29,6 +29,7 @@ const int POLLARD_RHO_START = 2;
 const int MOD_SQRT_MAX_DEPTH = 20;
 
 const int MAX_ITERATIONS_FERMAT_TEST = 5;
+const str_t DEFAULT_TABLE_FILE="./s3_table_file.csv";
 
 // Tolerance for equality when comparing floats. Default is set to guarentee
 // known edge cases.

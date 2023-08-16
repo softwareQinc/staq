@@ -79,20 +79,17 @@ inline RzApproximation find_rz_approximation(const real_t& theta,
     state_t state{eps_region, disk};
 
     SpecialGridOperator G = optimize_skew(state);
-
     real_t scale;
-    while (not solution_found && k < max_k) {
+    while ((not solution_found) && k < max_k) {
         if (k % 2 == 0)
             scale = pow(2, k / 2);
         else
             scale = pow(2, (k - 1) / 2) * SQRT2;
         state[0].rescale(scale);
         state[1].rescale(-scale);
-
         scaled_candidates = twoD_grid_solver_ellipse(state, tol);
         for (auto scaled_candidate : scaled_candidates) {
             auto candidate = G * scaled_candidate;
-
             if (((candidate.real() / scale) * z[0] +
                  (candidate.imag() / scale) * z[1]) > 1 - (eps * eps / 2)) {
                 int_t temp_k = k;
@@ -116,7 +113,6 @@ inline RzApproximation find_rz_approximation(const real_t& theta,
         state[0].rescale(1 / scale);
         state[1].rescale(-1 / scale);
     }
-
     return RzApproximation();
 }
 

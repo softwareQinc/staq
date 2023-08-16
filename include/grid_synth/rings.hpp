@@ -167,6 +167,7 @@ inline ZSqrt2 pow(const ZSqrt2& Z, const int_t& k) {
             throw std::invalid_argument("Operator ^ for ZSqrt2 expects k > 0");
     } catch (std::invalid_argument const& ex) {
         std::cout << ex.what() << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     ZSqrt2 result(1, 0);
@@ -470,6 +471,13 @@ class ZOmega {
                   << this->get_zsqrt2_string() << std::setprecision(prec)
                   << std::setw(2 * colw) << decimal_ << std::setw(2 * colw)
                   << (*this).dot().decimal() << std::endl;
+    }
+
+    str_t csv_str() {
+        using namespace std;
+        stringstream ss; 
+        ss << a_ << "," << b_ << "," << c_ << "," << d_;
+        return ss.str();
     }
 
 }; // class ZOmega

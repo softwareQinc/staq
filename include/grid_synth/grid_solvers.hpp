@@ -26,15 +26,16 @@ namespace grid_synth {
 template <typename bound_t>
 inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
                            const real_t& tol) {
-    real_t lowera_double = xlo - b * SQRT2;
+    using namespace std;
+    real_t lowera_double = xlo - (b*SQRT2);
     real_t decimal;
     int_t intpart;
     decimal = abs(decimal_part(lowera_double, intpart));
 
     if ((lowera_double < 0) && ((1 - decimal) < tol))
-        return int_t(intpart - 1);
+        return floor(lowera_double);
     if ((lowera_double > 0) && (decimal < tol))
-        return int_t(intpart);
+        return floor(lowera_double);
 
     return ceil(lowera_double);
 }
@@ -46,13 +47,15 @@ inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
 template <typename bound_t>
 inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
                            const real_t& tol) {
-    real_t uppera_double = xhi - b * SQRT2, decimal;
+    using namespace std;
+    real_t uppera_double = xhi - b * SQRT2;
+    real_t decimal;
     int_t intpart;
 
     decimal = abs(decimal_part(uppera_double, intpart));
 
     if ((uppera_double > 0) && ((1 - decimal) < tol))
-        return int_t(intpart + 1);
+        return ceil(uppera_double);
 
     return floor(uppera_double);
 }
@@ -64,14 +67,15 @@ inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
 template <typename bound_t>
 inline int_t lower_bound_b(const bound_t& xlo, const bound_t& yhi,
                            const bound_t& tol) {
-    real_t lowerb_double = (xlo - yhi) * HALF_INV_SQRT2, decimal;
+    using namespace std;
+    real_t lowerb_double = (xlo - yhi) * HALF_INV_SQRT2;
+    real_t decimal;
     int_t intpart;
-
     decimal = abs(decimal_part(lowerb_double, intpart));
     if ((lowerb_double) < 0 && ((1 - decimal) < tol))
-        return int_t(intpart - 1);
+        return floor(lowerb_double);
     if ((lowerb_double) > 0 && (decimal < tol))
-        return int_t(intpart);
+        return floor(lowerb_double);
 
     return ceil(lowerb_double);
 }
@@ -83,13 +87,14 @@ inline int_t lower_bound_b(const bound_t& xlo, const bound_t& yhi,
 template <typename bound_t>
 inline int_t upper_bound_b(const bound_t& xhi, const bound_t& ylo,
                            const real_t& tol) {
-    real_t upperb_double = (xhi - ylo) * HALF_INV_SQRT2, decimal;
+    using namespace std;
+    real_t upperb_double = (xhi - ylo) * HALF_INV_SQRT2;
+    real_t decimal;
     int_t intpart;
-
     decimal = abs(decimal_part(upperb_double, intpart));
 
     if ((upperb_double > 0) && (1 - decimal < tol))
-        return int_t(intpart + 1);
+        return ceil(upperb_double);
 
     return floor(upperb_double);
 }
@@ -119,12 +124,12 @@ template <typename bound_t>
 inline zsqrt2_vec_t oneD_grid_solver(const Interval<bound_t>& A,
                                      const Interval<bound_t>& B,
                                      const real_t tol = TOL) {
+    using namespace std;
     int_t lowerb = lower_bound_b<bound_t>(A.lo(), B.hi(), tol);
     int_t upperb = upper_bound_b<bound_t>(A.hi(), B.lo(), tol);
     zsqrt2_vec_t solns;
 
     for (int_t b = lowerb; b <= upperb; b++) {
-
         int_t lowera = lower_bound_a<bound_t>(A.lo(), b, tol);
         int_t uppera = upper_bound_a<bound_t>(A.hi(), b, tol);
         for (int_t a = lowera; a <= uppera; a++) {
@@ -151,10 +156,18 @@ template <typename bound_t>
 inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
                                             const Interval<bound_t>& B,
                                             const real_t tol = TOL) {
+    using namespace std;
     int_t k = find_scale_exponent(A);
+    Interval<bound_t> scaled_A = A;
+    Interval<bound_t> scaled_B = B;
 
-    Interval<bound_t> scaled_A = A * pow(LAMBDA_INV, k).decimal();
-    Interval<bound_t> scaled_B = B * pow(-1 * LAMBDA, k).decimal();
+    if(k>0) {
+        scaled_A = A * pow(LAMBDA_INV, k).decimal();
+        scaled_B = B * pow(-1 * LAMBDA, k).decimal();
+    } else {
+        scaled_A = A * pow(LAMBDA, -k).decimal();
+        scaled_B = B * pow(-1 * LAMBDA_INV, -k).decimal();
+    }
 
     int_t lowerb = lower_bound_b<bound_t>(scaled_A.lo(), scaled_B.hi(), tol);
     int_t upperb = upper_bound_b<bound_t>(scaled_A.hi(), scaled_B.lo(), tol);
@@ -166,10 +179,14 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
         int_t uppera = upper_bound_a<bound_t>(scaled_A.hi(), b, tol);
         for (int_t a = lowera; a <= uppera; a++) {
             ZSqrt2 candidate(a, b);
-
             if (scaled_A.contains(candidate.decimal()) and
-                scaled_B.contains(candidate.decimal_dot()))
-                solns.push_back(candidate * pow(LAMBDA, k));
+                scaled_B.contains(candidate.decimal_dot())) {
+                if(k>0) {
+                    solns.push_back(candidate * pow(LAMBDA, k));
+                } else {
+                    solns.push_back(candidate * pow(LAMBDA_INV, -k));
+                }
+            }
         }
     }
 
@@ -189,6 +206,9 @@ template <typename bound_t>
 inline zomega_vec_t twoD_grid_solver(const UprightRectangle<bound_t> A,
                                      const UprightRectangle<bound_t> B,
                                      const real_t tol = TOL) {
+    using namespace std;
+   
+
     zsqrt2_vec_t alpha_solns =
         oneD_optimal_grid_solver(A.x_interval(), B.x_interval(), tol);
     zsqrt2_vec_t beta_solns =
@@ -200,15 +220,18 @@ inline zomega_vec_t twoD_grid_solver(const UprightRectangle<bound_t> A,
         A.y_interval() - INV_SQRT2, B.y_interval() + INV_SQRT2, tol);
 
     zomega_vec_t solns;
+    
 
-    for (auto alpha_soln : alpha_solns)
-        for (auto beta_soln : beta_solns)
+    for (auto alpha_soln : alpha_solns) {
+        for (auto beta_soln : beta_solns) {
             solns.push_back(ZOmega(alpha_soln, beta_soln, 0));
-
-    for (auto alpha_soln : shifted_alpha_solns)
-        for (auto beta_soln : shifted_beta_solns)
+        }
+    }
+    for (auto alpha_soln : shifted_alpha_solns) {
+        for (auto beta_soln : shifted_beta_solns) {
             solns.push_back(ZOmega(alpha_soln, beta_soln, 1));
-
+        }
+    }
     return solns;
 }
 
@@ -230,15 +253,16 @@ inline zomega_vec_t twoD_grid_solver_ellipse(const Ellipse& A, const Ellipse& B,
 
 inline zomega_vec_t twoD_grid_solver_ellipse(const state_t& state,
                                              const real_t tol = TOL) {
-
+    using namespace std;
     UprightRectangle<real_t> bboxA = state[0].bounding_box();
     UprightRectangle<real_t> bboxB = state[1].bounding_box();
     zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
     zomega_vec_t solns;
     for (auto candidate : candidates) {
         if (state[0].contains(candidate.decimal()) and
-            state[1].contains(candidate.dot().decimal()))
+            state[1].contains(candidate.dot().decimal())) {
             solns.push_back(candidate);
+        }
     }
 
     return solns;

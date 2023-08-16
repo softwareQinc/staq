@@ -8,7 +8,7 @@ namespace staq{
 namespace grid_synth {
 
 inline str_t synthesize(const DOmegaMatrix& D,
-                        const domega_matrix_table& s3_table) {
+                        const domega_matrix_table_t& s3_table) {
     using namespace std;
 
     int_t s = D.sde_u_sq();
