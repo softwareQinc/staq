@@ -45,10 +45,8 @@ int main(int argc, char** argv) {
 
     CLI::App app{"Grid Synthesis"};
 
-    app.add_option<real_t,float>("-t, --theta", theta, "Z-rotation angle in units of PI")
-       ->required();
-    app.add_option<real_t,float>("-p, --precision", eps, "Minimum precision of approximation")
-       ->required();
+    CLI::Option* thet = app.add_option<real_t,float>("-t, --theta", theta, "Z-rotation angle in units of PI");
+    CLI::Option* prec = app.add_option<real_t,float>("-p, --precision", eps, "Minimum precision of approximation");
     CLI::Option* read = app.add_option("-r, --read-table", tablefile, "Name of file containing s3 table");
     CLI::Option* write = app.add_option("-w, --write-table", tablefile, "Name of table file to write s3_table to.")
                            ->excludes(read);
@@ -59,8 +57,6 @@ int main(int argc, char** argv) {
     CLI11_PARSE(app,argc,argv);
 
     if(verbose) cout << "Finding approximation" << endl;
-
-    RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
 
     if(*read) {
         if(verbose) cout << "Reading s3_table from " << tablefile << endl;
@@ -80,29 +76,31 @@ int main(int argc, char** argv) {
         write_s3_table(DEFAULT_TABLE_FILE,s3_table);
     } 
     
-    if(not rz_approx.solution_found()) {
-      cout << "No approximation found for RzApproximation." << endl; 
-      return 1;
-    }
+    if(*prec and *thet) {
+        RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
+        if(not rz_approx.solution_found()) {
+          cout << "No approximation found for RzApproximation." << endl; 
+          return 1;
+        }
+        str_t op_str = synthesize(rz_approx.matrix(), s3_table);
+        
+        if(check) {
+          cout << "Check flag = " << (rz_approx.matrix() == domega_matrix_from_str(full_simplify_str(op_str))) << endl;
+        }
 
-    str_t op_str = synthesize(rz_approx.matrix(), s3_table);
-    
-    if(check) {
-      cout << "Check flag = " << (rz_approx.matrix() == domega_matrix_from_str(full_simplify_str(op_str))) << endl;
+        if(details) {
+          real_t scale = pow(SQRT2,rz_approx.matrix().k());
+          cout << rz_approx.matrix() << endl;
+          cout << "u decimal value = " << rz_approx.matrix().u().decimal().real()/scale << endl;
+          cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
+          cout << "error = " << rz_approx.error() << endl;
+        }
+        
+        for(auto &ch : full_simplify_str(op_str)) {
+          cout << ch << " "; 
+        }
+        cout << endl;
     }
-
-    if(details) {
-      real_t scale = pow(SQRT2,rz_approx.matrix().k());
-      cout << rz_approx.matrix() << endl;
-      cout << "u decimal value = " << rz_approx.matrix().u().decimal().real()/scale << endl;
-      cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
-      cout << "error = " << rz_approx.error() << endl;
-    }
-    
-    for(auto &ch : full_simplify_str(op_str)) {
-      cout << ch << " "; 
-    }
-    cout << endl;
 
     return 0;
 }
