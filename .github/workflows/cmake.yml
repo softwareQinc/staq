@@ -55,7 +55,13 @@ jobs:
           fi
 
       - name: Build unit tests
-        run: cmake --build build --target unit_tests --parallel 4
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export CPATH=$LIBRARY_PATH:/usr/local/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
+          fi
+          cmake --build build --target unit_tests --parallel 4
 
       - name: Run unit tests
         run: ctest --test-dir build
