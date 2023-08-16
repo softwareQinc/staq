@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
     app.add_option<real_t,float>("-t, --theta", theta, "Z-rotation angle in units of PI")
        ->required();
-    app.add_option<real_t,float>("-p, --precision", eps, "Minimum Precision of Approximation")
+    app.add_option<real_t,float>("-p, --precision", eps, "Minimum precision of approximation")
        ->required();
     app.add_flag("-v, --verify", verify, "If set, program will output bool that will be 1 if the op string matches the input operator");
     app.add_flag("-d, --details", details, "If set, program will output the particular value of the approximation including the power of root two in the denominator and the true error");
