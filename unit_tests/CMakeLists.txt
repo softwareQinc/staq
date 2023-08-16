@@ -17,6 +17,7 @@ aux_source_directory(tests/transformations TEST_FILES)
 aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
 
+# disable grid_synth for MSVC
 if (NOT MSCV)
     aux_source_directory(tests/grid_synth TEST_FILES)
 endif ()
