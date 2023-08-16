@@ -24,16 +24,18 @@ struct row_vec_t;
 // 2x1 column vector
 template <typename T = real_t>
 struct col_vec_t {
-    std::array<T, 2> col;
+    std::array<T, 2> col_;
+
+    row_vec_t<T> transpose() const { return row_vec_t<T>{col_}; }
 
     T& operator()(int index) {
         assert(index >= 0 && index < 2);
-        return col[index];
+        return col_[index];
     }
 
     T operator()(int index) const {
         assert(index >= 0 && index < 2);
-        return col[index];
+        return col_[index];
     }
 
     T& operator[](int index) { return this->operator()(index); }
@@ -41,25 +43,27 @@ struct col_vec_t {
     T operator[](int index) const { return this->operator()(index); }
 
     col_vec_t operator-(const col_vec_t& rhs) const {
-        return {col[0] - rhs.col[0], col[1] - rhs.col[1]};
+        return {col_[0] - rhs.col_[0], col_[1] - rhs.col_[1]};
     }
 
     col_vec_t operator+(const col_vec_t& rhs) const {
-        return {col[0] + rhs.col[0], col[1] + rhs.col[1]};
+        return {col_[0] + rhs.col_[0], col_[1] + rhs.col_[1]};
     }
 
-    row_vec_t<T> transpose() const { return row_vec_t<T>{col}; }
+    bool operator==(const col_vec_t& other) const { return col_ == other.row; }
+
+    bool operator!=(const col_vec_t& other) const { return !(*this == other); }
 
     friend col_vec_t operator*(T lhs, const col_vec_t& rhs) {
-        return {lhs * rhs.col[0], lhs * rhs.col[1]};
+        return {lhs * rhs.col_[0], lhs * rhs.col_[1]};
     }
 
     friend col_vec_t operator*(const col_vec_t& lhs, T rhs) {
-        return {lhs.col[0] * rhs, lhs.col[1] * rhs};
+        return {lhs.col_[0] * rhs, lhs.col_[1] * rhs};
     }
 
     friend std::ostream& operator<<(std::ostream& os, const col_vec_t& rhs) {
-        os << rhs.col[0] << '\n' << rhs.col[1];
+        os << rhs.col_[0] << '\n' << rhs.col_[1];
         return os;
     }
 };
@@ -67,16 +71,16 @@ struct col_vec_t {
 // 1x2 row vector
 template <typename T>
 struct row_vec_t {
-    std::array<T, 2> row;
-
+    std::array<T, 2> row_;
+    col_vec_t<T> transpose() const { return col_vec_t<T>{row_}; }
     T& operator()(int index) {
         assert(index >= 0 && index < 2);
-        return row[index];
+        return row_[index];
     }
 
     T operator()(int index) const {
         assert(index >= 0 && index < 2);
-        return row[index];
+        return row_[index];
     }
 
     T& operator[](int index) { return this->operator()(index); }
@@ -84,25 +88,27 @@ struct row_vec_t {
     T operator[](int index) const { return this->operator()(index); }
 
     row_vec_t operator-(const row_vec_t& rhs) const {
-        return {row[0] - rhs.row[0], row[1] - rhs.row[1]};
+        return {row_[0] - rhs.row_[0], row_[1] - rhs.row_[1]};
     }
 
     row_vec_t operator+(const row_vec_t& rhs) const {
-        return {row[0] + rhs.row[0], row[1] + rhs.row[1]};
+        return {row_[0] + rhs.row_[0], row_[1] + rhs.row_[1]};
     }
 
-    col_vec_t<T> transpose() const { return col_vec_t<T>{row}; }
+    bool operator==(const row_vec_t& other) const { return row_ == other.row_; }
+
+    bool operator!=(const row_vec_t& other) const { return !(*this == other); }
 
     friend row_vec_t operator*(T lhs, const row_vec_t& rhs) {
-        return {lhs * rhs.row[0], lhs * rhs.row[1]};
+        return {lhs * rhs.row_[0], lhs * rhs.row_[1]};
     }
 
     friend row_vec_t operator*(const row_vec_t& lhs, T rhs) {
-        return {lhs.row[0] * rhs, lhs.row[1] * rhs};
+        return {lhs.row_[0] * rhs, lhs.row_[1] * rhs};
     }
 
     friend std::ostream& operator<<(std::ostream& os, const row_vec_t& rhs) {
-        os << rhs.row[0] << ' ' << rhs.row[1];
+        os << rhs.row_[0] << ' ' << rhs.row_[1];
         return os;
     }
 };
@@ -111,24 +117,6 @@ struct row_vec_t {
 template <typename T = real_t>
 struct mat_t {
     std::array<row_vec_t<T>, 2> data_;
-
-    row_vec_t<T>& operator()(int index) {
-        assert(index >= 0 && index < 2);
-        return data_[index];
-    }
-
-    row_vec_t<T> operator()(int index) const {
-        assert(index >= 0 && index < 2);
-        return data_[index];
-    }
-
-    row_vec_t<T>& operator[](int index) { return this->operator()(index); }
-
-    row_vec_t<T> operator[](int index) const { return this->operator()(index); }
-
-    mat_t transpose() const {
-        return {data_[0][0], data_[1][0], data_[0][1], data_[1][1]};
-    }
 
     T determinant() const {
         return data_[0][0] * data_[1][1] - data_[0][1] * data_[1][0];
@@ -160,6 +148,24 @@ struct mat_t {
                mat_t{data_[1][1], -data_[0][1], -data_[1][0], data_[0][0]};
     }
 
+    row_vec_t<T>& operator()(int index) {
+        assert(index >= 0 && index < 2);
+        return data_[index];
+    }
+
+    row_vec_t<T> operator()(int index) const {
+        assert(index >= 0 && index < 2);
+        return data_[index];
+    }
+
+    row_vec_t<T>& operator[](int index) { return this->operator()(index); }
+
+    row_vec_t<T> operator[](int index) const { return this->operator()(index); }
+
+    mat_t transpose() const {
+        return {data_[0][0], data_[1][0], data_[0][1], data_[1][1]};
+    }
+
     T operator()(int i, int j) const {
         assert(i >= 0 && i < 2);
         return this->operator()(i).operator()(j);
@@ -172,6 +178,10 @@ struct mat_t {
     mat_t operator+(const mat_t& rhs) const {
         return {data_[0] + rhs.data_[0], data_[1] + rhs.data_[1]};
     }
+
+    bool operator==(const mat_t& other) const { return data_ == other.data_; }
+
+    bool operator!=(const mat_t& other) const { return !(*this == other); }
 
     friend mat_t operator*(T lhs, const mat_t& rhs) {
         return {lhs * rhs[0], lhs * rhs[1]};
