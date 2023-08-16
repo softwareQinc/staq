@@ -75,32 +75,21 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
     add_compile_options("-pedantic" "-Wall" "-Wextra" "-Weffc++")
 endif ()
 
-#### staq installation instructions
+#### Default build type
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+            "Choose the type of build, options are: \
+         None Debug Release MinSizeRel RelWithDebInfo."
+            FORCE)
+endif ()
 
-#### For both UNIX/Windows, first run from an out-of-source directory
-####
-#### 'cmake ..'
-####
-#### If you want to install staq in a non-standard location (e.g., due to lack
-#### of admin. rights), then pass the additional flag
-#### '-DCMAKE_INSTALL_PREFIX=/path/to/staq' to cmake above, i.e.,
-####
-#### 'cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/staq'
-
-#### Next, follow the platform-specific instructions below
-
-#### UNIX/Linux: sudo make install (or sudo cmake --build . --target install)
-#### Will install in: /usr/local/bin
-
-#### Windows: cmake --build . --target INSTALL (from an Admin. Command Prompt)
-#### Will install in: C:\Program Files (x86)\staq\bin
-
+#### Installation
 install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #### Uninstall
 #### https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
 #### UNIX/Linux: sudo cmake --build build --target uninstall
-#### Windows:    cmake --build build --target UNINSTALL
+#### Windows:    cmake --build build --target uninstall
 if (NOT TARGET uninstall)
     configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake/staq_uninstall.cmake.in"
