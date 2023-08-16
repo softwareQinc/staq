@@ -34,6 +34,7 @@ jobs:
           fi
 
       - name: Configure staq
+        shell: bash
         run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build staq
