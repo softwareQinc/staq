@@ -27,7 +27,7 @@
 #include <CLI/CLI.hpp>
 #include <iostream>
 
-#include "grid_synth/types.hpp" 
+#include "grid_synth/types.hpp"
 #include "grid_synth/rz_approximation.hpp"
 #include "grid_synth/exact_synthesis.hpp"
 
@@ -35,8 +35,6 @@ int main(int argc, char** argv) {
     using namespace staq;
     using namespace grid_synth;
     using namespace std;
-  
-    domega_matrix_table s3_table = generate_s3_table();
 
     bool verify, details;
     real_t theta;
@@ -54,6 +52,8 @@ int main(int argc, char** argv) {
     CLI11_PARSE(app,argc,argv);
 
     RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
+
+    domega_matrix_table s3_table = generate_s3_table();
     str_t op_str = synthesize(rz_approx.matrix(), s3_table);
 
     if(verify) {
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
       cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
       cout << "error = " << rz_approx.error() << endl;
     }
-  
+
     cout << simplify_str(op_str) << endl;
 
     return 0;
