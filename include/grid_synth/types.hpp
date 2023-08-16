@@ -1,7 +1,6 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-#include <Eigen/Dense>
 #include <array>
 #include <cassert>
 #include <complex>

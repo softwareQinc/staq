@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 enable_testing()
 
 find_package(GMP REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 #### staq version
 add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
@@ -19,13 +19,6 @@ add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 
 #### staq root directory
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
-
-#### Guard against in-source builds (snippet from Eigen's CMakeLists.txt)
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "In-source builds not allowed. Please instruct CMake to use an out-of-source build, e.g.,
-    cmake --build build [...]
-You may need to remove CMakeCache.txt.")
-endif ()
 
 #### Force clang to use libc++
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
@@ -66,7 +59,7 @@ endif ()
 #### Compiler
 set(COMPILER "staq")
 add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
-target_link_libraries(${COMPILER} PUBLIC libstaq ${Eigen_LIBRARIES})
+target_link_libraries(${COMPILER} PUBLIC libstaq)
 
 #### Additional command line tools
 add_subdirectory(tools)

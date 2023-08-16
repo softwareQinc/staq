@@ -30,6 +30,6 @@ foreach (filename ${TEST_FILES})
     target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq Eigen3::Eigen gmp gmpxx)
+target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq gmp gmpxx)
 
 gtest_discover_tests(${TARGET_NAME})
