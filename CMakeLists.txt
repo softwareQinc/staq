@@ -10,8 +10,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 enable_testing()
 
-find_package(GMP REQUIRED)
-#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+# disable grid_synth on MSVC
+if (NOT MSVC)
+    find_package(GMP REQUIRED)
+endif ()
 
 #### staq version
 add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
@@ -107,11 +109,11 @@ if (NOT TARGET uninstall)
     if (NOT MSVC)
         add_custom_target(uninstall
                 COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-                )
+        )
     else ()
         add_custom_target(uninstall
                 COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
                 COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_INSTALL_PREFIX}"
-                )
+        )
     endif ()
 endif ()
