@@ -31,5 +31,8 @@ foreach (filename ${TEST_FILES})
 endforeach ()
 
 target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq gmp gmpxx)
+if(NOT MSVC)
+    target_link_libraries(${TARGET_NAME} PUBLIC gmp gmpxx)
+endif ()
 
 gtest_discover_tests(${TARGET_NAME})
