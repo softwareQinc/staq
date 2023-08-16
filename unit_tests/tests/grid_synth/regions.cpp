@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/regions.hpp"
 #include "grid_synth/constants.hpp"
 #include "grid_synth/gmp_functions.hpp"
+#include "grid_synth/regions.hpp"
 #include "grid_synth/rings.hpp"
 
 using namespace staq;
@@ -82,7 +82,7 @@ TEST(EllipseTest, Contains) {
 
     Ellipse shifted_unit_circle(1, 1, 1, 1, 0);
 
-    EXPECT_FALSE(shifted_unit_circle.contains(vec_t{{0, 0}}));
+    EXPECT_FALSE(shifted_unit_circle.contains(vec_t{0, 0}));
     EXPECT_TRUE(shifted_unit_circle.contains(cplx_t(1, 1)));
 }
 

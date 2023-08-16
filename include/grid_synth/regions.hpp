@@ -221,12 +221,10 @@ class Ellipse {
         real_t inva = 1 / semi_minor_axis;
         real_t invb = 1 / semi_major_axis;
 
-        mat_t M;
-
-        M = {ct * ct * inva * inva + st * st * invb * invb,
-             ct * st * (inva * inva - invb * invb),
-             ct * st * (inva * inva - invb * invb),
-             st * st * inva * inva + ct * ct * invb * invb};
+        mat_t M{ct * ct * inva * inva + st * st * invb * invb,
+                ct * st * (inva * inva - invb * invb),
+                ct * st * (inva * inva - invb * invb),
+                st * st * inva * inva + ct * ct * invb * invb};
 
         return M;
     }
@@ -284,7 +282,7 @@ class Ellipse {
      */
     Ellipse(const real_t& x0, const real_t& y0, const real_t& semi_major_axis,
             const real_t& semi_minor_axis, const real_t& angle)
-        : center_(vec_t{{x0, y0}}), semi_major_axis_(semi_major_axis),
+        : center_(vec_t{x0, y0}), semi_major_axis_(semi_major_axis),
           semi_minor_axis_(semi_minor_axis), angle_(angle) {
         center_ = {x0, y0};
         D_ = get_mat_from_axes_(semi_major_axis_, semi_minor_axis_, angle_);
@@ -297,7 +295,7 @@ class Ellipse {
      */
     Ellipse(const real_t& angle, const real_t& eps) : angle_(angle) {
         real_t r0 = (3 - eps * eps) / 3;
-        center_ = vec_t{{r0 * cos(angle.get_d()), r0 * sin(angle.get_d())}};
+        center_ = vec_t{r0 * cos(angle.get_d()), r0 * sin(angle.get_d())};
 
         semi_major_axis_ = (2 / sqrt(3)) * eps * sqrt(1 - (eps * eps / 4));
         semi_minor_axis_ = (eps * eps / 3);
@@ -352,11 +350,11 @@ class Ellipse {
     }
 
     bool contains(const real_t& x, const real_t& y) const {
-        return contains(vec_t{{x, y}});
+        return contains(vec_t{x, y});
     }
 
     bool contains(const cplx_t& z) const {
-        return contains(vec_t{{z.real(), z.imag()}});
+        return contains(vec_t{z.real(), z.imag()});
     }
 
     UprightRectangle<real_t> bounding_box() const {

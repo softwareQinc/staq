@@ -15,10 +15,15 @@ struct row_vec2_t;
 
 // 2x1 column vector
 template <typename T = real_t>
-struct col_vec2_t {
+class col_vec2_t {
     std::array<T, 2> col_;
 
-    row_vec2_t<T> transpose() const { return row_vec2_t<T>{col_}; }
+  public:
+    col_vec2_t() = default;
+
+    col_vec2_t(T x_0, T x_1) : col_{x_0, x_1} {}
+
+    row_vec2_t<T> transpose() const { return {col_[0], col_[1]}; }
 
     T& operator()(int index) {
         assert(index >= 0 && index < 2);
@@ -62,9 +67,16 @@ struct col_vec2_t {
 
 // 1x2 row vector
 template <typename T>
-struct row_vec2_t {
-    std::array<T, 2> row_;
-    col_vec2_t<T> transpose() const { return col_vec2_t<T>{row_}; }
+class row_vec2_t {
+    std::array<T, 2> row_{};
+
+  public:
+    row_vec2_t() = default;
+
+    row_vec2_t(T x_0, T x_1) : row_{x_0, x_1} {}
+
+    col_vec2_t<T> transpose() const { return {row_[0], row_[1]}; }
+
     T& operator()(int index) {
         assert(index >= 0 && index < 2);
         return row_[index];
@@ -109,8 +121,14 @@ struct row_vec2_t {
 
 // 2x2 matrix
 template <typename T = real_t>
-struct mat2_t {
-    std::array<row_vec2_t<T>, 2> data_;
+class mat2_t {
+    std::array<row_vec2_t<T>, 2> data_{};
+
+  public:
+    mat2_t() = default;
+
+    mat2_t(T m_00, T m_01, T m_10, T m_11)
+        : data_{row_vec2_t{m_00, m_01}, row_vec2_t{m_10, m_11}} {}
 
     T determinant() const {
         return data_[0][0] * data_[1][1] - data_[0][1] * data_[1][0];
@@ -133,6 +151,10 @@ struct mat2_t {
                             ((b - c) * (b - c) + (a + d) * (a + d)))) /
                   sqrt(2);
 
+        // TODO doesn't look like we need max here, expr1 > expr2 always; the max
+        // comes from Mathematica: FullSimplify[Norm[{{a, b}, {c, d}}],
+        //  Assumptions -> Element[a, Reals] && Element[b, Reals] &&
+        //  Element[c, Reals] && Element[d, Reals]]
         return std::max(expr1, expr2);
     }
 
@@ -140,6 +162,10 @@ struct mat2_t {
         assert(determinant() != 0);
         return (1. / determinant()) *
                mat2_t{data_[1][1], -data_[0][1], -data_[1][0], data_[0][0]};
+    }
+
+    mat2_t transpose() const {
+        return {data_[0][0], data_[1][0], data_[0][1], data_[1][1]};
     }
 
     row_vec2_t<T>& operator()(int index) {
@@ -158,21 +184,23 @@ struct mat2_t {
         return this->operator()(index);
     }
 
-    mat2_t transpose() const {
-        return {data_[0][0], data_[1][0], data_[0][1], data_[1][1]};
-    }
-
     T operator()(int i, int j) const {
         assert(i >= 0 && i < 2);
         return this->operator()(i).operator()(j);
     }
 
     mat2_t operator-(const mat2_t& rhs) const {
-        return {data_[0] - rhs.data_[0], data_[1] - rhs.data_[1]};
+        return {
+            data_[0][0] - rhs.data_[0][0], data_[0][1] - rhs.data_[0][1],
+                data_[1][0] - rhs.data_[1][0], data_[1][1] - rhs.data_[1][1]
+        };
     }
 
     mat2_t operator+(const mat2_t& rhs) const {
-        return {data_[0] + rhs.data_[0], data_[1] + rhs.data_[1]};
+        return {
+            data_[0][0] + rhs.data_[0][0], data_[0][1] + rhs.data_[0][1],
+                data_[1][0] + rhs.data_[1][0], data_[1][1] + rhs.data_[1][1]
+        };
     }
 
     bool operator==(const mat2_t& other) const { return data_ == other.data_; }
@@ -180,11 +208,13 @@ struct mat2_t {
     bool operator!=(const mat2_t& other) const { return !(*this == other); }
 
     friend mat2_t operator*(T lhs, const mat2_t& rhs) {
-        return {lhs * rhs[0], lhs * rhs[1]};
+        return {lhs * rhs[0][0], lhs * rhs[0][1], lhs * rhs[1][0],
+                lhs * rhs[1][1]};
     }
 
     friend mat2_t operator*(const mat2_t& lhs, T rhs) {
-        return {lhs[0] * rhs, lhs[1] * rhs};
+        return {lhs[0][0] * rhs, lhs[0][1] * rhs, lhs[1][0] * rhs,
+                lhs[1][1] * rhs};
     }
 
     friend mat2_t operator*(const mat2_t& lhs, const mat2_t& rhs) {
