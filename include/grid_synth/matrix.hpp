@@ -11,6 +11,8 @@
 namespace staq{
 namespace grid_synth {
 
+
+
 /*
  * Matrices over the ring D[\omega] represented as elements of Z[\omega] with
  * smallest denominating exponent of base SQRT2 = k. Lemma 4 of
