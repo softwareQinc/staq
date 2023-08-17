@@ -21,7 +21,7 @@ echo qreg q[1]\;
 echo
 
 if [[ $# -gt 2 ]]; then
-    staq_grid_synth -t $1 -p 1e-$2 -r "$3"  | tr '[:upper:]' '[:lower:]' | tr -d 'i' | tr ' ' '\n' | sed '/w/d' | sed '/^$/d' | awk '{print $1,"q[0];";}'
+    staq_grid_synth -t $1 -p 1e-$2 -r "$3"  | tr '[:upper:]' '[:lower:]' | tr -d 'i' | tr ' ' '\n' | sed '/w/d' | sed '/^$/d' | awk '{print $1, "q[0];";}'
 else
-    staq_grid_synth -t $1 -p 1e-$2  | tr '[:upper:]' '[:lower:]' | tr -d 'i' | tr ' ' '\n' | sed '/w/d' | sed '/^$/d' | awk '{print $1,"q[0];";}'
+    staq_grid_synth -t $1 -p 1e-$2  | tr '[:upper:]' '[:lower:]' | tr -d 'i' | tr ' ' '\n' | sed '/w/d' | sed '/^$/d' | awk '{print $1, "q[0];";}'
 fi

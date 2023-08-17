@@ -19,4 +19,4 @@ echo
 echo qreg q[1]\;
 echo
 
-gridsynth $1 -d$2 | tr '[:upper:]' '[:lower:]' | tr -d 'i' | sed 's/[a-z]/&\n/g' | sed '/w/d' | sed '/^$/d' | awk '{print $1,"q[0];";}'
+gridsynth $1 -d$2 | tr '[:upper:]' '[:lower:]' | tr -d 'i' | sed 's/[a-z]/&\n/g' | sed '/w/d' | sed '/^$/d' | awk '{print $1, "q[0];";}'
