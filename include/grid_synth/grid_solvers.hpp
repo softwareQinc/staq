@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "constants.hpp"
 #include "gmp_functions.hpp"
@@ -31,7 +32,6 @@ inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
     real_t decimal;
     int_t intpart;
     decimal = abs(decimal_part(lowera_double, intpart));
-
     if ((lowera_double < 0) && ((1 - decimal) < tol))
         return floor(lowera_double);
     if ((lowera_double > 0) && (decimal < tol))
@@ -48,12 +48,10 @@ template <typename bound_t>
 inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
                            const real_t& tol) {
     using namespace std;
-    real_t uppera_double = xhi - b * SQRT2;
+    real_t uppera_double = xhi - (b*SQRT2);
     real_t decimal;
     int_t intpart;
-
     decimal = abs(decimal_part(uppera_double, intpart));
-
     if ((uppera_double > 0) && ((1 - decimal) < tol))
         return ceil(uppera_double);
 
@@ -92,7 +90,6 @@ inline int_t upper_bound_b(const bound_t& xhi, const bound_t& ylo,
     real_t decimal;
     int_t intpart;
     decimal = abs(decimal_part(upperb_double, intpart));
-
     if ((upperb_double > 0) && (1 - decimal < tol))
         return ceil(upperb_double);
 
@@ -124,22 +121,27 @@ template <typename bound_t>
 inline zsqrt2_vec_t oneD_grid_solver(const Interval<bound_t>& A,
                                      const Interval<bound_t>& B,
                                      const real_t tol = TOL) {
+
     using namespace std;
+    zsqrt2_vec_t solns;
     int_t lowerb = lower_bound_b<bound_t>(A.lo(), B.hi(), tol);
     int_t upperb = upper_bound_b<bound_t>(A.hi(), B.lo(), tol);
-    zsqrt2_vec_t solns;
-
+    int_t total_a_candidates = 0;
     for (int_t b = lowerb; b <= upperb; b++) {
         int_t lowera = lower_bound_a<bound_t>(A.lo(), b, tol);
         int_t uppera = upper_bound_a<bound_t>(A.hi(), b, tol);
+        if(uppera > lowera) {
+            total_a_candidates++; 
+        }
+      
         for (int_t a = lowera; a <= uppera; a++) {
             ZSqrt2 candidate(a, b);
             if (A.contains(candidate.decimal()) and
-                B.contains(candidate.decimal_dot()))
+                B.contains(candidate.decimal_dot())) {
                 solns.push_back(candidate);
+            }
         }
     }
-
     return solns;
 }
 
@@ -157,10 +159,11 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
                                             const Interval<bound_t>& B,
                                             const real_t tol = TOL) {
     using namespace std;
+   
+    zsqrt2_vec_t solns;
     int_t k = find_scale_exponent(A);
     Interval<bound_t> scaled_A = A;
     Interval<bound_t> scaled_B = B;
-
     if(k>0) {
         scaled_A = A * pow(LAMBDA_INV, k).decimal();
         scaled_B = B * pow(-1 * LAMBDA, k).decimal();
@@ -168,12 +171,8 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
         scaled_A = A * pow(LAMBDA, -k).decimal();
         scaled_B = B * pow(-1 * LAMBDA_INV, -k).decimal();
     }
-
     int_t lowerb = lower_bound_b<bound_t>(scaled_A.lo(), scaled_B.hi(), tol);
     int_t upperb = upper_bound_b<bound_t>(scaled_A.hi(), scaled_B.lo(), tol);
-
-    zsqrt2_vec_t solns;
-
     for (int_t b = lowerb; b <= upperb; b++) {
         int_t lowera = lower_bound_a<bound_t>(scaled_A.lo(), b, tol);
         int_t uppera = upper_bound_a<bound_t>(scaled_A.hi(), b, tol);
@@ -196,10 +195,11 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
 template <typename bound_t>
 inline zsqrt2_vec_t oneD_optimal_grid_solver(const Interval<bound_t>& A,
                                              const Interval<bound_t>& B,
-                                             const real_t tol = TOL) {
-    if (A.width() > B.width())
-        return oneD_scaled_grid_solver(A, B, tol);
-    return oneD_grid_solver(A, B, tol);
+                                             const real_t tol=TOL) {
+    return oneD_scaled_grid_solver(A,B,tol);
+    //if (A.width() > B.width())
+    //    return oneD_scaled_grid_solver(A, B, tol);
+    //return oneD_grid_solver(A, B, tol);
 }
 
 template <typename bound_t>
@@ -207,8 +207,13 @@ inline zomega_vec_t twoD_grid_solver(const UprightRectangle<bound_t> A,
                                      const UprightRectangle<bound_t> B,
                                      const real_t tol = TOL) {
     using namespace std;
-   
-
+  
+    zomega_vec_t solns;
+    if(A.x_interval().width()*B.x_interval().width() < 1)
+      return solns;
+    if(B.y_interval().width()*A.y_interval().width()<1)
+      return solns;
+    
     zsqrt2_vec_t alpha_solns =
         oneD_optimal_grid_solver(A.x_interval(), B.x_interval(), tol);
     zsqrt2_vec_t beta_solns =
@@ -218,9 +223,6 @@ inline zomega_vec_t twoD_grid_solver(const UprightRectangle<bound_t> A,
         A.x_interval() - INV_SQRT2, B.x_interval() + INV_SQRT2, tol);
     zsqrt2_vec_t shifted_beta_solns = oneD_optimal_grid_solver(
         A.y_interval() - INV_SQRT2, B.y_interval() + INV_SQRT2, tol);
-
-    zomega_vec_t solns;
-    
 
     for (auto alpha_soln : alpha_solns) {
         for (auto beta_soln : beta_solns) {
@@ -256,6 +258,27 @@ inline zomega_vec_t twoD_grid_solver_ellipse(const state_t& state,
     using namespace std;
     UprightRectangle<real_t> bboxA = state[0].bounding_box();
     UprightRectangle<real_t> bboxB = state[1].bounding_box();
+    zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
+    zomega_vec_t solns;
+    for (auto candidate : candidates) {
+        if (state[0].contains(candidate.decimal()) and
+            state[1].contains(candidate.dot().decimal())) {
+            solns.push_back(candidate);
+        }
+    }
+
+    return solns;
+}
+
+/*
+ *  Solves the twoD grid problem while fattening the intervals by an amount eps.
+ */
+inline zomega_vec_t twoD_grid_solver_ellipse_fatten(const state_t& state,
+                                                    const real_t& eps,
+                                                    const real_t tol = TOL) {
+    using namespace std;
+    UprightRectangle<real_t> bboxA = state[0].bounding_box().fatten(eps);
+    UprightRectangle<real_t> bboxB = state[1].bounding_box().fatten(eps);
     zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
     zomega_vec_t solns;
     for (auto candidate : candidates) {

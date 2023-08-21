@@ -41,6 +41,11 @@ class Interval {
         }
     }
 
+    /*
+     * fatten the interval by d on both the upper and lower bounds
+     */
+    Interval fatten(const real_t& d) { return Interval<bound_t>(lo_-d,hi_+d); }
+
     bound_t lo() const { return lo_; }
 
     bound_t hi() const { return hi_; }
@@ -48,15 +53,18 @@ class Interval {
     bound_t width() const { return width_; }
 
     void rescale(const bound_t& scale_factor) {
+        bound_t oldlo = lo_;
+        bound_t oldhi = hi_;
         if (scale_factor < 0) {
-            lo_ = hi_ * scale_factor;
-            hi_ = lo_ * scale_factor;
+            lo_ = oldhi * scale_factor;
+            hi_ = oldlo * scale_factor;
             width_ = hi_ - lo_;
+            return;
         }
-
-        hi_ = hi_ * scale_factor;
-        lo_ = lo_ * scale_factor;
+        lo_ = oldlo * scale_factor;
+        hi_ = oldhi * scale_factor;
         width_ = hi_ - lo_;
+      
     }
 
     void shift(const bound_t& shift_factor) {
@@ -78,7 +86,7 @@ class Interval {
 
     Interval operator*(const bound_t& scale_factor) const {
         if (scale_factor < 0)
-            return Interval(hi_ * scale_factor, lo_ * scale_factor);
+            return Interval<bound_t>(hi_ * scale_factor, lo_ * scale_factor);
         return Interval<bound_t>(lo_ * scale_factor, hi_ * scale_factor);
     }
 
@@ -160,6 +168,10 @@ class UprightRectangle {
 
     bound_t area() const { return area_; }
 
+    UprightRectangle fatten(const real_t& d) { 
+        return UprightRectangle<bound_t>(x_interval_.fatten(d), y_interval_.fatten(d));
+    }
+
     void rescale(const bound_t& x_scale_factor, const bound_t& y_scale_factor) {
         x_interval_.rescale(x_scale_factor);
         y_interval_.rescale(y_scale_factor);
@@ -176,7 +188,7 @@ class UprightRectangle {
 
     /*
      *  Treats the complex number z = a + b*Im as a number in R^2 with
-     * components (a,b).
+     *  components (a,b).
      */
     bool contains(const cplx_t& z) {
         return (x_interval_.contains(z.real()) &&

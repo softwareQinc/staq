@@ -26,6 +26,7 @@
 
 #include <CLI/CLI.hpp>
 #include <iostream>
+#include <time.h>
 
 #include "grid_synth/types.hpp"
 #include "grid_synth/rz_approximation.hpp"
@@ -36,6 +37,7 @@ int main(int argc, char** argv) {
     using namespace grid_synth;
     using namespace std;
     mpf_set_default_prec(DEFAULT_GMP_PREC);
+    random_numbers.seed(time(NULL));
 
     bool check, details, verbose;
     real_t theta;
@@ -77,11 +79,13 @@ int main(int argc, char** argv) {
     } 
     
     if(*prec and *thet) {
-        RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
+        //RzApproximation rz_approx = find_rz_approximation(theta*PI, eps);
+        RzApproximation rz_approx = find_fast_rz_approximation(theta*PI,eps);
         if(not rz_approx.solution_found()) {
           cout << "No approximation found for RzApproximation." << endl; 
           return 1;
         }
+        if(verbose) cout << "Approximation Found" << endl;
         str_t op_str = synthesize(rz_approx.matrix(), s3_table);
         
         if(check) {

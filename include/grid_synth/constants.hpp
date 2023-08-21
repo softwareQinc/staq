@@ -9,7 +9,7 @@
 namespace staq {
 namespace grid_synth {
 
-const long int DEFAULT_GMP_PREC = 256;
+const long int DEFAULT_GMP_PREC = 300;
 
 const real_t SQRT2 = sqrt(real_t(2));
 const real_t INV_SQRT2 = 1.0 / SQRT2;
@@ -21,6 +21,8 @@ const cplx_t OMEGA_CONJ(INV_SQRT2, -INV_SQRT2);
 
 const cplx_t Im(0, 1);
 
+const int KMIN = 0; // Default minimum k value
+const int KMAX = 100; // Default maximum k value
 const int COLW = 10; // default width of columns for data output
 const int PREC = 5;  // default precision for output
 const int_t MAX_ATTEMPTS_POLLARD_RHO = 10000000;
