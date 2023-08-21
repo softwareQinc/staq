@@ -7,9 +7,6 @@ wrapper for **staq**. pystaq can be installed using `pip`
 pip install git+https://github.com/softwareQinc/staq
 ```
 
-For more details, please see
-[pystaq/README.md](https://github.com/softwareQinc/staq/blob/main/pystaq/README.md).
-
 ## Overview
 To parse a circuit, use the function `pystaq.parse_file`, which takes a file path as input, or `pystaq.parse_str`, which accepts an OpenQASM 2.0 program string.
 
