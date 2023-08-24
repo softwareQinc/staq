@@ -169,7 +169,6 @@ inline bool pollard_rho(int_t& factor, const int_t& n,
         d = gcd(abs(x - y), n);
         i += 1;
         if (i > MAX_ATTEMPTS_POLLARD_RHO) {
-            std::cout << "MAX_ATTEMPTS_POLLARD_RHO Exceeded" << std::endl;
             return false;
         }
     }
