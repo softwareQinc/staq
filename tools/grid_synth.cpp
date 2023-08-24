@@ -69,24 +69,6 @@ int main(int argc, char** argv) {
     SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
     Im = cplx_t(real_t(0),real_t(1));
     eps = pow(real_t(10),-prec);
-    
-    //cout << "DEFAULT_GMP_PREC = " << DEFAULT_GMP_PREC << endl;
-    //cout << scientific << setprecision(1) << "TOL = " << TOL << endl;
-    //cout << fixed << setprecision(DEFAULT_GMP_PREC) << sin(theta*PI) << endl;
-    //cout << "SQRT2 = " << SQRT2 << endl;
-    //cout << "INV_SQRT2 = " << HALF_INV_SQRT2 << endl;
-    //cout << "PI = " << PI << endl;
-
-    //cout << "DEFAULT_GMP_PREC = " << DEFAULT_GMP_PREC << endl; 
-    //cout << "TOL = " << TOL << endl;
-    //cout << "PI = " << PI << endl;
-    //cout << "SQRT2 = " << SQRT2 << endl;
-    //cout << "INV_SQRT2 = " << INV_SQRT2 << endl;
-    //cout << "HALF_INV_SQRT2 = " << HALF_INV_SQRT2 << endl;
-    //cout << "OMEGA = " << OMEGA << endl;
-    //cout << "OMEGA_CONJ = " << OMEGA_CONJ << endl;
-    //cout << "Im = " << Im << endl;
-    //cout << "eps = " << eps << endl;
 
     if(verbose) cout << "Finding approximation" << endl;
 
@@ -126,11 +108,17 @@ int main(int argc, char** argv) {
         if(details) {
           real_t scale = pow(SQRT2,rz_approx.matrix().k());
           cout << rz_approx.matrix() << endl;
-          cout << "u decimal value = " << rz_approx.matrix().u().decimal().real()/scale << endl;
+          cout << "u decimal value = " << "(" << rz_approx.matrix().u().decimal().real()/scale
+                                       << "," << rz_approx.matrix().u().decimal().imag()/scale
+                                       << ")" << endl;
           cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
           cout << "error = " << rz_approx.error() << endl;
         }
-        
+        if(verbose) {
+            str_t simplified = full_simplify_str(op_str);
+            string::difference_type n = count(simplified.begin(), simplified.end(), 'T');
+            cout << "T count = " << n << endl;
+        } 
         for(auto &ch : full_simplify_str(op_str)) {
           cout << ch << " "; 
         }
