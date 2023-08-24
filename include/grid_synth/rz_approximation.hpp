@@ -41,7 +41,7 @@ class RzApproximation {
                         u.decimal().imag() / pow(SQRT2, scale_exponent));
         t_val_ = cplx_t(t.decimal().real() / pow(SQRT2, scale_exponent),
                         t.decimal().imag() / pow(SQRT2, scale_exponent));
-        z_ = cplx_t(std::cos(theta.get_d()), std::sin(theta.get_d()));
+        z_ = cplx_t(cos(theta), sin(theta));
     }
 
     DOmegaMatrix matrix() const { return matrix_; }
@@ -78,7 +78,6 @@ inline RzApproximation find_rz_approximation(const real_t& theta,
     vec_t z{std::cos(theta.get_d()), std::sin(theta.get_d())};
     Ellipse eps_region(theta, eps);
     Ellipse disk(0, 0, 1, 1, 0);
-
     state_t state{eps_region, disk};
 
     SpecialGridOperator G = optimize_skew(state);
@@ -138,17 +137,15 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
     int_t max_k = kmax;
     bool solution_found = false;
     zomega_vec_t scaled_candidates;
-    vec_t z{std::cos(theta.get_d()), std::sin(theta.get_d())};
+    vec_t z{cos(theta), sin(theta)};
     Ellipse eps_region(theta, eps);
-    Ellipse disk(0, 0, 1, 1, 0);
+    Ellipse disk(real_t("0"), real_t("0"), real_t("1"), real_t("1"), real_t("0"));
     state_t state{eps_region, disk};
     SpecialGridOperator G = optimize_skew(state);
     real_t scaleA,scaleB;
+
     UprightRectangle<real_t> bboxA = state[0].bounding_box();
     UprightRectangle<real_t> bboxB = state[1].bounding_box();
-   
-    k = 1;
-    scaleB = -pow(2,(k-1)/2)*SQRT2;
 
     while ((not solution_found) && (k < max_k)) {
         if (k % 2 == 0) {
@@ -168,7 +165,7 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
                                                          
         Interval<real_t> A_y = bboxA.y_interval().fatten(eps);
         Interval<real_t> B_y = bboxB.y_interval().fatten(eps);
-        
+   
         real_t min_width = (1+SQRT2)*(1+SQRT2);
 
         // Skip any iteration that isn't guarenteed to have at least one
@@ -194,7 +191,7 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
         for(auto beta_soln : beta_solns) {
             ZOmega candidate = G*ZOmega(alpha_soln,beta_soln,0);
             if (((candidate.real() / scaleA) * z[0] +
-                 (candidate.imag() / scaleA) * z[1]) > 1 - (eps * eps / 2)) {
+                 (candidate.imag() / scaleA) * z[1]) > real_t("1") - (eps * eps / real_t("2"))) {
                 int_t temp_k = k;
                 while (candidate.is_reducible()) {
                     temp_k -= 1;

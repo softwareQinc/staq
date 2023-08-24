@@ -126,6 +126,7 @@ inline zsqrt2_vec_t oneD_grid_solver(const Interval<bound_t>& A,
     zsqrt2_vec_t solns;
     int_t lowerb = lower_bound_b<bound_t>(A.lo(), B.hi(), tol);
     int_t upperb = upper_bound_b<bound_t>(A.hi(), B.lo(), tol);
+
     int_t total_a_candidates = 0;
     for (int_t b = lowerb; b <= upperb; b++) {
         int_t lowera = lower_bound_a<bound_t>(A.lo(), b, tol);
@@ -258,6 +259,8 @@ inline zomega_vec_t twoD_grid_solver_ellipse(const state_t& state,
     using namespace std;
     UprightRectangle<real_t> bboxA = state[0].bounding_box();
     UprightRectangle<real_t> bboxB = state[1].bounding_box();
+    cout << fixed << setprecision(100) << bboxA << endl;
+    cout << fixed << setprecision(100) << bboxB << endl;
     zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
     zomega_vec_t solns;
     for (auto candidate : candidates) {

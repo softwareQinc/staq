@@ -58,24 +58,25 @@ inline state_t shift(const state_t& state, const int_t& k) {
  * Reduces skew(state) by 10% and returns the operator that did it.
  */
 inline SpecialGridOperator reduce_skew(state_t& state) {
+    using namespace std;
     real_t initial_skew = skew(state);
     if (initial_skew < 15)
         return ID;
 
     int_t k = 0;
-    if (abs(bias(state)) > 1) {
+    if (abs(bias(state)) > real_t("1")) {
         k = determine_shift(state);
         state = shift(state, k);
     }
     SpecialGridOperator G = ID;
 
-    if ((state[1].z() + state[0].z()) < 0) {
+    if ((state[1].z() + state[0].z()) < real_t("0")) {
         G = G * X;
         state = X * state;
         // std::cout << "X" << std::endl;
     }
 
-    if (state[1].D(0, 1) < 0) {
+    if (state[1].D(0, 1) < real_t("0")) {
         G = G * Z;
         state = Z * state;
         // std::cout << "Y" << std::endl;
@@ -83,23 +84,25 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
 
     real_t z = state[0].z();
     real_t zeta = state[1].z();
-    if (state[0].D(0, 1) >= 0) {
-        if (z >= -0.8 and z <= 0.8 and zeta >= -0.8 and zeta <= 0.8) {
+    
+    if (fgeq(state[0].D(0, 1),real_t("0"))) {
+        if (fgeq(z,real_t("-0.8")) and fleq(z,real_t("0.8")) 
+        and fgeq(zeta,real_t("-0.8")) and fleq(zeta,real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (z <= 0.3 and zeta >= 0.8) {
+        } else if (fleq(z,real_t("0.3")) and fgeq(zeta,real_t("0.8"))) {
             G = G * K;
             state = K * state;
             // std::cout << "K" << std::endl;
-        } else if (z >= 0.3 and zeta >= 0.3) {
+        } else if (fgeq(z,real_t("0.3")) and fgeq(zeta,real_t("0.3"))) {
             real_t c = min(z, zeta);
             int_t n =
                 max(1, int_t(floor(pow(LAMBDA.decimal(), c.get_ui()) / 2)));
             G = G * A(n);
             state = A(n) * state;
             // std::cout << "A^" << n << std::endl;
-        } else if (z >= 0.8 and zeta <= 0.3) {
+        } else if (fgeq(z,real_t("0.8")) and fleq(zeta,real_t("0.3"))) {
             G = G * K.dot();
             state = K.dot() * state;
             // std::cout << "K.dot()" << std::endl;
@@ -113,11 +116,12 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
             exit(EXIT_FAILURE);
         }
     } else {
-        if (z >= -0.8 and z <= 0.8 and zeta >= -0.8 and zeta <= 0.8) {
+        if (fgeq(z,real_t("-0.8")) and fleq(z,real_t("0.8")) 
+        and fgeq(zeta,real_t("-0.8")) and fleq(zeta,real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (z >= -0.2 and zeta >= -0.2) {
+        } else if (fgeq(z,real_t("-0.2")) and fgeq(zeta,real_t("-0.2"))) {
             real_t c = min(z, zeta);
             int_t n =
                 max(1, int_t(floor(pow(LAMBDA.decimal(), c.get_ui()) / 2)));
@@ -136,7 +140,7 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
     }
     state = shift(state, k);
 
-    if (skew(state) > 0.9 * initial_skew) {
+    if (skew(state) > real_t(0.9) * initial_skew) {
         std::cout << "reduce_skew failed to reduce the skew by at least 10%. "
                      "Exiting.";
         exit(EXIT_FAILURE);
@@ -150,10 +154,9 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
  * original normalization but with the skew reduced to its lowest possible value
  */
 inline SpecialGridOperator optimize_skew(state_t& state) {
-
+    using namespace std;
     real_t scaleA = state[0].normalize();
     real_t scaleB = state[1].normalize();
-
     SpecialGridOperator G = ID;
 
     while (skew(state) >= 15) {

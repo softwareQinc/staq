@@ -28,8 +28,6 @@ namespace grid_synth {
  */
 class GridOperator {
   protected:
-    mat_t mat_rep_;
-
     int_t a_;
     int_t ap_;
     int_t b_;
@@ -59,9 +57,6 @@ class GridOperator {
             std::cout << ex.what() << std::endl;
             exit(EXIT_FAILURE);
         }
-
-        mat_rep_ ={ a_ + INV_SQRT2 * ap_, b_ + INV_SQRT2 * bp_,
-            c_ + INV_SQRT2 * cp_, d_ + INV_SQRT2 * dp_};
     }
 
     int_t a() const { return a_; }
@@ -76,7 +71,10 @@ class GridOperator {
     int_t d() const { return d_; }
     int_t dp() const { return dp_; }
 
-    mat_t mat_rep() const { return mat_rep_; }
+    mat_t mat_rep() const { 
+      return mat_t{ a_ + INV_SQRT2 * ap_, b_ + INV_SQRT2 * bp_,
+                    c_ + INV_SQRT2 * cp_, d_ + INV_SQRT2 * dp_}; 
+    }
 
     // Returns sigma*G*sigma
     GridOperator conjugate() const {
@@ -244,6 +242,7 @@ class SpecialGridOperator : public GridOperator {
     SpecialGridOperator dot() const {
         return SpecialGridOperator(a_, -ap_, b_, -bp_, c_, -cp_, d_, -dp_);
     }
+
     SpecialGridOperator transpose() const {
         return SpecialGridOperator(a_, ap_, c_, cp_, b_, bp_, d_, dp_);
     }
@@ -262,6 +261,7 @@ const SpecialGridOperator Z(1, 0, 0, 0, 0, 0, -1, 0);
 inline SpecialGridOperator A(int_t n) {
     return SpecialGridOperator(1, 0, -2 * n, 0, 0, 0, 1, 0);
 }
+
 inline SpecialGridOperator B(int_t n) {
     return SpecialGridOperator(1, 0, 0, 2 * n, 0, 0, 1, 0);
 }

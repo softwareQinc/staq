@@ -29,24 +29,20 @@ class ZSqrt2 {
     int_t a_;
     int_t b_;
 
-    real_t decimal_;
-    real_t decimal_dot_;
-
   public:
     explicit ZSqrt2(){};
 
     explicit ZSqrt2(const int_t& a)
-        : a_(a), b_(0), decimal_(a_ + b_ * SQRT2),
-          decimal_dot_(a_ - b_ * SQRT2) {}
+        : a_(a), b_(0) {}
 
     ZSqrt2(const int_t& a, const int_t& b)
-        : a_(a), b_(b), decimal_(a + b * SQRT2), decimal_dot_(a - b * SQRT2) {}
+        : a_(a), b_(b) {}
 
     int_t a() const { return a_; }
     int_t b() const { return b_; }
 
-    real_t decimal() const { return decimal_; }
-    real_t decimal_dot() const { return decimal_dot_; }
+    real_t decimal() const { return a_+(b_*SQRT2); }
+    real_t decimal_dot() const { return (a_-b_*SQRT2); }
 
     int_t norm() const { return a_ * a_ - (2 * b_ * b_); }
     ZSqrt2 dot() const { return ZSqrt2(a_, -b_); }
@@ -122,20 +118,12 @@ class ZSqrt2 {
     ZSqrt2& operator+=(const ZSqrt2& Z) {
         a_ += Z.a();
         b_ += Z.b();
-
-        decimal_ = a_ + b_ * SQRT2;
-        decimal_dot_ = a_ - b_ * SQRT2;
-
         return *this;
     }
 
     ZSqrt2& operator-=(const ZSqrt2& Z) {
         a_ -= Z.a();
         b_ -= Z.b();
-
-        decimal_ = a_ + b_ * SQRT2;
-        decimal_dot_ = a_ - b_ * SQRT2;
-
         return *this;
     }
 
@@ -144,18 +132,14 @@ class ZSqrt2 {
         int_t oldb = b_;
         a_ = olda * Z.a() + 2 * oldb * Z.b();
         b_ = olda * Z.b() + oldb * Z.a();
-
-        decimal_ = a_ + b_ * SQRT2;
-        decimal_dot_ = a_ - b_ * SQRT2;
-
         return *this;
     }
 
     void print_decimal(const int colw = COLW, const int prec = PREC) {
         std::cout << std::setw(colw) << std::left << std::setfill(' ')
                   << this->get_string() << std::setw(colw) << std::left
-                  << std::setprecision(prec) << decimal_ << std::setw(colw)
-                  << std::left << std::setprecision(prec) << decimal_dot_
+                  << std::setprecision(prec) << this->decimal() << std::setw(colw)
+                  << std::left << std::setprecision(prec) << this->decimal_dot()
                   << std::endl;
     }
 
@@ -257,8 +241,6 @@ class ZOmega {
     ZSqrt2 beta_;
     cplx_t w_;
 
-    cplx_t decimal_;
-
   public:
     explicit ZOmega(const int_t& d)
         : a_(0), b_(0), c_(0), d_(d), w_(cplx_t(0, 0)) {
@@ -271,8 +253,6 @@ class ZOmega {
 
         alpha_ = ZSqrt2(alpha1, alpha2);
         beta_ = ZSqrt2(beta1, beta2);
-
-        decimal_ = alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA;
     }
 
     ZOmega(const int_t& a, const int_t& b, const int_t& c, const int_t& d)
@@ -288,8 +268,6 @@ class ZOmega {
 
         alpha_ = ZSqrt2(alpha1, alpha2);
         beta_ = ZSqrt2(beta1, beta2);
-
-        decimal_ = alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA;
     }
 
     ZOmega(const ZSqrt2& alpha, const ZSqrt2& beta, const bool& w)
@@ -298,8 +276,6 @@ class ZOmega {
         b_ = beta.a();
         c_ = beta_.b() + alpha_.b() + w;
         d_ = alpha.a();
-
-        decimal_ = alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA;
     }
 
     int_t a() const { return a_; }
@@ -336,10 +312,10 @@ class ZOmega {
     ZOmega dot() const { return ZOmega(-a_, b_, -c_, d_); }
     ZOmega conj() const { return ZOmega(-c_, -b_, -a_, d_); }
 
-    real_t real() const { return decimal_.real(); }
-    real_t imag() const { return decimal_.imag(); }
+    real_t real() const { return (alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA).real(); }
+    real_t imag() const { return (alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA).imag(); }
 
-    cplx_t decimal() const { return decimal_; }
+    cplx_t decimal() const { return alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA; }
 
     ZSqrt2 to_zsqrt2() {
         if (b_ != 0) {
@@ -397,8 +373,6 @@ class ZOmega {
         alpha_ += Z.alpha() + shift;
         beta_ += Z.beta() + shift;
 
-        decimal_ = alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA;
-
         return *this;
     }
 
@@ -413,8 +387,6 @@ class ZOmega {
 
         alpha_ -= Z.alpha() + shift;
         beta_ -= Z.beta() + shift;
-
-        decimal_ = alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA;
 
         return *this;
     }
@@ -452,7 +424,7 @@ class ZOmega {
     void print_decimal_standard(const int colw = COLW, const int prec = PREC) {
         std::cout << std::setw(2 * colw) << std::setfill(' ') << std::left
                   << this->get_standard_string() << std::setprecision(prec)
-                  << std::setw(2 * colw) << decimal_ << std::setw(2 * colw)
+                  << std::setw(2 * colw) << (*this).decimal() << std::setw(2 * colw)
                   << (*this).dot().decimal() << std::endl;
     }
 
@@ -469,7 +441,7 @@ class ZOmega {
     void print_decimal_zsqrt2(const int colw = COLW, const int prec = PREC) {
         std::cout << std::setw(2 * colw) << std::setfill(' ') << std::left
                   << this->get_zsqrt2_string() << std::setprecision(prec)
-                  << std::setw(2 * colw) << decimal_ << std::setw(2 * colw)
+                  << std::setw(2 * colw) << (*this).decimal() << std::setw(2 * colw)
                   << (*this).dot().decimal() << std::endl;
     }
 
@@ -538,9 +510,9 @@ using zomega_pair_t = std::array<ZOmega, 2>;
 const ZSqrt2 LAMBDA(1, 1);
 const ZSqrt2 LAMBDA_INV(-1, 1);
 
-const real_t LOG_LAMBDA = log(LAMBDA.decimal());
-const real_t SQRT_LAMBDA = sqrt(LAMBDA.decimal());
-const real_t SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
+real_t LOG_LAMBDA = log(LAMBDA.decimal());
+real_t SQRT_LAMBDA = sqrt(LAMBDA.decimal());
+real_t SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
 
 const std::array<ZOmega, 8> w_pow_arr{
     {ZOmega(0, 0, 0, 1), ZOmega(0, 0, 1, 0), ZOmega(0, 1, 0, 0),

@@ -160,7 +160,7 @@ class mat2_t {
 
     mat2_t inverse() const {
         assert(determinant() != 0);
-        return (1. / determinant()) *
+        return (real_t(1.) / determinant()) *
                mat2_t{data_[1][1], -data_[0][1], -data_[1][0], data_[0][0]};
     }
 

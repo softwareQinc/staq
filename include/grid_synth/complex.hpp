@@ -29,38 +29,38 @@ class complex {
 
     T norm() const { return a_ * a_ + b_ * b_; }
 
-    complex<T> operator*(complex<T> z) {
+    complex<T> operator*(complex<T> z) const {
         return complex<T>(a_ * z.a() - b_ * z.b(), a_ * z.b() + b_ * z.a());
     }
 
-    complex<T> operator+(complex<T> z) {
+    complex<T> operator+(complex<T> z) const {
         return complex<T>(a_ + z.a(), b_ + z.b());
     }
 
-    complex<T> operator-(complex<T> z) {
+    complex<T> operator-(complex<T> z) const {
         return complex<T>(a_ - z.a(), b_ - z.b());
     }
 
-    complex<T> operator/(complex<T> z) {
+    complex<T> operator/(complex<T> z) const {
         return complex<T>((a_ * z.a() + b_ * z.b()) / z.norm(),
                           (b_ * z.a() - a_ * z.b()) / z.norm());
     }
 
-    complex<T> operator+=(complex<T> z) {
+    complex<T> operator+=(complex<T> z) const {
         a_ += z.a();
         b_ += z.b();
 
         return (*this);
     }
 
-    complex<T> operator-=(complex<T> z) {
+    complex<T> operator-=(complex<T> z) const {
         a_ -= z.a();
         b_ -= z.b();
 
         return (*this);
     }
 
-    complex<T> operator/=(complex<T> z) {
+    complex<T> operator/=(complex<T> z) const {
         a_ /= z.a();
         b_ /= z.b();
 

@@ -222,19 +222,17 @@ class Ellipse {
     real_t e_;
 
     void get_z_and_e_() {
-        z_ = 0.5 * log(D_(1, 1) / D_(0, 0)) / log(LAMBDA.decimal());
+        z_ = real_t(real_t(real_t("0.5") * log(real_t(D_(1, 1) / D_(0, 0)))) / LOG_LAMBDA);
         e_ = sqrt(D_(1, 1) * D_(0, 0));
     }
 
     mat_t get_mat_from_axes_(const real_t& semi_major_axis,
                              const real_t& semi_minor_axis,
                              const real_t& angle) {
-        real_t ct = cos(angle.get_d());
-        real_t st = sin(angle.get_d());
-        // real_t inva = 1/semi_major_axis;
-        // real_t invb = 1/semi_minor_axis;
-        real_t inva = 1 / semi_minor_axis;
-        real_t invb = 1 / semi_major_axis;
+        real_t ct = cos(angle);
+        real_t st = sin(angle);
+        real_t inva = real_t("1") / semi_minor_axis;
+        real_t invb = real_t("1") / semi_major_axis;
 
         mat_t M{ct * ct * inva * inva + st * st * invb * invb,
                 ct * st * (inva * inva - invb * invb),
@@ -245,32 +243,47 @@ class Ellipse {
     }
 
     triple_t get_axes_from_mat_(const vec_t& center, const mat_t& D) {
-        real_t m = 1 / sqrt(D.determinant());
+        using namespace std;
+        real_t m = real_t("1") / sqrt(D.determinant());
         real_t msq = m * m;
         real_t T = D.trace();
+        real_t angle=real_t("0");
         real_t shift =
-            PI * (0.25 * (sgn<real_t>(center(0)) - sgn<real_t>(center(1))) + 1);
+            PI * (real_t("0.25") * (sgn<real_t>(center(0)) - sgn<real_t>(center(1))) + real_t("1"));
         if ((sgn<real_t>(center(0)) == 0) && (sgn<real_t>(center(1)) == 0))
             shift = 0;
 
         if ((sgn<real_t>(center(0)) == 1) && (sgn<real_t>(center(1)) == 1))
             shift = 0;
 
-        real_t a1 = sqrt((T * msq + sqrt(T * T * msq * msq - 4 * msq)) / 2);
-        real_t a2 = sqrt((T * msq - sqrt(T * T * msq * msq - 4 * msq)) / 2);
-
-        double a1d = a1.get_d();
-        double a2d = a2.get_d();
-        double odd = D(0, 1).get_d();
-
-        real_t angle;
-        if (((2 * odd * a1d * a1d * a2d * a2d) < 1e-15) and
-            ((a2d * a2d - a1d * a1d) < 1e-15))
-            angle = 0;
-        else
-            angle = (0.5 * asin((2 * odd * a1d * a1d * a2d * a2d) /
-                                (a2d * a2d - a1d * a1d))) +
-                    shift;
+        //cout << fixed << setprecision(100) << "m = " << m << endl;
+        //cout << fixed << setprecision(100) << sqrt(T*T*msq*msq- 4*msq) << endl;
+        //cout << fixed << setprecision(100) << T*msq << endl;
+        //cout << fixed << setprecision(100) << "disc = " 
+        //          <<(T * msq - sqrt(T * T * msq * msq - 4 * msq))<< endl;
+        real_t a1 = 0;
+        real_t a2 = 0;
+        if (abs(T * T * msq * msq - real_t("4") * msq) < TOL) { 
+            a1 = sqrt(T*msq)/real_t("2"); 
+            a2 = sqrt(T*msq)/real_t("2");
+        }
+        else {
+            a1 = sqrt((T*msq - sqrt(T*T*msq*msq - real_t("4")*msq)) / real_t("2"));
+            a2 = sqrt((T*msq + sqrt(T*T*msq*msq - real_t("4")*msq)) / real_t("2"));
+        }
+        //real_t od = D(0,1);
+        //cout << fixed << setprecision(100) << mpf_class((2 * od * a1 * a1 * a2 * a2) / (a2 * a2 - a1 * a1)).get_d() << endl;
+        //double a1d = a1.get_d();
+        //double a2d = a2.get_d();
+        //double odd = D(0, 1).get_d();
+        //cout << "doubled = " << fixed << setprecision(100) << (2 * odd * a1d * a1d * a2d * a2d) / (a2d * a2d - a1d * a1d) << endl;
+        //cout << "asin = " << fixed << setprecision(100) << asin((2 * odd * a1d * a1d * a2d * a2d) / (a2d * a2d - a1d * a1d)) << endl;
+        //if (((real_t("2") * odd * a1d * a1d * a2d * a2d) < TOL) and
+        //    ((a2d * a2d - a1d * a1d) < TOL))
+        //    angle = 0;
+        //else
+        //    angle = (real_t("0.5") * asin((real_t("2") * odd * a1d * a1d * a2d * a2d) /
+        //                        (a2d * a2d - a1d * a1d))) + shift;
 
         return triple_t{{std::max(a1, a2), std::min(a1, a2), angle}};
     }
@@ -309,13 +322,14 @@ class Ellipse {
      * angle.
      */
     Ellipse(const real_t& angle, const real_t& eps) : angle_(angle) {
-        real_t r0 = (3 - eps * eps) / 3;
-        center_ = vec_t{r0 * cos(angle.get_d()), r0 * sin(angle.get_d())};
+        real_t r0 = (real_t("3") - eps * eps) / real_t("3");
+        center_ = vec_t{r0 * cos(angle), r0 * sin(angle)};
 
-        semi_major_axis_ = (2 / sqrt(3)) * eps * sqrt(1 - (eps * eps / 4));
-        semi_minor_axis_ = (eps * eps / 3);
+        semi_major_axis_ = (real_t("2") / sqrt(real_t("3")) * eps * sqrt(real_t("1") - (eps * eps / real_t("4"))));
+        semi_minor_axis_ = (eps * eps / real_t("3"));
+        
+
         D_ = get_mat_from_axes_(semi_major_axis_, semi_minor_axis_, angle_);
-
         get_z_and_e_();
     }
 
@@ -337,11 +351,11 @@ class Ellipse {
 
     // uprightness of ellipse
     real_t up() const {
-        return (PI / 4) * sqrt(D_.determinant() / (D_(0, 0) * D_(1, 1)));
+        return (real_t(PI) / real_t(4)) * sqrt(D_.determinant() / (D_(0, 0) * D_(1, 1)));
     }
 
     void rescale(const real_t scale) {
-        D_ = (1.0 / (scale * scale)) * D_;
+        D_ = (real_t("1") / (scale * scale)) * D_;
         semi_minor_axis_ = semi_minor_axis_ * abs(scale);
         semi_major_axis_ = semi_major_axis_ * abs(scale);
         center_ = scale * center_;
@@ -362,7 +376,7 @@ class Ellipse {
     bool contains(const vec_t& point, const real_t& tol=TOL) const {
         using namespace std;
         real_t x = (point - center_).transpose() * D_ * (point - center_);
-        return (x < real_t(1)) or (abs(x-real_t(1)) < tol);
+        return (x < real_t("1")) or (abs(x-real_t("1")) < tol);
     }
 
     bool contains(const real_t& x, const real_t& y, const real_t& tol=TOL) const {
