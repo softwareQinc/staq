@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
 
     CLI::App app{"Grid Synthesis"};
 
-    CLI::Option* theta_opt = app.add_option<real_t,float>("-t, --theta", theta, "Z-rotation angle in units of PI");
-    CLI::Option* prec_opt = app.add_option<long int,int>("-p, --precision", prec, "Precision in base ten as a positive integer (10^-p)");
+    CLI::Option* theta_opt = app.add_option<real_t,float>("-t, --theta", theta, "Z-rotation angle in units of PI")->required();
+    CLI::Option* prec_opt = app.add_option<long int,int>("-p, --precision", prec, "Precision in base ten as a positive integer (10^-p)")->required();
     CLI::Option* fact_eff = app.add_option<int,int>("-f, --factor-effort", factor_effort, "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort taken to factorize candidate solutions");
     CLI::Option* read = app.add_option("-r, --read-table", tablefile, "Name of file containing s3 table");
     CLI::Option* write = app.add_option("-w, --write-table", tablefile, "Name of table file to write s3_table to")
