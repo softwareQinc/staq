@@ -26,10 +26,10 @@ const double LOW_PREC_TOL = 1e-17; // tolerance for float equality as low
                                    // precisions
 
 const int KMIN = 0; // Default minimum k value
-const int KMAX = 3000; // Default maximum k value
+const int KMAX = 10000000; // Default maximum k value
 const int COLW = 10; // Default width of columns for data output
 const int PREC = 5;  // Default precision for output
-const int MAX_ATTEMPTS_POLLARD_RHO = 200;
+int MAX_ATTEMPTS_POLLARD_RHO = 200;
 const int POLLARD_RHO_INITIAL_ADDEND = 1;
 const int POLLARD_RHO_START = 2;
 const int MOD_SQRT_MAX_DEPTH = 20;
