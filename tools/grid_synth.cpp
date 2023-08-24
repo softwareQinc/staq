@@ -113,12 +113,11 @@ int main(int argc, char** argv) {
                                        << ")" << endl;
           cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
           cout << "error = " << rz_approx.error() << endl;
+          str_t simplified = full_simplify_str(op_str);
+          string::difference_type n = count(simplified.begin(), simplified.end(), 'T');
+          cout << "T count = " << n << endl;
         }
-        if(verbose) {
-            str_t simplified = full_simplify_str(op_str);
-            string::difference_type n = count(simplified.begin(), simplified.end(), 'T');
-            cout << "T count = " << n << endl;
-        } 
+
         for(auto &ch : full_simplify_str(op_str)) {
           cout << ch << " "; 
         }
