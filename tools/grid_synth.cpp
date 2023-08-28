@@ -140,7 +140,9 @@ int main(int argc, char** argv) {
               cout << "u decimal value = " << "(" << rz_approx.matrix().u().decimal().real()/scale
                                            << "," << rz_approx.matrix().u().decimal().imag()/scale
                                            << ")" << endl;
-              cout << "t decimal value = " << rz_approx.matrix().t().decimal().real()/scale << endl;
+              cout << "t decimal value = " << "(" << rz_approx.matrix().t().decimal().real()/scale 
+                                           << "," << rz_approx.matrix().t().decimal().imag()/scale 
+                                           << ")" << endl;
               cout << "error = " << rz_approx.error() << endl;
               str_t simplified = full_simplify_str(op_str);
               string::difference_type n = count(simplified.begin(), simplified.end(), 'T');
