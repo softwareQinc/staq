@@ -29,8 +29,11 @@ jobs:
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install gmp
           else
-            echo "$RUNNER_OS not supported"
-            exit 1
+            git clone https://github.com/microsoft/vcpkg
+            .\vcpkg\bootstrap-vcpkg.bat
+            .\vcpkg\vcpkg install gmp:x64-windows
+# echo "$RUNNER_OS not supported"
+#            exit 1
           fi
 
       - name: Configure staq
