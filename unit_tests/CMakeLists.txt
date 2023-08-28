@@ -16,11 +16,7 @@ aux_source_directory(tests/optimization TEST_FILES)
 aux_source_directory(tests/transformations TEST_FILES)
 aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
-
-# disable grid_synth for MSVC
-if (NOT MSVC)
-    aux_source_directory(tests/grid_synth TEST_FILES)
-endif ()
+aux_source_directory(tests/grid_synth TEST_FILES)
 
 add_executable(${TARGET_NAME} EXCLUDE_FROM_ALL tests/main.cpp)
 add_dependencies(unit_tests ${TARGET_NAME})
@@ -35,10 +31,6 @@ foreach (filename ${TEST_FILES})
     target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq)
-# disable GMP on MSVC
-if (NOT MSVC)
-    target_link_libraries(${TARGET_NAME} PUBLIC gmp gmpxx)
-endif ()
+target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq gmp gmpxx)
 
 gtest_discover_tests(${TARGET_NAME})
