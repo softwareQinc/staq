@@ -10,10 +10,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 enable_testing()
 
-# disable GMP on MSVC
-if (NOT MSVC)
-    find_package(GMP REQUIRED)
-endif ()
+find_package(GMP REQUIRED)
 
 #### staq version
 add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
