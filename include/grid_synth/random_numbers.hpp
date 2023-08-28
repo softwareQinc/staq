@@ -4,7 +4,7 @@
 #include <chrono>
 #include <gmpxx.h>
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 inline gmp_randclass random_numbers(gmp_randinit_mt);

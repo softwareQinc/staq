@@ -84,25 +84,25 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
 
     real_t z = state[0].z();
     real_t zeta = state[1].z();
-    
-    if (fgeq(state[0].D(0, 1),real_t("0"))) {
-        if (fgeq(z,real_t("-0.8")) and fleq(z,real_t("0.8")) 
-        and fgeq(zeta,real_t("-0.8")) and fleq(zeta,real_t("0.8"))) {
+
+    if (fgeq(state[0].D(0, 1), real_t("0"))) {
+        if (fgeq(z, real_t("-0.8")) and fleq(z, real_t("0.8")) and
+            fgeq(zeta, real_t("-0.8")) and fleq(zeta, real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (fleq(z,real_t("0.3")) and fgeq(zeta,real_t("0.8"))) {
+        } else if (fleq(z, real_t("0.3")) and fgeq(zeta, real_t("0.8"))) {
             G = G * K;
             state = K * state;
             // std::cout << "K" << std::endl;
-        } else if (fgeq(z,real_t("0.3")) and fgeq(zeta,real_t("0.3"))) {
+        } else if (fgeq(z, real_t("0.3")) and fgeq(zeta, real_t("0.3"))) {
             real_t c = min(z, zeta);
             int_t n =
                 max(1, int_t(floor(pow(LAMBDA.decimal(), c.get_ui()) / 2)));
             G = G * A(n);
             state = A(n) * state;
             // std::cout << "A^" << n << std::endl;
-        } else if (fgeq(z,real_t("0.8")) and fleq(zeta,real_t("0.3"))) {
+        } else if (fgeq(z, real_t("0.8")) and fleq(zeta, real_t("0.3"))) {
             G = G * K.dot();
             state = K.dot() * state;
             // std::cout << "K.dot()" << std::endl;
@@ -116,12 +116,12 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
             exit(EXIT_FAILURE);
         }
     } else {
-        if (fgeq(z,real_t("-0.8")) and fleq(z,real_t("0.8")) 
-        and fgeq(zeta,real_t("-0.8")) and fleq(zeta,real_t("0.8"))) {
+        if (fgeq(z, real_t("-0.8")) and fleq(z, real_t("0.8")) and
+            fgeq(zeta, real_t("-0.8")) and fleq(zeta, real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (fgeq(z,real_t("-0.2")) and fgeq(zeta,real_t("-0.2"))) {
+        } else if (fgeq(z, real_t("-0.2")) and fgeq(zeta, real_t("-0.2"))) {
             real_t c = min(z, zeta);
             int_t n =
                 max(1, int_t(floor(pow(LAMBDA.decimal(), c.get_ui()) / 2)));

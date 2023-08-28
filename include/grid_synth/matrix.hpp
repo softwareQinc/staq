@@ -2,22 +2,20 @@
 #define MATRIX_HPP
 
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
 #include <unordered_map>
 #include <vector>
 
 #include "rings.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
-
-
 /*
- * Unitary matrices over the ring D[\omega] represented as elements of Z[\omega] with
- * smallest denominating exponent of base SQRT2 = k. Lemma 4 of
+ * Unitary matrices over the ring D[\omega] represented as elements of Z[\omega]
+ * with smallest denominating exponent of base SQRT2 = k. Lemma 4 of
  * arXiv:1206.5236v4 implies that z_ and w_ have the same
  * denominating exponent, since |z_|^ + |w_|^2 = 1.
  */
@@ -59,7 +57,8 @@ class DOmegaMatrix {
     }
 
     void reduce() {
-        if(u_ == ZOmega(0) and t_ == ZOmega(0)) return;
+        if (u_ == ZOmega(0) and t_ == ZOmega(0))
+            return;
         while (u_.is_reducible() and t_.is_reducible()) {
             u_ = u_.reduce();
             t_ = t_.reduce();
@@ -201,7 +200,7 @@ inline str_t simplify_str(str_t str) {
             first++;
             second++;
         } else if (str[first] == 'w') {
-            new_str += "w"; 
+            new_str += "w";
             first++;
             second++;
             continue;
@@ -219,21 +218,19 @@ inline str_t simplify_str(str_t str) {
  *  Reduce a string containing H, T, and S as far as is possible
  */
 inline str_t full_simplify_str(str_t str) {
-    if(str.size() == 1) 
-      return str;
-    size_t last_len = str.size();  
+    if (str.size() == 1)
+        return str;
+    size_t last_len = str.size();
     size_t curr_len = 0;
-    str_t curr_str=str;
-    while(curr_len < last_len)
-    {
-      last_len = curr_str.size();
-      curr_str = simplify_str(curr_str);
-      curr_len = curr_str.size();
+    str_t curr_str = str;
+    while (curr_len < last_len) {
+        last_len = curr_str.size();
+        curr_str = simplify_str(curr_str);
+        curr_len = curr_str.size();
     }
 
     return curr_str;
 }
-
 
 // Generate the set of all unitary matrices with SDE less than three
 inline domega_matrix_table_t generate_s3_table() {
@@ -285,16 +282,17 @@ inline domega_matrix_table_t generate_s3_table() {
     return s3_table;
 }
 
-inline void write_s3_table(const str_t& filename, const domega_matrix_table_t& s3_table) {
+inline void write_s3_table(const str_t& filename,
+                           const domega_matrix_table_t& s3_table) {
     using namespace std;
-    ofstream file_stream;     
+    ofstream file_stream;
     file_stream.open(filename);
-    for(auto& it : s3_table) {
+    for (auto& it : s3_table) {
         DOmegaMatrix mat = it.first;
         str_t op_str = it.second;
-        file_stream << mat.u().csv_str() << "," << mat.t().csv_str() << "," 
-                    << mat.k() << "," << mat.l() << "," << op_str << '\n'; 
-    }  
+        file_stream << mat.u().csv_str() << "," << mat.t().csv_str() << ","
+                    << mat.k() << "," << mat.l() << "," << op_str << '\n';
+    }
     file_stream.close();
 }
 
@@ -303,17 +301,19 @@ inline domega_matrix_table_t read_s3_table(const str_t& filename) {
     domega_matrix_table_t s3_table;
     ifstream file_stream(filename);
     str_t curr_line;
-    while(getline(file_stream,curr_line)) {
+    while (getline(file_stream, curr_line)) {
         stringstream line_stream(curr_line);
-        curr_line.erase(remove(curr_line.begin(),curr_line.end(),'I'),curr_line.end());
-        vector<str_t> line;     
+        curr_line.erase(remove(curr_line.begin(), curr_line.end(), 'I'),
+                        curr_line.end());
+        vector<str_t> line;
         str_t entry;
-        while(getline(line_stream, entry, ',')) {
+        while (getline(line_stream, entry, ',')) {
             line.push_back(entry);
         }
-        DOmegaMatrix mat (ZOmega(stoi(line[0]),stoi(line[1]),stoi(line[2]),stoi(line[3])),
-                          ZOmega(stoi(line[4]),stoi(line[5]),stoi(line[6]),stoi(line[7])),
-                          stoi(line[8]),stoi(line[9]));
+        DOmegaMatrix mat(
+            ZOmega(stoi(line[0]), stoi(line[1]), stoi(line[2]), stoi(line[3])),
+            ZOmega(stoi(line[4]), stoi(line[5]), stoi(line[6]), stoi(line[7])),
+            stoi(line[8]), stoi(line[9]));
         s3_table[mat] = line[10];
     }
     return s3_table;

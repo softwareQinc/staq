@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <iostream>
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 template <typename T>
@@ -46,23 +46,35 @@ class complex {
                           (b_ * z.a() - a_ * z.b()) / z.norm());
     }
 
-    complex<T> operator+=(complex<T> z) const {
+    complex<T> operator+=(complex<T> z) {
         a_ += z.a();
         b_ += z.b();
 
         return (*this);
     }
 
-    complex<T> operator-=(complex<T> z) const {
+    complex<T> operator-=(complex<T> z) {
         a_ -= z.a();
         b_ -= z.b();
 
         return (*this);
     }
 
-    complex<T> operator/=(complex<T> z) const {
-        a_ /= z.a();
-        b_ /= z.b();
+    complex<T> operator*=(complex<T> z) {
+        T olda = a_;
+        T oldb = b_;
+
+        a_ = olda * z.a() - oldb * z.b();
+        b_ = olda * z.b() + oldb * z.a();
+
+        return (*this);
+    }
+
+    complex<T> operator/=(complex<T> z) {
+        T olda = a_;
+        T oldb = b_;
+        a_ = (olda * z.a() + oldb * z.b()) / z.norm();
+        b_ = (oldb * z.a() - olda * z.b()) / z.norm();
 
         return (*this);
     }

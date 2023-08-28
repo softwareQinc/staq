@@ -2,6 +2,7 @@
 #define GRID_SOLVERS_HPP
 
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <iomanip>
@@ -9,7 +10,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <chrono>
 
 #include "constants.hpp"
 #include "gmp_functions.hpp"
@@ -17,7 +17,7 @@
 #include "rings.hpp"
 #include "states.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 /**
@@ -28,7 +28,7 @@ template <typename bound_t>
 inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
                            const real_t& tol) {
     using namespace std;
-    real_t lowera_double = xlo - (b*SQRT2);
+    real_t lowera_double = xlo - (b * SQRT2);
     real_t decimal;
     int_t intpart;
     decimal = abs(decimal_part(lowera_double, intpart));
@@ -48,7 +48,7 @@ template <typename bound_t>
 inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
                            const real_t& tol) {
     using namespace std;
-    real_t uppera_double = xhi - (b*SQRT2);
+    real_t uppera_double = xhi - (b * SQRT2);
     real_t decimal;
     int_t intpart;
     decimal = abs(decimal_part(uppera_double, intpart));
@@ -131,10 +131,10 @@ inline zsqrt2_vec_t oneD_grid_solver(const Interval<bound_t>& A,
     for (int_t b = lowerb; b <= upperb; b++) {
         int_t lowera = lower_bound_a<bound_t>(A.lo(), b, tol);
         int_t uppera = upper_bound_a<bound_t>(A.hi(), b, tol);
-        if(uppera > lowera) {
-            total_a_candidates++; 
+        if (uppera > lowera) {
+            total_a_candidates++;
         }
-      
+
         for (int_t a = lowera; a <= uppera; a++) {
             ZSqrt2 candidate(a, b);
             if (A.contains(candidate.decimal()) and
@@ -160,12 +160,12 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
                                             const Interval<bound_t>& B,
                                             const real_t tol = TOL) {
     using namespace std;
-   
+
     zsqrt2_vec_t solns;
     int_t k = find_scale_exponent(A);
     Interval<bound_t> scaled_A = A;
     Interval<bound_t> scaled_B = B;
-    if(k>0) {
+    if (k > 0) {
         scaled_A = A * pow(LAMBDA_INV, k).decimal();
         scaled_B = B * pow(-1 * LAMBDA, k).decimal();
     } else {
@@ -181,7 +181,7 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
             ZSqrt2 candidate(a, b);
             if (scaled_A.contains(candidate.decimal()) and
                 scaled_B.contains(candidate.decimal_dot())) {
-                if(k>0) {
+                if (k > 0) {
                     solns.push_back(candidate * pow(LAMBDA, k));
                 } else {
                     solns.push_back(candidate * pow(LAMBDA_INV, -k));
@@ -196,11 +196,11 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
 template <typename bound_t>
 inline zsqrt2_vec_t oneD_optimal_grid_solver(const Interval<bound_t>& A,
                                              const Interval<bound_t>& B,
-                                             const real_t tol=TOL) {
-    return oneD_scaled_grid_solver(A,B,tol);
-    //if (A.width() > B.width())
-    //    return oneD_scaled_grid_solver(A, B, tol);
-    //return oneD_grid_solver(A, B, tol);
+                                             const real_t tol = TOL) {
+    return oneD_scaled_grid_solver(A, B, tol);
+    // if (A.width() > B.width())
+    //     return oneD_scaled_grid_solver(A, B, tol);
+    // return oneD_grid_solver(A, B, tol);
 }
 
 template <typename bound_t>
@@ -208,13 +208,13 @@ inline zomega_vec_t twoD_grid_solver(const UprightRectangle<bound_t> A,
                                      const UprightRectangle<bound_t> B,
                                      const real_t tol = TOL) {
     using namespace std;
-  
+
     zomega_vec_t solns;
-    if(A.x_interval().width()*B.x_interval().width() < 1)
-      return solns;
-    if(B.y_interval().width()*A.y_interval().width()<1)
-      return solns;
-    
+    if (A.x_interval().width() * B.x_interval().width() < 1)
+        return solns;
+    if (B.y_interval().width() * A.y_interval().width() < 1)
+        return solns;
+
     zsqrt2_vec_t alpha_solns =
         oneD_optimal_grid_solver(A.x_interval(), B.x_interval(), tol);
     zsqrt2_vec_t beta_solns =

@@ -12,7 +12,7 @@
 #include "rings.hpp"
 #include "types.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 /*
@@ -71,9 +71,9 @@ class GridOperator {
     int_t d() const { return d_; }
     int_t dp() const { return dp_; }
 
-    mat_t mat_rep() const { 
-      return mat_t{ a_ + INV_SQRT2 * ap_, b_ + INV_SQRT2 * bp_,
-                    c_ + INV_SQRT2 * cp_, d_ + INV_SQRT2 * dp_}; 
+    mat_t mat_rep() const {
+        return mat_t{a_ + INV_SQRT2 * ap_, b_ + INV_SQRT2 * bp_,
+                     c_ + INV_SQRT2 * cp_, d_ + INV_SQRT2 * dp_};
     }
 
     // Returns sigma*G*sigma

@@ -4,7 +4,7 @@
 #include "matrix.hpp"
 #include "types.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 inline str_t synthesize(const DOmegaMatrix& D,
@@ -50,5 +50,5 @@ inline str_t synthesize(const DOmegaMatrix& D,
 
 } // namespace grid_synth
 } // namespace staq
-  
+
 #endif // EXACT_SYNTHESIS_HPP

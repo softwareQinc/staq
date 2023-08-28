@@ -12,7 +12,7 @@
 #include "gmp_functions.hpp"
 #include "types.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 /*
@@ -32,17 +32,15 @@ class ZSqrt2 {
   public:
     explicit ZSqrt2(){};
 
-    explicit ZSqrt2(const int_t& a)
-        : a_(a), b_(0) {}
+    explicit ZSqrt2(const int_t& a) : a_(a), b_(0) {}
 
-    ZSqrt2(const int_t& a, const int_t& b)
-        : a_(a), b_(b) {}
+    ZSqrt2(const int_t& a, const int_t& b) : a_(a), b_(b) {}
 
     int_t a() const { return a_; }
     int_t b() const { return b_; }
 
-    real_t decimal() const { return a_+(b_*SQRT2); }
-    real_t decimal_dot() const { return (a_-b_*SQRT2); }
+    real_t decimal() const { return a_ + (b_ * SQRT2); }
+    real_t decimal_dot() const { return (a_ - b_ * SQRT2); }
 
     int_t norm() const { return a_ * a_ - (2 * b_ * b_); }
     ZSqrt2 dot() const { return ZSqrt2(a_, -b_); }
@@ -138,9 +136,9 @@ class ZSqrt2 {
     void print_decimal(const int colw = COLW, const int prec = PREC) {
         std::cout << std::setw(colw) << std::left << std::setfill(' ')
                   << this->get_string() << std::setw(colw) << std::left
-                  << std::setprecision(prec) << this->decimal() << std::setw(colw)
-                  << std::left << std::setprecision(prec) << this->decimal_dot()
-                  << std::endl;
+                  << std::setprecision(prec) << this->decimal()
+                  << std::setw(colw) << std::left << std::setprecision(prec)
+                  << this->decimal_dot() << std::endl;
     }
 
 }; // class ZSqrt2
@@ -312,10 +310,16 @@ class ZOmega {
     ZOmega dot() const { return ZOmega(-a_, b_, -c_, d_); }
     ZOmega conj() const { return ZOmega(-c_, -b_, -a_, d_); }
 
-    real_t real() const { return (alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA).real(); }
-    real_t imag() const { return (alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA).imag(); }
+    real_t real() const {
+        return (alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA).real();
+    }
+    real_t imag() const {
+        return (alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA).imag();
+    }
 
-    cplx_t decimal() const { return alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA; }
+    cplx_t decimal() const {
+        return alpha_.decimal() + beta_.decimal() * Im + w_ * OMEGA;
+    }
 
     ZSqrt2 to_zsqrt2() {
         if (b_ != 0) {
@@ -424,8 +428,9 @@ class ZOmega {
     void print_decimal_standard(const int colw = COLW, const int prec = PREC) {
         std::cout << std::setw(2 * colw) << std::setfill(' ') << std::left
                   << this->get_standard_string() << std::setprecision(prec)
-                  << std::setw(2 * colw) << (*this).decimal() << std::setw(2 * colw)
-                  << (*this).dot().decimal() << std::endl;
+                  << std::setw(2 * colw) << (*this).decimal()
+                  << std::setw(2 * colw) << (*this).dot().decimal()
+                  << std::endl;
     }
 
     /*
@@ -441,13 +446,14 @@ class ZOmega {
     void print_decimal_zsqrt2(const int colw = COLW, const int prec = PREC) {
         std::cout << std::setw(2 * colw) << std::setfill(' ') << std::left
                   << this->get_zsqrt2_string() << std::setprecision(prec)
-                  << std::setw(2 * colw) << (*this).decimal() << std::setw(2 * colw)
-                  << (*this).dot().decimal() << std::endl;
+                  << std::setw(2 * colw) << (*this).decimal()
+                  << std::setw(2 * colw) << (*this).dot().decimal()
+                  << std::endl;
     }
 
     str_t csv_str() {
         using namespace std;
-        stringstream ss; 
+        stringstream ss;
         ss << a_ << "," << b_ << "," << c_ << "," << d_;
         return ss.str();
     }

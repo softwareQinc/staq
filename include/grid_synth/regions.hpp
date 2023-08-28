@@ -9,10 +9,10 @@
 #include <stdexcept>
 
 #include "constants.hpp"
+#include "gmp_functions.hpp"
 #include "grid_operators.hpp"
 #include "rings.hpp"
 #include "utils.hpp"
-#include "gmp_functions.hpp"
 
 namespace staq {
 namespace grid_synth {
@@ -44,7 +44,9 @@ class Interval {
     /*
      * fatten the interval by d on both the upper and lower bounds
      */
-    Interval fatten(const real_t& d) { return Interval<bound_t>(lo_-d,hi_+d); }
+    Interval fatten(const real_t& d) {
+        return Interval<bound_t>(lo_ - d, hi_ + d);
+    }
 
     bound_t lo() const { return lo_; }
 
@@ -64,7 +66,6 @@ class Interval {
         lo_ = oldlo * scale_factor;
         hi_ = oldhi * scale_factor;
         width_ = hi_ - lo_;
-      
     }
 
     void shift(const bound_t& shift_factor) {
@@ -72,8 +73,9 @@ class Interval {
         hi_ = hi_ + shift_factor;
     }
 
-    bool contains(const bound_t& x, const real_t tol=TOL) const { 
-      return ((hi_ - x) * (x - lo_) > 0) or (abs((hi_-x)*(x-lo_)) < tol); 
+    bool contains(const bound_t& x, const real_t tol = TOL) const {
+        return ((hi_ - x) * (x - lo_) > 0) or
+               (abs((hi_ - x) * (x - lo_)) < tol);
     }
 
     Interval operator+(const bound_t& shift_factor) const {
@@ -168,8 +170,9 @@ class UprightRectangle {
 
     bound_t area() const { return area_; }
 
-    UprightRectangle fatten(const real_t& d) { 
-        return UprightRectangle<bound_t>(x_interval_.fatten(d), y_interval_.fatten(d));
+    UprightRectangle fatten(const real_t& d) {
+        return UprightRectangle<bound_t>(x_interval_.fatten(d),
+                                         y_interval_.fatten(d));
     }
 
     void rescale(const bound_t& x_scale_factor, const bound_t& y_scale_factor) {
@@ -222,7 +225,8 @@ class Ellipse {
     real_t e_;
 
     void get_z_and_e_() {
-        z_ = real_t(real_t(real_t("0.5") * log(real_t(D_(1, 1) / D_(0, 0)))) / LOG_LAMBDA);
+        z_ = real_t(real_t(real_t("0.5") * log(real_t(D_(1, 1) / D_(0, 0)))) /
+                    LOG_LAMBDA);
         e_ = sqrt(D_(1, 1) * D_(0, 0));
     }
 
@@ -247,43 +251,47 @@ class Ellipse {
         real_t m = real_t("1") / sqrt(D.determinant());
         real_t msq = m * m;
         real_t T = D.trace();
-        real_t angle=real_t("0");
-        real_t shift =
-            PI * (real_t("0.25") * (sgn<real_t>(center(0)) - sgn<real_t>(center(1))) + real_t("1"));
+        real_t angle = real_t("0");
+        real_t shift = PI * (real_t("0.25") * (sgn<real_t>(center(0)) -
+                                               sgn<real_t>(center(1))) +
+                             real_t("1"));
         if ((sgn<real_t>(center(0)) == 0) && (sgn<real_t>(center(1)) == 0))
             shift = 0;
 
         if ((sgn<real_t>(center(0)) == 1) && (sgn<real_t>(center(1)) == 1))
             shift = 0;
 
-        //cout << fixed << setprecision(100) << "m = " << m << endl;
-        //cout << fixed << setprecision(100) << sqrt(T*T*msq*msq- 4*msq) << endl;
-        //cout << fixed << setprecision(100) << T*msq << endl;
-        //cout << fixed << setprecision(100) << "disc = " 
-        //          <<(T * msq - sqrt(T * T * msq * msq - 4 * msq))<< endl;
+        // cout << fixed << setprecision(100) << "m = " << m << endl;
+        // cout << fixed << setprecision(100) << sqrt(T*T*msq*msq- 4*msq) <<
+        // endl; cout << fixed << setprecision(100) << T*msq << endl; cout <<
+        // fixed << setprecision(100) << "disc = "
+        //           <<(T * msq - sqrt(T * T * msq * msq - 4 * msq))<< endl;
         real_t a1 = 0;
         real_t a2 = 0;
-        if (abs(T * T * msq * msq - real_t("4") * msq) < TOL) { 
-            a1 = sqrt(T*msq)/real_t("2"); 
-            a2 = sqrt(T*msq)/real_t("2");
+        if (abs(T * T * msq * msq - real_t("4") * msq) < TOL) {
+            a1 = sqrt(T * msq) / real_t("2");
+            a2 = sqrt(T * msq) / real_t("2");
+        } else {
+            a1 = sqrt((T * msq - sqrt(T * T * msq * msq - real_t("4") * msq)) /
+                      real_t("2"));
+            a2 = sqrt((T * msq + sqrt(T * T * msq * msq - real_t("4") * msq)) /
+                      real_t("2"));
         }
-        else {
-            a1 = sqrt((T*msq - sqrt(T*T*msq*msq - real_t("4")*msq)) / real_t("2"));
-            a2 = sqrt((T*msq + sqrt(T*T*msq*msq - real_t("4")*msq)) / real_t("2"));
-        }
-        //real_t od = D(0,1);
-        //cout << fixed << setprecision(100) << mpf_class((2 * od * a1 * a1 * a2 * a2) / (a2 * a2 - a1 * a1)).get_d() << endl;
-        //double a1d = a1.get_d();
-        //double a2d = a2.get_d();
-        //double odd = D(0, 1).get_d();
-        //cout << "doubled = " << fixed << setprecision(100) << (2 * odd * a1d * a1d * a2d * a2d) / (a2d * a2d - a1d * a1d) << endl;
-        //cout << "asin = " << fixed << setprecision(100) << asin((2 * odd * a1d * a1d * a2d * a2d) / (a2d * a2d - a1d * a1d)) << endl;
-        //if (((real_t("2") * odd * a1d * a1d * a2d * a2d) < TOL) and
-        //    ((a2d * a2d - a1d * a1d) < TOL))
-        //    angle = 0;
-        //else
-        //    angle = (real_t("0.5") * asin((real_t("2") * odd * a1d * a1d * a2d * a2d) /
-        //                        (a2d * a2d - a1d * a1d))) + shift;
+        // real_t od = D(0,1);
+        // cout << fixed << setprecision(100) << mpf_class((2 * od * a1 * a1 *
+        // a2 * a2) / (a2 * a2 - a1 * a1)).get_d() << endl; double a1d =
+        // a1.get_d(); double a2d = a2.get_d(); double odd = D(0, 1).get_d();
+        // cout << "doubled = " << fixed << setprecision(100) << (2 * odd * a1d
+        // * a1d * a2d * a2d) / (a2d * a2d - a1d * a1d) << endl; cout << "asin =
+        // " << fixed << setprecision(100) << asin((2 * odd * a1d * a1d * a2d *
+        // a2d) / (a2d * a2d - a1d * a1d)) << endl; if (((real_t("2") * odd *
+        // a1d * a1d * a2d * a2d) < TOL) and
+        //     ((a2d * a2d - a1d * a1d) < TOL))
+        //     angle = 0;
+        // else
+        //     angle = (real_t("0.5") * asin((real_t("2") * odd * a1d * a1d *
+        //     a2d * a2d) /
+        //                         (a2d * a2d - a1d * a1d))) + shift;
 
         return triple_t{{std::max(a1, a2), std::min(a1, a2), angle}};
     }
@@ -325,9 +333,9 @@ class Ellipse {
         real_t r0 = (real_t("3") - eps * eps) / real_t("3");
         center_ = vec_t{r0 * cos(angle), r0 * sin(angle)};
 
-        semi_major_axis_ = (real_t("2") / sqrt(real_t("3")) * eps * sqrt(real_t("1") - (eps * eps / real_t("4"))));
+        semi_major_axis_ = (real_t("2") / sqrt(real_t("3")) * eps *
+                            sqrt(real_t("1") - (eps * eps / real_t("4"))));
         semi_minor_axis_ = (eps * eps / real_t("3"));
-        
 
         D_ = get_mat_from_axes_(semi_major_axis_, semi_minor_axis_, angle_);
         get_z_and_e_();
@@ -351,7 +359,8 @@ class Ellipse {
 
     // uprightness of ellipse
     real_t up() const {
-        return (real_t(PI) / real_t(4)) * sqrt(D_.determinant() / (D_(0, 0) * D_(1, 1)));
+        return (real_t(PI) / real_t(4)) *
+               sqrt(D_.determinant() / (D_(0, 0) * D_(1, 1)));
     }
 
     void rescale(const real_t scale) {
@@ -373,18 +382,19 @@ class Ellipse {
         return scale;
     }
 
-    bool contains(const vec_t& point, const real_t& tol=TOL) const {
+    bool contains(const vec_t& point, const real_t& tol = TOL) const {
         using namespace std;
         real_t x = (point - center_).transpose() * D_ * (point - center_);
-        return (x < real_t("1")) or (abs(x-real_t("1")) < tol);
+        return (x < real_t("1")) or (abs(x - real_t("1")) < tol);
     }
 
-    bool contains(const real_t& x, const real_t& y, const real_t& tol=TOL) const {
-        return contains(vec_t{x, y},tol);
+    bool contains(const real_t& x, const real_t& y,
+                  const real_t& tol = TOL) const {
+        return contains(vec_t{x, y}, tol);
     }
 
-    bool contains(const cplx_t& z, const real_t& tol=TOL) const {
-        return contains(vec_t{z.real(), z.imag()},tol);
+    bool contains(const cplx_t& z, const real_t& tol = TOL) const {
+        return contains(vec_t{z.real(), z.imag()}, tol);
     }
 
     UprightRectangle<real_t> bounding_box() const {

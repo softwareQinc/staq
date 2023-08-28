@@ -8,7 +8,7 @@
 #include "constants.hpp"
 #include "utils.hpp"
 
-namespace staq{
+namespace staq {
 namespace grid_synth {
 
 // TODO add high precision sine and cosine functions
@@ -21,15 +21,15 @@ inline mpf_class gmp_pi() {
     real_t s("3");
     real_t n("1");
     real_t na("0");
-    real_t d("0"); 
+    real_t d("0");
     real_t da("24");
-    while(abs(s-lasts)>TOL) {
+    while (abs(s - lasts) > TOL) {
         lasts = s;
-        n = n+na;
+        n = n + na;
         na = na + mpf_class("8");
-        d = d+da;
-        da = da+mpf_class("32");
-        t = (t*n) / d;
+        d = d + da;
+        da = da + mpf_class("32");
+        t = (t * n) / d;
         s += t;
     }
     return s;
@@ -96,13 +96,14 @@ inline mpf_class pow(const mpf_class& base, signed long int exponent) {
     return output;
 }
 
-
-inline mpf_class fleq(const mpf_class& lhs, const mpf_class& rhs, const mpf_class& tol=TOL) {
-    return (lhs < rhs) or (abs(lhs-rhs) < TOL);
+inline mpf_class fleq(const mpf_class& lhs, const mpf_class& rhs,
+                      const mpf_class& tol = TOL) {
+    return (lhs < rhs) or (abs(lhs - rhs) < TOL);
 }
 
-inline mpf_class fgeq(const mpf_class& lhs, const mpf_class& rhs, const mpf_class& tol=TOL) {
-    return (lhs > rhs) or (abs(lhs-rhs) < TOL);
+inline mpf_class fgeq(const mpf_class& lhs, const mpf_class& rhs,
+                      const mpf_class& tol = TOL) {
+    return (lhs > rhs) or (abs(lhs - rhs) < TOL);
 }
 
 /*
@@ -161,65 +162,64 @@ inline mpf_class log2(const mpf_class& x) {
 }
 
 /*
- * Takes in an angle phi and reduces it to the rand [-pi,pi] for evaluation. 
+ * Takes in an angle phi and reduces it to the rand [-pi,pi] for evaluation.
  */
 inline mpf_class reduce_angle(const mpf_class& phi) {
     mpf_class result = phi;
-    while(result > PI) result -= 2*PI;
-    while(result < -PI) result += 2*PI;
+    while (result > PI)
+        result -= 2 * PI;
+    while (result < -PI)
+        result += 2 * PI;
     return result;
 }
 
 inline mpf_class sin(const mpf_class& theta) {
     real_t phi = reduce_angle(theta);
-    mpz_class i=1;
-    mpf_class lasts=0;
-    mpf_class s=phi;
-    mpf_class fact=1;
-    mpf_class num=phi;
-    mpf_class sign=1;
-    while(abs(s-lasts)>TOL) {
-        lasts=s;
-        i+=2; 
-        fact *= i*(i-1);
-        num *= phi*phi;
+    mpz_class i = 1;
+    mpf_class lasts = 0;
+    mpf_class s = phi;
+    mpf_class fact = 1;
+    mpf_class num = phi;
+    mpf_class sign = 1;
+    while (abs(s - lasts) > TOL) {
+        lasts = s;
+        i += 2;
+        fact *= i * (i - 1);
+        num *= phi * phi;
         sign *= -1;
-        s += sign*(num/fact);
+        s += sign * (num / fact);
     }
     return s;
 }
 
 inline mpf_class cos(const mpf_class& theta) {
     real_t phi = reduce_angle(theta);
-    mpz_class i=0;
-    mpf_class lasts=0;
-    mpf_class s=1;
-    mpf_class fact=1;
-    mpf_class num=1;
-    mpf_class sign=1;
-    while(abs(s-lasts)>TOL) {
-        lasts=s;
-        i+=2; 
-        fact *= i*(i-1);
-        num *= phi*phi;
+    mpz_class i = 0;
+    mpf_class lasts = 0;
+    mpf_class s = 1;
+    mpf_class fact = 1;
+    mpf_class num = 1;
+    mpf_class sign = 1;
+    while (abs(s - lasts) > TOL) {
+        lasts = s;
+        i += 2;
+        fact *= i * (i - 1);
+        num *= phi * phi;
         sign *= -1;
-        s += sign*(num/fact);
+        s += sign * (num / fact);
     }
     return s;
 }
-
 
 inline mpf_class abs(const complex<mpf_class>& z) {
     return sqrt(z.real() * z.real() + z.imag() * z.imag());
 }
 
-inline mpf_class abs(const mpf_class& x) {
-    return sgn<mpf_class>(x)*x;
-}
+inline mpf_class abs(const mpf_class& x) { return sgn<mpf_class>(x) * x; }
 
 inline mpf_class sqrt(const mpf_class& x) {
     mpf_class output;
-    mpf_sqrt(output.get_mpf_t(),x.get_mpf_t()); 
+    mpf_sqrt(output.get_mpf_t(), x.get_mpf_t());
     return output;
 }
 
