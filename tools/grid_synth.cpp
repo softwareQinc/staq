@@ -29,19 +29,17 @@
 #include <time.h>
 #include <vector>
 
-#include "grid_synth/types.hpp"
-#include "grid_synth/rz_approximation.hpp"
 #include "grid_synth/exact_synthesis.hpp"
+#include "grid_synth/rz_approximation.hpp"
+#include "grid_synth/types.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using namespace grid_synth;
     using namespace std;
 
-
-    
     bool check, details, verbose;
-    real_t theta,eps;
+    real_t theta, eps;
     vector<string> thetas;
     vector<long int> prec_lst;
     long int prec;
@@ -51,106 +49,152 @@ int main(int argc, char** argv) {
 
     CLI::App app{"Grid Synthesis"};
 
-    CLI::Option* thetas_op = app.add_option("-t, --theta", thetas, "Z-rotation angle in units of PI");
-    CLI::Option* prec_opt = app.add_option<long int,int>("-p, --precision", prec, "Precision in base ten as a positive integer (10^-p)");
-    CLI::Option* fact_eff = app.add_option<int,int>("-f, --factor-effort", factor_effort, "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort taken to factorize candidate solutions");
-    CLI::Option* read = app.add_option("-r, --read-table", tablefile, "Name of file containing s3 table");
-    CLI::Option* write = app.add_option("-w, --write-table", tablefile, "Name of table file to write s3_table to")
-                           ->excludes(read);
-    app.add_flag("-c, --check", check, "Output bool that will be 1 if the op string matches the input operator");
-    app.add_flag("-d, --details", details, "Output the particular value of the approximation including the power of root two in the denominator, the true error, and the T-count.");
-    app.add_flag("-v, --verbose", verbose, "Include additional output during runtime such as runtime parameters and update on each step.");
+    CLI::Option* thetas_op =
+        app.add_option("-t, --theta", thetas,
+                       "Z-rotation angle(s) in units of PI")
+            ->required();
+    CLI::Option* prec_opt =
+        app.add_option<long int, int>(
+               "-p, --precision", prec,
+               "Precision in base ten as a positive integer (10^-p)")
+            ->required();
+    CLI::Option* fact_eff =
+        app.add_option<int, int>("-f, --factor-effort", factor_effort,
+                                 "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
+                                 "taken to factorize candidate solutions");
+    CLI::Option* read = app.add_option("-r, --read-table", tablefile,
+                                       "Name of file containing s3 table");
+    CLI::Option* write =
+        app.add_option("-w, --write-table", tablefile,
+                       "Name of table file to write s3_table to")
+            ->excludes(read);
+    app.add_flag("-c, --check", check,
+                 "Output bool that will be 1 if the op string matches the "
+                 "input operator");
+    app.add_flag(
+        "-d, --details", details,
+        "Output the particular value of the approximation including the power "
+        "of root two in the denominator, the true error, and the T-count.");
+    app.add_flag("-v, --verbose", verbose,
+                 "Include additional output during runtime such as runtime "
+                 "parameters and update on each step.");
 
-    CLI11_PARSE(app,argc,argv);
+    CLI11_PARSE(app, argc, argv);
 
-
-
-    if(*read) {
-        if(verbose) cout << "Reading s3_table from " << tablefile << endl;
+    if (*read) {
+        if (verbose)
+            cout << "Reading s3_table from " << tablefile << endl;
         s3_table = read_s3_table(tablefile);
-    } else if(*write) {
-        if(verbose) cout << "Generating new table file and writing to " << tablefile << endl;
+    } else if (*write) {
+        if (verbose)
+            cout << "Generating new table file and writing to " << tablefile
+                 << endl;
         s3_table = generate_s3_table();
         write_s3_table(tablefile, s3_table);
-    } else if(ifstream(DEFAULT_TABLE_FILE)){
-        if(verbose) cout << "Table file found at default location " << DEFAULT_TABLE_FILE << endl;
+    } else if (ifstream(DEFAULT_TABLE_FILE)) {
+        if (verbose)
+            cout << "Table file found at default location "
+                 << DEFAULT_TABLE_FILE << endl;
         s3_table = read_s3_table(DEFAULT_TABLE_FILE);
     } else {
-        if(verbose) cout << "Failed to find " << DEFAULT_TABLE_FILE
-                         << ". Generating new table file and writing to "
-                         << DEFAULT_TABLE_FILE<< endl;
+        if (verbose)
+            cout << "Failed to find " << DEFAULT_TABLE_FILE
+                 << ". Generating new table file and writing to "
+                 << DEFAULT_TABLE_FILE << endl;
         s3_table = generate_s3_table();
-        write_s3_table(DEFAULT_TABLE_FILE,s3_table);
+        write_s3_table(DEFAULT_TABLE_FILE, s3_table);
     }
 
-    DEFAULT_GMP_PREC = 4*prec+19;
-    mpf_set_default_prec(log2(10)*DEFAULT_GMP_PREC);
-    TOL = pow(real_t(10),-DEFAULT_GMP_PREC+2);
+    DEFAULT_GMP_PREC = 4 * prec + 19;
+    mpf_set_default_prec(log2(10) * DEFAULT_GMP_PREC);
+    TOL = pow(real_t(10), -DEFAULT_GMP_PREC + 2);
     PI = gmp_pi();
     SQRT2 = sqrt(real_t(2));
     INV_SQRT2 = real_t(real_t(1) / SQRT2);
-    HALF_INV_SQRT2 = real_t(real_t(1)/(real_t(2)*SQRT2));
-    OMEGA = cplx_t(INV_SQRT2,INV_SQRT2);
-    OMEGA_CONJ = cplx_t(INV_SQRT2,-INV_SQRT2);
+    HALF_INV_SQRT2 = real_t(real_t(1) / (real_t(2) * SQRT2));
+    OMEGA = cplx_t(INV_SQRT2, INV_SQRT2);
+    OMEGA_CONJ = cplx_t(INV_SQRT2, -INV_SQRT2);
     LOG_LAMBDA = log(LAMBDA.decimal());
     SQRT_LAMBDA = sqrt(LAMBDA.decimal());
     SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
-    Im = cplx_t(real_t(0),real_t(1));
-    eps = pow(real_t(10),-prec);
+    Im = cplx_t(real_t(0), real_t(1));
+    eps = pow(real_t(10), -prec);
 
-    if(verbose) {
+    if (verbose) {
         cout << "Runtime Parameters" << endl;
         cout << "------------------" << endl;
-        cout << setw(3*COLW) << left << "TOL (Tolerance for float equality) " << setw(1) << ": "
-             << setw(3*COLW) << left << scientific << TOL << endl;
-        cout << setw(3*COLW) << left << "KMIN (Minimum scaling exponent) " << setw(1) << ": "
-             << setw(3*COLW) << left << fixed << KMIN << endl;
-        cout << setw(2*COLW) << left << "KMAX (Maximum scaling exponent) " << setw(1) << ": "
-             << setw(3*COLW) << left << fixed << KMAX << endl;
-        cout << setw(3*COLW) << left << "MAX_ATTEMPTS_POLLARD_RHO (How hard we try to factor) " << setw(1) << ": "
-             << setw(3*COLW) << left << MAX_ATTEMPTS_POLLARD_RHO << endl;
-        cout << setw(3*COLW) << left << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check primality) " << setw(1) << ": "
-             << setw(3*COLW) << left << MAX_ITERATIONS_FERMAT_TEST << endl;
+        cout << setw(3 * COLW) << left << "TOL (Tolerance for float equality) "
+             << setw(1) << ": " << setw(3 * COLW) << left << scientific << TOL
+             << endl;
+        cout << setw(3 * COLW) << left << "KMIN (Minimum scaling exponent) "
+             << setw(1) << ": " << setw(3 * COLW) << left << fixed << KMIN
+             << endl;
+        cout << setw(2 * COLW) << left << "KMAX (Maximum scaling exponent) "
+             << setw(1) << ": " << setw(3 * COLW) << left << fixed << KMAX
+             << endl;
+        cout << setw(3 * COLW) << left
+             << "MAX_ATTEMPTS_POLLARD_RHO (How hard we try to factor) "
+             << setw(1) << ": " << setw(3 * COLW) << left
+             << MAX_ATTEMPTS_POLLARD_RHO << endl;
+        cout << setw(3 * COLW) << left
+             << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check "
+                "primality) "
+             << setw(1) << ": " << setw(3 * COLW) << left
+             << MAX_ITERATIONS_FERMAT_TEST << endl;
     }
     cout << scientific;
 
-    if(*fact_eff) MAX_ATTEMPTS_POLLARD_RHO=factor_effort;
+    if (*fact_eff)
+        MAX_ATTEMPTS_POLLARD_RHO = factor_effort;
 
-    if(*prec_opt and *thetas_op) {
+    if (*prec_opt and *thetas_op) {
         random_numbers.seed(time(NULL));
 
-        for(auto theta : thetas) {
-            if(verbose) cout << "Finding approximation for theta = " << (theta) << "..." << endl;
-            RzApproximation rz_approx = find_fast_rz_approximation(real_t(theta)*PI,eps);
-            if(not rz_approx.solution_found()) {
-              cout << "No approximation found for RzApproximation. Try changing factorization effort." << endl;
-              return 1;
+        for (auto theta : thetas) {
+            if (verbose)
+                cout << "Finding approximation for theta = " << (theta) << "..."
+                     << endl;
+            RzApproximation rz_approx =
+                find_fast_rz_approximation(real_t(theta) * PI, eps);
+            if (not rz_approx.solution_found()) {
+                cout << "No approximation found for RzApproximation. Try "
+                        "changing factorization effort."
+                     << endl;
+                return 1;
             }
-            if(verbose) cout << "Approximation found. Synthesizing..." << endl;
+            if (verbose)
+                cout << "Approximation found. Synthesizing..." << endl;
             str_t op_str = synthesize(rz_approx.matrix(), s3_table);
-            if(verbose) cout << "Synthesis complete." << endl;
+            if (verbose)
+                cout << "Synthesis complete." << endl;
 
-            if(check) {
-              cout << "Check flag = " << (rz_approx.matrix() == domega_matrix_from_str(full_simplify_str(op_str))) << endl;
+            if (check) {
+                cout << "Check flag = "
+                     << (rz_approx.matrix() ==
+                         domega_matrix_from_str(full_simplify_str(op_str)))
+                     << endl;
             }
 
-            if(details) {
-              real_t scale = pow(SQRT2,rz_approx.matrix().k());
-              cout << rz_approx.matrix() << endl;
-              cout << "u decimal value = " << "(" << rz_approx.matrix().u().decimal().real()/scale
-                                           << "," << rz_approx.matrix().u().decimal().imag()/scale
-                                           << ")" << endl;
-              cout << "t decimal value = " << "(" << rz_approx.matrix().t().decimal().real()/scale 
-                                           << "," << rz_approx.matrix().t().decimal().imag()/scale 
-                                           << ")" << endl;
-              cout << "error = " << rz_approx.error() << endl;
-              str_t simplified = full_simplify_str(op_str);
-              string::difference_type n = count(simplified.begin(), simplified.end(), 'T');
-              cout << "T count = " << n << endl;
+            if (details) {
+                real_t scale = pow(SQRT2, rz_approx.matrix().k());
+                cout << rz_approx.matrix() << endl;
+                cout << "u decimal value = "
+                     << "(" << rz_approx.matrix().u().decimal().real() / scale
+                     << "," << rz_approx.matrix().u().decimal().imag() / scale
+                     << ")" << endl;
+                cout << "t decimal value = "
+                     << "(" << rz_approx.matrix().t().decimal().real() / scale
+                     << "," << rz_approx.matrix().t().decimal().imag() / scale
+                     << ")" << endl;
+                cout << "error = " << rz_approx.error() << endl;
+                str_t simplified = full_simplify_str(op_str);
+                string::difference_type n =
+                    count(simplified.begin(), simplified.end(), 'T');
+                cout << "T count = " << n << endl;
             }
 
-            for(auto &ch : full_simplify_str(op_str)) {
-              cout << ch << " ";
+            for (auto& ch : full_simplify_str(op_str)) {
+                cout << ch << " ";
             }
             cout << endl;
         }
