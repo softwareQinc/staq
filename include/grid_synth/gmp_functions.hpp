@@ -13,7 +13,7 @@ namespace grid_synth {
 
 // TODO add high precision sine and cosine functions
 
-inline mpf_class gmp_pi() {
+inline mpf_class gmp_pi(const mpf_class& tol) {
     using namespace std;
     real_t three("3");
     real_t lasts("0");
@@ -23,7 +23,7 @@ inline mpf_class gmp_pi() {
     real_t na("0");
     real_t d("0");
     real_t da("24");
-    while (abs(s - lasts) > TOL) {
+    while (abs(s - lasts) > tol) {
         lasts = s;
         n = n + na;
         na = na + mpf_class("8");
@@ -115,7 +115,7 @@ inline mpf_class decimal_part(const mpf_class& x, mpz_class& intpart) {
     return x - intpart;
 }
 
-inline mpf_class log(const mpf_class& x) {
+inline mpf_class log10(const mpf_class& x) {
     if (x <= 0) {
         std::cout << "mpf_class log(const mpf_class& x) expects x > 0"
                   << std::endl;
@@ -173,7 +173,7 @@ inline mpf_class reduce_angle(const mpf_class& phi) {
     return result;
 }
 
-inline mpf_class sin(const mpf_class& theta) {
+inline mpf_class sin(const mpf_class& theta, const mpf_class& tol=TOL) {
     real_t phi = reduce_angle(theta);
     mpz_class i = 1;
     mpf_class lasts = 0;
@@ -181,7 +181,7 @@ inline mpf_class sin(const mpf_class& theta) {
     mpf_class fact = 1;
     mpf_class num = phi;
     mpf_class sign = 1;
-    while (abs(s - lasts) > TOL) {
+    while (abs(s - lasts) > tol) {
         lasts = s;
         i += 2;
         fact *= i * (i - 1);
@@ -192,7 +192,7 @@ inline mpf_class sin(const mpf_class& theta) {
     return s;
 }
 
-inline mpf_class cos(const mpf_class& theta) {
+inline mpf_class cos(const mpf_class& theta, const mpf_class& tol=TOL) {
     real_t phi = reduce_angle(theta);
     mpz_class i = 0;
     mpf_class lasts = 0;
@@ -200,7 +200,7 @@ inline mpf_class cos(const mpf_class& theta) {
     mpf_class fact = 1;
     mpf_class num = 1;
     mpf_class sign = 1;
-    while (abs(s - lasts) > TOL) {
+    while (abs(s - lasts) > tol) {
         lasts = s;
         i += 2;
         fact *= i * (i - 1);

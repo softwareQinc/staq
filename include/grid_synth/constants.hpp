@@ -10,17 +10,63 @@
 namespace staq {
 namespace grid_synth {
 
+inline real_t TOL=1e-14;
+inline real_t PI=M_PI;
+inline long int DEFAULT_GMP_PREC=17;
+inline real_t SQRT2=std::sqrt(2);
+inline real_t INV_SQRT2=1/SQRT2;
+inline real_t HALF_INV_SQRT2=1/(2*SQRT2);
+inline cplx_t OMEGA(INV_SQRT2,INV_SQRT2);
+inline cplx_t OMEGA_CONJ(INV_SQRT2,-INV_SQRT2);
+inline cplx_t Im(0,1);
+inline int MAX_ATTEMPTS_POLLARD_RHO=100;
+inline real_t LOG_LAMBDA = std::log10(1+std::sqrt(2));
+inline real_t SQRT_LAMBDA = std::sqrt(1+std::sqrt(2));
+inline real_t SQRT_LAMBDA_INV = std::sqrt(-1+std::sqrt(2));
+
+const int KMIN = 0;        
+const int KMAX = 10000000; 
+const int COLW = 10;       
+const int PREC = 5;        
+const int POLLARD_RHO_INITIAL_ADDEND = 1;
+const int POLLARD_RHO_START = 2;
+const int MOD_SQRT_MAX_DEPTH = 20;
+const int DEFAULT_MAX_ATTEMPTS_POLLARD_RHO=100;
+
+const int MAX_ITERATIONS_FERMAT_TEST = 5;
+const  str_t DEFAULT_TABLE_FILE = "./.s3_table_file.csv";
+
+// on average we only need 2 attempts so 5 is playing it safe
+const int MAX_ATTEMPTS_SQRT_NEG_ONE = 10;
+
+
+inline void initialize_constants(int prec, int max_attempts) {
+    DEFAULT_GMP_PREC = 4*prec+19;
+    mpf_set_default_prec(log2(10)*DEFAULT_GMP_PREC);
+    //TOL = pow(real_t(10),-DEFAULT_GMP_PREC+2);
+    TOL = real_t("10e" + std::to_string(-DEFAULT_GMP_PREC+2));
+    SQRT2 = sqrt(real_t(2));
+    INV_SQRT2 = real_t(real_t(1) / SQRT2);
+    HALF_INV_SQRT2 = real_t(real_t(1)/(real_t(2)*SQRT2));
+    OMEGA = cplx_t(INV_SQRT2,INV_SQRT2);
+    OMEGA_CONJ = cplx_t(INV_SQRT2,-INV_SQRT2);
+    Im = cplx_t(real_t(0),real_t(1));
+    MAX_ATTEMPTS_POLLARD_RHO = max_attempts;
+}
+
+
+/*
 // Tolerance for equality when comparing floats. Default is set to guarentee
 // known edge cases.
-real_t TOL = 1e-17;
-real_t PI = M_PI;
-long int DEFAULT_GMP_PREC = 500;
-real_t SQRT2 = sqrt(real_t(2));
-real_t INV_SQRT2 = real_t(1) / SQRT2;
-real_t HALF_INV_SQRT2 = real_t(1) / (real_t(2) * SQRT2);
-cplx_t OMEGA(INV_SQRT2, INV_SQRT2);
-cplx_t OMEGA_CONJ(INV_SQRT2, -INV_SQRT2);
-cplx_t Im(real_t(0), real_t(1));
+inline real_t TOL = 1e-17;
+inline real_t PI = M_PI;
+inline long int DEFAULT_GMP_PREC = 500;
+inline real_t SQRT2 = sqrt(real_t(2));
+inline real_t INV_SQRT2 = real_t(1) / SQRT2;
+inline real_t HALF_INV_SQRT2 = real_t(1) / (real_t(2) * SQRT2);
+inline cplx_t OMEGA(INV_SQRT2, INV_SQRT2);
+inline cplx_t OMEGA_CONJ(INV_SQRT2, -INV_SQRT2);
+inline cplx_t Im(real_t(0), real_t(1));
 
 const double LOW_PREC_TOL = 1e-17; // tolerance for float equality as low
                                    // precisions
@@ -39,7 +85,7 @@ const str_t DEFAULT_TABLE_FILE = "./.s3_table_file.csv";
 
 // on average we only need 2 attempts so 5 is playing it safe
 const int MAX_ATTEMPTS_SQRT_NEG_ONE = 10;
-
+*/
 /*
  *  These need to be initialized once the required precision is known.
  */

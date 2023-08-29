@@ -516,10 +516,6 @@ using zomega_pair_t = std::array<ZOmega, 2>;
 const ZSqrt2 LAMBDA(1, 1);
 const ZSqrt2 LAMBDA_INV(-1, 1);
 
-real_t LOG_LAMBDA = log(LAMBDA.decimal());
-real_t SQRT_LAMBDA = sqrt(LAMBDA.decimal());
-real_t SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
-
 const std::array<ZOmega, 8> w_pow_arr{
     {ZOmega(0, 0, 0, 1), ZOmega(0, 0, 1, 0), ZOmega(0, 1, 0, 0),
      ZOmega(1, 0, 0, 0), ZOmega(0, 0, 0, -1), ZOmega(0, 0, -1, 0),

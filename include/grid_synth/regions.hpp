@@ -225,7 +225,7 @@ class Ellipse {
     real_t e_;
 
     void get_z_and_e_() {
-        z_ = real_t(real_t(real_t("0.5") * log(real_t(D_(1, 1) / D_(0, 0)))) /
+        z_ = real_t(real_t(real_t("0.5") * log10(real_t(D_(1, 1) / D_(0, 0)))) /
                     LOG_LAMBDA);
         e_ = sqrt(D_(1, 1) * D_(0, 0));
     }

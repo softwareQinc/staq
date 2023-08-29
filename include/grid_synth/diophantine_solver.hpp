@@ -6,10 +6,10 @@
 #include <cstdlib>
 #include <random>
 
-#include "constants.hpp"
 #include "random_numbers.hpp"
 #include "rings.hpp"
 #include "types.hpp"
+#include "constants.hpp"
 
 namespace staq {
 namespace grid_synth {
@@ -67,7 +67,7 @@ inline bool modular_sqrt(int_t& answer, const int_t& a, const int_t& p) {
         s += 1;
     }
 
-    int_t num_tries = 2 * int_t(log(p) * log(p));
+    int_t num_tries = 2 * int_t(log10(p) * log10(p));
     int_t j = 0;
 
     while ((mod_pow(z, int_t((p - 1) / 2), p) == 1) and (j < num_tries)) {

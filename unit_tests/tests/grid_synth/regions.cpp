@@ -114,7 +114,7 @@ TEST(EllipseTest, AreaRatio) {
 
     A = Ellipse(-5, -5, 15, 10, 0.5 * PI);
     bbox = A.bounding_box();
-
+    
     EXPECT_TRUE(abs(600 - bbox.area()) < TOL);
 }
 

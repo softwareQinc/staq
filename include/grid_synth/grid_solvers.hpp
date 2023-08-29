@@ -106,7 +106,7 @@ inline int_t upper_bound_b(const bound_t& xhi, const bound_t& ylo,
  */
 template <typename bound_t>
 inline int_t find_scale_exponent(const Interval<bound_t>& interval) {
-    real_t ratio = log(interval.width()) / LOG_LAMBDA;
+    real_t ratio = log10(interval.width()) / LOG_LAMBDA;
     return int_t(ratio) + 1;
 }
 
