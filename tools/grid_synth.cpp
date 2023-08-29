@@ -81,14 +81,9 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-<<<<<<< HEAD
     if (*read) {
         if (verbose)
             cout << "Reading s3_table from " << tablefile << endl;
-=======
-    if(*read) {
-        if(verbose) cout << "Reading s3_table from " << tablefile << endl;
->>>>>>> 3d5d094 (Fixed unit tests)
         s3_table = read_s3_table(tablefile);
     } else if (*write) {
         if (verbose)
@@ -109,19 +104,6 @@ int main(int argc, char** argv) {
         s3_table = generate_s3_table();
         write_s3_table(DEFAULT_TABLE_FILE, s3_table);
     }
-<<<<<<< HEAD
-
-    DEFAULT_GMP_PREC = 4 * prec + 19;
-    mpf_set_default_prec(log2(10) * DEFAULT_GMP_PREC);
-    TOL = pow(real_t(10), -DEFAULT_GMP_PREC + 2);
-    PI = gmp_pi();
-    SQRT2 = sqrt(real_t(2));
-    INV_SQRT2 = real_t(real_t(1) / SQRT2);
-    HALF_INV_SQRT2 = real_t(real_t(1) / (real_t(2) * SQRT2));
-    OMEGA = cplx_t(INV_SQRT2, INV_SQRT2);
-    OMEGA_CONJ = cplx_t(INV_SQRT2, -INV_SQRT2);
-    LOG_LAMBDA = log(LAMBDA.decimal());
-=======
     
     DEFAULT_GMP_PREC = 4*prec+19;
     mpf_set_default_prec(log2(10)*DEFAULT_GMP_PREC);
@@ -133,7 +115,6 @@ int main(int argc, char** argv) {
     OMEGA = cplx_t(INV_SQRT2,INV_SQRT2);
     OMEGA_CONJ = cplx_t(INV_SQRT2,-INV_SQRT2);
     LOG_LAMBDA = log10(LAMBDA.decimal());
->>>>>>> 3d5d094 (Fixed unit tests)
     SQRT_LAMBDA = sqrt(LAMBDA.decimal());
     SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
     Im = cplx_t(real_t(0), real_t(1));

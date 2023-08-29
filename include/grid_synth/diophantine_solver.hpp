@@ -6,10 +6,10 @@
 #include <cstdlib>
 #include <random>
 
+#include "constants.hpp"
 #include "random_numbers.hpp"
 #include "rings.hpp"
 #include "types.hpp"
-#include "constants.hpp"
 
 namespace staq {
 namespace grid_synth {

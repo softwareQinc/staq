@@ -173,7 +173,7 @@ inline mpf_class reduce_angle(const mpf_class& phi) {
     return result;
 }
 
-inline mpf_class sin(const mpf_class& theta, const mpf_class& tol=TOL) {
+inline mpf_class sin(const mpf_class& theta, const mpf_class& tol = TOL) {
     real_t phi = reduce_angle(theta);
     mpz_class i = 1;
     mpf_class lasts = 0;
@@ -192,7 +192,7 @@ inline mpf_class sin(const mpf_class& theta, const mpf_class& tol=TOL) {
     return s;
 }
 
-inline mpf_class cos(const mpf_class& theta, const mpf_class& tol=TOL) {
+inline mpf_class cos(const mpf_class& theta, const mpf_class& tol = TOL) {
     real_t phi = reduce_angle(theta);
     mpz_class i = 0;
     mpf_class lasts = 0;
