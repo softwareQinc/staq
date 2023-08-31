@@ -19,7 +19,7 @@ inline real_t HALF_INV_SQRT2 = 1 / (2 * SQRT2);
 inline cplx_t OMEGA(INV_SQRT2, INV_SQRT2);
 inline cplx_t OMEGA_CONJ(INV_SQRT2, -INV_SQRT2);
 inline cplx_t Im(0, 1);
-inline int MAX_ATTEMPTS_POLLARD_RHO = 10000;
+inline int MAX_ATTEMPTS_POLLARD_RHO = 200;
 inline real_t LOG_LAMBDA = std::log10(1 + std::sqrt(2));
 inline real_t SQRT_LAMBDA = std::sqrt(1 + std::sqrt(2));
 inline real_t SQRT_LAMBDA_INV = std::sqrt(-1 + std::sqrt(2));
