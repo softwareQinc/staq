@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
             if(timer) {
                 auto start = chrono::steady_clock::now();
                 rz_approx =
-                    find_fast_rz_approximation(real_t(theta) * PI/real_t("2"), eps);
+                    find_fast_rz_approximation(real_t(theta) * PI/real_t("-2"), eps);
                 str_t op_str = synthesize(rz_approx.matrix(), s3_table);
                 auto end =  chrono::steady_clock::now();
                 duration += chrono::duration_cast<chrono::microseconds>(end-start).count();
@@ -178,10 +178,10 @@ int main(int argc, char** argv) {
                          << endl;
                 if(more_verbose) 
                     rz_approx = 
-                    verbose_find_fast_rz_approximation(real_t(theta)*PI/real_t("2"),eps);
+                    verbose_find_fast_rz_approximation(real_t(theta)*PI/real_t("-2"),eps);
                 else
                     rz_approx =
-                        find_fast_rz_approximation(real_t(theta) * PI/real_t("2"), eps);
+                        find_fast_rz_approximation(real_t(theta) * PI/real_t("-2"), eps);
                 if (not rz_approx.solution_found()) {
                     cout << "No approximation found for RzApproximation. Try "
                             "changing factorization effort."
