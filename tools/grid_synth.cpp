@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     CLI::Option* fact_eff =
         app.add_option<int, int>("--pollard-rho", factor_effort,
                                  "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
-                                 "taken to factorize candidate solutions");
+                                 "taken to factorize candidate solutions (default=200)");
     CLI::Option* read = app.add_option("-r, --read-table", tablefile,
                                        "Name of file containing s3 table");
     CLI::Option* write =
