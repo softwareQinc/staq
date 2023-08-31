@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     CLI11_PARSE(app, argc, argv);
     
     if(verbose) 
-        cout << thetas.size() << " arguments read." << endl;
+        cout << thetas.size() << " angles read." << endl;
 
     if(more_verbose) 
         verbose=true;
