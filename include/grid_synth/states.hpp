@@ -140,7 +140,7 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
     }
     state = shift(state, k);
 
-    if (skew(state) > real_t(0.9) * initial_skew) {
+    if (skew(state) > real_t("0.9") * initial_skew) {
         std::cout << "reduce_skew failed to reduce the skew by at least 10%. "
                      "Exiting.";
         exit(EXIT_FAILURE);
@@ -163,8 +163,8 @@ inline SpecialGridOperator optimize_skew(state_t& state) {
         G = G * reduce_skew(state);
     }
 
-    state[0].rescale(1 / scaleA);
-    state[1].rescale(1 / scaleB);
+    state[0].rescale(real_t("1") / scaleA);
+    state[1].rescale(real_t("1") / scaleB);
 
     return G;
 }

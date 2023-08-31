@@ -28,6 +28,7 @@
 #include <iostream>
 #include <time.h>
 #include <vector>
+#include <chrono>
 
 #include "grid_synth/exact_synthesis.hpp"
 #include "grid_synth/rz_approximation.hpp"
@@ -38,7 +39,7 @@ int main(int argc, char** argv) {
     using namespace grid_synth;
     using namespace std;
     
-    bool check, details, verbose;
+    bool check, details, verbose,timer, more_verbose;
     real_t theta, eps;
     vector<string> thetas;
     vector<long int> prec_lst;
@@ -59,7 +60,7 @@ int main(int argc, char** argv) {
                "Precision in base ten as a positive integer (10^-p)")
             ->required();
     CLI::Option* fact_eff =
-        app.add_option<int, int>("-f, --factor-effort", factor_effort,
+        app.add_option<int, int>("--pollard-rho", factor_effort,
                                  "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
                                  "taken to factorize candidate solutions");
     CLI::Option* read = app.add_option("-r, --read-table", tablefile,
@@ -78,8 +79,18 @@ int main(int argc, char** argv) {
     app.add_flag("-v, --verbose", verbose,
                  "Include additional output during runtime such as runtime "
                  "parameters and update on each step.");
+    app.add_flag("-V, --more-verbose", more_verbose, 
+                 "Output update on approximation function");
+    app.add_flag("--time", timer,
+                 "Time program");
 
     CLI11_PARSE(app, argc, argv);
+    
+    if(verbose) 
+        cout << thetas.size() << " arguments read." << endl;
+
+    if(more_verbose) 
+        verbose=true;
 
     if (*read) {
         if (verbose)
@@ -104,7 +115,7 @@ int main(int argc, char** argv) {
         s3_table = generate_s3_table();
         write_s3_table(DEFAULT_TABLE_FILE, s3_table);
     }
-    
+
     DEFAULT_GMP_PREC = 4*prec+19;
     mpf_set_default_prec(log2(10)*DEFAULT_GMP_PREC);
     TOL = pow(real_t(10),-DEFAULT_GMP_PREC+2);
@@ -119,6 +130,9 @@ int main(int argc, char** argv) {
     SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
     Im = cplx_t(real_t(0), real_t(1));
     eps = pow(real_t(10), -prec);
+
+    if (*fact_eff)
+        MAX_ATTEMPTS_POLLARD_RHO = factor_effort;
 
     if (verbose) {
         cout << "Runtime Parameters" << endl;
@@ -144,60 +158,76 @@ int main(int argc, char** argv) {
     }
     cout << scientific;
 
-    if (*fact_eff)
-        MAX_ATTEMPTS_POLLARD_RHO = factor_effort;
-
+    auto duration = 0;
     if (*prec_opt and *thetas_op) {
         random_numbers.seed(time(NULL));
 
         for (auto theta : thetas) {
-            if (verbose)
-                cout << "Finding approximation for theta = " << (theta) << "..."
-                     << endl;
-            RzApproximation rz_approx =
-                find_fast_rz_approximation(real_t(theta) * PI, eps);
-            if (not rz_approx.solution_found()) {
-                cout << "No approximation found for RzApproximation. Try "
-                        "changing factorization effort."
-                     << endl;
-                return 1;
-            }
-            if (verbose)
-                cout << "Approximation found. Synthesizing..." << endl;
-            str_t op_str = synthesize(rz_approx.matrix(), s3_table);
-            if (verbose)
-                cout << "Synthesis complete." << endl;
+            RzApproximation rz_approx;
+            if(timer) {
+                auto start = chrono::steady_clock::now();
+                rz_approx =
+                    find_fast_rz_approximation(real_t(theta) * PI/real_t("2"), eps);
+                str_t op_str = synthesize(rz_approx.matrix(), s3_table);
+                auto end =  chrono::steady_clock::now();
+                duration += chrono::duration_cast<chrono::microseconds>(end-start).count();
+            } else {
+               
+                if (verbose)
+                    cout << "Finding approximation for theta = " << (theta) << "..."
+                         << endl;
+                if(more_verbose) 
+                    rz_approx = 
+                    verbose_find_fast_rz_approximation(real_t(theta)*PI/real_t("2"),eps);
+                else
+                    rz_approx =
+                        find_fast_rz_approximation(real_t(theta) * PI/real_t("2"), eps);
+                if (not rz_approx.solution_found()) {
+                    cout << "No approximation found for RzApproximation. Try "
+                            "changing factorization effort."
+                         << endl;
+                    return 1;
+                }
+                if (verbose)
+                    cout << "Approximation found. Synthesizing..." << endl;
+                str_t op_str = synthesize(rz_approx.matrix(), s3_table);
+                if (verbose)
+                    cout << "Synthesis complete." << endl;
 
-            if (check) {
-                cout << "Check flag = "
-                     << (rz_approx.matrix() ==
-                         domega_matrix_from_str(full_simplify_str(op_str)))
-                     << endl;
-            }
+                if (check) {
+                    cout << "Check flag = "
+                         << (rz_approx.matrix() ==
+                             domega_matrix_from_str(full_simplify_str(op_str)))
+                         << endl;
+                }
 
-            if (details) {
-                real_t scale = pow(SQRT2, rz_approx.matrix().k());
-                cout << rz_approx.matrix() << endl;
-                cout << "u decimal value = "
-                     << "(" << rz_approx.matrix().u().decimal().real() / scale
-                     << "," << rz_approx.matrix().u().decimal().imag() / scale
-                     << ")" << endl;
-                cout << "t decimal value = "
-                     << "(" << rz_approx.matrix().t().decimal().real() / scale
-                     << "," << rz_approx.matrix().t().decimal().imag() / scale
-                     << ")" << endl;
-                cout << "error = " << rz_approx.error() << endl;
-                str_t simplified = full_simplify_str(op_str);
-                string::difference_type n =
-                    count(simplified.begin(), simplified.end(), 'T');
-                cout << "T count = " << n << endl;
-            }
+                if (details) {
+                    real_t scale = pow(SQRT2, rz_approx.matrix().k());
+                    cout << "theta = " << theta;
+                    cout << rz_approx.matrix() << endl;
+                    cout << "u decimal value = "
+                         << "(" << rz_approx.matrix().u().decimal().real() / scale
+                         << "," << rz_approx.matrix().u().decimal().imag() / scale
+                         << ")" << endl;
+                    cout << "t decimal value = "
+                         << "(" << rz_approx.matrix().t().decimal().real() / scale
+                         << "," << rz_approx.matrix().t().decimal().imag() / scale
+                         << ")" << endl;
+                    cout << "error = " << rz_approx.error() << endl;
+                    str_t simplified = full_simplify_str(op_str);
+                    string::difference_type n =
+                        count(simplified.begin(), simplified.end(), 'T');
+                    cout << "T count = " << n << endl;
+                }
 
-            for (auto& ch : full_simplify_str(op_str)) {
-                cout << ch << " ";
+                for (auto& ch : full_simplify_str(op_str)) {
+                    cout << ch << " ";
+                }
+                cout << endl;
             }
-            cout << endl;
         }
     }
+    if(timer) 
+        cout << "Duration = " << (duration/1e6) << endl;
     return 0;
 }

@@ -72,8 +72,9 @@ class DOmegaMatrix {
 
     DOmegaMatrix mul_by_w(const int n) const {
         assert(-1 < n and n < 8);
-        return (*this) * DOmegaMatrix(w_pow(n), ZOmega(0), 0, (8 - n) % 8);
+        return (*this) * DOmegaMatrix(w_pow(n), ZOmega(0), 0, (2*n) % 8);
     }
+    
 
     DOmegaMatrix operator*(const DOmegaMatrix& B) const {
         return DOmegaMatrix(u_ * B.u() - t_.conj() * B.t() * w_pow(l_),

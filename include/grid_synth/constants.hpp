@@ -19,7 +19,7 @@ inline real_t HALF_INV_SQRT2 = 1 / (2 * SQRT2);
 inline cplx_t OMEGA(INV_SQRT2, INV_SQRT2);
 inline cplx_t OMEGA_CONJ(INV_SQRT2, -INV_SQRT2);
 inline cplx_t Im(0, 1);
-inline int MAX_ATTEMPTS_POLLARD_RHO = 100;
+inline int MAX_ATTEMPTS_POLLARD_RHO = 10000;
 inline real_t LOG_LAMBDA = std::log10(1 + std::sqrt(2));
 inline real_t SQRT_LAMBDA = std::sqrt(1 + std::sqrt(2));
 inline real_t SQRT_LAMBDA_INV = std::sqrt(-1 + std::sqrt(2));
@@ -31,13 +31,12 @@ const int PREC = 5;
 const int POLLARD_RHO_INITIAL_ADDEND = 1;
 const int POLLARD_RHO_START = 2;
 const int MOD_SQRT_MAX_DEPTH = 20;
-const int DEFAULT_MAX_ATTEMPTS_POLLARD_RHO = 100;
 
 const int MAX_ITERATIONS_FERMAT_TEST = 5;
 const str_t DEFAULT_TABLE_FILE = "./.s3_table_file.csv";
 
 // on average we only need 2 attempts so 5 is playing it safe
-const int MAX_ATTEMPTS_SQRT_NEG_ONE = 10;
+const int MAX_ATTEMPTS_SQRT_NEG_ONE = 100;
 
 inline void initialize_constants(int prec, int max_attempts) {
     DEFAULT_GMP_PREC = 4 * prec + 19;

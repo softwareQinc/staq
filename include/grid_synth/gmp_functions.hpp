@@ -161,8 +161,9 @@ inline mpf_class log2(const mpf_class& x) {
     return mpf_class(l + exp - 1);
 }
 
+
 /*
- * Takes in an angle phi and reduces it to the rand [-pi,pi] for evaluation.
+ * Takes in an angle phi and reduces it to interval [-pi,pi] for evaluation.
  */
 inline mpf_class reduce_angle(const mpf_class& phi) {
     mpf_class result = phi;
