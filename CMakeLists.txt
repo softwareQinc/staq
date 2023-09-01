@@ -10,8 +10,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 enable_testing()
 
-find_package(GMP REQUIRED)
-
 #### staq version
 add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
 add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
