@@ -86,7 +86,7 @@ class DOmegaMatrix {
                 (l_ == B.l()));
     }
 
-    bool operator!=(const DOmegaMatrix& B) const { return not((*this) == B); }
+    bool operator!=(const DOmegaMatrix& B) const { return !((*this) == B); }
 
 }; // DOmegaMatrix
 

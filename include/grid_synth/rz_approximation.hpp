@@ -84,7 +84,7 @@ inline RzApproximation find_rz_approximation(const real_t& theta,
 
     real_t scaleA;
     real_t scaleB;
-    while ((not solution_found) && k < max_k) {
+    while ((!solution_found) && k < max_k) {
         if (k % 2 == 0) {
             scaleA = pow(2, k / 2);
             scaleB = pow(2, k / 2);
@@ -146,7 +146,7 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
     UprightRectangle<real_t> bboxA = state[0].bounding_box();
     UprightRectangle<real_t> bboxB = state[1].bounding_box();
 
-    while ((not solution_found) && (k < max_k)) {
+    while ((!solution_found) && (k < max_k)) {
         if (k % 2 == 0) {
             scaleA = real_t(pow(2, k / 2));
             scaleB = real_t(pow(2, k / 2));
@@ -250,7 +250,7 @@ inline RzApproximation verbose_find_fast_rz_approximation(
     UprightRectangle<real_t> bboxA = state[0].bounding_box();
     UprightRectangle<real_t> bboxB = state[1].bounding_box();
     cout << "theta = " << theta << endl;
-    while ((not solution_found) && (k < max_k)) {
+    while ((!solution_found) && (k < max_k)) {
         if (k % 2 == 0) {
             scaleA = real_t(pow(2, k / 2));
             scaleB = real_t(pow(2, k / 2));

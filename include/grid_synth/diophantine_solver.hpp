@@ -196,12 +196,12 @@ inline bool prime_factorize_int(int_vec_t& prime_factors, const int_t& n) {
         } else {
             int_t factor;
             bool factor_found = pollard_rho(factor, candidate);
-            if (not factor_found)
+            if (!factor_found)
                 factor_found = pollard_rho(factor, candidate, -1);
 
             // N.B. This will cause the candidate n to be rejected. Might be
             // worth adding attempts here later on.
-            if (not factor_found)
+            if (!factor_found)
                 return false;
             if (factor == 7)
                 return false;
@@ -264,7 +264,7 @@ inline bool find_prime_factor_zsqrt2_in_zomega(ZOmega& prime_factor,
     else if (a == 1 || a == 5) {
         int_t h;
         bool sqrt_neg_one_found = modular_sqrt_neg_one(h, p);
-        if (not sqrt_neg_one_found)
+        if (!sqrt_neg_one_found)
             return false;
         prime_factor = ring_gcd<ZOmega>(ZOmega(0, 1, 0, h),
                                         ZOmega(-z.b(), 0, z.b(), z.a()));
@@ -272,7 +272,7 @@ inline bool find_prime_factor_zsqrt2_in_zomega(ZOmega& prime_factor,
     } else if (a == 3) {
         int_t h;
         bool modular_sqrt_found = modular_sqrt(h, -2, p);
-        if (not modular_sqrt_found)
+        if (!modular_sqrt_found)
             return false;
         prime_factor = ring_gcd<ZOmega>(ZOmega(0, 1, 0, h),
                                         ZOmega(-z.b(), 0, z.b(), z.a()));
@@ -307,7 +307,7 @@ inline bool diophantine_solver(ZOmega& answer, const ZSqrt2& xi) {
     int_vec_t prime_factors;
     bool factorize_succeeded = prime_factorize_int(prime_factors, p);
 
-    if (not factorize_succeeded)
+    if (!factorize_succeeded)
         return false;
 
     sort(prime_factors.begin(), prime_factors.end());
@@ -325,7 +325,7 @@ inline bool diophantine_solver(ZOmega& answer, const ZSqrt2& xi) {
         zsqrt2_vec_t prime_factors_zsqrt2;
         bool zsqrt2_factors_found =
             prime_factorize_int_in_zsqrt2(prime_factors_zsqrt2, prime_factor);
-        if (not zsqrt2_factors_found)
+        if (!zsqrt2_factors_found)
             return false;
 
         for (auto eta : prime_factors_zsqrt2) {
@@ -334,7 +334,7 @@ inline bool diophantine_solver(ZOmega& answer, const ZSqrt2& xi) {
                 ZOmega zomega_factor(0, 0, 0, 0);
                 bool found_zomega = find_prime_factor_zsqrt2_in_zomega(
                     zomega_factor, eta, prime_factor);
-                if (not found_zomega) {
+                if (!found_zomega) {
                     return false;
                 }
                 s = s * zomega_factor;

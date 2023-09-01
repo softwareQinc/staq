@@ -305,7 +305,7 @@ class ZOmega {
                       (c_ - a_) / 2);
     }
 
-    bool w() const { return bool(round(w_.real())); }
+    bool w() const { return round(w_.real()) != 0; }
 
     ZOmega dot() const { return ZOmega(-a_, b_, -c_, d_); }
     ZOmega conj() const { return ZOmega(-c_, -b_, -a_, d_); }
@@ -372,7 +372,7 @@ class ZOmega {
         c_ += Z.c();
         d_ += Z.d();
 
-        ZSqrt2 shift(0, bool(round(w_.real())) && Z.w());
+        ZSqrt2 shift(0, round(w_.real()) != 0 && Z.w());
 
         alpha_ += Z.alpha() + shift;
         beta_ += Z.beta() + shift;
@@ -387,7 +387,7 @@ class ZOmega {
         c_ -= Z.c();
         d_ -= Z.d();
 
-        ZSqrt2 shift(0, bool(round(w_.real())) && Z.w());
+        ZSqrt2 shift(0, round(w_.real()) != 0 && Z.w());
 
         alpha_ -= Z.alpha() + shift;
         beta_ -= Z.beta() + shift;
@@ -406,7 +406,7 @@ class ZOmega {
     //   c_ = -a_*Z.b() - b_*Z.a() + c_*Z.d() + d_*Z.c();
     //   d_ = -a_*Z.c() - b_*Z.b() - c_*Z.a() + d_*Z.d();
     //
-    //   ZSqrt2 shift(0, bool(round(w_.real())) && Z.w());
+    //   ZSqrt2 shift(0, round(w_.real()) != 0 && Z.w());
 
     //  alpha_ *= Z.alpha() + shift;
     //  beta_ *= Z.beta() + shift;
@@ -478,7 +478,7 @@ inline bool operator==(const ZOmega& Y, const ZOmega& Z) {
            (Y.d() == Z.d());
 }
 
-inline bool operator!=(const ZOmega& Y, const ZOmega& Z) { return not(Y == Z); }
+inline bool operator!=(const ZOmega& Y, const ZOmega& Z) { return !(Y == Z); }
 
 /*
  * Implements euclidean division on ZOmega
