@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
                     rz_approx = find_fast_rz_approximation(
                         real_t(angle) * PI / real_t("-2"), eps);
                 }
-                if (not rz_approx.solution_found()) {
+                if (!rz_approx.solution_found()) {
                     cout << "No approximation found for RzApproximation. Try "
                             "changing factorization effort."
                          << '\n';
