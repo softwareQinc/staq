@@ -74,7 +74,7 @@ class Interval {
     }
 
     bool contains(const bound_t& x, const real_t tol = TOL) const {
-        return ((hi_ - x) * (x - lo_) > 0) or
+        return ((hi_ - x) * (x - lo_) > 0) ||
                (abs((hi_ - x) * (x - lo_)) < tol);
     }
 
@@ -285,7 +285,7 @@ class Ellipse {
         // * a1d * a2d * a2d) / (a2d * a2d - a1d * a1d) << endl; cout << "asin =
         // " << fixed << setprecision(100) << asin((2 * odd * a1d * a1d * a2d *
         // a2d) / (a2d * a2d - a1d * a1d)) << endl; if (((real_t("2") * odd *
-        // a1d * a1d * a2d * a2d) < TOL) and
+        // a1d * a1d * a2d * a2d) < TOL) &&
         //     ((a2d * a2d - a1d * a1d) < TOL))
         //     angle = 0;
         // else
@@ -385,7 +385,7 @@ class Ellipse {
     bool contains(const vec_t& point, const real_t& tol = TOL) const {
         using namespace std;
         real_t x = (point - center_).transpose() * D_ * (point - center_);
-        return (x < real_t("1")) or (abs(x - real_t("1")) < tol);
+        return (x < real_t("1")) || (abs(x - real_t("1")) < tol);
     }
 
     bool contains(const real_t& x, const real_t& y,

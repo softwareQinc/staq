@@ -293,7 +293,7 @@ class ZOmega {
     }
 
     bool is_reducible() {
-        if (((a_ + c_) % 2 == 0) and ((b_ + d_) % 2 == 0))
+        if (((a_ + c_) % 2 == 0) && ((b_ + d_) % 2 == 0))
             return true;
         return false;
     }

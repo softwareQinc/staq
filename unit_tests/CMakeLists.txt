@@ -16,7 +16,10 @@ aux_source_directory(tests/optimization TEST_FILES)
 aux_source_directory(tests/transformations TEST_FILES)
 aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
-aux_source_directory(tests/grid_synth TEST_FILES)
+
+if (${WITH_GRID_SYNTH})
+    aux_source_directory(tests/grid_synth TEST_FILES)
+endif ()
 
 add_executable(${TARGET_NAME} EXCLUDE_FROM_ALL tests/main.cpp)
 add_dependencies(unit_tests ${TARGET_NAME})
@@ -31,6 +34,14 @@ foreach (filename ${TEST_FILES})
     target_sources(${TARGET_NAME} PUBLIC ${filename})
 endforeach ()
 
-target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq gmp gmpxx)
+target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq)
+
+if (${WITH_GRID_SYNTH})
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} PUBLIC PkgConfig::gmp PkgConfig::gmpxx)
+    else ()
+        target_link_libraries(${TARGET_NAME} PUBLIC gmp gmpxx)
+    endif ()
+endif ()
 
 gtest_discover_tests(${TARGET_NAME})

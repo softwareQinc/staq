@@ -137,7 +137,7 @@ inline zsqrt2_vec_t oneD_grid_solver(const Interval<bound_t>& A,
 
         for (int_t a = lowera; a <= uppera; a++) {
             ZSqrt2 candidate(a, b);
-            if (A.contains(candidate.decimal()) and
+            if (A.contains(candidate.decimal()) &&
                 B.contains(candidate.decimal_dot())) {
                 solns.push_back(candidate);
             }
@@ -179,7 +179,7 @@ inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
         int_t uppera = upper_bound_a<bound_t>(scaled_A.hi(), b, tol);
         for (int_t a = lowera; a <= uppera; a++) {
             ZSqrt2 candidate(a, b);
-            if (scaled_A.contains(candidate.decimal()) and
+            if (scaled_A.contains(candidate.decimal()) &&
                 scaled_B.contains(candidate.decimal_dot())) {
                 if (k > 0) {
                     solns.push_back(candidate * pow(LAMBDA, k));
@@ -246,7 +246,7 @@ inline zomega_vec_t twoD_grid_solver_ellipse(const Ellipse& A, const Ellipse& B,
     zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
     zomega_vec_t solns;
     for (auto candidate : candidates) {
-        if (A.contains(candidate.decimal()) and
+        if (A.contains(candidate.decimal()) &&
             B.contains(candidate.dot().decimal()))
             solns.push_back(candidate);
     }
@@ -264,7 +264,7 @@ inline zomega_vec_t twoD_grid_solver_ellipse(const state_t& state,
     zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
     zomega_vec_t solns;
     for (auto candidate : candidates) {
-        if (state[0].contains(candidate.decimal()) and
+        if (state[0].contains(candidate.decimal()) &&
             state[1].contains(candidate.dot().decimal())) {
             solns.push_back(candidate);
         }
@@ -285,7 +285,7 @@ inline zomega_vec_t twoD_grid_solver_ellipse_fatten(const state_t& state,
     zomega_vec_t candidates = twoD_grid_solver<real_t>(bboxA, bboxB, tol);
     zomega_vec_t solns;
     for (auto candidate : candidates) {
-        if (state[0].contains(candidate.decimal()) and
+        if (state[0].contains(candidate.decimal()) &&
             state[1].contains(candidate.dot().decimal())) {
             solns.push_back(candidate);
         }

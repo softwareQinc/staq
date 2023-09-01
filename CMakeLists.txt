@@ -17,6 +17,14 @@ add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 #### staq root directory
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
+#### grid synth
+option(WITH_GRID_SYNTH "Builds staq_grid_synth, requires GMP" OFF)
+if (${WITH_GRID_SYNTH})
+    message(STATUS "Builds staq_grid_synth - ON")
+else ()
+    message(STATUS "Builds staq_grid_synth - OFF")
+endif ()
+
 #### Force clang to use libc++
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -49,8 +57,10 @@ target_include_directories(libstaq INTERFACE
 option(USE_OPENQASM2_SPECS "Use OpenQASM 2.0 standard instead of Qiskit gate specifications" OFF)
 if (${USE_OPENQASM2_SPECS})
     target_compile_definitions(libstaq INTERFACE -DUSE_OPENQASM2_SPECS=true)
+    message(STATUS "OpenQASM2 specs - ON")
 else ()
     target_compile_definitions(libstaq INTERFACE -DUSE_OPENQASM2_SPECS=false)
+    message(STATUS "OpenQASM2 specs - OFF")
 endif ()
 
 #### Compiler

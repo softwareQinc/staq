@@ -229,15 +229,12 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
     return RzApproximation();
 }
 
-
-inline RzApproximation verbose_find_fast_rz_approximation(const real_t& theta,
-                                                          const real_t& eps,
-                                                          const int_t& kmin = KMIN,
-                                                          const int_t& kmax = KMAX,
-                                                          const real_t tol = TOL) {
+inline RzApproximation verbose_find_fast_rz_approximation(
+    const real_t& theta, const real_t& eps, const int_t& kmin = KMIN,
+    const int_t& kmax = KMAX, const real_t tol = TOL) {
     using namespace std;
     // int_t k = 3 * int_t(log(real_t(1) / eps) / log(2)) / 2;
-    //int_t k = kmin;
+    // int_t k = kmin;
     int_t k = 0;
     int_t max_k = kmax;
     bool solution_found = false;
@@ -261,32 +258,31 @@ inline RzApproximation verbose_find_fast_rz_approximation(const real_t& theta,
             scaleA = real_t(pow(2, (k - 1) / 2)) * SQRT2;
             scaleB = -real_t(pow(2, (k - 1) / 2)) * SQRT2;
         }
-        
+
         cout << "k = " << k << endl;
         bboxA.rescale(scaleA, scaleA);
         bboxB.rescale(scaleB, scaleB);
 
-        //Interval<real_t> A_x = bboxA.x_interval().fatten(eps);
-        //Interval<real_t> B_x = bboxB.x_interval().fatten(eps);
+        // Interval<real_t> A_x = bboxA.x_interval().fatten(eps);
+        // Interval<real_t> B_x = bboxB.x_interval().fatten(eps);
 
-        //Interval<real_t> A_y = bboxA.y_interval().fatten(eps);
-        //Interval<real_t> B_y = bboxB.y_interval().fatten(eps);
+        // Interval<real_t> A_y = bboxA.y_interval().fatten(eps);
+        // Interval<real_t> B_y = bboxB.y_interval().fatten(eps);
         Interval<real_t> A_x = bboxA.x_interval();
         Interval<real_t> B_x = bboxB.x_interval();
 
         Interval<real_t> A_y = bboxA.y_interval();
         Interval<real_t> B_y = bboxB.y_interval();
 
+        // real_t min_width = (real_t(1) + SQRT2) * (real_t(1) + SQRT2);
 
-        //real_t min_width = (real_t(1) + SQRT2) * (real_t(1) + SQRT2);
-
-        //if((A_x.width()*B_x.width() < min_width) or 
-        //   (A_y.width()*B_y.width() < min_width)) {
-        //    k++;
-        //    bboxA.rescale(1 / scaleA, 1 / scaleA);
-        //    bboxB.rescale(1 / scaleB, 1 / scaleB);
-        //    continue;
-        //}
+        // if((A_x.width()*B_x.width() < min_width) ||
+        //    (A_y.width()*B_y.width() < min_width)) {
+        //     k++;
+        //     bboxA.rescale(1 / scaleA, 1 / scaleA);
+        //     bboxB.rescale(1 / scaleB, 1 / scaleB);
+        //     continue;
+        // }
 
         zsqrt2_vec_t alpha_solns = oneD_optimal_grid_solver(A_x, B_x, tol);
         zsqrt2_vec_t beta_solns = oneD_optimal_grid_solver(A_y, B_y, tol);
@@ -313,12 +309,12 @@ inline RzApproximation verbose_find_fast_rz_approximation(const real_t& theta,
                     }
                 }
             }
-        
+
         zsqrt2_vec_t shifted_alpha_solns =
             oneD_optimal_grid_solver(A_x - INV_SQRT2, B_x + INV_SQRT2, tol);
         zsqrt2_vec_t shifted_beta_solns =
             oneD_optimal_grid_solver(A_y - INV_SQRT2, B_y + INV_SQRT2, tol);
-        
+
         for (auto alpha_soln : shifted_alpha_solns)
             for (auto beta_soln : shifted_beta_solns) {
                 ZOmega candidate = G * ZOmega(alpha_soln, beta_soln, 1);

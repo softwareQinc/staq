@@ -32,7 +32,7 @@ class DOmegaMatrix {
                  const unsigned int& l)
         : u_(u), t_(t), k_(k), l_(l) {
         this->reduce();
-        assert((l < 8) and (l >= 0));
+        assert((l < 8) && (l >= 0));
     }
 
     ZOmega u() const { return u_; }
@@ -57,9 +57,9 @@ class DOmegaMatrix {
     }
 
     void reduce() {
-        if (u_ == ZOmega(0) and t_ == ZOmega(0))
+        if (u_ == ZOmega(0) && t_ == ZOmega(0))
             return;
-        while (u_.is_reducible() and t_.is_reducible()) {
+        while (u_.is_reducible() && t_.is_reducible()) {
             u_ = u_.reduce();
             t_ = t_.reduce();
             k_ -= 1;
@@ -71,10 +71,9 @@ class DOmegaMatrix {
     }
 
     DOmegaMatrix mul_by_w(const int n) const {
-        assert(-1 < n and n < 8);
-        return (*this) * DOmegaMatrix(w_pow(n), ZOmega(0), 0, (2*n) % 8);
+        assert(-1 < n && n < 8);
+        return (*this) * DOmegaMatrix(w_pow(n), ZOmega(0), 0, (2 * n) % 8);
     }
-    
 
     DOmegaMatrix operator*(const DOmegaMatrix& B) const {
         return DOmegaMatrix(u_ * B.u() - t_.conj() * B.t() * w_pow(l_),
@@ -83,7 +82,7 @@ class DOmegaMatrix {
     }
 
     bool operator==(const DOmegaMatrix& B) const {
-        return ((u_ == B.u()) and (t_ == B.t()) and (k_ == B.k()) and
+        return ((u_ == B.u()) && (t_ == B.t()) && (k_ == B.k()) &&
                 (l_ == B.l()));
     }
 

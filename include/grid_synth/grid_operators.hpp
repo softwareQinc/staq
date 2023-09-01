@@ -144,7 +144,7 @@ inline ZOmega operator*(const GridOperator& G, const ZOmega& Z) {
     int_t v = x * G.c() + y * G.d() + (xp * G.cp()) / 2 + (yp * G.dp()) / 2;
     int_t vp = x * G.cp() + xp * G.c() + y * G.dp() + yp * G.d();
 
-    return ZOmega((vp - up) / 2, v, (vp + up) / 2, u);
+    return ZOmega{(vp - up) / 2, v, (vp + up) / 2, u};
 }
 
 // Comparison Operators
@@ -155,7 +155,7 @@ inline bool operator==(const GridOperator& G, const GridOperator& K) {
 }
 
 inline bool operator!=(const GridOperator& G, const GridOperator& K) {
-    return not(G == K);
+    return !(G == K);
 }
 
 inline GridOperator shift(const GridOperator& G, int_t k) {

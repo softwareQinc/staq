@@ -98,12 +98,12 @@ inline mpf_class pow(const mpf_class& base, signed long int exponent) {
 
 inline mpf_class fleq(const mpf_class& lhs, const mpf_class& rhs,
                       const mpf_class& tol = TOL) {
-    return (lhs < rhs) or (abs(lhs - rhs) < TOL);
+    return (lhs < rhs) || (abs(lhs - rhs) < TOL);
 }
 
 inline mpf_class fgeq(const mpf_class& lhs, const mpf_class& rhs,
                       const mpf_class& tol = TOL) {
-    return (lhs > rhs) or (abs(lhs - rhs) < TOL);
+    return (lhs > rhs) || (abs(lhs - rhs) < TOL);
 }
 
 /*
@@ -160,7 +160,6 @@ inline mpf_class log2(const mpf_class& x) {
 
     return mpf_class(l + exp - 1);
 }
-
 
 /*
  * Takes in an angle phi and reduces it to interval [-pi,pi] for evaluation.

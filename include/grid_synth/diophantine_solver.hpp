@@ -70,7 +70,7 @@ inline bool modular_sqrt(int_t& answer, const int_t& a, const int_t& p) {
     int_t num_tries = 2 * int_t(log10(p) * log10(p));
     int_t j = 0;
 
-    while ((mod_pow(z, int_t((p - 1) / 2), p) == 1) and (j < num_tries)) {
+    while ((mod_pow(z, int_t((p - 1) / 2), p) == 1) && (j < num_tries)) {
         z = 2 + (random_numbers.get_z_range(p - 2) % (p - 2));
         j++;
     }
@@ -86,7 +86,7 @@ inline bool modular_sqrt(int_t& answer, const int_t& a, const int_t& p) {
     int_t r = int_t(mod_pow(a, int_t((q + 1) / 2), p));
 
     int_t depth = 1;
-    while (t != 0 and t != 1) {
+    while (t != 0 && t != 1) {
         int_t i = 0;
         while ((int_t(mod_pow(t, int_t(pow(2, i)), p))) != 1) {
             i += 1;
@@ -134,7 +134,7 @@ inline T ring_gcd(const T& a, const T& b) {
  */
 inline bool is_prime(const int_t& n,
                      const int_t& max_iters = MAX_ITERATIONS_FERMAT_TEST) {
-    if (n == 2 or n == 3)
+    if (n == 2 || n == 3)
         return true;
 
     for (int_t i = 0; i < max_iters; i++) {
@@ -225,11 +225,11 @@ inline bool prime_factorize_int_in_zsqrt2(zsqrt2_vec_t& factors,
         return true;
     }
     int_t r = p % 8;
-    if (r == 3 or r == 5) {
+    if (r == 3 || r == 5) {
         factors.push_back(ZSqrt2(p, 0));
         return true;
     }
-    if (r == 1 or r == 7) {
+    if (r == 1 || r == 7) {
         int_t x;
         bool modular_sqrt_found = modular_sqrt(x, 2, p);
         if (modular_sqrt_found) {
@@ -261,7 +261,7 @@ inline bool find_prime_factor_zsqrt2_in_zomega(ZOmega& prime_factor,
         return false;
     else if (a == 7)
         return false;
-    else if (a == 1 or a == 5) {
+    else if (a == 1 || a == 5) {
         int_t h;
         bool sqrt_neg_one_found = modular_sqrt_neg_one(h, p);
         if (not sqrt_neg_one_found)
@@ -298,7 +298,7 @@ inline bool diophantine_solver(ZOmega& answer, const ZSqrt2& xi) {
         return true;
     }
 
-    if ((xi.decimal() < 0) or (xi.dot().decimal() < 0))
+    if ((xi.decimal() < 0) || (xi.dot().decimal() < 0))
         return false;
 
     int_t p = xi.norm();
