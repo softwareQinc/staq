@@ -19,6 +19,8 @@ as [Windows](https://www.microsoft.com/en-us/windows).
   [clang](https://clang.llvm.org),
   [MSVC](https://visualstudio.microsoft.com/vs/)
 
+- Optional, [GNU MP](https://gmplib.org/) library for building `staq_grid_synth`
+
 ---
 
 ## UNIX/UNIX-like/Windows
@@ -30,7 +32,19 @@ To build both tool suite and the **staq** executable, execute
 cmake -B build
 ```
 
-followed by
+If you want to build the grid synth tool `staq_grid_synth`, install the
+[GNU MP library](https://gmplib.org/) and enable building `staq_grid_synth` via
+the `CMake` option `-DWITH_GRID_SYNTH=ON` (`OFF` by default), i.e.,
+
+```shell
+cmake -B build -DWITH_GRID_SYNTH=ON
+```
+
+For more details about how to install and configure GNU MP on various platforms,
+see the
+[GitHub Actions configuration file](https://github.com/softwareQinc/staq/blob/main/.github/workflows/cmake.yml).
+
+Next, build the **staq** system by executing
 
 ```shell
 cmake --build build --parallel 8
