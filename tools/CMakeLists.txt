@@ -2,7 +2,7 @@ file(GLOB FILENAMES *.cpp)
 
 add_custom_target(tools COMMENT "Build all binary tools.")
 
-if (${WITH_GRID_SYNTH})
+if (${BUILD_GRID_SYNTH})
     if (MSVC)
         # gmp, gmpxx
         find_package(PkgConfig REQUIRED)
@@ -15,7 +15,7 @@ endif ()
 
 foreach (filename ${FILENAMES})
     get_filename_component(basename ${filename} NAME_WE)
-    if (${WITH_GRID_SYNTH})
+    if (${BUILD_GRID_SYNTH})
         if (${basename} STREQUAL "grid_synth")
             add_executable("staq_${basename}" ${filename})
             if (MSVC)

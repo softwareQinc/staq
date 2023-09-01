@@ -18,8 +18,8 @@ add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
 #### grid synth
-option(WITH_GRID_SYNTH "Builds staq_grid_synth, requires GMP" OFF)
-if (${WITH_GRID_SYNTH})
+option(BUILD_GRID_SYNTH "Builds staq_grid_synth, requires GMP" OFF)
+if (${BUILD_GRID_SYNTH})
     message(STATUS "Builds staq_grid_synth - ON")
 else ()
     message(STATUS "Builds staq_grid_synth - OFF")

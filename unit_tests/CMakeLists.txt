@@ -6,7 +6,7 @@ if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif ()
 
-if (${WITH_GRID_SYNTH})
+if (${BUILD_GRID_SYNTH})
     if (MSVC)
         # gmp, gmpxx
         find_package(PkgConfig REQUIRED)
@@ -28,7 +28,7 @@ aux_source_directory(tests/transformations TEST_FILES)
 aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
 
-if (${WITH_GRID_SYNTH})
+if (${BUILD_GRID_SYNTH})
     aux_source_directory(tests/grid_synth TEST_FILES)
 endif ()
 
@@ -47,7 +47,7 @@ endforeach ()
 
 target_link_libraries(${TARGET_NAME} PUBLIC gmock libstaq)
 
-if (${WITH_GRID_SYNTH})
+if (${BUILD_GRID_SYNTH})
     if (MSVC)
         target_link_libraries(${TARGET_NAME} PUBLIC PkgConfig::gmp PkgConfig::gmpxx)
     else ()

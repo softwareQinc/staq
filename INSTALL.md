@@ -34,10 +34,10 @@ cmake -B build
 
 If you want to build the grid synth tool `staq_grid_synth`, install the
 [GNU MP library](https://gmplib.org/) and enable building `staq_grid_synth` via
-the `CMake` option `-DWITH_GRID_SYNTH=ON` (`OFF` by default), i.e.,
+the `CMake` option `-DBUILD_GRID_SYNTH=ON` (`OFF` by default), i.e.,
 
 ```shell
-cmake -B build -DWITH_GRID_SYNTH=ON
+cmake -B build -DBUILD_GRID_SYNTH=ON
 ```
 
 For more details about how to install and configure GNU MP on various platforms,

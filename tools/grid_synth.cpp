@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
     cout << scientific;
 
     long long duration = 0;
-    if (*prec_opt and *thetas_op) {
+    if (*prec_opt && *thetas_op) {
         random_device rd;
         random_numbers.seed(rd());
 

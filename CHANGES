@@ -1,3 +1,8 @@
+Pre-release
+    - Added grid synth rotation synthesizer algorithm, requires GNU MP.
+      Disabled by default, to enable, pass `-DBUILD_GRID_SYNTH=ON` to `CMake`.
+      When enabled, builds `staq_grid_synth`.
+
 Version 3.2.2 - 12 June 2023
     - This is a maintenance release
     - Compiling errors fixed on SunOS/OpenIndiana
