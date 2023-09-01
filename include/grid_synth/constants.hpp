@@ -11,7 +11,7 @@ namespace staq {
 namespace grid_synth {
 
 inline real_t TOL = 1e-14;
-inline real_t PI = M_PI;
+inline real_t PI = 3.14159265358979323846264338327950288; // M_PI not standard
 inline long int DEFAULT_GMP_PREC = 17;
 inline real_t SQRT2 = std::sqrt(2);
 inline real_t INV_SQRT2 = 1 / SQRT2;
@@ -53,10 +53,10 @@ inline void initialize_constants(int prec, int max_attempts) {
 }
 
 /*
-// Tolerance for equality when comparing floats. Default is set to guarentee
+// Tolerance for equality when comparing floats. Default is set to guarantee
 // known edge cases.
 inline real_t TOL = 1e-17;
-inline real_t PI = M_PI;
+inline real_t PI = 3.14159265358979323846264338327950288 ; // M_PI not standard
 inline long int DEFAULT_GMP_PREC = 500;
 inline real_t SQRT2 = sqrt(real_t(2));
 inline real_t INV_SQRT2 = real_t(1) / SQRT2;
