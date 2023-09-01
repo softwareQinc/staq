@@ -6,6 +6,17 @@ if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 endif ()
 
+if (${WITH_GRID_SYNTH})
+    if (MSVC)
+        # gmp, gmpxx
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+        pkg_check_modules(gmpxx REQUIRED IMPORTED_TARGET gmpxx)
+    else ()
+        find_package(GMP REQUIRED)
+    endif ()
+endif ()
+
 add_subdirectory(libs/googletest-release-1.12.1 EXCLUDE_FROM_ALL SYSTEM)
 
 aux_source_directory(tests TEST_FILES)
