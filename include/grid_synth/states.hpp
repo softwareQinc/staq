@@ -85,7 +85,7 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
     real_t z = state[0].z();
     real_t zeta = state[1].z();
 
-    if (fgeq(state[0].D(0, 1), real_t("0"))) {
+    if (static_cast<bool>(fgeq(state[0].D(0, 1), real_t("0")))) {
         if (fgeq(z, real_t("-0.8")) && fleq(z, real_t("0.8")) &&
             fgeq(zeta, real_t("-0.8")) && fleq(zeta, real_t("0.8"))) {
             G = G * R;
