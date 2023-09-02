@@ -63,6 +63,7 @@ class RzApproximation {
     }
 };
 
+
 inline RzApproximation find_rz_approximation(const real_t& theta,
                                              const real_t& eps,
                                              const real_t tol = TOL) {
