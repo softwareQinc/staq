@@ -60,7 +60,7 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            cmake --install build
+            cmake --build build --target install
           else
             sudo cmake --install build
           fi
