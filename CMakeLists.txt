@@ -35,6 +35,9 @@ if (MSVC)
     include_directories(SYSTEM libs/pthreadwin32)
     add_compile_options(-bigobj)
     add_compile_definitions(NOMINMAX)
+    if (MSVC_VERSION GREATER_EQUAL 1914)
+        add_compile_options("/Zc:__cplusplus")
+    endif ()
 endif ()
 
 #### MinGW or Cygwin have issues with object files that are too large
