@@ -138,12 +138,12 @@ inline DOmegaMatrix domega_matrix_from_str(str_t str) {
             prod = prod * T;
         else if (ele == 'S')
             prod = prod * S;
-        else if (ele == 'w')
+        else if (ele == 'W')
             prod = prod.mul_by_w(1);
         else if (ele == 'I')
             continue;
         else {
-            std::cout << "Failed to identify string character " << ele
+            std::cout << "In domega_matrix_from_str, unrecognized character " << ele
                       << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -205,7 +205,7 @@ inline str_t simplify_str(str_t str) {
             second++;
             continue;
         } else {
-            std::cout << "Unrecognized character in operator string."
+            std::cout << "In simplify_str, unrecognized character in string " << str[first]
                       << std::endl;
             exit(EXIT_FAILURE);
         }

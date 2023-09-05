@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
              << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check "
                 "primality) "
              << setw(1) << ": " << setw(3 * COLW) << left
-             << MAX_ITERATIONS_FERMAT_TEST << endl;
+             << MAX_ITERATIONS_FERMAT_TEST << '\n';
     }
     cout << scientific;
 
@@ -170,6 +170,21 @@ int main(int argc, char** argv) {
         random_numbers.seed(rd());
 
         for (const auto& angle : thetas) {
+            str_t common_case = check_common_cases(real_t(angle),eps);
+            if(verbose) 
+                cout << "Checking common cases..." << '\n';
+            if(common_case != "") {
+                if(details) 
+                    cout << "Angle is multiple of pi/4, answer is known exactly" << '\n';
+                if (check) {
+                    cout << "Check flag = " << 1 << '\n';
+                }
+                cout << common_case << endl;
+                return 0;
+            }
+            if(verbose)
+                cout << "No common cases found" << '\n';
+            
             RzApproximation rz_approx;
             if (timer) {
                 auto start = chrono::steady_clock::now();
@@ -241,12 +256,12 @@ int main(int argc, char** argv) {
                 for (auto& ch : full_simplify_str(op_str)) {
                     cout << ch << " ";
                 }
-                cout << endl;
+                cout << '\n';
             }
         }
     }
 
     if (timer) {
-        cout << "Duration = " << (static_cast<double>(duration) / 1e6) << endl;
+        cout << "Duration = " << (static_cast<double>(duration) / 1e6) << '\n';
     }
 }
