@@ -9,8 +9,14 @@ namespace grid_synth {
 
 // Returns known common cases for multiples of theta = pi/4. w =
 // 1/(sqrt(omega)).
-inline str_t check_common_cases(real_t theta, real_t eps) {
-    if(abs(theta-real_t("0.25")) < eps) {
+inline str_t check_common_cases(real_t theta, const real_t& eps) {
+ 
+  while(theta > real_t("2"))
+      theta = theta - real_t("2");
+  while(theta < 0)
+      theta = theta + real_t("2");
+    
+  if(abs(theta-real_t("0.25")) < eps) {
         return "T w";
     }
     else if(abs(theta-real_t("0.5") < eps)) {
