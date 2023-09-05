@@ -7,6 +7,46 @@
 namespace staq {
 namespace grid_synth {
 
+// Returns known common cases for multiples of theta = pi/4. w =
+// 1/(sqrt(omega)).
+inline str_t check_common_cases(real_t theta, const real_t& eps) {
+ 
+  while(theta > real_t("2"))
+      theta = theta - real_t("2");
+  while(theta < 0)
+      theta = theta + real_t("2");
+    
+  if(abs(theta-real_t("0.25")) < eps) {
+        return "T w";
+    }
+    else if(abs(theta-real_t("0.5") < eps)) {
+        return "S W W W W W W W";
+    }
+    else if(abs(theta-real_t("0.75") < eps)) {
+        return "S T W W W W W W W w"; 
+    }
+    else if(abs(theta-real_t("1")) < eps) {
+        return "S S W W W W W W";
+    }
+    else if(abs(theta-real_t("1.25")) < eps) {
+        return "S S T W W W W W W w";
+    }
+    else if(abs(theta-real_t("1.5")) < eps) {
+        return "S S S W W W W W";
+    }
+    else if(abs(theta-real_t("1.75")) < eps) {
+        return "S S S T W W W W W w";
+    }
+    else if(abs(theta-real_t("2")) < eps) {
+        return "W W W W";
+    }
+    else {
+        return "";
+    }
+    return "";
+}
+
+
 inline str_t synthesize(const DOmegaMatrix& D,
                         const domega_matrix_table_t& s3_table) {
     using namespace std;

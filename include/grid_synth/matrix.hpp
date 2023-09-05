@@ -138,12 +138,12 @@ inline DOmegaMatrix domega_matrix_from_str(str_t str) {
             prod = prod * T;
         else if (ele == 'S')
             prod = prod * S;
-        else if (ele == 'w')
+        else if (ele == 'W')
             prod = prod.mul_by_w(1);
         else if (ele == 'I')
             continue;
         else {
-            std::cout << "Failed to identify string character " << ele
+            std::cout << "In domega_matrix_from_str, unrecognized character " << ele
                       << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -199,13 +199,13 @@ inline str_t simplify_str(str_t str) {
             new_str += "S";
             first++;
             second++;
-        } else if (str[first] == 'w') {
-            new_str += "w";
+        } else if (str[first] == 'W') {
+            new_str += "W";
             first++;
             second++;
             continue;
         } else {
-            std::cout << "Unrecognized character in operator string."
+            std::cout << "In simplify_str, unrecognized character in string " << str[first]
                       << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -239,7 +239,7 @@ inline domega_matrix_table_t generate_s3_table() {
 
     domega_matrix_table_t s3_table;
     arr_t base = {"I", "T", "TT", "TTT", "TTTT", "TTTTT", "TTTTTT", "TTTTTTT"};
-    arr_t wstr = {"", "w", "ww", "www", "wwww", "wwwww", "wwwwww", "wwwwwww"};
+    arr_t wstr = {"", "W", "WW", "WWW", "WWWW", "WWWWW", "WWWWWW", "WWWWWWW"};
 
     for (int i = 0; i < 8; i++) {
         DOmegaMatrix D = domega_matrix_from_str(base[i]);

@@ -8,5 +8,5 @@ gate foo a {
   cx a,c[0];
 }
 
-qreg x[2];
-foo x[0];
+qreg q[2];
+foo q[0];
