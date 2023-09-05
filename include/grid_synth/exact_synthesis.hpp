@@ -7,6 +7,20 @@
 namespace staq {
 namespace grid_synth {
 
+// Returns correct string multiples of pi/8.
+inline str_t common_cases(theta,eps) {
+    if(abs(theta-real_t("0.25")) < eps) {
+        return "wT";
+    }
+    else if(abs(theta-real_t("1")) < eps) {
+        return "S"
+    }
+
+      
+
+    return "";
+}
+
 inline str_t synthesize(const DOmegaMatrix& D,
                         const domega_matrix_table_t& s3_table) {
     using namespace std;

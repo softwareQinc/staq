@@ -199,8 +199,8 @@ inline str_t simplify_str(str_t str) {
             new_str += "S";
             first++;
             second++;
-        } else if (str[first] == 'w') {
-            new_str += "w";
+        } else if (str[first] == 'W') {
+            new_str += "W";
             first++;
             second++;
             continue;
@@ -239,7 +239,7 @@ inline domega_matrix_table_t generate_s3_table() {
 
     domega_matrix_table_t s3_table;
     arr_t base = {"I", "T", "TT", "TTT", "TTTT", "TTTTT", "TTTTTT", "TTTTTTT"};
-    arr_t wstr = {"", "w", "ww", "www", "wwww", "wwwww", "wwwwww", "wwwwwww"};
+    arr_t wstr = {"", "W", "WW", "WWW", "WWWW", "WWWWW", "WWWWWW", "WWWWWWW"};
 
     for (int i = 0; i < 8; i++) {
         DOmegaMatrix D = domega_matrix_from_str(base[i]);
