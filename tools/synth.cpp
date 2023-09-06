@@ -14,7 +14,7 @@ int main() {
 
     auto program = parse_stdin();
     if (program) {
-        transformations::desugar(*program);
+        transformations::replace_rz(*program);
         std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
