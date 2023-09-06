@@ -5,14 +5,18 @@
  * 3. Replace them
  */
 
-#include "qasmtools/parser/parser.hpp"
 #include "transformations/synth.hpp"
+#include "qasmtools/parser/parser.hpp"
+
+#include "grid_synth/gmp_functions.hpp"
 
 int main() {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    auto program = parse_stdin();
+    using namespace std;
+
+    auto program = parse_stdin("", true);
     if (program) {
         transformations::replace_rz(*program);
         std::cout << *program;

@@ -9,9 +9,9 @@
 #include <list>
 #include <variant>
 
-#include "qasmtools/ast/replacer.hpp"
 #include "grid_synth/exact_synthesis.hpp"
 #include "grid_synth/rz_approximation.hpp"
+#include "qasmtools/ast/replacer.hpp"
 
 namespace staq {
 namespace transformations {
@@ -25,7 +25,6 @@ class ReplaceRZImpl final : public ast::Replacer {
     ~ReplaceRZImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
-
 
     /* Overrides */
 
@@ -43,17 +42,23 @@ class ReplaceRZImpl final : public ast::Replacer {
             // Evaluate the Expr as a C++ double for now
             ast::Expr& theta_arg = gate.carg(0);
             std::optional<double> val = theta_arg.constant_eval();
-            double value = val ? val.value() : 0;   // this should never be false, TODO: check!
-            std::string rz_approx = get_rz_approx(value);
-            
+            std::optional<real_t> val2 = theta_arg.constant_eval_gmp();
+            double value = val ? val.value()
+                               : 0; // this should never be false, TODO: check!
+            real_t value2 = val2 ? val2.value() : real_t(0);
+            std::string rz_approx = get_rz_approx(value2);
+            std::cerr << value << ' ' << value2 << std::endl
+                      << rz_approx << std::endl;
+
             for (char c : rz_approx) {
-                if (c == ' ') continue;
+                if (c == ' ')
+                    continue;
                 std::vector<ast::ptr<ast::Expr>> c_args;
                 std::vector<ast::VarAccess> q_args(gate.qargs());
-                
+
                 ret.emplace_back(std::make_unique<ast::DeclaredGate>(
                     ast::DeclaredGate(gate.pos(), std::string(1, tolower(c)),
-                                    std::move(c_args), std::move(q_args))));
+                                      std::move(c_args), std::move(q_args))));
             }
 
             return std::move(ret);
@@ -69,8 +74,8 @@ class ReplaceRZImpl final : public ast::Replacer {
 
         // Initialize constants
         DEFAULT_GMP_PREC = 4 * prec + 19;
-        mpf_set_default_prec(log(10)/log(2) * DEFAULT_GMP_PREC);
-        //mpf_set_default_prec(log2(10) * DEFAULT_GMP_PREC);
+        mpf_set_default_prec(log(10) / log(2) * DEFAULT_GMP_PREC);
+        // mpf_set_default_prec(log2(10) * DEFAULT_GMP_PREC);
         TOL = pow(real_t(10), -DEFAULT_GMP_PREC + 2);
         PI = gmp_pi(TOL);
         SQRT2 = sqrt(real_t(2));
@@ -82,7 +87,7 @@ class ReplaceRZImpl final : public ast::Replacer {
         SQRT_LAMBDA = sqrt(LAMBDA.decimal());
         SQRT_LAMBDA_INV = sqrt(LAMBDA_INV.decimal());
         Im = cplx_t(real_t(0), real_t(1));
-        //eps = pow(real_t(10), -prec);
+        // eps = pow(real_t(10), -prec);
 
         // Load s3_table
         if (std::ifstream(DEFAULT_TABLE_FILE)) {
@@ -94,30 +99,54 @@ class ReplaceRZImpl final : public ast::Replacer {
     }
 
   private:
-    const double eps = 1e-15;
+    const double eps = 1e-10;
     std::unordered_map<double, std::string> rz_approx_cache;
     grid_synth::domega_matrix_table_t s3_table;
 
     /*! \brief Find RZ-approximation for angle theta using grid_synth. */
     std::string get_rz_approx(double theta) {
         using namespace grid_synth;
- 
+
         // first check common cases
-        std::string ret = check_common_cases(real_t(theta/M_PI), real_t(eps));
-        if (ret != "") return ret;
+        std::string ret = check_common_cases(real_t(theta / M_PI), real_t(eps));
+        if (ret != "")
+            return ret;
 
         // then look it up in cache
         if (rz_approx_cache.count(theta)) {
             return rz_approx_cache[theta];
         }
-        
+
         // then actually find an approximation
-        RzApproximation rz_approx = find_fast_rz_approximation(real_t(theta)/real_t("-2.0"), real_t(eps));
+        RzApproximation rz_approx = find_fast_rz_approximation(
+            real_t(theta) / real_t("-2.0"), real_t(eps));
         ret = synthesize(rz_approx.matrix(), s3_table);
         rz_approx_cache[theta] = ret;
         return ret;
     }
 
+    std::string get_rz_approx(const real_t& theta) {
+        using namespace grid_synth;
+
+        // first check common cases
+        std::string ret =
+            check_common_cases(theta / gmp_pi(real_t("0.0000000000000001")),
+                               real_t("0.0000000000000001"));
+        if (ret != "")
+            return ret;
+
+        // then look it up in cache
+        //  if (rz_approx_cache2.count(theta)) {
+        //      return rz_approx_cache2[theta];
+        //  }
+
+        // then actually find an approximation
+        RzApproximation rz_approx = find_fast_rz_approximation(
+            theta / real_t("-2.0"), real_t("0.0000000000000001"));
+        ret = synthesize(rz_approx.matrix(), s3_table);
+        //   rz_approx_cache2[theta] = ret;
+        return ret;
+    }
 };
 
 void replace_rz(ast::ASTNode& node) {

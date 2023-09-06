@@ -170,21 +170,22 @@ int main(int argc, char** argv) {
         random_numbers.seed(rd());
 
         for (const auto& angle : thetas) {
-            str_t common_case = check_common_cases(real_t(angle),eps);
-            if(verbose) 
+            str_t common_case = check_common_cases(real_t(angle), eps);
+            if (verbose)
                 cout << "Checking common cases..." << '\n';
-            if(common_case != "") {
-                if(details) 
-                    cout << "Angle is multiple of pi/4, answer is known exactly" << '\n';
+            if (common_case != "") {
+                if (details)
+                    cout << "Angle is multiple of pi/4, answer is known exactly"
+                         << '\n';
                 if (check) {
                     cout << "Check flag = " << 1 << '\n';
                 }
                 cout << common_case << endl;
                 return 0;
             }
-            if(verbose)
+            if (verbose)
                 cout << "No common cases found" << '\n';
-            
+
             RzApproximation rz_approx;
             if (timer) {
                 auto start = chrono::steady_clock::now();

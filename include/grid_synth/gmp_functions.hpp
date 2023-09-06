@@ -88,7 +88,7 @@ inline mpf_class pow(const mpf_class& base, mpz_class exponent) {
 
 inline mpf_class pow(const mpf_class& base, signed long int exponent) {
     mpf_class output;
-    mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), abs(exponent));
+    mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), std::abs(exponent));
 
     if (exponent < 0)
         return mpf_class(1) / output;
@@ -207,6 +207,22 @@ inline mpf_class cos(const mpf_class& theta, const mpf_class& tol = TOL) {
         num *= phi * phi;
         sign *= -1;
         s += sign * (num / fact);
+    }
+    return s;
+}
+
+inline mpf_class exp(const mpf_class& x, const mpf_class& tol = TOL) {
+    mpz_class i = 0;
+    mpf_class lasts = 0;
+    mpf_class s = 1;
+    mpf_class fact = 1;
+    mpf_class num = 1;
+    while (abs(s - lasts) > tol) {
+        lasts = s;
+        i += 1;
+        fact *= i;
+        num *= x;
+        s += num / fact;
     }
     return s;
 }
