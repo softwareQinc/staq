@@ -19,10 +19,10 @@ inline str_t check_common_cases(real_t theta, const real_t& eps) {
   if(abs(theta-real_t("0.25")) < eps) {
         return "T w";
     }
-    else if(abs(theta-real_t("0.5") < eps)) {
+    else if(abs(theta-real_t("0.5")) < eps) {
         return "S W W W W W W W";
     }
-    else if(abs(theta-real_t("0.75") < eps)) {
+    else if(abs(theta-real_t("0.75")) < eps) {
         return "S T W W W W W W W w"; 
     }
     else if(abs(theta-real_t("1")) < eps) {
