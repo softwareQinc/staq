@@ -128,7 +128,7 @@ class Expr : public ASTNode {
     /**
      * \brief Evaluate constant expressions to arbitrary precision
      */
-    virtual std::optional<real_t> constant_eval_gmp() const = 0;
+    virtual std::optional<mpf_class> constant_eval_gmp() const = 0;
 #endif /* EXPR_GMP */
 
     /**
@@ -513,7 +513,7 @@ class IntExpr final : public Expr {
 class RealExpr final : public Expr {
 
 #ifdef EXPR_GMP
-    std::variant<double, real_t> value_;
+    std::variant<double, mpf_class> value_;
 #else
     double value_; ///< the floating point value
 #endif
@@ -526,12 +526,12 @@ class RealExpr final : public Expr {
      * \param val The floating point value
      */
 #ifdef EXPR_GMP
-    RealExpr(parser::Position pos, double value)            // double ctor
+    RealExpr(parser::Position pos, double value) // double ctor
         : Expr(pos), value_(std::in_place_index<0>, value) {}
-    RealExpr(parser::Position pos, real_t value)            // gmp ctor
+    RealExpr(parser::Position pos, real_t value) // gmp ctor
         : Expr(pos), value_(std::in_place_index<1>, value) {}
     RealExpr(parser::Position pos, std::variant<double, real_t> value)
-        : Expr(pos), value_(value) {}           // copy ctor (for clone)
+        : Expr(pos), value_(value) {} // copy ctor (for clone)
 #else
     RealExpr(parser::Position pos, double value) : Expr(pos), value_(value) {}
 #endif

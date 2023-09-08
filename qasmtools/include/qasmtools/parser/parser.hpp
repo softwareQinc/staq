@@ -750,7 +750,8 @@ class Parser {
                 consume_token();
             #ifdef EXPR_GMP
                 if (use_gmp_) {
-                    return ast::RealExpr::create(pos, real_t(real.raw()));
+                    std::cerr << "GMP " << real.raw() << std::endl;
+                    return ast::RealExpr::create(pos, mpf_class(real.raw()));
                 }
             #endif
                 return ast::RealExpr::create(pos, real.as_real());

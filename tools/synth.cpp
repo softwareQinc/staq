@@ -10,11 +10,16 @@
 
 #include "grid_synth/gmp_functions.hpp"
 
+#include <gmpxx.h>
+
 int main() {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    using namespace std;
+    // we need to do this BEFORE we parse so that floats are parsed with enough prec
+    int prec = 17;
+    grid_synth::DEFAULT_GMP_PREC = 4 * prec + 19;
+    mpf_set_default_prec(log(10) / log(2) * grid_synth::DEFAULT_GMP_PREC);
 
     auto program = parse_stdin("", true);
     if (program) {

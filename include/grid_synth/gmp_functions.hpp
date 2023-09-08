@@ -212,9 +212,13 @@ inline mpf_class cos(const mpf_class& theta, const mpf_class& tol = TOL) {
 }
 
 inline mpf_class exp(const mpf_class& x, const mpf_class& tol = TOL) {
+    // TODO: fix stability issue when x negative
+
     mpz_class i = 0;
-    mpf_class lasts = 0;
     mpf_class s = 1;
+
+/*
+    mpf_class lasts = 0;
     mpf_class fact = 1;
     mpf_class num = 1;
     while (abs(s - lasts) > tol) {
@@ -224,6 +228,18 @@ inline mpf_class exp(const mpf_class& x, const mpf_class& tol = TOL) {
         num *= x;
         s += num / fact;
     }
+*/
+
+    mpf_class term = 1;
+
+    while (abs(term) > tol) {
+        i += 1;
+        term *= x;
+        term /= i;
+        s += term;
+    }
+    std::cerr << "exp ended at term " << i << std::endl;
+
     return s;
 }
 

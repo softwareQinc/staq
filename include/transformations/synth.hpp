@@ -31,37 +31,41 @@ class ReplaceRZImpl final : public ast::Replacer {
     std::optional<std::list<ast::ptr<ast::Gate>>>
     replace(ast::DeclaredGate& gate) override {
 
-        if (gate.name() == "rz") {
+        if (gate.name() == "rx" || gate.name() == "ry" || gate.name() == "rz") {
 
             // We assume that the instruction has the form
-            //   rz[carg0] qarg0[offset];
+            //   rz[carg0] qarg0;
             // TODO: assert this
+            // where carg0 does not contain a VarExpr child
 
             std::list<ast::ptr<ast::Gate>> ret;
 
             // Evaluate the Expr as a C++ double for now
             ast::Expr& theta_arg = gate.carg(0);
-            std::optional<double> val = theta_arg.constant_eval();
             std::optional<real_t> val2 = theta_arg.constant_eval_gmp();
-            double value = val ? val.value()
-                               : 0; // this should never be false, TODO: check!
+            // this should never be false, TODO: check!
             real_t value2 = val2 ? val2.value() : real_t(0);
             std::string rz_approx = get_rz_approx(value2);
-            std::cerr << value << ' ' << value2 << std::endl
-                      << rz_approx << std::endl;
+            std::cerr << value2 << ' ' << rz_approx << std::endl;
 
             for (char c : rz_approx) {
                 if (c == ' ')
                     continue;
-                std::vector<ast::ptr<ast::Expr>> c_args;
-                std::vector<ast::VarAccess> q_args(gate.qargs());
+                ret.emplace_back(make_gate(std::string(1, tolower(c)), gate));
+            }
 
-                ret.emplace_back(std::make_unique<ast::DeclaredGate>(
-                    ast::DeclaredGate(gate.pos(), std::string(1, tolower(c)),
-                                      std::move(c_args), std::move(q_args))));
+            if (gate.name() == "rx") { // X = HZH
+                ret.emplace_front(make_gate("h", gate));
+                ret.emplace_back(make_gate("h", gate));
+            } else if (gate.name() == "ry") { // Y = SHZHSdg
+                ret.emplace_front(make_gate("h", gate));
+                ret.emplace_back(make_gate("h", gate));
+                ret.emplace_front(make_gate("s", gate));
+                ret.emplace_back(make_gate("sdg", gate));
             }
 
             return std::move(ret);
+
         } else {
             return std::nullopt;
         }
@@ -100,32 +104,37 @@ class ReplaceRZImpl final : public ast::Replacer {
 
   private:
     const double eps = 1e-10;
-    std::unordered_map<double, std::string> rz_approx_cache;
     grid_synth::domega_matrix_table_t s3_table;
 
-    /*! \brief Find RZ-approximation for angle theta using grid_synth. */
-    std::string get_rz_approx(double theta) {
-        using namespace grid_synth;
-
-        // first check common cases
-        std::string ret = check_common_cases(real_t(theta / M_PI), real_t(eps));
-        if (ret != "")
-            return ret;
-
-        // then look it up in cache
-        if (rz_approx_cache.count(theta)) {
-            return rz_approx_cache[theta];
+    struct mpf_class_hash {
+        std::size_t operator()(const mpf_class& x) const {
+            mp_exp_t exp;
+            std::string s = x.get_str(exp, 36);
+            // TODO: consider truncating s to a fixed length depending on our prec
+            std::string hash_str = s + std::string(" ") + std::to_string(exp);
+            return std::hash<std::string>{}(hash_str);
         }
+    };
+    
+    std::unordered_map<mpf_class, std::string, mpf_class_hash> rz_approx_cache;
 
-        // then actually find an approximation
-        RzApproximation rz_approx = find_fast_rz_approximation(
-            real_t(theta) / real_t("-2.0"), real_t(eps));
-        ret = synthesize(rz_approx.matrix(), s3_table);
-        rz_approx_cache[theta] = ret;
-        return ret;
+
+    /*! 
+     * \brief Makes a new gate with no cargs. 
+     * 
+     * \param name The name of the new gate.
+     * \param gate The gate to make a copy of.
+     */
+    inline ast::ptr<ast::Gate> make_gate(std::string name,
+                                         ast::DeclaredGate& gate) {
+        std::vector<ast::ptr<ast::Expr>> c_args;
+        std::vector<ast::VarAccess> q_args(gate.qargs());
+        return std::make_unique<ast::DeclaredGate>(ast::DeclaredGate(
+            gate.pos(), name, std::move(c_args), std::move(q_args)));
     }
 
-    std::string get_rz_approx(const real_t& theta) {
+    /*! \brief Find RZ-approximation for angle theta using grid_synth. */
+    std::string get_rz_approx(const mpf_class& theta) {
         using namespace grid_synth;
 
         // first check common cases
@@ -136,15 +145,15 @@ class ReplaceRZImpl final : public ast::Replacer {
             return ret;
 
         // then look it up in cache
-        //  if (rz_approx_cache2.count(theta)) {
-        //      return rz_approx_cache2[theta];
-        //  }
+        if (rz_approx_cache.count(theta)) {
+            return rz_approx_cache[theta];
+        }
 
         // then actually find an approximation
         RzApproximation rz_approx = find_fast_rz_approximation(
             theta / real_t("-2.0"), real_t("0.0000000000000001"));
         ret = synthesize(rz_approx.matrix(), s3_table);
-        //   rz_approx_cache2[theta] = ret;
+        rz_approx_cache[theta] = ret;
         return ret;
     }
 };
