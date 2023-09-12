@@ -52,14 +52,14 @@ class ZSqrt2 {
     }
 
     ZSqrt2 self_sqrt() const {
-        using namespace std;
+        using namespace gmpf;
         real_t a, b;
-        int_t b_squared_plus = (a_ + sqrt((*this).norm())) / 4;
-        int_t b_squared_minus = (a_ - sqrt((*this).norm())) / 4;
+        int_t b_squared_plus = int_t((a_ + sqrt((*this).norm())) / real_t(4));
+        int_t b_squared_minus = int_t((a_ - sqrt((*this).norm())) / real_t(4));
 
-        if (pow(round(sqrt(b_squared_plus)), 2) == b_squared_plus)
+        if (pow(gmp_round(sqrt(b_squared_plus)), 2) == b_squared_plus)
             b = sqrt(b_squared_plus);
-        else if (pow(round(sqrt(b_squared_minus)), 2) == b_squared_minus)
+        else if (pow(gmp_round(sqrt(b_squared_minus)), 2) == b_squared_minus)
             b = sqrt(b_squared_minus);
         else {
             std::cout << "(" << a_ << "," << b_ << ")"
@@ -76,7 +76,7 @@ class ZSqrt2 {
         } else
             a = b_ / (2 * b);
 
-        return ZSqrt2(round(a), round(b));
+        return ZSqrt2(gmpf::gmp_round(a), gmpf::gmp_round(b));
     }
 
     // Arithmetic operators
@@ -99,8 +99,8 @@ class ZSqrt2 {
     ZSqrt2 operator/(const ZSqrt2& Z) const {
         using namespace std;
         real_t mag = Z.norm();
-        int_t a = round(real_t(a_ * Z.a() - 2 * b_ * Z.b()) / mag);
-        int_t b = round(real_t(b_ * Z.a() - a_ * Z.b()) / mag);
+        int_t a = gmpf::gmp_round(real_t(a_ * Z.a() - 2 * b_ * Z.b()) / mag);
+        int_t b = gmpf::gmp_round(real_t(b_ * Z.a() - a_ * Z.b()) / mag);
         return ZSqrt2(a, b);
     }
 
@@ -305,7 +305,7 @@ class ZOmega {
                       (c_ - a_) / 2);
     }
 
-    bool w() const { return round(w_.real()) != 0; }
+    bool w() const { return gmpf::gmp_round(w_.real()) != 0; }
 
     ZOmega dot() const { return ZOmega(-a_, b_, -c_, d_); }
     ZOmega conj() const { return ZOmega(-c_, -b_, -a_, d_); }
@@ -372,7 +372,7 @@ class ZOmega {
         c_ += Z.c();
         d_ += Z.d();
 
-        ZSqrt2 shift(0, round(w_.real()) != 0 && Z.w());
+        ZSqrt2 shift(0, gmpf::gmp_round(w_.real()) != 0 && Z.w());
 
         alpha_ += Z.alpha() + shift;
         beta_ += Z.beta() + shift;
@@ -387,7 +387,7 @@ class ZOmega {
         c_ -= Z.c();
         d_ -= Z.d();
 
-        ZSqrt2 shift(0, round(w_.real()) != 0 && Z.w());
+        ZSqrt2 shift(0, gmpf::gmp_round(w_.real()) != 0 && Z.w());
 
         alpha_ -= Z.alpha() + shift;
         beta_ -= Z.beta() + shift;
@@ -406,7 +406,7 @@ class ZOmega {
     //   c_ = -a_*Z.b() - b_*Z.a() + c_*Z.d() + d_*Z.c();
     //   d_ = -a_*Z.c() - b_*Z.b() - c_*Z.a() + d_*Z.d();
     //
-    //   ZSqrt2 shift(0, round(w_.real()) != 0 && Z.w());
+    //   ZSqrt2 shift(0, gmpf::gmp_round(w_.real()) != 0 && Z.w());
 
     //  alpha_ *= Z.alpha() + shift;
     //  beta_ *= Z.beta() + shift;

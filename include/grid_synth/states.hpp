@@ -32,18 +32,18 @@ inline int_t determine_shift(const state_t state) {
 
 inline mat_t sigma(int_t k) {
     if (k < 0)
-        return pow(SQRT_LAMBDA_INV, -k) *
-               mat_t{1, 0, 0, pow(LAMBDA.decimal(), -k)};
+        return gmpf::pow(SQRT_LAMBDA_INV, -k) *
+               mat_t{1, 0, 0, gmpf::pow(LAMBDA.decimal(), -k)};
 
-    return pow(SQRT_LAMBDA_INV, k) * mat_t{pow(LAMBDA.decimal(), k), 0, 0, 1};
+    return gmpf::pow(SQRT_LAMBDA_INV, k) * mat_t{gmpf::pow(LAMBDA.decimal(), k), 0, 0, 1};
 }
 
 inline mat_t tau(int_t k) {
     if (k < 0)
-        return pow(SQRT_LAMBDA_INV, -k) *
-               mat_t{pow(LAMBDA.decimal(), -k), 0, 0, pow(-1, -k)};
+        return gmpf::pow(SQRT_LAMBDA_INV, -k) *
+               mat_t{gmpf::pow(LAMBDA.decimal(), -k), 0, 0, gmpf::pow(-1, -k)};
 
-    return pow(SQRT_LAMBDA_INV, k) * mat_t{1, 0, 0, pow(-LAMBDA.decimal(), k)};
+    return gmpf::pow(SQRT_LAMBDA_INV, k) * mat_t{1, 0, 0, gmpf::pow(-LAMBDA.decimal(), k)};
 }
 
 /*
@@ -58,7 +58,6 @@ inline state_t shift(const state_t& state, const int_t& k) {
  * Reduces skew(state) by 10% and returns the operator that did it.
  */
 inline SpecialGridOperator reduce_skew(state_t& state) {
-    using namespace std;
     real_t initial_skew = skew(state);
     if (initial_skew < 15)
         return ID;
@@ -85,24 +84,24 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
     real_t z = state[0].z();
     real_t zeta = state[1].z();
 
-    if (static_cast<bool>(fgeq(state[0].D(0, 1), real_t("0")))) {
-        if (fgeq(z, real_t("-0.8")) && fleq(z, real_t("0.8")) &&
-            fgeq(zeta, real_t("-0.8")) && fleq(zeta, real_t("0.8"))) {
+    if (static_cast<bool>(gmpf::gmp_geq(state[0].D(0, 1), real_t("0")))) {
+        if (gmpf::gmp_geq(z, real_t("-0.8")) && gmpf::gmp_leq(z, real_t("0.8")) &&
+            gmpf::gmp_geq(zeta, real_t("-0.8")) && gmpf::gmp_leq(zeta, real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (fleq(z, real_t("0.3")) && fgeq(zeta, real_t("0.8"))) {
+        } else if (gmpf::gmp_leq(z, real_t("0.3")) && gmpf::gmp_geq(zeta, real_t("0.8"))) {
             G = G * K;
             state = K * state;
             // std::cout << "K" << std::endl;
-        } else if (fgeq(z, real_t("0.3")) && fgeq(zeta, real_t("0.3"))) {
-            real_t c = min(z, zeta);
+        } else if (gmpf::gmp_geq(z, real_t("0.3")) && gmpf::gmp_geq(zeta, real_t("0.3"))) {
+            real_t c = gmpf::gmp_min(z, zeta);
             int_t n =
-                max(1, int_t(floor(pow(LAMBDA.decimal(), c.get_ui()) / 2)));
+                gmpf::gmp_max(1, int_t(gmpf::gmp_floor(gmpf::pow(LAMBDA.decimal(), c.get_ui()) / 2)));
             G = G * A(n);
             state = A(n) * state;
             // std::cout << "A^" << n << std::endl;
-        } else if (fgeq(z, real_t("0.8")) && fleq(zeta, real_t("0.3"))) {
+        } else if (gmpf::gmp_geq(z, real_t("0.8")) && gmpf::gmp_leq(zeta, real_t("0.3"))) {
             G = G * K.dot();
             state = K.dot() * state;
             // std::cout << "K.dot()" << std::endl;
@@ -116,15 +115,15 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
             exit(EXIT_FAILURE);
         }
     } else {
-        if (fgeq(z, real_t("-0.8")) && fleq(z, real_t("0.8")) &&
-            fgeq(zeta, real_t("-0.8")) && fleq(zeta, real_t("0.8"))) {
+        if (gmpf::gmp_geq(z, real_t("-0.8")) && gmpf::gmp_leq(z, real_t("0.8")) &&
+            gmpf::gmp_geq(zeta, real_t("-0.8")) && gmpf::gmp_leq(zeta, real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (fgeq(z, real_t("-0.2")) && fgeq(zeta, real_t("-0.2"))) {
-            real_t c = min(z, zeta);
+        } else if (gmpf::gmp_geq(z, real_t("-0.2")) && gmpf::gmp_geq(zeta, real_t("-0.2"))) {
+            real_t c = gmpf::gmp_min(z, zeta);
             int_t n =
-                max(1, int_t(floor(pow(LAMBDA.decimal(), c.get_ui()) / 2)));
+                gmpf::gmp_max(1, int_t(gmpf::gmp_floor(gmpf::pow(LAMBDA.decimal(), c.get_ui()) / 2)));
             G = G * B(n);
             state = B(n) * state;
             // std::cout << "B^" << n << std::endl;
@@ -154,7 +153,6 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
  * original normalization but with the skew reduced to its lowest possible value
  */
 inline SpecialGridOperator optimize_skew(state_t& state) {
-    using namespace std;
     real_t scaleA = state[0].normalize();
     real_t scaleB = state[1].normalize();
     SpecialGridOperator G = ID;

@@ -3,27 +3,28 @@
 
 #include <cmath>
 #include <gmpxx.h>
+#include <string>
 
-#include "complex.hpp"
-#include "constants.hpp"
 #include "utils.hpp"
 
 namespace staq {
-namespace grid_synth {
+namespace gmpf {
 
-// TODO add high precision sine and cosine functions
+inline mpf_class gmp_abs(const mpf_class& x) { return sgn<mpf_class>(x) * x; }
 
-inline mpf_class gmp_pi(const mpf_class& tol) {
-    using namespace std;
-    real_t three("3");
-    real_t lasts("0");
-    real_t t = three;
-    real_t s("3");
-    real_t n("1");
-    real_t na("0");
-    real_t d("0");
-    real_t da("24");
-    while (abs(s - lasts) > tol) {
+// computes 
+inline mpf_class gmp_pi() {
+    long int tol_exp = std::log10(2)*mpf_get_default_prec();
+    mpf_class tol("1e-" + std::to_string(tol_exp));
+    mpf_class three("3");
+    mpf_class lasts("0");
+    mpf_class t = three;
+    mpf_class s("3");
+    mpf_class n("1");
+    mpf_class na("0");
+    mpf_class d("0");
+    mpf_class da("24");
+    while (gmp_abs(s - lasts) > tol) {
         lasts = s;
         n = n + na;
         na = na + mpf_class("8");
@@ -35,37 +36,37 @@ inline mpf_class gmp_pi(const mpf_class& tol) {
     return s;
 }
 
-inline mpz_class min(const mpz_class& x, const mpz_class& y) noexcept {
+inline mpz_class gmp_min(const mpz_class& x, const mpz_class& y) noexcept {
     return mpz_class(x * (x < y) + (1 - (x < y)) * y);
 }
 
-inline mpz_class max(const mpz_class& x, const mpz_class& y) noexcept {
+inline mpz_class gmp_max(const mpz_class& x, const mpz_class& y) noexcept {
     return mpz_class(x * (x > y) + (1 - (x > y)) * y);
 }
 
-inline mpf_class min(const mpf_class& x, const mpf_class& y) noexcept {
+inline mpf_class gmp_min(const mpf_class& x, const mpf_class& y) noexcept {
     return mpf_class(x * (x < y) + (1 - (x < y)) * y);
 }
 
-inline mpf_class max(const mpf_class& x, const mpf_class& y) noexcept {
+inline mpf_class gmp_max(const mpf_class& x, const mpf_class& y) noexcept {
     return mpf_class(x * (x > y) + (1 - (x > y)) * y);
 }
 
-inline mpz_class floor(const mpf_class& x) {
+inline mpz_class gmp_floor(const mpf_class& x) {
     mpf_class f;
     mpf_floor(f.get_mpf_t(), x.get_mpf_t());
 
     return mpz_class(f);
 }
 
-inline mpz_class ceil(const mpf_class& x) {
+inline mpz_class gmp_ceil(const mpf_class& x) {
     mpf_class f;
     mpf_ceil(f.get_mpf_t(), x.get_mpf_t());
 
     return mpz_class(f);
 }
 
-inline mpz_class round(const mpf_class& x) {
+inline mpz_class gmp_round(const mpf_class& x) {
     mpf_class f, c;
 
     mpf_floor(f.get_mpf_t(), x.get_mpf_t());
@@ -96,14 +97,16 @@ inline mpf_class pow(const mpf_class& base, signed long int exponent) {
     return output;
 }
 
-inline mpf_class fleq(const mpf_class& lhs, const mpf_class& rhs,
-                      const mpf_class& tol = TOL) {
-    return (lhs < rhs) || (abs(lhs - rhs) < TOL);
+inline mpf_class gmp_leq(const mpf_class& lhs, const mpf_class& rhs) {
+    long int tol_exp = std::log10(2)*lhs.get_prec();
+    mpf_class tol = mpf_class("1e-" + std::to_string(tol_exp));
+    return (lhs < rhs) || (abs(lhs - rhs) < tol);
 }
 
-inline mpf_class fgeq(const mpf_class& lhs, const mpf_class& rhs,
-                      const mpf_class& tol = TOL) {
-    return (lhs > rhs) || (abs(lhs - rhs) < TOL);
+inline mpf_class gmp_geq(const mpf_class& lhs, const mpf_class& rhs) {
+    long int tol_exp = std::log10(2)*lhs.get_prec();
+    mpf_class tol = mpf_class("1e-" + std::to_string(tol_exp));
+    return (lhs > rhs) || (abs(lhs - rhs) < tol);
 }
 
 /*
@@ -166,56 +169,59 @@ inline mpf_class log2(const mpf_class& x) {
  */
 inline mpf_class reduce_angle(const mpf_class& phi) {
     mpf_class result = phi;
-    while (result > PI)
-        result -= 2 * PI;
-    while (result < -PI)
-        result += 2 * PI;
+    mpf_class pi = gmp_pi();
+    while (result > pi)
+        result -= mpf_class("2") * pi;
+    while (result < pi)
+        result += mpf_class("2") * pi;
     return result;
 }
 
-inline mpf_class sin(const mpf_class& theta, const mpf_class& tol = TOL) {
-    real_t phi = reduce_angle(theta);
-    mpz_class i = 1;
-    mpf_class lasts = 0;
+//TODO improve accuracy of sin and cos by expanding about pi/2, pi/3, pi/4, and pi/6
+//depending on the input angle. 
+inline mpf_class sin(const mpf_class& theta) {
+    long int initial_prec = theta.get_prec();
+    long int tol_exp = std::log10(2)*initial_prec;
+    mpf_class phi = reduce_angle(theta);
+    mpz_class i(1);
+    mpf_class lasts(0);
     mpf_class s = phi;
-    mpf_class fact = 1;
-    mpf_class num = phi;
-    mpf_class sign = 1;
-    while (abs(s - lasts) > tol) {
+    mpf_class fact(1);
+    mpf_class num(phi);
+    mpf_class sign(1);
+    while (gmp_abs(s - lasts) > mpf_class("1e-" + std::to_string(tol_exp))) {
         lasts = s;
-        i += 2;
-        fact *= i * (i - 1);
+        i += mpf_class("2");
+        fact *= i * (i - mpf_class("1"));
         num *= phi * phi;
-        sign *= -1;
+        sign *= mpf_class("-1");
         s += sign * (num / fact);
     }
     return s;
 }
 
-inline mpf_class cos(const mpf_class& theta, const mpf_class& tol = TOL) {
-    real_t phi = reduce_angle(theta);
-    mpz_class i = 0;
-    mpf_class lasts = 0;
-    mpf_class s = 1;
-    mpf_class fact = 1;
-    mpf_class num = 1;
-    mpf_class sign = 1;
-    while (abs(s - lasts) > tol) {
+
+inline mpf_class cos(const mpf_class& theta) {
+    long int initial_prec = theta.get_prec();
+    long int tol_exp = std::log10(2)*theta.get_prec();
+    mpf_class phi = reduce_angle(theta);
+    mpz_class i(0);
+    mpf_class lasts(0);
+    mpf_class s(1);
+    mpf_class fact(1);
+    mpf_class num(1);
+    mpf_class sign(1);
+    while (gmp_abs(s - lasts) > mpf_class("1e-" + std::to_string(tol_exp))) {
         lasts = s;
-        i += 2;
-        fact *= i * (i - 1);
+        i += mpf_class("2");
+        fact *= i * (i - mpf_class("1"));
         num *= phi * phi;
-        sign *= -1;
+        sign *= mpf_class("-1");
         s += sign * (num / fact);
     }
     return s;
 }
 
-inline mpf_class abs(const complex<mpf_class>& z) {
-    return sqrt(z.real() * z.real() + z.imag() * z.imag());
-}
-
-inline mpf_class abs(const mpf_class& x) { return sgn<mpf_class>(x) * x; }
 
 inline mpf_class sqrt(const mpf_class& x) {
     mpf_class output;
@@ -223,7 +229,7 @@ inline mpf_class sqrt(const mpf_class& x) {
     return output;
 }
 
-} // namespace grid_synth
+} // namespace gmpf
 } // namespace staq
 
 #endif // GMP_FUNCTIONS_HPP

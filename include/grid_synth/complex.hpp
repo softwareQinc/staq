@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include "gmp_functions.hpp"
+
 namespace staq {
 namespace grid_synth {
 
@@ -140,6 +142,11 @@ inline complex<mpf_class> operator*(complex<mpf_class> z, complex<double> x) {
 inline complex<mpf_class> operator*(complex<double> x, complex<mpf_class> z) {
     return complex<mpf_class>(z.a() * x.a() - z.b() * x.b(),
                               z.a() * x.b() + z.b() * x.a());
+}
+
+
+inline mpf_class abs(const complex<mpf_class>& z) {
+    return gmpf::sqrt(z.real() * z.real() + z.imag() * z.imag());
 }
 
 } // namespace grid_synth

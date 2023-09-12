@@ -1,13 +1,14 @@
 #include "gtest/gtest.h"
 
 #include "grid_synth/states.hpp"
+#include "grid_synth/gmp_functions.hpp"
 
 using namespace staq;
 using namespace grid_synth;
 
 TEST(ShiftState, ShiftToUnity) {
     Ellipse A(0, 0, 10, 5, 0.45 * PI);
-    Ellipse B(0, 0, pow(LAMBDA_INV.decimal(), 6), pow(LAMBDA_INV.decimal(), -6),
+    Ellipse B(0, 0, gmpf::pow(LAMBDA_INV.decimal(), 6), gmpf::pow(LAMBDA_INV.decimal(), -6),
               0);
 
     real_t scaleA = A.normalize();

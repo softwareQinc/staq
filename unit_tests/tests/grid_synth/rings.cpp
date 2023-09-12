@@ -76,7 +76,7 @@ TEST(ZSqrt2Inverse, LambdaInverse) {
 }
 
 TEST(ZOmegaConstructor, ConstructorEquality) {
-    double TOL = 1e-16;
+    MP_CONSTS.tol = 1e-16;
 
     ZOmega ztest(5, 6, -2, 1);
 

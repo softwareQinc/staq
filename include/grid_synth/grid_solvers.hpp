@@ -27,17 +27,16 @@ namespace grid_synth {
 template <typename bound_t>
 inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
                            const real_t& tol) {
-    using namespace std;
     real_t lowera_double = xlo - (b * SQRT2);
     real_t decimal;
     int_t intpart;
-    decimal = abs(decimal_part(lowera_double, intpart));
+    decimal = gmpf::gmp_abs(gmpf::decimal_part(lowera_double, intpart));
     if ((lowera_double < 0) && ((1 - decimal) < tol))
-        return floor(lowera_double);
+        return gmpf::gmp_floor(lowera_double);
     if ((lowera_double > 0) && (decimal < tol))
-        return floor(lowera_double);
+        return gmpf::gmp_floor(lowera_double);
 
-    return ceil(lowera_double);
+    return gmpf::gmp_ceil(lowera_double);
 }
 
 /**
@@ -47,15 +46,14 @@ inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
 template <typename bound_t>
 inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
                            const real_t& tol) {
-    using namespace std;
     real_t uppera_double = xhi - (b * SQRT2);
     real_t decimal;
     int_t intpart;
-    decimal = abs(decimal_part(uppera_double, intpart));
+    decimal = gmpf::gmp_abs(gmpf::decimal_part(uppera_double, intpart));
     if ((uppera_double > 0) && ((1 - decimal) < tol))
-        return ceil(uppera_double);
+        return gmpf::gmp_ceil(uppera_double);
 
-    return floor(uppera_double);
+    return gmpf::gmp_floor(uppera_double);
 }
 
 /**
@@ -65,17 +63,16 @@ inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
 template <typename bound_t>
 inline int_t lower_bound_b(const bound_t& xlo, const bound_t& yhi,
                            const bound_t& tol) {
-    using namespace std;
     real_t lowerb_double = (xlo - yhi) * HALF_INV_SQRT2;
     real_t decimal;
     int_t intpart;
-    decimal = abs(decimal_part(lowerb_double, intpart));
+    decimal = gmpf::gmp_abs(gmpf::decimal_part(lowerb_double, intpart));
     if ((lowerb_double) < 0 && ((1 - decimal) < tol))
-        return floor(lowerb_double);
+        return gmpf::gmp_floor(lowerb_double);
     if ((lowerb_double) > 0 && (decimal < tol))
-        return floor(lowerb_double);
+        return gmpf::gmp_floor(lowerb_double);
 
-    return ceil(lowerb_double);
+    return gmpf::gmp_ceil(lowerb_double);
 }
 
 /**
@@ -85,15 +82,14 @@ inline int_t lower_bound_b(const bound_t& xlo, const bound_t& yhi,
 template <typename bound_t>
 inline int_t upper_bound_b(const bound_t& xhi, const bound_t& ylo,
                            const real_t& tol) {
-    using namespace std;
     real_t upperb_double = (xhi - ylo) * HALF_INV_SQRT2;
     real_t decimal;
     int_t intpart;
-    decimal = abs(decimal_part(upperb_double, intpart));
+    decimal = gmpf::gmp_abs(gmpf::decimal_part(upperb_double, intpart));
     if ((upperb_double > 0) && (1 - decimal < tol))
-        return ceil(upperb_double);
+        return gmpf::gmp_ceil(upperb_double);
 
-    return floor(upperb_double);
+    return gmpf::gmp_floor(upperb_double);
 }
 
 /**
@@ -106,7 +102,7 @@ inline int_t upper_bound_b(const bound_t& xhi, const bound_t& ylo,
  */
 template <typename bound_t>
 inline int_t find_scale_exponent(const Interval<bound_t>& interval) {
-    real_t ratio = log10(interval.width()) / LOG_LAMBDA;
+    real_t ratio = gmpf::log10(interval.width()) / LOG_LAMBDA;
     return int_t(ratio) + 1;
 }
 
@@ -159,8 +155,6 @@ template <typename bound_t>
 inline zsqrt2_vec_t oneD_scaled_grid_solver(const Interval<bound_t>& A,
                                             const Interval<bound_t>& B,
                                             const real_t tol = TOL) {
-    using namespace std;
-
     zsqrt2_vec_t solns;
     int_t k = find_scale_exponent(A);
     Interval<bound_t> scaled_A = A;

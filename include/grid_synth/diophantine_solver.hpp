@@ -67,7 +67,7 @@ inline bool modular_sqrt(int_t& answer, const int_t& a, const int_t& p) {
         s += 1;
     }
 
-    int_t num_tries = 2 * int_t(log10(p) * log10(p));
+    int_t num_tries = 2 * int_t(gmpf::log10(p) * gmpf::log10(p));
     int_t j = 0;
 
     while ((mod_pow(z, int_t((p - 1) / 2), p) == 1) && (j < num_tries)) {
@@ -88,14 +88,14 @@ inline bool modular_sqrt(int_t& answer, const int_t& a, const int_t& p) {
     int_t depth = 1;
     while (t != 0 && t != 1) {
         int_t i = 0;
-        while ((int_t(mod_pow(t, int_t(pow(2, i)), p))) != 1) {
+        while ((int_t(mod_pow(t, int_t(gmpf::pow(2, i)), p))) != 1) {
             i += 1;
             if (i == m) {
                 return false;
             }
         }
 
-        int_t b = int_t(mod_pow(c, int_t(pow(2, m - i - 1)), p));
+        int_t b = int_t(mod_pow(c, int_t(gmpf::pow(2, m - i - 1)), p));
         m = i;
         c = int_t(mod_pow(b, 2, p));
         t = (t * b * b) % p;

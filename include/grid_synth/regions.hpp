@@ -75,7 +75,7 @@ class Interval {
 
     bool contains(const bound_t& x, const real_t tol = TOL) const {
         return ((hi_ - x) * (x - lo_) > 0) ||
-               (abs((hi_ - x) * (x - lo_)) < tol);
+               (gmpf::gmp_abs((hi_ - x) * (x - lo_)) < tol);
     }
 
     Interval operator+(const bound_t& shift_factor) const {
@@ -225,16 +225,16 @@ class Ellipse {
     real_t e_;
 
     void get_z_and_e_() {
-        z_ = real_t(real_t(real_t("0.5") * log10(real_t(D_(1, 1) / D_(0, 0)))) /
+        z_ = real_t(real_t(real_t("0.5") * gmpf::log10(real_t(D_(1, 1) / D_(0, 0)))) /
                     LOG_LAMBDA);
-        e_ = sqrt(D_(1, 1) * D_(0, 0));
+        e_ = gmpf::sqrt(D_(1, 1) * D_(0, 0));
     }
 
     mat_t get_mat_from_axes_(const real_t& semi_major_axis,
                              const real_t& semi_minor_axis,
                              const real_t& angle) {
-        real_t ct = cos(angle);
-        real_t st = sin(angle);
+        real_t ct = gmpf::cos(angle);
+        real_t st = gmpf::sin(angle);
         real_t inva = real_t("1") / semi_minor_axis;
         real_t invb = real_t("1") / semi_major_axis;
 
@@ -268,7 +268,7 @@ class Ellipse {
         //           <<(T * msq - sqrt(T * T * msq * msq - 4 * msq))<< endl;
         real_t a1 = 0;
         real_t a2 = 0;
-        if (abs(T * T * msq * msq - real_t("4") * msq) < TOL) {
+        if (gmpf::gmp_abs(T * T * msq * msq - real_t("4") * msq) < TOL) {
             a1 = sqrt(T * msq) / real_t("2");
             a2 = sqrt(T * msq) / real_t("2");
         } else {
@@ -331,7 +331,7 @@ class Ellipse {
      */
     Ellipse(const real_t& angle, const real_t& eps) : angle_(angle) {
         real_t r0 = (real_t("3") - eps * eps) / real_t("3");
-        center_ = vec_t{r0 * cos(angle), r0 * sin(angle)};
+        center_ = vec_t{r0 * gmpf::cos(angle), r0 * gmpf::sin(angle)};
 
         semi_major_axis_ = (real_t("2") / sqrt(real_t("3")) * eps *
                             sqrt(real_t("1") - (eps * eps / real_t("4"))));
@@ -365,8 +365,8 @@ class Ellipse {
 
     void rescale(const real_t scale) {
         D_ = (real_t("1") / (scale * scale)) * D_;
-        semi_minor_axis_ = semi_minor_axis_ * abs(scale);
-        semi_major_axis_ = semi_major_axis_ * abs(scale);
+        semi_minor_axis_ = semi_minor_axis_ * gmpf::gmp_abs(scale);
+        semi_major_axis_ = semi_major_axis_ * gmpf::gmp_abs(scale);
         center_ = scale * center_;
 
         get_z_and_e_();
@@ -385,7 +385,7 @@ class Ellipse {
     bool contains(const vec_t& point, const real_t& tol = TOL) const {
         using namespace std;
         real_t x = (point - center_).transpose() * D_ * (point - center_);
-        return (x < real_t("1")) || (abs(x - real_t("1")) < tol);
+        return (x < real_t("1")) || (gmpf::gmp_abs(x - real_t("1")) < tol);
     }
 
     bool contains(const real_t& x, const real_t& y,

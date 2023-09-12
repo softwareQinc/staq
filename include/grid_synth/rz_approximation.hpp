@@ -37,11 +37,11 @@ class RzApproximation {
                     const int_t scale_exponent, const real_t theta,
                     const real_t eps)
         : matrix_(u, t, scale_exponent, 0), eps_(eps), solution_found_(true) {
-        u_val_ = cplx_t(u.decimal().real() / pow(SQRT2, scale_exponent),
-                        u.decimal().imag() / pow(SQRT2, scale_exponent));
-        t_val_ = cplx_t(t.decimal().real() / pow(SQRT2, scale_exponent),
-                        t.decimal().imag() / pow(SQRT2, scale_exponent));
-        z_ = cplx_t(cos(theta), sin(theta));
+        u_val_ = cplx_t(u.decimal().real() / gmpf::pow(SQRT2, scale_exponent),
+                        u.decimal().imag() / gmpf::pow(SQRT2, scale_exponent));
+        t_val_ = cplx_t(t.decimal().real() / gmpf::pow(SQRT2, scale_exponent),
+                        t.decimal().imag() / gmpf::pow(SQRT2, scale_exponent));
+        z_ = cplx_t(gmpf::cos(theta), gmpf::sin(theta));
     }
 
     DOmegaMatrix matrix() const { return matrix_; }
@@ -87,11 +87,11 @@ inline RzApproximation find_rz_approximation(const real_t& theta,
     real_t scaleB;
     while ((!solution_found) && k < max_k) {
         if (k % 2 == 0) {
-            scaleA = pow(2, k / 2);
-            scaleB = pow(2, k / 2);
+            scaleA = gmpf::pow(2, k / 2);
+            scaleB = gmpf::pow(2, k / 2);
         } else {
-            scaleA = pow(2, (k - 1) / 2) * SQRT2;
-            scaleB = -pow(2, (k - 1) / 2) * SQRT2;
+            scaleA = gmpf::pow(2, (k - 1) / 2) * SQRT2;
+            scaleB = -gmpf::pow(2, (k - 1) / 2) * SQRT2;
         }
         state[0].rescale(scaleA);
         state[1].rescale(scaleB);
@@ -108,7 +108,7 @@ inline RzApproximation find_rz_approximation(const real_t& theta,
                     candidate = candidate.reduce();
                 }
 
-                ZSqrt2 xi = ZSqrt2(int_t(pow(2, temp_k)), 0) -
+                ZSqrt2 xi = ZSqrt2(int_t(gmpf::pow(2, temp_k)), 0) -
                             (candidate.conj() * candidate).to_zsqrt2();
                 ZOmega answer(0);
                 solution_found = diophantine_solver(answer, xi);
@@ -130,13 +130,12 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
                                                   const int_t& kmin = KMIN,
                                                   const int_t& kmax = KMAX,
                                                   const real_t tol = TOL) {
-    using namespace std;
     // int_t k = 3 * int_t(log(real_t(1) / eps) / log(2)) / 2;
     int_t k = kmin;
     int_t max_k = kmax;
     bool solution_found = false;
     zomega_vec_t scaled_candidates;
-    vec_t z{cos(theta), sin(theta)};
+    vec_t z{gmpf::cos(theta), gmpf::sin(theta)};
     Ellipse eps_region(theta, eps);
     Ellipse disk(real_t("0"), real_t("0"), real_t("1"), real_t("1"),
                  real_t("0"));
@@ -149,11 +148,11 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
 
     while ((!solution_found) && (k < max_k)) {
         if (k % 2 == 0) {
-            scaleA = real_t(pow(2, k / 2));
-            scaleB = real_t(pow(2, k / 2));
+            scaleA = gmpf::pow(2, k / 2);
+            scaleB = gmpf::pow(2, k / 2);
         } else {
-            scaleA = real_t(pow(2, (k - 1) / 2)) * SQRT2;
-            scaleB = -real_t(pow(2, (k - 1) / 2)) * SQRT2;
+            scaleA = gmpf::pow(2, (k - 1) / 2) * SQRT2;
+            scaleB = -gmpf::pow(2, (k - 1) / 2) * SQRT2;
         }
 
         bboxA.rescale(scaleA, scaleA);
@@ -182,7 +181,7 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
                         candidate = candidate.reduce();
                     }
 
-                    ZSqrt2 xi = ZSqrt2(int_t(pow(2, temp_k)), 0) -
+                    ZSqrt2 xi = ZSqrt2(int_t(gmpf::pow(2, temp_k)), 0) -
                                 (candidate.conj() * candidate).to_zsqrt2();
                     ZOmega answer(0);
                     solution_found = diophantine_solver(answer, xi);
@@ -211,7 +210,7 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
                         candidate = candidate.reduce();
                     }
 
-                    ZSqrt2 xi = ZSqrt2(int_t(pow(2, temp_k)), 0) -
+                    ZSqrt2 xi = ZSqrt2(int_t(gmpf::pow(2, temp_k)), 0) -
                                 (candidate.conj() * candidate).to_zsqrt2();
                     ZOmega answer(0);
                     solution_found = diophantine_solver(answer, xi);
@@ -222,122 +221,6 @@ inline RzApproximation find_fast_rz_approximation(const real_t& theta,
                 }
             }
         }
-
-        k++;
-        bboxA.rescale(real_t("1") / scaleA, real_t("1") / scaleA);
-        bboxB.rescale(real_t("1") / scaleB, real_t("1") / scaleB);
-    }
-    return RzApproximation();
-}
-
-inline RzApproximation verbose_find_fast_rz_approximation(
-    const real_t& theta, const real_t& eps, const int_t& kmin = KMIN,
-    const int_t& kmax = KMAX, const real_t tol = TOL) {
-    using namespace std;
-    // int_t k = 3 * int_t(log(real_t(1) / eps) / log(2)) / 2;
-    // int_t k = kmin;
-    int_t k = 0;
-    int_t max_k = kmax;
-    bool solution_found = false;
-    zomega_vec_t scaled_candidates;
-    vec_t z{cos(theta), sin(theta)};
-    Ellipse eps_region(theta, eps);
-    Ellipse disk(real_t("0"), real_t("0"), real_t("1"), real_t("1"),
-                 real_t("0"));
-    state_t state{eps_region, disk};
-    SpecialGridOperator G = optimize_skew(state);
-    real_t scaleA, scaleB;
-
-    UprightRectangle<real_t> bboxA = state[0].bounding_box();
-    UprightRectangle<real_t> bboxB = state[1].bounding_box();
-    cout << "theta = " << theta << endl;
-    while ((!solution_found) && (k < max_k)) {
-        if (k % 2 == 0) {
-            scaleA = real_t(pow(2, k / 2));
-            scaleB = real_t(pow(2, k / 2));
-        } else {
-            scaleA = real_t(pow(2, (k - 1) / 2)) * SQRT2;
-            scaleB = -real_t(pow(2, (k - 1) / 2)) * SQRT2;
-        }
-
-        cout << "k = " << k << endl;
-        bboxA.rescale(scaleA, scaleA);
-        bboxB.rescale(scaleB, scaleB);
-
-        // Interval<real_t> A_x = bboxA.x_interval().fatten(eps);
-        // Interval<real_t> B_x = bboxB.x_interval().fatten(eps);
-
-        // Interval<real_t> A_y = bboxA.y_interval().fatten(eps);
-        // Interval<real_t> B_y = bboxB.y_interval().fatten(eps);
-        Interval<real_t> A_x = bboxA.x_interval();
-        Interval<real_t> B_x = bboxB.x_interval();
-
-        Interval<real_t> A_y = bboxA.y_interval();
-        Interval<real_t> B_y = bboxB.y_interval();
-
-        // real_t min_width = (real_t(1) + SQRT2) * (real_t(1) + SQRT2);
-
-        // if((A_x.width()*B_x.width() < min_width) ||
-        //    (A_y.width()*B_y.width() < min_width)) {
-        //     k++;
-        //     bboxA.rescale(1 / scaleA, 1 / scaleA);
-        //     bboxB.rescale(1 / scaleB, 1 / scaleB);
-        //     continue;
-        // }
-
-        zsqrt2_vec_t alpha_solns = oneD_optimal_grid_solver(A_x, B_x, tol);
-        zsqrt2_vec_t beta_solns = oneD_optimal_grid_solver(A_y, B_y, tol);
-
-        for (auto alpha_soln : alpha_solns)
-            for (auto beta_soln : beta_solns) {
-                ZOmega candidate = G * ZOmega(alpha_soln, beta_soln, 0);
-                if (((candidate.real() / scaleA) * z[0] +
-                     (candidate.imag() / scaleA) * z[1]) >
-                    real_t("1") - (eps * eps / real_t("2"))) {
-                    int_t temp_k = k;
-                    while (candidate.is_reducible()) {
-                        temp_k -= 1;
-                        candidate = candidate.reduce();
-                    }
-
-                    ZSqrt2 xi = ZSqrt2(int_t(pow(2, temp_k)), 0) -
-                                (candidate.conj() * candidate).to_zsqrt2();
-                    ZOmega answer(0);
-                    solution_found = diophantine_solver(answer, xi);
-                    if (solution_found) {
-                        return RzApproximation(candidate, answer, temp_k, theta,
-                                               eps);
-                    }
-                }
-            }
-
-        zsqrt2_vec_t shifted_alpha_solns =
-            oneD_optimal_grid_solver(A_x - INV_SQRT2, B_x + INV_SQRT2, tol);
-        zsqrt2_vec_t shifted_beta_solns =
-            oneD_optimal_grid_solver(A_y - INV_SQRT2, B_y + INV_SQRT2, tol);
-
-        for (auto alpha_soln : shifted_alpha_solns)
-            for (auto beta_soln : shifted_beta_solns) {
-                ZOmega candidate = G * ZOmega(alpha_soln, beta_soln, 1);
-                if (((candidate.real() / scaleA) * z[0] +
-                     (candidate.imag() / scaleA) * z[1]) >
-                    real_t("1") - (eps * eps / real_t("2"))) {
-                    int_t temp_k = k;
-                    while (candidate.is_reducible()) {
-                        temp_k -= 1;
-                        candidate = candidate.reduce();
-                    }
-
-                    ZSqrt2 xi = ZSqrt2(int_t(pow(2, temp_k)), 0) -
-                                (candidate.conj() * candidate).to_zsqrt2();
-                    ZOmega answer(0);
-                    solution_found = diophantine_solver(answer, xi);
-                    if (solution_found) {
-                        return RzApproximation(candidate, answer, temp_k, theta,
-                                               eps);
-                    }
-                }
-            }
 
         k++;
         bboxA.rescale(real_t("1") / scaleA, real_t("1") / scaleA);
