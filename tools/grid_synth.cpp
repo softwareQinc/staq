@@ -120,8 +120,6 @@ int main(int argc, char** argv) {
     MP_CONSTS = initialize_constants(prec);
     eps = gmpf::pow(real_t(10), -prec);
 
-    std::cout << std::fixed << std::setprecision(100) << SQRT2 << std::endl;
-
     if (*fact_eff) {
         MAX_ATTEMPTS_POLLARD_RHO = factor_effort;
     }
