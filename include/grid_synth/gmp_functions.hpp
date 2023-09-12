@@ -237,8 +237,12 @@ inline mpf_class exp(const mpf_class& x, const mpf_class& tol = TOL) {
         term *= x;
         term /= i;
         s += term;
+        if (i % 10 == 0) {
+            std::cerr << term << std::endl;
+        }
     }
     std::cerr << "exp ended at term " << i << std::endl;
+    std::cerr << i.get_prec() << ' ' << s.get_prec() << ' ' << term.get_prec() << std::endl;
 
     return s;
 }

@@ -9,16 +9,12 @@ int main() {
     vector<mpf_class> v;
 
     using namespace staq::grid_synth;
-    v.emplace_back(pow(mpf_class("1.100000001"),mpz_class("10000000")));
-    v.emplace_back(pow(pow(mpf_class("1.100000001"),mpz_class("10000")),mpz_class("1000")));
+    
+    int prec = 17;
+    DEFAULT_GMP_PREC = 4 * prec + 19;
+    mpf_set_default_prec(log(10) / log(2) * DEFAULT_GMP_PREC);
 
-    v.emplace_back(exp(mpf_class("-1")));
-    v.emplace_back(exp(mpf_class("-10")));
     v.emplace_back(exp(mpf_class("-100")));
-    v.emplace_back(exp(mpf_class("100")));
-    v.emplace_back(exp(mpf_class("-3.456")));
-    v.emplace_back(exp(mpf_class("3.456")));
-
 
     for (auto n : v) {
         mp_exp_t e;

@@ -46,7 +46,7 @@ class ReplaceRZImpl final : public ast::Replacer {
             // this should never be false, TODO: check!
             real_t value2 = val2 ? val2.value() : real_t(0);
             std::string rz_approx = get_rz_approx(value2);
-            std::cerr << value2 << ' ' << rz_approx << std::endl;
+            // std::cerr << value2 << ' ' << rz_approx << std::endl;
 
             for (char c : rz_approx) {
                 if (c == ' ')
