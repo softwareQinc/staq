@@ -70,13 +70,6 @@ endif ()
 set(COMPILER "staq")
 add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
 target_link_libraries(${COMPILER} PUBLIC libstaq)
-if (${BUILD_GRID_SYNTH})
-    if (MSVC)
-        target_link_libraries(${COMPILER} PUBLIC PkgConfig::gmp PkgConfig::gmpxx)
-    else ()
-        target_link_libraries(${COMPILER} PUBLIC gmp gmpxx)
-    endif ()
-endif ()
 
 #### Additional command line tools
 add_subdirectory(tools)

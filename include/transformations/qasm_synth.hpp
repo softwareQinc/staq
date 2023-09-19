@@ -101,6 +101,7 @@ class ReplaceRZImpl final : public ast::Replacer {
     bool check_;
     bool details_;
     bool verbose_;
+    std::unordered_map<std::string, std::string> rz_approx_cache_;
 
     std::string to_string(const mpf_class& x) const {
         mp_exp_t exp;
@@ -108,8 +109,6 @@ class ReplaceRZImpl final : public ast::Replacer {
             x.get_str(exp, 32).substr(0, mpf_get_default_prec() / 5);
         return s + std::string(" ") + std::to_string(exp);
     }
-
-    std::unordered_map<std::string, std::string> rz_approx_cache;
 
     /*!
      * \brief Makes a new gate with no cargs.
@@ -140,7 +139,6 @@ class ReplaceRZImpl final : public ast::Replacer {
                     << '\n';
             if (check_)
                 std::cerr << "Check flag = " << 1 << '\n';
-            // TODO: remove spaces in check_common_cases?
             std::string ret_no_spaces;
             for (char c : ret) {
                 if (c != ' ')
@@ -150,12 +148,14 @@ class ReplaceRZImpl final : public ast::Replacer {
         }
 
         std::string angle_str = to_string(angle);
-        if (verbose_)
+        if (verbose_) {
             std::cerr << "Checking local cache..." << '\n';
-        if (rz_approx_cache.count(angle_str)) {
+            std::cerr << "Angle has string representation " << angle_str << '\n';
+        }
+        if (rz_approx_cache_.count(angle_str)) {
             if (verbose_ || details_)
                 std::cerr << "Angle is found in local cache" << '\n';
-            return rz_approx_cache[angle_str];
+            return rz_approx_cache_[angle_str];
         }
 
         if (verbose_)
@@ -165,9 +165,8 @@ class ReplaceRZImpl final : public ast::Replacer {
             find_fast_rz_approximation(angle / real_t("-2.0"), eps_);
         if (!rz_approx.solution_found()) {
             std::cerr << "No approximation found for RzApproximation. "
-                         "Try changing factorization effort."
-                      << '\n';
-            throw EXIT_FAILURE; // TODO: change this to fail more gracefully?
+                         "Try changing factorization effort." << '\n';
+            exit(EXIT_FAILURE); // TODO: change this to fail more gracefully?
         }
         if (verbose_)
             std::cerr << "Approximation found. Synthesizing..." << '\n';
@@ -201,7 +200,7 @@ class ReplaceRZImpl final : public ast::Replacer {
             std::cerr << "----" << '\n' << std::fixed;
         }
 
-        rz_approx_cache[angle_str] = ret;
+        rz_approx_cache_[angle_str] = ret;
         return ret;
     }
 };

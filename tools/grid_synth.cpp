@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
                 if (check) {
                     std::cerr << "Check flag = " << 1 << '\n';
                 }
-                std::cerr << common_case << '\n';
+                std::cout << common_case << '\n';
                 return 0;
             }
             if (verbose)
@@ -239,9 +239,9 @@ int main(int argc, char** argv) {
                 }
 
                 for (auto& ch : full_simplify_str(op_str)) {
-                    std::cerr << ch << " ";
+                    std::cout << ch << " ";
                 }
-                std::cerr << '\n';
+                std::cout << '\n';
             }
         }
     }

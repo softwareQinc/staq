@@ -38,13 +38,12 @@
 #include "../utils/angle.hpp"
 #include "base.hpp"
 
-#define EXPR_GMP 1
 #ifdef EXPR_GMP
 #include "grid_synth/gmp_functions.hpp"
 #include "grid_synth/types.hpp"
 #include <gmpxx.h>
-using real_t = mpf_class; // TODO: refactor GMP stuff
-#endif                    /* EXPR_GMP */
+using real_t = mpf_class;
+#endif /* EXPR_GMP */
 
 namespace qasmtools {
 namespace ast {

@@ -1032,7 +1032,11 @@ inline ast::ptr<ast::Program> parse_file(std::string fname) {
 inline ast::ptr<ast::Program> parse_stdin(std::string name = "", 
                                           bool use_gmp = false) {
     Preprocessor pp;
+#ifdef EXPR_GMP
     Parser parser(pp, use_gmp);
+#else
+    Parser parser(pp);
+#endif /* EXPR_GMP */
 
     // This is a bad idea, but it's necessary for automatic bookkeeping
     // accross all different forms and sources of source streams
