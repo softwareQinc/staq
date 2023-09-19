@@ -66,7 +66,7 @@ class ReplaceRZImpl final : public ast::Replacer {
 
         if (gate.name() == "rx" || gate.name() == "ry" || gate.name() == "rz") {
 
-            // By the standard qasm header, these instrs have the form
+            // By the standard qasm header, these instructions have the form
             //   rz[carg0] qarg0;
             // where carg0 does not contain a VarExpr child.
             // This is checked during the semantic analysis phase of parsing.
@@ -91,7 +91,7 @@ class ReplaceRZImpl final : public ast::Replacer {
             }
             if (verbose_) {
                 std::cerr << gate.pos()
-                          << ": finding approxmation for angle = " << (angle)
+                          << ": finding approximation for angle = " << (angle)
                           << '\n';
             }
             std::string rz_approx = get_rz_approx(angle);
