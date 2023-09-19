@@ -4,7 +4,7 @@
 #include "grid_synth/gmp_functions.hpp"
 #include "grid_synth/types.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/synth.hpp"
+#include "transformations/qasm_synth.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

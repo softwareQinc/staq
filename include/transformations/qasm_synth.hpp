@@ -1,10 +1,10 @@
 /**
- * \file transformations/synth.hpp
+ * \file transformations/qasm_synth.hpp
  * \brief Replace rz gates with approximations
  */
 
-#ifndef TRANSFORMATIONS_SYNTH_HPP_
-#define TRANSFORMATIONS_SYNTH_HPP_
+#ifndef TRANSFORMATIONS_QASM_SYNTH_HPP_
+#define TRANSFORMATIONS_QASM_SYNTH_HPP_
 
 #include <cstdlib>
 #include <list>
@@ -183,7 +183,7 @@ class ReplaceRZImpl final : public ast::Replacer {
         }
         if (details_) {
             real_t scale = gmpf::pow(SQRT2, rz_approx.matrix().k());
-            std::cerr << "angle = " << angle << '\n';
+            std::cerr << "angle = " << std::scientific << angle << '\n';
             std::cerr << rz_approx.matrix();
             std::cerr << "u decimal value = "
                       << "(" << rz_approx.matrix().u().decimal().real() / scale
@@ -198,7 +198,7 @@ class ReplaceRZImpl final : public ast::Replacer {
             std::string::difference_type n =
                 count(simplified.begin(), simplified.end(), 'T');
             std::cerr << "T count = " << n << '\n';
-            std::cerr << "----" << '\n';
+            std::cerr << "----" << '\n' << std::fixed;
         }
 
         rz_approx_cache[angle_str] = ret;
@@ -216,4 +216,4 @@ void replace_rz(ast::ASTNode& node, grid_synth::domega_matrix_table_t& s3_table,
 } /* namespace transformations */
 } /* namespace staq */
 
-#endif /* TRANSFORMATIONS_SYNTH_HPP_ */
+#endif /* TRANSFORMATIONS_QASM_SYNTH_HPP_ */
