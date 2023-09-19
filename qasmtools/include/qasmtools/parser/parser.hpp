@@ -39,6 +39,10 @@
 #include "../ast/ast.hpp"
 #include "preprocessor.hpp"
 
+#ifdef EXPR_GMP
+#include "grid_synth/types.hpp"
+#endif /* EXPR_GMP */
+
 namespace qasmtools {
 namespace parser {
 
@@ -66,6 +70,9 @@ class Parser {
     Token current_token_;         ///< current token
     int bits_ = 0;                ///< number of bits
     int qubits_ = 0;              ///< number of qubits
+#ifdef EXPR_GMP
+    bool use_gmp_ = false;        ///< whether to use gmp to parse reals
+#endif /* EXPR_GMP */
 
   public:
     /**
@@ -73,8 +80,14 @@ class Parser {
      *
      * \param pp_lexer The preprocessed lexer stream to be parsed
      */
+#ifdef EXPR_GMP
+    Parser(Preprocessor& pp_lexer, bool use_gmp=false)
+        : pp_lexer_(pp_lexer), current_token_(pp_lexer_.next_token()),
+        use_gmp_(use_gmp) {}
+#else
     Parser(Preprocessor& pp_lexer)
         : pp_lexer_(pp_lexer), current_token_(pp_lexer_.next_token()) {}
+#endif /* EXPR_GMP */
 
     /**
      * \brief Parses the tokenized stream as a QCircuit object
@@ -734,6 +747,11 @@ class Parser {
             case Token::Kind::real: {
                 auto real = current_token_;
                 consume_token();
+            #ifdef EXPR_GMP
+                if (use_gmp_) {
+                    return ast::RealExpr::create(pos, mpf_class(real.raw()));
+                }
+            #endif /* EXPR_GMP */
                 return ast::RealExpr::create(pos, real.as_real());
             }
 
@@ -1011,9 +1029,14 @@ inline ast::ptr<ast::Program> parse_file(std::string fname) {
 /**
  * \brief Parse input from stdin
  */
-inline ast::ptr<ast::Program> parse_stdin(std::string name = "") {
+inline ast::ptr<ast::Program> parse_stdin(std::string name = "", 
+                                          bool use_gmp = false) {
     Preprocessor pp;
+#ifdef EXPR_GMP
+    Parser parser(pp, use_gmp);
+#else
     Parser parser(pp);
+#endif /* EXPR_GMP */
 
     // This is a bad idea, but it's necessary for automatic bookkeeping
     // accross all different forms and sources of source streams
