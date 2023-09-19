@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
                                        "Name of file containing s3 table");
     CLI::Option* write =
         app.add_option("-w, --write-table", tablefile,
-                       "Name of table file to write s3_table to")
+                       "Name of table file to write s3 table to")
             ->excludes(read);
     app.add_flag("-c, --check", check,
                  "Output bool that will be 1 if the op string matches the "
