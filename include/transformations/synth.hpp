@@ -102,20 +102,6 @@ class ReplaceRZImpl final : public ast::Replacer {
     bool details_;
     bool verbose_;
 
-#if 0
-    struct mpf_class_hash {
-        std::size_t operator()(const mpf_class& x) const {
-            mp_exp_t exp;
-            // hash x by concatting its mantissa and exponent
-            // note that log2(32) = 5, so we truncate to prec/5 digits
-            std::string s =
-                x.get_str(exp, 32).substr(0, mpf_get_default_prec() / 5);
-            std::string hash_str = s + std::string(" ") + std::to_string(exp);
-            return std::hash<std::string>{}(hash_str);
-        }
-    };
-#endif
-
     std::string to_string(const mpf_class& x) const {
         mp_exp_t exp;
         std::string s =
@@ -143,7 +129,6 @@ class ReplaceRZImpl final : public ast::Replacer {
     std::string get_rz_approx(const real_t& angle) {
         using namespace grid_synth;
 
-        std::cerr << rz_approx_cache.size() << std::endl;
         if (verbose_)
             std::cerr << "Checking common cases..."
                       << "\n";
@@ -224,7 +209,6 @@ class ReplaceRZImpl final : public ast::Replacer {
 void replace_rz(ast::ASTNode& node, grid_synth::domega_matrix_table_t& s3_table,
                 real_t& eps, bool check = false, bool details = false,
                 bool verbose = false) {
-    // TODO: sanity check s3_table_ size
     ReplaceRZImpl alg(s3_table, eps, check, details, verbose);
     alg.run(node);
 }
