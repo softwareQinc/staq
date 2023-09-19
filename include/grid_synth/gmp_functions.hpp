@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <gmpxx.h>
+#include <iostream>
 #include <string>
 
 #include "utils.hpp"
@@ -12,9 +13,9 @@ namespace gmpf {
 
 inline mpf_class gmp_abs(const mpf_class& x) { return sgn<mpf_class>(x) * x; }
 
-// computes 
+// computes
 inline mpf_class gmp_pi() {
-    long int tol_exp = std::log10(2)*mpf_get_default_prec();
+    long int tol_exp = std::log10(2) * mpf_get_default_prec();
     mpf_class tol("1e-" + std::to_string(tol_exp));
     mpf_class three("3");
     mpf_class lasts("0");
@@ -89,7 +90,7 @@ inline mpf_class pow(const mpf_class& base, mpz_class exponent) {
 
 inline mpf_class pow(const mpf_class& base, signed long int exponent) {
     mpf_class output;
-    mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), abs(exponent));
+    mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), std::abs(exponent));
 
     if (exponent < 0)
         return mpf_class(1) / output;
@@ -98,13 +99,13 @@ inline mpf_class pow(const mpf_class& base, signed long int exponent) {
 }
 
 inline mpf_class gmp_leq(const mpf_class& lhs, const mpf_class& rhs) {
-    long int tol_exp = std::log10(2)*lhs.get_prec();
+    long int tol_exp = std::log10(2) * lhs.get_prec();
     mpf_class tol = mpf_class("1e-" + std::to_string(tol_exp));
     return (lhs < rhs) || (abs(lhs - rhs) < tol);
 }
 
 inline mpf_class gmp_geq(const mpf_class& lhs, const mpf_class& rhs) {
-    long int tol_exp = std::log10(2)*lhs.get_prec();
+    long int tol_exp = std::log10(2) * lhs.get_prec();
     mpf_class tol = mpf_class("1e-" + std::to_string(tol_exp));
     return (lhs > rhs) || (abs(lhs - rhs) < tol);
 }
@@ -177,11 +178,11 @@ inline mpf_class reduce_angle(const mpf_class& phi) {
     return result;
 }
 
-//TODO improve accuracy of sin and cos by expanding about pi/2, pi/3, pi/4, and pi/6
-//depending on the input angle. 
+// TODO improve accuracy of sin and cos by expanding about pi/2, pi/3, pi/4, and
+// pi/6 depending on the input angle.
 inline mpf_class sin(const mpf_class& theta) {
     long int initial_prec = theta.get_prec();
-    long int tol_exp = std::log10(2)*initial_prec;
+    long int tol_exp = std::log10(2) * initial_prec;
     mpf_class phi = reduce_angle(theta);
     mpz_class i(1);
     mpf_class lasts(0);
@@ -200,10 +201,9 @@ inline mpf_class sin(const mpf_class& theta) {
     return s;
 }
 
-
 inline mpf_class cos(const mpf_class& theta) {
     long int initial_prec = theta.get_prec();
-    long int tol_exp = std::log10(2)*theta.get_prec();
+    long int tol_exp = std::log10(2) * theta.get_prec();
     mpf_class phi = reduce_angle(theta);
     mpz_class i(0);
     mpf_class lasts(0);
@@ -222,6 +222,20 @@ inline mpf_class cos(const mpf_class& theta) {
     return s;
 }
 
+inline mpf_class exp(const mpf_class& x) {
+    // TODO: fix stability issue when x negative
+    long int tol_exp = std::log10(2) * x.get_prec();
+    mpz_class i = 0;
+    mpf_class s = 1;
+    mpf_class term = 1;
+    while (gmp_abs(term) > mpf_class("1e-" + std::to_string(tol_exp))) {
+        i += 1;
+        term *= x;
+        term /= i;
+        s += term;
+    }
+    return s;
+}
 
 inline mpf_class sqrt(const mpf_class& x) {
     mpf_class output;

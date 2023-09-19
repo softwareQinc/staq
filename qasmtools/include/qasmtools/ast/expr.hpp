@@ -38,6 +38,14 @@
 #include "../utils/angle.hpp"
 #include "base.hpp"
 
+#define EXPR_GMP 1
+#ifdef EXPR_GMP
+#include "grid_synth/gmp_functions.hpp"
+#include "grid_synth/types.hpp"
+#include <gmpxx.h>
+using real_t = mpf_class; // TODO: refactor GMP stuff
+#endif                    /* EXPR_GMP */
+
 namespace qasmtools {
 namespace ast {
 
@@ -115,6 +123,13 @@ class Expr : public ASTNode {
      *         is constant, or nullopt otherwise
      */
     virtual std::optional<double> constant_eval() const = 0;
+
+#ifdef EXPR_GMP
+    /**
+     * \brief Evaluate constant expressions to arbitrary precision
+     */
+    virtual std::optional<mpf_class> constant_eval_gmp() const = 0;
+#endif /* EXPR_GMP */
 
     /**
      * \brief Internal pretty-printer with associative context
@@ -218,6 +233,32 @@ class BExpr final : public Expr {
                 return 0; // inaccessible
         }
     }
+
+#ifdef EXPR_GMP
+    std::optional<real_t> constant_eval_gmp() const override {
+        auto lexp = lexp_->constant_eval_gmp();
+        auto rexp = rexp_->constant_eval_gmp();
+
+        if (!lexp || !rexp)
+            return std::nullopt;
+
+        switch (op_) {
+            case BinaryOp::Plus:
+                return *lexp + *rexp;
+            case BinaryOp::Minus:
+                return *lexp - *rexp;
+            case BinaryOp::Times:
+                return *lexp * *rexp;
+            case BinaryOp::Divide:
+                return *lexp / *rexp;
+            case BinaryOp::Pow:
+                return staq::gmpf::pow(*lexp, staq::gmpf::gmp_round(*rexp));
+            default:
+                return 0; // inaccessible
+        }
+    }
+#endif /* EXPR_GMP */
+
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         if (ctx) {
@@ -315,6 +356,37 @@ class UExpr final : public Expr {
                 return 0; // inaccessible
         }
     }
+
+#ifdef EXPR_GMP
+    std::optional<real_t> constant_eval_gmp() const override {
+        auto expr = exp_->constant_eval_gmp();
+
+        if (!expr)
+            return std::nullopt;
+
+        switch (op_) {
+            case UnaryOp::Neg:
+                return -(*expr);
+            case UnaryOp::Sin:
+                return staq::gmpf::sin(*expr);
+            case UnaryOp::Cos:
+                return staq::gmpf::cos(*expr);
+            case UnaryOp::Tan:
+                return staq::gmpf::sin(*expr) / staq::gmpf::cos(*expr);
+            case UnaryOp::Sqrt:
+                return staq::gmpf::sqrt(*expr);
+            case UnaryOp::Ln:
+                // TODO: implement staq::gmpf::ln()
+                return staq::gmpf::log2(*expr) /
+                       staq::gmpf::log2(staq::gmpf::exp(1));
+            case UnaryOp::Exp:
+                return staq::gmpf::exp(*expr);
+            default:
+                return 0; // inaccessible
+        }
+    }
+#endif /* EXPR_GMP */
+
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         (void)ctx;
@@ -360,6 +432,13 @@ class PiExpr final : public Expr {
     }
 
     std::optional<double> constant_eval() const override { return utils::pi; }
+
+#ifdef EXPR_GMP
+    std::optional<real_t> constant_eval_gmp() const override {
+        return staq::gmpf::gmp_pi();
+    }
+#endif /* EXPR_GMP */
+
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         (void)ctx;
@@ -406,6 +485,13 @@ class IntExpr final : public Expr {
     std::optional<double> constant_eval() const override {
         return (double)value_;
     }
+
+#ifdef EXPR_GMP
+    std::optional<real_t> constant_eval_gmp() const override {
+        return real_t(value_);
+    }
+#endif
+
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         (void)ctx;
@@ -424,7 +510,12 @@ class IntExpr final : public Expr {
  * \see qasmtools::ast::Expr
  */
 class RealExpr final : public Expr {
+
+#ifdef EXPR_GMP
+    std::variant<double, mpf_class> value_;
+#else
     double value_; ///< the floating point value
+#endif
 
   public:
     /**
@@ -433,7 +524,16 @@ class RealExpr final : public Expr {
      * \param pos The source position
      * \param val The floating point value
      */
+#ifdef EXPR_GMP
+    RealExpr(parser::Position pos, double value) // double ctor
+        : Expr(pos), value_(std::in_place_index<0>, value) {}
+    RealExpr(parser::Position pos, real_t value) // gmp ctor
+        : Expr(pos), value_(std::in_place_index<1>, value) {}
+    RealExpr(parser::Position pos, std::variant<double, real_t> value)
+        : Expr(pos), value_(value) {} // copy ctor (for clone)
+#else
     RealExpr(parser::Position pos, double value) : Expr(pos), value_(value) {}
+#endif
 
     /**
      * \brief Protected heap-allocated construction
@@ -441,21 +541,44 @@ class RealExpr final : public Expr {
     static ptr<RealExpr> create(parser::Position pos, double value) {
         return std::make_unique<RealExpr>(pos, value);
     }
+#ifdef EXPR_GMP
+    static ptr<RealExpr> create(parser::Position pos, real_t value) {
+        return std::make_unique<RealExpr>(pos, value);
+    }
+#endif
 
     /**
      * \brief Get the real value
      *
      * \return The floating point value
      */
+#ifdef EXPR_GMP
+    double value() const {
+        if (value_.index() == 0) {
+            return std::get<0>(value_);
+        }
+        return std::get<1>(value_).get_d();
+    }
+#else
     double value() const { return value_; }
+#endif
 
-    std::optional<double> constant_eval() const override { return value_; }
+    std::optional<double> constant_eval() const override { return value(); }
+#ifdef EXPR_GMP
+    std::optional<real_t> constant_eval_gmp() const override {
+        if (value_.index() == 0) {
+            return real_t(std::get<0>(value_));
+        }
+        return std::get<1>(value_);
+    }
+#endif
+
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         (void)ctx;
 
         std::streamsize ss = os.precision();
-        os << std::setprecision(15) << value_ << std::setprecision(ss);
+        os << std::setprecision(15) << value() << std::setprecision(ss);
         return os;
     }
 
@@ -497,6 +620,12 @@ class VarExpr final : public Expr {
     std::optional<double> constant_eval() const override {
         return std::nullopt;
     }
+#ifdef EXPR_GMP
+    std::optional<real_t> constant_eval_gmp() const override {
+        return std::nullopt;
+    }
+#endif
+
     void accept(Visitor& visitor) override { visitor.visit(*this); }
     std::ostream& pretty_print(std::ostream& os, bool ctx) const override {
         (void)ctx;

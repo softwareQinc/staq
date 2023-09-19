@@ -31,16 +31,16 @@
 #include <vector>
 
 #include "grid_synth/exact_synthesis.hpp"
+#include "grid_synth/regions.hpp"
 #include "grid_synth/rz_approximation.hpp"
 #include "grid_synth/types.hpp"
-#include "grid_synth/regions.hpp"
 
 int main(int argc, char** argv) {
 
     using namespace staq;
     using namespace grid_synth;
 
-    bool check=false, details=false, verbose=false, timer=false;
+    bool check = false, details = false, verbose = false, timer = false;
     real_t theta, eps;
     std::vector<std::string> thetas;
     std::vector<long int> prec_lst;
@@ -85,33 +85,32 @@ int main(int argc, char** argv) {
     CLI11_PARSE(app, argc, argv);
 
     if (verbose) {
-      std::cout << thetas.size() << " angles read." << '\n';
+        std::cerr << thetas.size() << " angles read." << '\n';
     }
-
 
     if (*read) {
         if (verbose) {
-          std::cout << "Reading s3_table from " << tablefile << '\n';
+            std::cerr << "Reading s3_table from " << tablefile << '\n';
         }
         s3_table = read_s3_table(tablefile);
     } else if (*write) {
         if (verbose) {
-          std::cout << "Generating new table file and writing to " << tablefile
-                 << '\n';
+            std::cerr << "Generating new table file and writing to "
+                      << tablefile << '\n';
         }
         s3_table = generate_s3_table();
         write_s3_table(tablefile, s3_table);
     } else if (std::ifstream(DEFAULT_TABLE_FILE)) {
         if (verbose) {
-          std::cout << "Table file found at default location "
-                 << DEFAULT_TABLE_FILE << '\n';
+            std::cerr << "Table file found at default location "
+                      << DEFAULT_TABLE_FILE << '\n';
         }
         s3_table = read_s3_table(DEFAULT_TABLE_FILE);
     } else {
         if (verbose) {
-          std::cout << "Failed to find " << DEFAULT_TABLE_FILE
-                 << ". Generating new table file and writing to "
-                 << DEFAULT_TABLE_FILE << '\n';
+            std::cerr << "Failed to find " << DEFAULT_TABLE_FILE
+                      << ". Generating new table file and writing to "
+                      << DEFAULT_TABLE_FILE << '\n';
         }
         s3_table = generate_s3_table();
         write_s3_table(DEFAULT_TABLE_FILE, s3_table);
@@ -125,28 +124,31 @@ int main(int argc, char** argv) {
     }
 
     if (verbose) {
-      std::cout << "Runtime Parameters" << '\n';
-      std::cout << "------------------" << '\n';
-      std::cout << std::setw(3 * COLW) << std::left << "TOL (Tolerance for float equality) "
-             << std::setw(1) << ": " << std::setw(3 * COLW) << std::left << std::scientific << TOL
-             << '\n';
-      std::cout << std::setw(3 * COLW) << std::left << "KMIN (Minimum scaling exponent) "
-             << std::setw(1) << ": " << std::setw(3 * COLW) << std::left << std::fixed << KMIN
-             << '\n';
-      std::cout << std::setw(2 * COLW) << std::left << "KMAX (Maximum scaling exponent) "
-             << std::setw(1) << ": " << std::setw(3 * COLW) << std::left << std::fixed << KMAX
-             << '\n';
-      std::cout << std::setw(3 * COLW) << std::left
-             << "MAX_ATTEMPTS_POLLARD_RHO (How hard we try to factor) "
-             << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
-             << MAX_ATTEMPTS_POLLARD_RHO << '\n';
-      std::cout << std::setw(3 * COLW) << std::left
-             << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check "
-                "primality) "
-             << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
-             << MAX_ITERATIONS_FERMAT_TEST << '\n';
+        std::cerr << "Runtime Parameters" << '\n';
+        std::cerr << "------------------" << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "TOL (Tolerance for float equality) " << std::setw(1)
+                  << ": " << std::setw(3 * COLW) << std::left << std::scientific
+                  << TOL << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "KMIN (Minimum scaling exponent) " << std::setw(1) << ": "
+                  << std::setw(3 * COLW) << std::left << std::fixed << KMIN
+                  << '\n';
+        std::cerr << std::setw(2 * COLW) << std::left
+                  << "KMAX (Maximum scaling exponent) " << std::setw(1) << ": "
+                  << std::setw(3 * COLW) << std::left << std::fixed << KMAX
+                  << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "MAX_ATTEMPTS_POLLARD_RHO (How hard we try to factor) "
+                  << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
+                  << MAX_ATTEMPTS_POLLARD_RHO << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check "
+                     "primality) "
+                  << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
+                  << MAX_ITERATIONS_FERMAT_TEST << '\n';
     }
-    std::cout << std::scientific;
+    std::cerr << std::scientific;
 
     long long duration = 0;
     if (*prec_opt && *thetas_op) {
@@ -154,21 +156,23 @@ int main(int argc, char** argv) {
         random_numbers.seed(rd());
 
         for (const auto& angle : thetas) {
-            str_t common_case = check_common_cases(real_t(angle),eps);
-            if(verbose) 
-                std::cout << "Checking common cases..." << '\n';
-            if(common_case != "") {
-                if(details) 
-                    std::cout << "Angle is multiple of pi/4, answer is known exactly" << '\n';
+            str_t common_case = check_common_cases(real_t(angle), eps);
+            if (verbose)
+                std::cerr << "Checking common cases..." << '\n';
+            if (common_case != "") {
+                if (details)
+                    std::cerr
+                        << "Angle is multiple of pi/4, answer is known exactly"
+                        << '\n';
                 if (check) {
-                  std::cout << "Check flag = " << 1 << '\n';
+                    std::cerr << "Check flag = " << 1 << '\n';
                 }
-                std::cout << common_case << '\n';
+                std::cerr << common_case << '\n';
                 return 0;
             }
-            if(verbose)
-                std::cout << "No common cases found" << '\n';
-            
+            if (verbose)
+                std::cerr << "No common cases found" << '\n';
+
             RzApproximation rz_approx;
             if (timer) {
                 auto start = std::chrono::steady_clock::now();
@@ -177,70 +181,73 @@ int main(int argc, char** argv) {
                 str_t op_str = synthesize(rz_approx.matrix(), s3_table);
                 auto end = std::chrono::steady_clock::now();
                 duration +=
-                    std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+                    std::chrono::duration_cast<std::chrono::microseconds>(end -
+                                                                          start)
                         .count();
             } else {
                 if (verbose) {
-                  std::cout << "----\n";
-                  std::cout << "Finding approximation for angle = " << (angle)
-                         << "..." << '\n';
+                    std::cerr << "----\n";
+                    std::cerr << "Finding approximation for angle = " << (angle)
+                              << "..." << '\n';
                 }
                 rz_approx = find_fast_rz_approximation(
                     real_t(angle) * PI / real_t("-2"), eps);
                 if (!rz_approx.solution_found()) {
-                  std::cout << "No approximation found for RzApproximation. Try "
-                            "changing factorization effort."
-                         << '\n';
+                    std::cerr << "No approximation found for RzApproximation. "
+                                 "Try changing factorization effort."
+                              << '\n';
                     return EXIT_FAILURE;
                 }
                 if (verbose) {
-                  std::cout << "Approximation found. Synthesizing..." << '\n';
+                    std::cerr << "Approximation found. Synthesizing..." << '\n';
                 }
                 str_t op_str = synthesize(rz_approx.matrix(), s3_table);
                 if (verbose) {
-                  std::cout << "Synthesis complete." << '\n';
+                    std::cerr << "Synthesis complete." << '\n';
                 }
 
                 if (check) {
-                  std::cout << "Check flag = "
-                         << (rz_approx.matrix() ==
-                             domega_matrix_from_str(full_simplify_str(op_str)))
-                         << '\n';
+                    std::cerr
+                        << "Check flag = "
+                        << (rz_approx.matrix() ==
+                            domega_matrix_from_str(full_simplify_str(op_str)))
+                        << '\n';
                 }
 
                 if (details) {
                     real_t scale = gmpf::pow(SQRT2, rz_approx.matrix().k());
-                    std::cout << "angle = " << angle << '\n';
-                    std::cout << rz_approx.matrix();
-                    std::cout << "u decimal value = "
-                         << "("
-                         << rz_approx.matrix().u().decimal().real() / scale
-                         << ","
-                         << rz_approx.matrix().u().decimal().imag() / scale
-                         << ")" << '\n';
-                    std::cout << "t decimal value = "
-                         << "("
-                         << rz_approx.matrix().t().decimal().real() / scale
-                         << ","
-                         << rz_approx.matrix().t().decimal().imag() / scale
-                         << ")" << '\n';
-                    std::cout << "error = " << rz_approx.error() << '\n';
+                    std::cerr << "angle = " << angle << '\n';
+                    std::cerr << rz_approx.matrix();
+                    std::cerr << "u decimal value = "
+                              << "("
+                              << rz_approx.matrix().u().decimal().real() / scale
+                              << ","
+                              << rz_approx.matrix().u().decimal().imag() / scale
+                              << ")" << '\n';
+                    std::cerr << "t decimal value = "
+                              << "("
+                              << rz_approx.matrix().t().decimal().real() / scale
+                              << ","
+                              << rz_approx.matrix().t().decimal().imag() / scale
+                              << ")" << '\n';
+                    std::cerr << "error = " << rz_approx.error() << '\n';
                     str_t simplified = full_simplify_str(op_str);
                     std::string::difference_type n =
                         count(simplified.begin(), simplified.end(), 'T');
-                    std::cout << "T count = " << n << '\n';
-                    std::cout << "----" << '\n';
+                    std::cerr << "T count = " << n << '\n';
+                    std::cerr << "----" << '\n';
                 }
 
                 for (auto& ch : full_simplify_str(op_str)) {
-                  std::cout << ch << " ";
+                    std::cerr << ch << " ";
                 }
-                std::cout << '\n';
+                std::cerr << '\n';
             }
         }
     }
 
     if (timer) {
-      std::cout << "Duration = " << (static_cast<double>(duration) / 1e6) << '\n';
+        std::cerr << "Duration = " << (static_cast<double>(duration) / 1e6)
+                  << '\n';
     }
 }
