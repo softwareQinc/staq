@@ -126,10 +126,12 @@ TEST(EllipseTest, ZAndE) {
     real_t z = A.z();
     real_t e = A.e();
 
-    EXPECT_TRUE(gmpf::gmp_abs(e * std::pow(LAMBDA.decimal().get_d(), -z.get_d()) - a) <
-                1e-14);
-    EXPECT_TRUE(gmpf::gmp_abs(e * std::pow(LAMBDA.decimal().get_d(), z.get_d()) - c) <
-                1e-14);
+    EXPECT_TRUE(
+        gmpf::gmp_abs(e * std::pow(LAMBDA.decimal().get_d(), -z.get_d()) - a) <
+        1e-14);
+    EXPECT_TRUE(
+        gmpf::gmp_abs(e * std::pow(LAMBDA.decimal().get_d(), z.get_d()) - c) <
+        1e-14);
 }
 
 TEST(EllipseTest, Normalization) {

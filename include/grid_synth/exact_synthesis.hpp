@@ -1,5 +1,33 @@
-#ifndef EXACT_SYNTHESIS_HPP
-#define EXACT_SYNTHESIS_HPP
+/*
+ * This file is part of staq.
+ *
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#ifndef GRID_SYNTH_EXACT_SYNTHESIS_HPP_
+#define GRID_SYNTH_EXACT_SYNTHESIS_HPP_
+
+#include <cstdlib>
 
 #include "matrix.hpp"
 #include "types.hpp"
@@ -10,42 +38,32 @@ namespace grid_synth {
 // Returns known common cases for multiples of theta = pi/4. w =
 // 1/(sqrt(omega)).
 inline str_t check_common_cases(real_t theta, const real_t& eps) {
- 
-  while(theta > real_t("2"))
-      theta = theta - real_t("2");
-  while(theta < 0)
-      theta = theta + real_t("2");
-    
-  if(abs(theta-real_t("0.25")) < eps) {
+
+    while (theta > real_t("2"))
+        theta = theta - real_t("2");
+    while (theta < 0)
+        theta = theta + real_t("2");
+
+    if (abs(theta - real_t("0.25")) < eps) {
         return "T w";
-    }
-    else if(abs(theta-real_t("0.5")) < eps) {
+    } else if (abs(theta - real_t("0.5")) < eps) {
         return "S W W W W W W W";
-    }
-    else if(abs(theta-real_t("0.75")) < eps) {
-        return "S T W W W W W W W w"; 
-    }
-    else if(abs(theta-real_t("1")) < eps) {
+    } else if (abs(theta - real_t("0.75")) < eps) {
+        return "S T W W W W W W W w";
+    } else if (abs(theta - real_t("1")) < eps) {
         return "S S W W W W W W";
-    }
-    else if(abs(theta-real_t("1.25")) < eps) {
+    } else if (abs(theta - real_t("1.25")) < eps) {
         return "S S T W W W W W W w";
-    }
-    else if(abs(theta-real_t("1.5")) < eps) {
+    } else if (abs(theta - real_t("1.5")) < eps) {
         return "S S S W W W W W";
-    }
-    else if(abs(theta-real_t("1.75")) < eps) {
+    } else if (abs(theta - real_t("1.75")) < eps) {
         return "S S S T W W W W W w";
-    }
-    else if(abs(theta-real_t("2")) < eps) {
+    } else if (abs(theta - real_t("2")) < eps) {
         return "W W W W";
-    }
-    else {
+    } else {
         return "";
     }
-    return "";
 }
-
 
 inline str_t synthesize(const DOmegaMatrix& D,
                         const domega_matrix_table_t& s3_table) {
@@ -91,4 +109,4 @@ inline str_t synthesize(const DOmegaMatrix& D,
 } // namespace grid_synth
 } // namespace staq
 
-#endif // EXACT_SYNTHESIS_HPP
+#endif // GRID_SYNTH_EXACT_SYNTHESIS_HPP_

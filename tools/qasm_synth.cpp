@@ -1,3 +1,29 @@
+/*
+ * This file is part of staq.
+ *
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <CLI/CLI.hpp>
 #include <iostream>
 
@@ -18,7 +44,7 @@ int main(int argc, char** argv) {
     domega_matrix_table_t s3_table;
     str_t tablefile{};
 
-    CLI::App app{"rx/ry/rz substitution"};
+    CLI::App app{"Grid Synthesis rx/ry/rz substitution"};
 
     // this interface is more or less identical to that of grid_synth.cpp
     // TODO: consider factoring out duplicated code?
@@ -32,10 +58,10 @@ int main(int argc, char** argv) {
         "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
         "taken to factorize candidate solutions (default=200)");
     CLI::Option* read = app.add_option("-r, --read-table", tablefile,
-                                       "Name of file containing s3 table");
+                                       "Name of file containing s3_table");
     CLI::Option* write =
         app.add_option("-w, --write-table", tablefile,
-                       "Name of table file to write s3 table to")
+                       "Name of table file to write s3_table to")
             ->excludes(read);
     app.add_flag("-c, --check", check,
                  "Output bool that will be 1 if the op string matches the "

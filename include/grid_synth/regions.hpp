@@ -1,12 +1,39 @@
-#ifndef REGIONS_HPP
-#define REGIONS_HPP
+/*
+ * This file is part of staq.
+ *
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#ifndef GRID_SYNTH_REGIONS_HPP_
+#define GRID_SYNTH_REGIONS_HPP_
 
 #include <array>
 #include <cmath>
-#include <gmpxx.h>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+
+#include <gmpxx.h>
 
 #include "constants.hpp"
 #include "gmp_functions.hpp"
@@ -202,10 +229,12 @@ class UprightRectangle {
 
 template <typename bound_t>
 inline std::ostream& operator<<(std::ostream& os,
-                                const UprightRectangle<bound_t>& R) {
-    os << "[" << R.x_interval().lo() << "," << R.x_interval().hi() << "]"
+                                const UprightRectangle<bound_t>& R_val) {
+    os << "[" << R_val.x_interval().lo() << "," << R_val.x_interval().hi()
+       << "]"
        << " X "
-       << "[" << R.y_interval().lo() << "," << R.y_interval().hi() << "]";
+       << "[" << R_val.y_interval().lo() << "," << R_val.y_interval().hi()
+       << "]";
     return os;
 }
 
@@ -225,8 +254,9 @@ class Ellipse {
     real_t e_;
 
     void get_z_and_e_() {
-        z_ = real_t(real_t(real_t("0.5") * gmpf::log10(real_t(D_(1, 1) / D_(0, 0)))) /
-                    LOG_LAMBDA);
+        z_ = real_t(
+            real_t(real_t("0.5") * gmpf::log10(real_t(D_(1, 1) / D_(0, 0)))) /
+            LOG_LAMBDA);
         e_ = gmpf::sqrt(D_(1, 1) * D_(0, 0));
     }
 
@@ -398,11 +428,11 @@ class Ellipse {
     }
 
     UprightRectangle<real_t> bounding_box() const {
-        real_t X = sqrt(D_(1, 1) / (D_.determinant()));
-        real_t Y = sqrt(D_(0, 0) / (D_.determinant()));
+        real_t X_val = sqrt(D_(1, 1) / (D_.determinant()));
+        real_t Y_val = sqrt(D_(0, 0) / (D_.determinant()));
 
-        return UprightRectangle<real_t>(center_(0) - X, center_(0) + X,
-                                        center_(1) - Y, center_(1) + Y);
+        return UprightRectangle<real_t>(center_(0) - X_val, center_(0) + X_val,
+                                        center_(1) - Y_val, center_(1) + Y_val);
     }
 
 }; // class Ellipse
@@ -433,4 +463,4 @@ inline Ellipse operator*(const mat_t& M, const Ellipse& A) {
 } // namespace grid_synth
 } // namespace staq
 
-#endif // REGIONS_HPP
+#endif // GRID_SYNTH_REGIONS_HPP_

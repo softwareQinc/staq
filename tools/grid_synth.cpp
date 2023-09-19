@@ -65,10 +65,10 @@ int main(int argc, char** argv) {
         "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
         "taken to factorize candidate solutions (default=200)");
     CLI::Option* read = app.add_option("-r, --read-table", tablefile,
-                                       "Name of file containing s3 table");
+                                       "Name of file containing s3_table");
     CLI::Option* write =
         app.add_option("-w, --write-table", tablefile,
-                       "Name of table file to write s3 table to")
+                       "Name of table file to write s3_table to")
             ->excludes(read);
     app.add_flag("-c, --check", check,
                  "Output bool that will be 1 if the op string matches the "

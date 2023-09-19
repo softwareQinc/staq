@@ -1,16 +1,41 @@
-#ifndef CONSTANTS_HPP
-#define CONSTANTS_HPP
+/*
+ * This file is part of staq.
+ *
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#ifndef GRID_SYNTH_CONSTANTS_HPP_
+#define GRID_SYNTH_CONSTANTS_HPP_
 
 #include <cmath>
 #include <iostream>
 
-#include "types.hpp"
-#include "gmp_functions.hpp"
 #include "complex.hpp"
+#include "gmp_functions.hpp"
+#include "types.hpp"
 
 namespace staq {
 namespace grid_synth {
-
 
 struct MultiPrecisionConstants {
     real_t tol;
@@ -37,14 +62,15 @@ inline MultiPrecisionConstants initialize_constants(long int prec) {
     real_t half_inv_sqrt2 = real_t(real_t(1) / (real_t(2) * sqrt2));
     cplx_t omega = cplx_t(inv_sqrt2, inv_sqrt2);
     cplx_t omega_conj = cplx_t(inv_sqrt2, -inv_sqrt2);
-    real_t log_lambda = gmpf::log10(real_t(1)+sqrt2);
-    real_t sqrt_lambda = gmpf::sqrt(real_t(1)+sqrt2);
+    real_t log_lambda = gmpf::log10(real_t(1) + sqrt2);
+    real_t sqrt_lambda = gmpf::sqrt(real_t(1) + sqrt2);
     real_t sqrt_lambda_inv = sqrt(-real_t(1) + sqrt2);
     cplx_t im = cplx_t(real_t(0), real_t(1));
 
-    return MultiPrecisionConstants{
-              tol,pi,default_gmp_prec,sqrt2,inv_sqrt2,half_inv_sqrt2,omega,omega_conj,im,
-              log_lambda, sqrt_lambda, sqrt_lambda_inv};
+    return MultiPrecisionConstants{tol,        pi,          default_gmp_prec,
+                                   sqrt2,      inv_sqrt2,   half_inv_sqrt2,
+                                   omega,      omega_conj,  im,
+                                   log_lambda, sqrt_lambda, sqrt_lambda_inv};
 }
 
 inline MultiPrecisionConstants MP_CONSTS = initialize_constants(10);
@@ -75,10 +101,10 @@ const int MOD_SQRT_MAX_DEPTH = 20;
 const int MAX_ITERATIONS_FERMAT_TEST = 5;
 const str_t DEFAULT_TABLE_FILE = "./.s3_table_file.csv";
 
-// on average we only need 2 attempts so 5 is playing it safe
+// on average, we only need 2 attempts so 5 is playing it safe
 const int MAX_ATTEMPTS_SQRT_NEG_ONE = 100;
 
 } // namespace grid_synth
 } // namespace staq
 
-#endif // CONSTANTS_HPP
+#endif // GRID_SYNTH_CONSTANTS_HPP_

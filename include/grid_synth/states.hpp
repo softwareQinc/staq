@@ -1,8 +1,35 @@
-#ifndef STATES_HPP
-#define STATES_HPP
+/*
+ * This file is part of staq.
+ *
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#ifndef GRID_SYNTH_STATES_HPP_
+#define GRID_SYNTH_STATES_HPP_
 
 #include <algorithm>
 #include <cmath>
+
 #include <gmpxx.h>
 
 #include "gmp_functions.hpp"
@@ -35,7 +62,8 @@ inline mat_t sigma(int_t k) {
         return gmpf::pow(SQRT_LAMBDA_INV, -k) *
                mat_t{1, 0, 0, gmpf::pow(LAMBDA.decimal(), -k)};
 
-    return gmpf::pow(SQRT_LAMBDA_INV, k) * mat_t{gmpf::pow(LAMBDA.decimal(), k), 0, 0, 1};
+    return gmpf::pow(SQRT_LAMBDA_INV, k) *
+           mat_t{gmpf::pow(LAMBDA.decimal(), k), 0, 0, 1};
 }
 
 inline mat_t tau(int_t k) {
@@ -43,7 +71,8 @@ inline mat_t tau(int_t k) {
         return gmpf::pow(SQRT_LAMBDA_INV, -k) *
                mat_t{gmpf::pow(LAMBDA.decimal(), -k), 0, 0, gmpf::pow(-1, -k)};
 
-    return gmpf::pow(SQRT_LAMBDA_INV, k) * mat_t{1, 0, 0, gmpf::pow(-LAMBDA.decimal(), k)};
+    return gmpf::pow(SQRT_LAMBDA_INV, k) *
+           mat_t{1, 0, 0, gmpf::pow(-LAMBDA.decimal(), k)};
 }
 
 /*
@@ -85,23 +114,29 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
     real_t zeta = state[1].z();
 
     if (static_cast<bool>(gmpf::gmp_geq(state[0].D(0, 1), real_t("0")))) {
-        if (gmpf::gmp_geq(z, real_t("-0.8")) && gmpf::gmp_leq(z, real_t("0.8")) &&
-            gmpf::gmp_geq(zeta, real_t("-0.8")) && gmpf::gmp_leq(zeta, real_t("0.8"))) {
+        if (gmpf::gmp_geq(z, real_t("-0.8")) &&
+            gmpf::gmp_leq(z, real_t("0.8")) &&
+            gmpf::gmp_geq(zeta, real_t("-0.8")) &&
+            gmpf::gmp_leq(zeta, real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (gmpf::gmp_leq(z, real_t("0.3")) && gmpf::gmp_geq(zeta, real_t("0.8"))) {
+        } else if (gmpf::gmp_leq(z, real_t("0.3")) &&
+                   gmpf::gmp_geq(zeta, real_t("0.8"))) {
             G = G * K;
             state = K * state;
             // std::cout << "K" << std::endl;
-        } else if (gmpf::gmp_geq(z, real_t("0.3")) && gmpf::gmp_geq(zeta, real_t("0.3"))) {
+        } else if (gmpf::gmp_geq(z, real_t("0.3")) &&
+                   gmpf::gmp_geq(zeta, real_t("0.3"))) {
             real_t c = gmpf::gmp_min(z, zeta);
-            int_t n =
-                gmpf::gmp_max(1, int_t(gmpf::gmp_floor(gmpf::pow(LAMBDA.decimal(), c.get_ui()) / 2)));
+            int_t n = gmpf::gmp_max(
+                1, int_t(gmpf::gmp_floor(
+                       gmpf::pow(LAMBDA.decimal(), c.get_ui()) / 2)));
             G = G * A(n);
             state = A(n) * state;
             // std::cout << "A^" << n << std::endl;
-        } else if (gmpf::gmp_geq(z, real_t("0.8")) && gmpf::gmp_leq(zeta, real_t("0.3"))) {
+        } else if (gmpf::gmp_geq(z, real_t("0.8")) &&
+                   gmpf::gmp_leq(zeta, real_t("0.3"))) {
             G = G * K.dot();
             state = K.dot() * state;
             // std::cout << "K.dot()" << std::endl;
@@ -115,15 +150,19 @@ inline SpecialGridOperator reduce_skew(state_t& state) {
             exit(EXIT_FAILURE);
         }
     } else {
-        if (gmpf::gmp_geq(z, real_t("-0.8")) && gmpf::gmp_leq(z, real_t("0.8")) &&
-            gmpf::gmp_geq(zeta, real_t("-0.8")) && gmpf::gmp_leq(zeta, real_t("0.8"))) {
+        if (gmpf::gmp_geq(z, real_t("-0.8")) &&
+            gmpf::gmp_leq(z, real_t("0.8")) &&
+            gmpf::gmp_geq(zeta, real_t("-0.8")) &&
+            gmpf::gmp_leq(zeta, real_t("0.8"))) {
             G = G * R;
             state = R * state;
             // std::cout << "R" << std::endl;
-        } else if (gmpf::gmp_geq(z, real_t("-0.2")) && gmpf::gmp_geq(zeta, real_t("-0.2"))) {
+        } else if (gmpf::gmp_geq(z, real_t("-0.2")) &&
+                   gmpf::gmp_geq(zeta, real_t("-0.2"))) {
             real_t c = gmpf::gmp_min(z, zeta);
-            int_t n =
-                gmpf::gmp_max(1, int_t(gmpf::gmp_floor(gmpf::pow(LAMBDA.decimal(), c.get_ui()) / 2)));
+            int_t n = gmpf::gmp_max(
+                1, int_t(gmpf::gmp_floor(
+                       gmpf::pow(LAMBDA.decimal(), c.get_ui()) / 2)));
             G = G * B(n);
             state = B(n) * state;
             // std::cout << "B^" << n << std::endl;
@@ -170,4 +209,4 @@ inline SpecialGridOperator optimize_skew(state_t& state) {
 } // namespace grid_synth
 } // namespace staq
 
-#endif // STATES_HPP
+#endif // GRID_SYNTH_STATES_HPP_

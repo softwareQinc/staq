@@ -150,7 +150,8 @@ class ReplaceRZImpl final : public ast::Replacer {
         std::string angle_str = to_string(angle);
         if (verbose_) {
             std::cerr << "Checking local cache..." << '\n';
-            std::cerr << "Angle has string representation " << angle_str << '\n';
+            std::cerr << "Angle has string representation " << angle_str
+                      << '\n';
         }
         if (rz_approx_cache_.count(angle_str)) {
             if (verbose_ || details_)
@@ -165,7 +166,8 @@ class ReplaceRZImpl final : public ast::Replacer {
             find_fast_rz_approximation(angle / real_t("-2.0"), eps_);
         if (!rz_approx.solution_found()) {
             std::cerr << "No approximation found for RzApproximation. "
-                         "Try changing factorization effort." << '\n';
+                         "Try changing factorization effort."
+                      << '\n';
             exit(EXIT_FAILURE); // TODO: change this to fail more gracefully?
         }
         if (verbose_)
