@@ -114,8 +114,8 @@ int main(int argc, char** argv) {
 
     auto program = parse_stdin("", true); // parse stdin using GMP
     if (program) {
-        transformations::replace_rz(*program, s3_table, eps, check, details,
-                                    verbose);
+        transformations::replace_rotations(*program, s3_table, eps, check,
+                                           details, verbose);
         std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
