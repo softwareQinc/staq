@@ -29,8 +29,8 @@
  * \brief Resource estimation
  */
 
-#ifndef TOOLS_QUBITESTIMATOR_HPP_
-#define TOOLS_QUBITESTIMATOR_HPP_
+#ifndef TOOLS_QUBIT_ESTIMATOR_HPP_
+#define TOOLS_QUBIT_ESTIMATOR_HPP_
 
 #include "qasmtools/ast/ast.hpp"
 
@@ -97,4 +97,4 @@ int estimate_qubits(ast::ASTNode& node) {
 } /* namespace tools */
 } /* namespace staq */
 
-#endif /* TOOLS_QUBITESTIMATOR_HPP_ */
+#endif /* TOOLS_QUBIT_ESTIMATOR_HPP_ */

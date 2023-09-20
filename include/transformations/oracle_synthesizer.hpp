@@ -29,8 +29,8 @@
  * \brief Elaboration of oracles into regular gates
  */
 
-#ifndef TRANSFORMATIONS_ORACLESYNTHESIZER_HPP_
-#define TRANSFORMATIONS_ORACLESYNTHESIZER_HPP_
+#ifndef TRANSFORMATIONS_ORACLE_SYNTHESIZER_HPP_
+#define TRANSFORMATIONS_ORACLE_SYNTHESIZER_HPP_
 
 #include "qasmtools/ast/replacer.hpp"
 #include "synthesis/logic_synthesis.hpp"
@@ -74,4 +74,4 @@ void synthesize_oracles(ast::ASTNode& node) {
 } /* namespace transformations */
 } /* namespace staq */
 
-#endif /* TRANSFORMATIONS_ORACLESYNTHESIZER_HPP_ */
+#endif /* TRANSFORMATIONS_ORACLE_SYNTHESIZER_HPP_ */
