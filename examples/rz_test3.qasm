@@ -32,3 +32,9 @@ rz(pi/4) q[0];
 rz(pi/4) q[0];
 rz(pi/4) q[0];
 rz(pi/4) q[0];
+rz(pi/4) q[0];
+rz(pi/4) q[0];
+rz(pi/4) q[0];
+rz(pi/4) q[0];
+
+rz(pi/4) q[0];
