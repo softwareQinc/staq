@@ -1,32 +1,32 @@
 /*
-* This file is part of staq.
-*
-* Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
-*
-* MIT License
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * This file is part of staq.
+ *
+ * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 /**
  * \file transformations/qasm_synth.hpp
- * \brief Replace rz gates with approximations
+ * \brief Replace rx/ry/rz gates with grid_synth approximations.
  */
 
 #ifndef TRANSFORMATIONS_QASM_SYNTH_HPP_
@@ -49,13 +49,13 @@ namespace ast = qasmtools::ast;
 using real_t = staq::grid_synth::real_t;
 
 /* Implementation */
-class ReplaceRZImpl final : public ast::Replacer {
+class ReplaceRotationsImpl final : public ast::Replacer {
   public:
-    ReplaceRZImpl(grid_synth::domega_matrix_table_t& s3_table, real_t& eps,
-                  bool check, bool details, bool verbose)
+    ReplaceRotationsImpl(grid_synth::domega_matrix_table_t& s3_table,
+                         real_t& eps, bool check, bool details, bool verbose)
         : s3_table_(s3_table), eps_(eps), check_(check), details_(details),
-          verbose_(verbose){};
-    ~ReplaceRZImpl() = default;
+          verbose_(verbose), w_count_(0){};
+    ~ReplaceRotationsImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
 
@@ -101,7 +101,23 @@ class ReplaceRZImpl final : public ast::Replacer {
             }
 
             for (char c : rz_approx) {
-                ret.emplace_back(make_gate(std::string(1, tolower(c)), gate));
+                if (c == 'w' || // If the approximation creates w or W gates,
+                    c == 'W') { // collect them and output the global phase
+                                // later.
+                    if (gate.qargs()[0].offset() == std::nullopt) {
+                        std::cerr << "Please inline the qasm code first."
+                                  << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                    if (c == 'w') {
+                        w_count_ -= 1;
+                    } else {
+                        w_count_ += 2;
+                    }
+                } else {
+                    ret.emplace_back(
+                        make_gate(std::string(1, tolower(c)), gate));
+                }
             }
 
             if (gate.name() == "rx") { // X = HZH
@@ -121,6 +137,33 @@ class ReplaceRZImpl final : public ast::Replacer {
         }
     }
 
+    /**
+     * Prints the global phase of the file.
+     * This accounts for all collected w and W gates.
+     */
+    void print_global_phase() {
+        int a = (w_count_ % 16 + 16) % 16; // Normalize a to the range [0, 16)
+        if (a == 0)
+            return;
+        std::cout << "// global-phase: exp i*pi " << a << " " << 8 << std::endl;
+
+#if 0 /* Unused code for outputting the global phase a/8 in least terms. */
+        int b = 8; // We simplify a/b.
+        int g = std::gcd(a, b);
+        a /= g;
+        b /= g;
+        if (b == 1) { // a == b == 1 in this case
+            std::cout << "// global phase: exp(i*pi)" << std::endl;
+        } else if (a == 1) {
+            std::cout << "// global phase: exp(i*pi / " << b << ")"
+                      << std::endl;
+        } else {
+            std::cout << "// global phase: exp(i*pi * " << a << "/" << b << ")"
+                      << std::endl;
+        }
+#endif
+    }
+
   private:
     real_t& eps_;
     grid_synth::domega_matrix_table_t& s3_table_;
@@ -128,9 +171,14 @@ class ReplaceRZImpl final : public ast::Replacer {
     bool details_;
     bool verbose_;
     std::unordered_map<std::string, std::string> rz_approx_cache_;
+    int w_count_;
 
+    /**
+     * Converts a GMP float to a string representation suitable for hashing.
+     */
     std::string to_string(const mpf_class& x) const {
         mp_exp_t exp;
+        // Use base 32 to get a shorter string.
         std::string s =
             x.get_str(exp, 32).substr(0, mpf_get_default_prec() / 5);
         return s + std::string(" ") + std::to_string(exp);
@@ -233,11 +281,16 @@ class ReplaceRZImpl final : public ast::Replacer {
     }
 };
 
-void replace_rz(ast::ASTNode& node, grid_synth::domega_matrix_table_t& s3_table,
-                real_t& eps, bool check = false, bool details = false,
-                bool verbose = false) {
-    ReplaceRZImpl alg(s3_table, eps, check, details, verbose);
+/**
+ * Replaces all rx/ry/rz gates in a program with grid_synth approximations.
+ */
+void replace_rotations(ast::ASTNode& node,
+                       grid_synth::domega_matrix_table_t& s3_table, real_t& eps,
+                       bool check = false, bool details = false,
+                       bool verbose = false) {
+    ReplaceRotationsImpl alg(s3_table, eps, check, details, verbose);
     alg.run(node);
+    alg.print_global_phase();
 }
 
 } /* namespace transformations */
