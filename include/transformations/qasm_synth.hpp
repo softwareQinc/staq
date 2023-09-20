@@ -1,3 +1,29 @@
+/*
+* This file is part of staq.
+*
+* Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+*
+* MIT License
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
 /**
  * \file transformations/qasm_synth.hpp
  * \brief Replace rx/ry/rz gates with grid_synth approximations.
@@ -40,7 +66,7 @@ class ReplaceRotationsImpl final : public ast::Replacer {
 
         if (gate.name() == "rx" || gate.name() == "ry" || gate.name() == "rz") {
 
-            // By the standard qasm header, these instrs have the form
+            // By the standard qasm header, these instructions have the form
             //   rz[carg0] qarg0;
             // where carg0 does not contain a VarExpr child.
             // This is checked during the semantic analysis phase of parsing.
@@ -65,7 +91,7 @@ class ReplaceRotationsImpl final : public ast::Replacer {
             }
             if (verbose_) {
                 std::cerr << gate.pos()
-                          << ": finding approxmation for angle = " << (angle)
+                          << ": finding approximation for angle = " << (angle)
                           << '\n';
             }
             std::string rz_approx = get_rz_approx(angle);
