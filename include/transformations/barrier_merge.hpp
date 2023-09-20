@@ -29,8 +29,8 @@
  * \brief Merge adjacent barriers
  */
 
-#ifndef TRANSFORMATIONS_BARRIERMERGE_HPP_
-#define TRANSFORMATIONS_BARRIERMERGE_HPP_
+#ifndef TRANSFORMATIONS_BARRIER_MERGE_HPP_
+#define TRANSFORMATIONS_BARRIER_MERGE_HPP_
 
 #include <algorithm>
 #include <set>
@@ -124,4 +124,4 @@ static void merge_barriers(ast::ASTNode& node) {
 } /* namespace transformations */
 } /* namespace staq */
 
-#endif /* TRANSFORMATIONS_BARRIERMERGE_HPP_ */
+#endif /* TRANSFORMATIONS_BARRIER_MERGE_HPP_ */

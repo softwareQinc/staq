@@ -29,8 +29,8 @@
  * \brief Lattice surgery compiler
  */
 
-#ifndef OUTPUT_LATTICESURGERY_HPP_
-#define OUTPUT_LATTICESURGERY_HPP_
+#ifndef OUTPUT_LATTICE_SURGERY_HPP_
+#define OUTPUT_LATTICE_SURGERY_HPP_
 
 #include <algorithm>
 #include <complex>
@@ -766,4 +766,4 @@ std::string lattice_surgery(ast::Program& prog, bool skip_clifford = false,
 
 } /* namespace staq::output */
 
-#endif /* OUTPUT_LATTICESURGERY_HPP_ */
+#endif /* OUTPUT_LATTICE_SURGERY_HPP_ */

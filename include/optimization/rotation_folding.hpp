@@ -29,8 +29,8 @@
  * \brief Rotation folding algorithm
  */
 
-#ifndef OPTIMIZATION_ROTATIONFOLDING_HPP_
-#define OPTIMIZATION_ROTATIONFOLDING_HPP_
+#ifndef OPTIMIZATION_ROTATION_FOLDING_HPP_
+#define OPTIMIZATION_ROTATION_FOLDING_HPP_
 
 #include <list>
 #include <sstream>
@@ -527,4 +527,4 @@ inline void fold_rotations(ast::ASTNode& node,
 } /* namespace optimization */
 } /* namespace staq */
 
-#endif /* OPTIMIZATION_ROTATIONFOLDING_HPP_ */
+#endif /* OPTIMIZATION_ROTATION_FOLDING_HPP_ */

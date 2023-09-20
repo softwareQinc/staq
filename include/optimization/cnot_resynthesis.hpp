@@ -29,8 +29,8 @@
  * \brief CNOT re-synthesis based on Gray-Synth
  */
 
-#ifndef OPTIMIZATION_CNOTRESYNTHESIS_HPP_
-#define OPTIMIZATION_CNOTRESYNTHESIS_HPP_
+#ifndef OPTIMIZATION_CNOT_RESYNTHESIS_HPP_
+#define OPTIMIZATION_CNOT_RESYNTHESIS_HPP_
 
 #include <cstddef>
 #include <list>
@@ -384,4 +384,4 @@ static void optimize_CNOT(ast::ASTNode& node,
 } /* namespace optimization */
 } /* namespace staq */
 
-#endif /* OPTIMIZATION_CNOTRESYNTHESIS_HPP_ */
+#endif /* OPTIMIZATION_CNOT_RESYNTHESIS_HPP_ */

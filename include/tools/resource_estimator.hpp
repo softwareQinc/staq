@@ -29,8 +29,8 @@
  * \brief Resource estimation
  */
 
-#ifndef TOOLS_RESOURCEESTIMATOR_HPP_
-#define TOOLS_RESOURCEESTIMATOR_HPP_
+#ifndef TOOLS_RESOURCE_ESTIMATOR_HPP_
+#define TOOLS_RESOURCE_ESTIMATOR_HPP_
 
 // TODO: account for compound gates, i.e. qreg q[n]; reset q;
 
@@ -311,4 +311,4 @@ resource_count estimate_resources(ast::ASTNode& node,
 } /* namespace tools */
 } /* namespace staq */
 
-#endif /* TOOLS_RESOURCEESTIMATOR_HPP_ */
+#endif /* TOOLS_RESOURCE_ESTIMATOR_HPP_ */

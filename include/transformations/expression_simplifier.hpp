@@ -29,8 +29,8 @@
  * \brief Simplify certain constant expressions
  */
 
-#ifndef TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_
-#define TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_
+#ifndef TRANSFORMATIONS_EXPRESSION_SIMPLIFIER_HPP_
+#define TRANSFORMATIONS_EXPRESSION_SIMPLIFIER_HPP_
 
 #include <cmath>
 #include <optional>
@@ -684,4 +684,4 @@ inline void expr_simplify(ast::ASTNode& node, bool evaluate_all = false) {
 } /* namespace transformations */
 } /* namespace staq */
 
-#endif /* TRANSFORMATIONS_EXPRESSIONSIMPLIFIER_HPP_ */
+#endif /* TRANSFORMATIONS_EXPRESSION_SIMPLIFIER_HPP_ */
