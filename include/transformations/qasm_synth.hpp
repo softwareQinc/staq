@@ -176,8 +176,8 @@ class QASMSynthImpl final : public ast::Replacer {
     }
 
   private:
-    real_t& eps_;
     grid_synth::domega_matrix_table_t& s3_table_;
+    real_t& eps_;
     bool check_;
     bool details_;
     bool verbose_;

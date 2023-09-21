@@ -1,0 +1,21 @@
+Defaulting to user installation because normal site-packages is not writeable
+Processing /home/kevin-ubuntu/softwareQ/staq
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: pystaq
+  Building wheel for pystaq (pyproject.toml): started
+  Building wheel for pystaq (pyproject.toml): still running...
+  Building wheel for pystaq (pyproject.toml): finished with status 'done'
+  Created wheel for pystaq: filename=pystaq-3.2.3-cp38-cp38-linux_x86_64.whl size=868993 sha256=b32002092a8791706d3c6ec0b1a425036dc7c4cd00e17899ea1af84647ab6da8
+  Stored in directory: /tmp/pip-ephem-wheel-cache-9vx1dj23/wheels/6e/23/7e/41bdbfef51ff12b2953bc5725ee762a7b5c2638875febd4457
+Successfully built pystaq
+Installing collected packages: pystaq
+  Attempting uninstall: pystaq
+    Found existing installation: pystaq 3.2.3
+    Uninstalling pystaq-3.2.3:
+      Successfully uninstalled pystaq-3.2.3
+Successfully installed pystaq-3.2.3

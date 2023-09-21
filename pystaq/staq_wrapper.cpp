@@ -38,6 +38,7 @@
 #include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
+#include "transformations/qasm_synth.hpp"
 
 #include "optimization/cnot_resynthesis.hpp"
 #include "optimization/rotation_folding.hpp"
@@ -139,10 +140,25 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
-#if 0
-    void qasm_synth() {
-        staq::transformations::QASMSynthOptions options{};
-        staq::transformations::qasm_synth(*prog, options);
+#ifdef QASM_SYNTH
+    void qasm_synth(long int prec, int factor_effort,
+                    const std::string& read_tablefile,
+                    const std::string& write_tablefile, bool check,
+                    bool details, bool verbose) {
+        if (read_tablefile != "" && write_tablefile != "") {
+            std::cerr << "Error: read and write options are exclusive\n";
+            return;
+        }
+        staq::transformations::QASMSynthOptions options{
+            prec, factor_effort, "", false, false, check, details, verbose};
+        if (read_tablefile != "") {
+            options.read = true;
+            options.tablefile = std::move(read_tablefile);
+        } else if (write_tablefile != "") {
+            options.write = true;
+            options.tablefile = std::move(write_tablefile);
+        }
+        staq::transformations::qasm_synth(*prog_, options);
     }
 #endif /* QASM_SYNTH */
     // output (these methods return a string)
@@ -212,9 +228,13 @@ void rotation_fold(Program& prog, bool no_correction) {
 void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
-#if 0
-void qasm_synth(Program& prog, long int prec, int factor_effort, const std::string& tablefile, ) {
-    prog.qasm_synth
+#ifdef QASM_SYNTH
+void qasm_synth(Program& prog, long int prec, int factor_effort,
+                const std::string& read_tablefile,
+                const std::string& write_tablefile, bool check, bool details,
+                bool verbose) {
+    prog.qasm_synth(prec, factor_effort, read_tablefile, write_tablefile, check,
+                    details, verbose);
 }
 #endif /* QASM_SYNTH */
 std::string lattice_surgery(Program& prog) { return prog.lattice_surgery(); }
@@ -304,11 +324,14 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-#if 0
+#ifdef QASM_SYNTH 
     m.def("qasm_synth", &qasm_synth,
           "Replaces rx/ry/rz gates with grid_synth approximations",
-          py::arg("prog"), py::arg("prec"));
-#endif
+          py::arg("prog"), py::arg("prec"),
+          py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
+          py::arg("read") = "", py::arg("write") = "", py::arg("check") = false,
+          py::arg("details") = false, py::arg("verbose") = false);
+#endif /* QASM_SYNTH */
     m.def("lattice_surgery", &lattice_surgery,
           "Compiles OpenQASM2 to lattice surgery instruction set",
           py::arg("prog"));
