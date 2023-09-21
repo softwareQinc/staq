@@ -38,7 +38,10 @@
 #include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
+
+#ifdef QASM_SYNTH
 #include "transformations/qasm_synth.hpp"
+#endif
 
 #include "optimization/cnot_resynthesis.hpp"
 #include "optimization/rotation_folding.hpp"
