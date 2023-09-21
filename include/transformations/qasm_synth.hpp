@@ -116,7 +116,8 @@ class QASMSynthImpl final : public ast::Replacer {
                     c == 'W') { // collect them and output the global phase
                                 // later.
                     if (gate.qargs()[0].offset() == std::nullopt) {
-                        std::cerr << "Please inline the qasm code first."
+                        std::cerr << "Please inline the qasm code first and "
+                                     "clear declarations."
                                   << std::endl;
                         exit(EXIT_FAILURE);
                     }

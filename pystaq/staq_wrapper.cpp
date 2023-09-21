@@ -324,7 +324,7 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-#ifdef QASM_SYNTH 
+#ifdef QASM_SYNTH
     m.def("qasm_synth", &qasm_synth,
           "Replaces rx/ry/rz gates with grid_synth approximations",
           py::arg("prog"), py::arg("prec"),
