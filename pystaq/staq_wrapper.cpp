@@ -139,6 +139,9 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
+#ifdef QASM_SYNTH
+    void qasm_synth() {}
+#endif /* QASM_SYNTH */
     // output (these methods return a string)
     std::string get_resources(bool box_gates = false, bool unbox_qelib = false,
                               bool no_merge_dagger = false) {
@@ -294,6 +297,11 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
+#if 0
+    m.def("qasm_synth", &qasm_synth,
+          "Replaces rx/ry/rz gates with grid_synth approximations",
+          py::arg("prog"), py::arg("prec"));
+#endif
     m.def("lattice_surgery", &lattice_surgery,
           "Compiles OpenQASM2 to lattice surgery instruction set",
           py::arg("prog"));

@@ -34,7 +34,6 @@
 
 #include <cstdlib>
 #include <list>
-#include <variant>
 
 #include "grid_synth/exact_synthesis.hpp"
 #include "grid_synth/rz_approximation.hpp"
@@ -47,15 +46,28 @@ namespace transformations {
 
 namespace ast = qasmtools::ast;
 using real_t = staq::grid_synth::real_t;
+using str_t = staq::grid_synth::str_t;
+
+struct QASMSynthOptions {
+    long int prec;
+    int factor_effort;
+    str_t tablefile;
+    bool fact_eff;
+    bool read;
+    bool write;
+    bool check;
+    bool details;
+    bool verbose;
+};
 
 /* Implementation */
-class ReplaceRotationsImpl final : public ast::Replacer {
+class QASMSynthImpl final : public ast::Replacer {
   public:
-    ReplaceRotationsImpl(grid_synth::domega_matrix_table_t& s3_table,
-                         real_t& eps, bool check, bool details, bool verbose)
-        : s3_table_(s3_table), eps_(eps), check_(check), details_(details),
-          verbose_(verbose), w_count_(0){};
-    ~ReplaceRotationsImpl() = default;
+    QASMSynthImpl(grid_synth::domega_matrix_table_t& s3_table, real_t& eps,
+                  const QASMSynthOptions& opt)
+        : s3_table_(s3_table), eps_(eps), check_(opt.check),
+          details_(opt.details), verbose_(opt.verbose), w_count_(0){};
+    ~QASMSynthImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
 
@@ -284,11 +296,71 @@ class ReplaceRotationsImpl final : public ast::Replacer {
 /**
  * Replaces all rx/ry/rz gates in a program with grid_synth approximations.
  */
-void replace_rotations(ast::ASTNode& node,
-                       grid_synth::domega_matrix_table_t& s3_table, real_t& eps,
-                       bool check = false, bool details = false,
-                       bool verbose = false) {
-    ReplaceRotationsImpl alg(s3_table, eps, check, details, verbose);
+void qasm_synth(ast::ASTNode& node, const QASMSynthOptions& opt) {
+    using namespace grid_synth;
+    domega_matrix_table_t s3_table;
+    real_t eps;
+
+    if (opt.read) {
+        if (opt.verbose) {
+            std::cerr << "Reading s3_table from " << opt.tablefile << '\n';
+        }
+        s3_table = read_s3_table(opt.tablefile);
+    } else if (opt.write) {
+        if (opt.verbose) {
+            std::cerr << "Generating new table file and writing to "
+                      << opt.tablefile << '\n';
+        }
+        s3_table = generate_s3_table();
+        write_s3_table(opt.tablefile, s3_table);
+    } else if (std::ifstream(DEFAULT_TABLE_FILE)) {
+        if (opt.verbose) {
+            std::cerr << "Table file found at default location "
+                      << DEFAULT_TABLE_FILE << '\n';
+        }
+        s3_table = read_s3_table(DEFAULT_TABLE_FILE);
+    } else {
+        if (opt.verbose) {
+            std::cerr << "Failed to find " << DEFAULT_TABLE_FILE
+                      << ". Generating new table file and writing to "
+                      << DEFAULT_TABLE_FILE << '\n';
+        }
+        s3_table = generate_s3_table();
+        write_s3_table(DEFAULT_TABLE_FILE, s3_table);
+    }
+
+    MP_CONSTS = initialize_constants(opt.prec);
+    eps = gmpf::pow(real_t(10), -opt.prec);
+    MAX_ATTEMPTS_POLLARD_RHO = opt.factor_effort;
+
+    if (opt.verbose) {
+        std::cerr << "Runtime Parameters" << '\n';
+        std::cerr << "------------------" << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "TOL (Tolerance for float equality) " << std::setw(1)
+                  << ": " << std::setw(3 * COLW) << std::left << std::scientific
+                  << TOL << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "KMIN (Minimum scaling exponent) " << std::setw(1) << ": "
+                  << std::setw(3 * COLW) << std::left << std::fixed << KMIN
+                  << '\n';
+        std::cerr << std::setw(2 * COLW) << std::left
+                  << "KMAX (Maximum scaling exponent) " << std::setw(1) << ": "
+                  << std::setw(3 * COLW) << std::left << std::fixed << KMAX
+                  << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "MAX_ATTEMPTS_POLLARD_RHO (How hard we try to factor) "
+                  << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
+                  << MAX_ATTEMPTS_POLLARD_RHO << '\n';
+        std::cerr << std::setw(3 * COLW) << std::left
+                  << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check "
+                     "primality) "
+                  << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
+                  << MAX_ITERATIONS_FERMAT_TEST << '\n';
+    }
+    std::cerr << std::scientific;
+
+    QASMSynthImpl alg(s3_table, eps, opt);
     alg.run(node);
     alg.print_global_phase();
 }

@@ -12,6 +12,7 @@ if (${BUILD_GRID_SYNTH})
         find_package(GMP REQUIRED)
     endif ()
     add_compile_options("-DEXPR_GMP")
+    add_compile_options("-DQASM_SYNTH")
 endif ()
 
 foreach (filename ${FILENAMES})

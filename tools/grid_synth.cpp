@@ -60,10 +60,12 @@ int main(int argc, char** argv) {
                "-p, --precision", prec,
                "Precision in base ten as a positive integer (10^-p)")
             ->required();
-    CLI::Option* fact_eff = app.add_option<int, int>(
-        "--pollard-rho", factor_effort,
-        "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
-        "taken to factorize candidate solutions (default=200)");
+    CLI::Option* fact_eff =
+        app.add_option<int, int>(
+               "--pollard-rho", factor_effort,
+               "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
+               "taken to factorize candidate solutions (default=200)")
+            ->default_val(MAX_ATTEMPTS_POLLARD_RHO);
     CLI::Option* read = app.add_option("-r, --read-table", tablefile,
                                        "Name of file containing s3_table");
     CLI::Option* write =
@@ -118,10 +120,7 @@ int main(int argc, char** argv) {
 
     MP_CONSTS = initialize_constants(prec);
     eps = gmpf::pow(real_t(10), -prec);
-
-    if (*fact_eff) {
-        MAX_ATTEMPTS_POLLARD_RHO = factor_effort;
-    }
+    MAX_ATTEMPTS_POLLARD_RHO = factor_effort;
 
     if (verbose) {
         std::cerr << "Runtime Parameters" << '\n';
