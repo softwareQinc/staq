@@ -52,7 +52,6 @@ struct QASMSynthOptions {
     long int prec;
     int factor_effort;
     str_t tablefile;
-    bool fact_eff;
     bool read;
     bool write;
     bool check;

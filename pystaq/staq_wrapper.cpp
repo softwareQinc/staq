@@ -139,8 +139,11 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
-#ifdef QASM_SYNTH
-    void qasm_synth() {}
+#if 0
+    void qasm_synth() {
+        staq::transformations::QASMSynthOptions options{};
+        staq::transformations::qasm_synth(*prog, options);
+    }
 #endif /* QASM_SYNTH */
     // output (these methods return a string)
     std::string get_resources(bool box_gates = false, bool unbox_qelib = false,
@@ -209,7 +212,11 @@ void rotation_fold(Program& prog, bool no_correction) {
 void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
-
+#if 0
+void qasm_synth(Program& prog, long int prec, int factor_effort, const std::string& tablefile, ) {
+    prog.qasm_synth
+}
+#endif /* QASM_SYNTH */
 std::string lattice_surgery(Program& prog) { return prog.lattice_surgery(); }
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
