@@ -140,7 +140,7 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
-#ifdef QASM_SYNTH
+#ifdef GRID_SYNTH
     void qasm_synth(long int prec, int factor_effort,
                     const std::string& read_tablefile,
                     const std::string& write_tablefile, bool check,
@@ -160,7 +160,7 @@ class Program {
         }
         staq::transformations::qasm_synth(*prog_, options);
     }
-#endif /* QASM_SYNTH */
+#endif /* GRID_SYNTH */
     // output (these methods return a string)
     std::string get_resources(bool box_gates = false, bool unbox_qelib = false,
                               bool no_merge_dagger = false) {
@@ -228,7 +228,7 @@ void rotation_fold(Program& prog, bool no_correction) {
 void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
-#ifdef QASM_SYNTH
+#ifdef GRID_SYNTH
 void qasm_synth(Program& prog, long int prec, int factor_effort,
                 const std::string& read_tablefile,
                 const std::string& write_tablefile, bool check, bool details,
@@ -236,7 +236,7 @@ void qasm_synth(Program& prog, long int prec, int factor_effort,
     prog.qasm_synth(prec, factor_effort, read_tablefile, write_tablefile, check,
                     details, verbose);
 }
-#endif /* QASM_SYNTH */
+#endif /* GRID_SYNTH */
 std::string lattice_surgery(Program& prog) { return prog.lattice_surgery(); }
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
@@ -324,14 +324,18 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-#ifdef QASM_SYNTH
+#ifdef GRID_SYNTH /*
+    m.def("grid_synth", &grid_synth,
+        "Finds an approximation for an rz gate",
+        py::arg()
+            ) */
     m.def("qasm_synth", &qasm_synth,
           "Replaces rx/ry/rz gates with grid_synth approximations",
           py::arg("prog"), py::arg("prec"),
           py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
           py::arg("read") = "", py::arg("write") = "", py::arg("check") = false,
           py::arg("details") = false, py::arg("verbose") = false);
-#endif /* QASM_SYNTH */
+#endif /* GRID_SYNTH */
     m.def("lattice_surgery", &lattice_surgery,
           "Compiles OpenQASM2 to lattice surgery instruction set",
           py::arg("prog"));

@@ -5,7 +5,7 @@ from setuptools import setup
 
 extra_compile_args = ["-Ilibs", "-Iinclude", "-Iqasmtools/include"]
 # Compile with qasm_synth for now
-extra_compile_args.append("-DQASM_SYNTH")
+extra_compile_args.append("-DGRID_SYNTH")
 extra_compile_args.append("-DEXPR_GMP")
 
 # If the platform seem to be MSVC
