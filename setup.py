@@ -36,7 +36,6 @@ except:
     found_GMP = False
 
 if found_GMP:
-    extra_compile_args.append("-DQASM_SYNTH")
     extra_compile_args.append("-DEXPR_GMP")
     extra_links_args = ["-lgmp", "-lgmpxx"]
 

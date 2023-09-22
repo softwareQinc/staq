@@ -39,7 +39,7 @@
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
 
-#ifdef QASM_SYNTH
+#ifdef EXPR_GMP
 #include "transformations/qasm_synth.hpp"
 #endif
 
@@ -143,7 +143,7 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
-#ifdef QASM_SYNTH
+#ifdef EXPR_GMP
     void qasm_synth(long int prec, int factor_effort,
                     const std::string& read_tablefile,
                     const std::string& write_tablefile, bool check,
@@ -231,7 +231,7 @@ void rotation_fold(Program& prog, bool no_correction) {
 void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
-#ifdef QASM_SYNTH
+#ifdef EXPR_GMP
 void qasm_synth(Program& prog, long int prec, int factor_effort,
                 const std::string& read_tablefile,
                 const std::string& write_tablefile, bool check, bool details,
@@ -327,7 +327,7 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-#ifdef QASM_SYNTH 
+#ifdef EXPR_GMP
     m.def("qasm_synth", &qasm_synth,
           "Replaces rx/ry/rz gates with grid_synth approximations",
           py::arg("prog"), py::arg("prec"),
