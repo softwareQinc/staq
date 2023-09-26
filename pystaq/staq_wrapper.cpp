@@ -38,7 +38,10 @@
 #include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
+
+#ifdef QASM_SYNTH
 #include "transformations/qasm_synth.hpp"
+#endif
 
 #include "optimization/cnot_resynthesis.hpp"
 #include "optimization/rotation_folding.hpp"
@@ -141,23 +144,19 @@ class Program {
         staq::transformations::synthesize_oracles(*prog_);
     }
 #ifdef GRID_SYNTH
-    void qasm_synth(long int prec, int factor_effort,
-                    const std::string& read_tablefile,
-                    const std::string& write_tablefile, bool check,
-                    bool details, bool verbose) {
-        if (read_tablefile != "" && write_tablefile != "") {
-            std::cerr << "Error: read and write options are exclusive\n";
-            return;
-        }
+/*
+    void grid_synth(std::string& theta, long int prec, int factor_effort,
+                    bool check, bool details, bool verbose) {
+        // d
+    }
+    void grid_synth(std::vector<std::string>& theta, long int prec,
+                    int factor_effort, bool check, bool details, bool verbose) {
+        // d
+    }*/
+    void qasm_synth(long int prec, int factor_effort, bool check, bool details,
+                    bool verbose) {
         staq::transformations::QASMSynthOptions options{
             prec, factor_effort, "", false, false, check, details, verbose};
-        if (read_tablefile != "") {
-            options.read = true;
-            options.tablefile = std::move(read_tablefile);
-        } else if (write_tablefile != "") {
-            options.write = true;
-            options.tablefile = std::move(write_tablefile);
-        }
         staq::transformations::qasm_synth(*prog_, options);
     }
 #endif /* GRID_SYNTH */
@@ -229,10 +228,16 @@ void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
 #ifdef GRID_SYNTH
-void qasm_synth(Program& prog, long int prec, int factor_effort,
-                const std::string& read_tablefile,
-                const std::string& write_tablefile, bool check, bool details,
-                bool verbose) {
+void grid_synth(std::string& theta, long int prec, int factor_effort,
+                bool check, bool details, bool verbose) {
+    // TODO: precision problems?
+}
+void grid_synth(std::vector<std::string>& thetas, long int prec,
+                int factor_effort, bool check, bool details, bool verbose) {
+    // d
+}
+void qasm_synth(Program& prog, long int prec, int factor_effort, bool check,
+                bool details, bool verbose) {
     prog.qasm_synth(prec, factor_effort, read_tablefile, write_tablefile, check,
                     details, verbose);
 }
@@ -324,17 +329,20 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
-#ifdef GRID_SYNTH /*
+#ifdef GRID_SYNTH
+/*
     m.def("grid_synth", &grid_synth,
-        "Finds an approximation for an rz gate",
-        py::arg()
-            ) */
+          "Finds an approximation for Z-rotation angle(s)", py::arg("theta"),
+          py::arg("prec"),
+          py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
+          py::arg("check") = false, py::arg("details") = false,
+          py::arg("verbose") = false);*/
     m.def("qasm_synth", &qasm_synth,
           "Replaces rx/ry/rz gates with grid_synth approximations",
           py::arg("prog"), py::arg("prec"),
           py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
-          py::arg("read") = "", py::arg("write") = "", py::arg("check") = false,
-          py::arg("details") = false, py::arg("verbose") = false);
+          py::arg("check") = false, py::arg("details") = false,
+          py::arg("verbose") = false);
 #endif /* GRID_SYNTH */
     m.def("lattice_surgery", &lattice_surgery,
           "Compiles OpenQASM2 to lattice surgery instruction set",
