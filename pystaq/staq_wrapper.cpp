@@ -39,7 +39,7 @@
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
 
-#ifdef QASM_SYNTH
+#ifdef EXPR_GMP
 #include "transformations/qasm_synth.hpp"
 #endif
 
@@ -230,7 +230,7 @@ void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
 #ifdef GRID_SYNTH
 void grid_synth(std::string& theta, long int prec, int factor_effort,
                 bool check, bool details, bool verbose) {
-    // TODO: precision problems?
+    // 
 }
 void grid_synth(std::vector<std::string>& thetas, long int prec,
                 int factor_effort, bool check, bool details, bool verbose) {
