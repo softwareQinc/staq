@@ -36,6 +36,7 @@
 #include <list>
 
 #include "grid_synth/exact_synthesis.hpp"
+#include "grid_synth/grid_synth.hpp"
 #include "grid_synth/rz_approximation.hpp"
 #include "grid_synth/types.hpp"
 #include "qasmtools/ast/replacer.hpp"
@@ -45,27 +46,14 @@ namespace staq {
 namespace transformations {
 
 namespace ast = qasmtools::ast;
-using real_t = staq::grid_synth::real_t;
-using str_t = staq::grid_synth::str_t;
-
-struct QASMSynthOptions {
-    long int prec;
-    int factor_effort;
-    str_t tablefile;
-    bool read;
-    bool write;
-    bool check;
-    bool details;
-    bool verbose;
-};
+using namespace grid_synth;
 
 /* Implementation */
 class QASMSynthImpl final : public ast::Replacer {
   public:
-    QASMSynthImpl(grid_synth::domega_matrix_table_t& s3_table, real_t& eps,
-                  const QASMSynthOptions& opt)
-        : s3_table_(s3_table), eps_(eps), check_(opt.check),
-          details_(opt.details), verbose_(opt.verbose), w_count_(0){};
+    QASMSynthImpl(const GridSynthOptions& opt)
+        : synthesizer_(make_synthesizer(opt)), w_count_(0), check_(opt.check),
+          details_(opt.details), verbose_(opt.verbose){};
     ~QASMSynthImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
@@ -105,7 +93,7 @@ class QASMSynthImpl final : public ast::Replacer {
                           << ": finding approximation for angle = " << (angle)
                           << '\n';
             }
-            std::string rz_approx = get_rz_approx(angle);
+            std::string rz_approx = synthesizer_.get_rz_approx(angle);
             if (details_) {
                 std::cerr << gate.pos() << ": found approximation " << rz_approx
                           << '\n';
@@ -177,24 +165,11 @@ class QASMSynthImpl final : public ast::Replacer {
     }
 
   private:
-    grid_synth::domega_matrix_table_t& s3_table_;
-    real_t& eps_;
+    GridSynthesizer synthesizer_;
+    int w_count_;
     bool check_;
     bool details_;
     bool verbose_;
-    std::unordered_map<std::string, std::string> rz_approx_cache_;
-    int w_count_;
-
-    /**
-     * Converts a GMP float to a string representation suitable for hashing.
-     */
-    std::string to_string(const mpf_class& x) const {
-        mp_exp_t exp;
-        // Use base 32 to get a shorter string.
-        std::string s =
-            x.get_str(exp, 32).substr(0, mpf_get_default_prec() / 5);
-        return s + std::string(" ") + std::to_string(exp);
-    }
 
     /*!
      * \brief Makes a new gate with no cargs.
@@ -209,158 +184,13 @@ class QASMSynthImpl final : public ast::Replacer {
         return std::make_unique<ast::DeclaredGate>(ast::DeclaredGate(
             gate.pos(), name, std::move(c_args), std::move(q_args)));
     }
-
-    /*! \brief Find RZ-approximation for an angle using grid_synth. */
-    std::string get_rz_approx(const real_t& angle) {
-        using namespace grid_synth;
-
-        if (verbose_)
-            std::cerr << "Checking common cases..."
-                      << "\n";
-        std::string ret = check_common_cases(angle / gmpf::gmp_pi(), eps_);
-        if (ret != "") {
-            if (details_)
-                std::cerr
-                    << "Angle is multiple of pi/4, answer is known exactly"
-                    << '\n';
-            if (check_)
-                std::cerr << "Check flag = " << 1 << '\n';
-            std::string ret_no_spaces;
-            for (char c : ret) {
-                if (c != ' ')
-                    ret_no_spaces.push_back(c);
-            }
-            return ret_no_spaces;
-        }
-
-        std::string angle_str = to_string(angle);
-        if (verbose_) {
-            std::cerr << "Checking local cache..." << '\n';
-            std::cerr << "Angle has string representation " << angle_str
-                      << '\n';
-        }
-        if (rz_approx_cache_.count(angle_str)) {
-            if (verbose_ || details_)
-                std::cerr << "Angle is found in local cache" << '\n';
-            return rz_approx_cache_[angle_str];
-        }
-
-        if (verbose_)
-            std::cerr << "Running grid_synth to find new rz approximation..."
-                      << '\n';
-        RzApproximation rz_approx =
-            find_fast_rz_approximation(angle / real_t("-2.0"), eps_);
-        if (!rz_approx.solution_found()) {
-            std::cerr << "No approximation found for RzApproximation. "
-                         "Try changing factorization effort."
-                      << '\n';
-            exit(EXIT_FAILURE); // TODO: change this to fail more gracefully?
-        }
-        if (verbose_)
-            std::cerr << "Approximation found. Synthesizing..." << '\n';
-        ret = synthesize(rz_approx.matrix(), s3_table_);
-
-        if (verbose_)
-            std::cerr << "Synthesis complete." << '\n';
-        if (check_) {
-            std::cerr << "Check flag = "
-                      << (rz_approx.matrix() ==
-                          domega_matrix_from_str(full_simplify_str(ret)))
-                      << '\n';
-        }
-        if (details_) {
-            real_t scale = gmpf::pow(SQRT2, rz_approx.matrix().k());
-            std::cerr << "angle = " << std::scientific << angle << '\n';
-            std::cerr << rz_approx.matrix();
-            std::cerr << "u decimal value = "
-                      << "(" << rz_approx.matrix().u().decimal().real() / scale
-                      << "," << rz_approx.matrix().u().decimal().imag() / scale
-                      << ")" << '\n';
-            std::cerr << "t decimal value = "
-                      << "(" << rz_approx.matrix().t().decimal().real() / scale
-                      << "," << rz_approx.matrix().t().decimal().imag() / scale
-                      << ")" << '\n';
-            std::cerr << "error = " << rz_approx.error() << '\n';
-            str_t simplified = full_simplify_str(ret);
-            std::string::difference_type n =
-                count(simplified.begin(), simplified.end(), 'T');
-            std::cerr << "T count = " << n << '\n';
-            std::cerr << "----" << '\n' << std::fixed;
-        }
-
-        rz_approx_cache_[angle_str] = ret;
-        return ret;
-    }
 };
 
 /**
  * Replaces all rx/ry/rz gates in a program with grid_synth approximations.
  */
-void qasm_synth(ast::ASTNode& node, const QASMSynthOptions& opt) {
-    using namespace grid_synth;
-    domega_matrix_table_t s3_table;
-    real_t eps;
-
-    if (opt.read) {
-        if (opt.verbose) {
-            std::cerr << "Reading s3_table from " << opt.tablefile << '\n';
-        }
-        s3_table = read_s3_table(opt.tablefile);
-    } else if (opt.write) {
-        if (opt.verbose) {
-            std::cerr << "Generating new table file and writing to "
-                      << opt.tablefile << '\n';
-        }
-        s3_table = generate_s3_table();
-        write_s3_table(opt.tablefile, s3_table);
-    } else if (std::ifstream(DEFAULT_TABLE_FILE)) {
-        if (opt.verbose) {
-            std::cerr << "Table file found at default location "
-                      << DEFAULT_TABLE_FILE << '\n';
-        }
-        s3_table = read_s3_table(DEFAULT_TABLE_FILE);
-    } else {
-        if (opt.verbose) {
-            std::cerr << "Failed to find " << DEFAULT_TABLE_FILE
-                      << ". Generating new table file and writing to "
-                      << DEFAULT_TABLE_FILE << '\n';
-        }
-        s3_table = generate_s3_table();
-        write_s3_table(DEFAULT_TABLE_FILE, s3_table);
-    }
-
-    MP_CONSTS = initialize_constants(opt.prec);
-    eps = gmpf::pow(real_t(10), -opt.prec);
-    MAX_ATTEMPTS_POLLARD_RHO = opt.factor_effort;
-
-    if (opt.verbose) {
-        std::cerr << "Runtime Parameters" << '\n';
-        std::cerr << "------------------" << '\n';
-        std::cerr << std::setw(3 * COLW) << std::left
-                  << "TOL (Tolerance for float equality) " << std::setw(1)
-                  << ": " << std::setw(3 * COLW) << std::left << std::scientific
-                  << TOL << '\n';
-        std::cerr << std::setw(3 * COLW) << std::left
-                  << "KMIN (Minimum scaling exponent) " << std::setw(1) << ": "
-                  << std::setw(3 * COLW) << std::left << std::fixed << KMIN
-                  << '\n';
-        std::cerr << std::setw(2 * COLW) << std::left
-                  << "KMAX (Maximum scaling exponent) " << std::setw(1) << ": "
-                  << std::setw(3 * COLW) << std::left << std::fixed << KMAX
-                  << '\n';
-        std::cerr << std::setw(3 * COLW) << std::left
-                  << "MAX_ATTEMPTS_POLLARD_RHO (How hard we try to factor) "
-                  << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
-                  << MAX_ATTEMPTS_POLLARD_RHO << '\n';
-        std::cerr << std::setw(3 * COLW) << std::left
-                  << "MAX_ITERATIONS_FERMAT_TEST (How hard we try to check "
-                     "primality) "
-                  << std::setw(1) << ": " << std::setw(3 * COLW) << std::left
-                  << MAX_ITERATIONS_FERMAT_TEST << '\n';
-    }
-    std::cerr << std::scientific;
-
-    QASMSynthImpl alg(s3_table, eps, opt);
+void qasm_synth(ast::ASTNode& node, const GridSynthOptions& opt) {
+    QASMSynthImpl alg(opt);
     alg.run(node);
     alg.print_global_phase();
 }

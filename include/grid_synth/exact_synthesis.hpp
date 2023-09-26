@@ -45,21 +45,21 @@ inline str_t check_common_cases(real_t theta, const real_t& eps) {
         theta = theta + real_t("2");
 
     if (abs(theta - real_t("0.25")) < eps) {
-        return "T w";
+        return "Tw";
     } else if (abs(theta - real_t("0.5")) < eps) {
-        return "S W W W W W W W";
+        return "SWWWWWWW";
     } else if (abs(theta - real_t("0.75")) < eps) {
-        return "S T W W W W W W W w";
+        return "STWWWWWWWw";
     } else if (abs(theta - real_t("1")) < eps) {
-        return "S S W W W W W W";
+        return "SSWWWWWW";
     } else if (abs(theta - real_t("1.25")) < eps) {
-        return "S S T W W W W W W w";
+        return "SSTWWWWWWw";
     } else if (abs(theta - real_t("1.5")) < eps) {
-        return "S S S W W W W W";
+        return "SSSWWWWW";
     } else if (abs(theta - real_t("1.75")) < eps) {
-        return "S S S T W W W W W w";
+        return "SSSTWWWWWw";
     } else if (abs(theta - real_t("2")) < eps) {
-        return "W W W W";
+        return "WWWW";
     } else {
         return "";
     }

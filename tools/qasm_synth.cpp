@@ -46,8 +46,6 @@ int main(int argc, char** argv) {
 
     CLI::App app{"Grid Synthesis rx/ry/rz substitution"};
 
-    // this interface is more or less identical to that of grid_synth.cpp
-    // TODO: consider factoring out duplicated code?
     CLI::Option* prec_opt =
         app.add_option<long int, int>(
                "-p, --precision", prec,
@@ -78,17 +76,18 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    transformations::QASMSynthOptions options{
+    GridSynthOptions opt{
         prec,        factor_effort, std::move(tablefile),
         (bool)*read, (bool)*write,  check,
         details,     verbose};
 
+    MP_CONSTS = initialize_constants(opt.prec);
     auto program = parse_stdin("", true); // parse stdin using GMP
     if (program) {
-        transformations::qasm_synth(*program, options);
+        transformations::qasm_synth(*program, opt);
         std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
-        return 1;
+        return EXIT_FAILURE;
     }
 }
