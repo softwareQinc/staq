@@ -148,7 +148,7 @@ synthesize_net(parser::Position pos, T& l_net,
     tweedledum::gg_network<tweedledum::mcmt_gate> q_net;
     if (!lutn) {
         std::cerr << "Could not map network into klut network" << std::endl;
-        return std::move(ret);
+        return ret;
     }
 
     // Synthesize a gate graph network with 1, 2, and 3 qubit gates using
@@ -316,7 +316,7 @@ synthesize_net(parser::Position pos, T& l_net,
         }
     });
 
-    return std::move(ret);
+    return ret;
 }
 
 } /* namespace synthesis */
