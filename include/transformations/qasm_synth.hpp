@@ -172,7 +172,7 @@ class QASMSynthImpl final : public ast::Replacer {
     bool verbose_;
 
     /*!
-     * \brief Makes a new gate with no cargs.
+     * \brief Copies a gate; gives it a new name and no cargs.
      *
      * \param name The name of the new gate.
      * \param gate The gate to make a copy of.

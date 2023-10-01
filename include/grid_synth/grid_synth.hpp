@@ -38,18 +38,18 @@ namespace grid_synth {
 /*! \brief Converts a GMP float to a string suitable for hashing. */
 static str_t to_string(const mpf_class& x) {
     mp_exp_t exp;
-    // Use base 32 to get a shorter string.
-    // Truncate to keep only the significant figures.
-    str_t s = x.get_str(exp, 32).substr(0, mpf_get_default_prec() / 5);
+    // Use base 32 to get a shorter string; truncate the string
+    // to keep only the significant figures.
+    int sig_figs = mpf_get_default_prec() / 5;
+    if (x < 0)
+        ++sig_figs; // account for leading minus sign
+    str_t s = x.get_str(exp, 32).substr(0, sig_figs);
     return s + str_t(" ") + std::to_string(exp);
 }
 
 struct GridSynthOptions {
     long int prec;
     int factor_effort = MAX_ATTEMPTS_POLLARD_RHO;
-    str_t tablefile = "";
-    bool read = false;
-    bool write = false;
     bool check = false;
     bool details = false;
     bool verbose = false;
@@ -59,7 +59,8 @@ struct GridSynthOptions {
 class GridSynthesizer {
   private:
     std::unordered_map<str_t, str_t> rz_approx_cache_;
-    domega_matrix_table_t s3_table_;
+    // static constexpr std::unordered_map<size_t, str_t> S3_TABLE2{{1,""}};
+    domega_matrix_table_t S3_TABLE;
     real_t eps_;
     bool check_;
     bool details_;
@@ -69,8 +70,9 @@ class GridSynthesizer {
 
     GridSynthesizer(domega_matrix_table_t s3_table, real_t eps, bool check,
                     bool details, bool verbose, bool timer)
-        : rz_approx_cache_(), s3_table_(s3_table), eps_(eps), check_(check),
-          details_(details), verbose_(verbose), timer_(timer), duration_(0) {}
+        : rz_approx_cache_(), S3_TABLE(std::move(s3_table)),
+          eps_(std::move(eps)), check_(check), details_(details),
+          verbose_(verbose), timer_(timer), duration_(0) {}
 
   public:
     ~GridSynthesizer() {
@@ -107,7 +109,7 @@ class GridSynthesizer {
             auto start = std::chrono::steady_clock::now();
             rz_approx = find_fast_rz_approximation(
                 real_t(angle) * PI / real_t("-2"), eps_);
-            op_str = synthesize(rz_approx.matrix(), s3_table_);
+            op_str = synthesize(rz_approx.matrix(), S3_TABLE);
             auto end = std::chrono::steady_clock::now();
             duration_ += std::chrono::duration_cast<std::chrono::microseconds>(
                              end - start)
@@ -139,7 +141,7 @@ class GridSynthesizer {
             }
             if (verbose_)
                 std::cerr << "Approximation found. Synthesizing..." << '\n';
-            op_str = synthesize(rz_approx.matrix(), s3_table_);
+            op_str = synthesize(rz_approx.matrix(), S3_TABLE);
 
             if (verbose_)
                 std::cerr << "Synthesis complete." << '\n';
@@ -182,39 +184,16 @@ class GridSynthesizer {
 
 /*! \brief Initializes a GridSynthesizer object. */
 GridSynthesizer make_synthesizer(const GridSynthOptions& opt) {
-    domega_matrix_table_t s3_table;
-    real_t eps;
+    domega_matrix_table_t s3_table = read_s3_table(DEFAULT_TABLE_FILE);
+    /*
+        for (auto& it : s3_table) {
+            std::cerr << DOmegaMatrixHash()(it.first) << ' ' << it.second <<
+       std::endl;
+        }
+    */
 
-    if (opt.read) {
-        if (opt.verbose) {
-            std::cerr << "Reading s3_table from " << opt.tablefile << '\n';
-        }
-        s3_table = read_s3_table(opt.tablefile);
-    } else if (opt.write) {
-        if (opt.verbose) {
-            std::cerr << "Generating new table file and writing to "
-                      << opt.tablefile << '\n';
-        }
-        s3_table = generate_s3_table();
-        write_s3_table(opt.tablefile, s3_table);
-    } else if (std::ifstream(DEFAULT_TABLE_FILE)) {
-        if (opt.verbose) {
-            std::cerr << "Table file found at default location "
-                      << DEFAULT_TABLE_FILE << '\n';
-        }
-        s3_table = read_s3_table(DEFAULT_TABLE_FILE);
-    } else {
-        if (opt.verbose) {
-            std::cerr << "Failed to find " << DEFAULT_TABLE_FILE
-                      << ". Generating new table file and writing to "
-                      << DEFAULT_TABLE_FILE << '\n';
-        }
-        s3_table = generate_s3_table();
-        write_s3_table(DEFAULT_TABLE_FILE, s3_table);
-    }
-
+    real_t eps = gmpf::pow(real_t(10), -opt.prec);
     MP_CONSTS = initialize_constants(opt.prec);
-    eps = gmpf::pow(real_t(10), -opt.prec);
     MAX_ATTEMPTS_POLLARD_RHO = opt.factor_effort;
 
     if (opt.verbose) {

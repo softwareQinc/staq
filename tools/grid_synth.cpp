@@ -37,18 +37,13 @@
 #include "grid_synth/types.hpp"
 
 int main(int argc, char** argv) {
-
     using namespace staq;
     using namespace grid_synth;
 
     bool check = false, details = false, verbose = false, timer = false;
-    real_t theta, eps;
     std::vector<std::string> thetas;
-    std::vector<long int> prec_lst;
     long int prec;
     int factor_effort;
-    domega_matrix_table_t s3_table;
-    str_t tablefile{};
 
     CLI::App app{"Grid Synthesis"};
 
@@ -67,12 +62,6 @@ int main(int argc, char** argv) {
                "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
                "taken to factorize candidate solutions (default=200)")
             ->default_val(MAX_ATTEMPTS_POLLARD_RHO);
-    CLI::Option* read = app.add_option("-r, --read-table", tablefile,
-                                       "Name of file containing s3_table");
-    CLI::Option* write =
-        app.add_option("-w, --write-table", tablefile,
-                       "Name of table file to write s3_table to")
-            ->excludes(read);
     app.add_flag("-c, --check", check,
                  "Output bool that will be 1 if the op string matches the "
                  "input operator");
@@ -87,13 +76,10 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    if (verbose) {
-        std::cerr << thetas.size() << " angles read." << '\n';
-    }
+    if (verbose)
+        std::cerr << thetas.size() << " angle(s) read." << '\n';
 
-    GridSynthOptions opt{prec,        factor_effort, std::move(tablefile),
-                         (bool)*read, (bool)*write,  check,
-                         details,     verbose,       timer};
+    GridSynthOptions opt{prec, factor_effort, check, details, verbose, timer};
     GridSynthesizer synthesizer = make_synthesizer(opt);
 
     if (*prec_opt && *thetas_op) {
@@ -102,9 +88,8 @@ int main(int argc, char** argv) {
 
         for (const auto& angle : thetas) {
             str_t op_str = synthesizer.get_rz_approx(real_t(angle));
-            for (char c : op_str) {
+            for (char c : op_str)
                 std::cout << c << ' ';
-            }
             std::cout << '\n';
         }
     }

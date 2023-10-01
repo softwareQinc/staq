@@ -38,11 +38,9 @@ int main(int argc, char** argv) {
     using qasmtools::parser::parse_stdin;
 
     bool check = false, details = false, verbose = false;
-    real_t eps;
     long int prec;
     int factor_effort;
     domega_matrix_table_t s3_table;
-    str_t tablefile{};
 
     CLI::App app{"Grid Synthesis rx/ry/rz substitution"};
 
@@ -57,12 +55,6 @@ int main(int argc, char** argv) {
                "Sets MAX_ATTEMPTS_POLLARD_RHO, the effort "
                "taken to factorize candidate solutions (default=200)")
             ->default_val(MAX_ATTEMPTS_POLLARD_RHO);
-    CLI::Option* read = app.add_option("-r, --read-table", tablefile,
-                                       "Name of file containing s3_table");
-    CLI::Option* write =
-        app.add_option("-w, --write-table", tablefile,
-                       "Name of table file to write s3_table to")
-            ->excludes(read);
     app.add_flag("-c, --check", check,
                  "Output bool that will be 1 if the op string matches the "
                  "input operator");
@@ -76,13 +68,11 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    GridSynthOptions opt{
-        prec,        factor_effort, std::move(tablefile),
-        (bool)*read, (bool)*write,  check,
-        details,     verbose};
+    GridSynthOptions opt{prec, factor_effort, check, details, verbose};
 
+    // Must initialize constants before parsing stdin using GMP
     MP_CONSTS = initialize_constants(opt.prec);
-    auto program = parse_stdin("", true); // parse stdin using GMP
+    auto program = parse_stdin("", true);
     if (program) {
         transformations::qasm_synth(*program, opt);
         std::cout << *program;
