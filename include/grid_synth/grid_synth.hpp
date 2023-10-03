@@ -27,28 +27,30 @@
 #ifndef GRID_SYNTH_GRID_SYNTH_HPP_
 #define GRID_SYNTH_GRID_SYNTH_HPP_
 
-#include "grid_synth/exact_synthesis.hpp"
-#include "grid_synth/matrix.hpp"
-#include "grid_synth/rz_approximation.hpp"
-#include "grid_synth/types.hpp"
+#include "exact_synthesis.hpp"
+#include "matrix.hpp"
+#include "rz_approximation.hpp"
+#include "s3_table.hpp"
+#include "types.hpp"
 
 namespace staq {
 namespace grid_synth {
 
-/*! \brief Converts a GMP float to a string suitable for hashing. */
+/* Converts a GMP float to a string suitable for hashing. */
 static str_t to_string(const mpf_class& x) {
     mp_exp_t exp;
     // Use base 32 to get a shorter string; truncate the string
     // to keep only the significant figures.
-    int sig_figs = mpf_get_default_prec() / 5;
+    int sig_len = mpf_get_default_prec() / 5;
     if (x < 0)
-        ++sig_figs; // account for leading minus sign
-    str_t s = x.get_str(exp, 32).substr(0, sig_figs);
+        ++sig_len; // account for leading minus sign
+    str_t s = x.get_str(exp, 32).substr(0, sig_len);
     return s + str_t(" ") + std::to_string(exp);
 }
 
+/* Options passed when constructing a GridSynthesizer. */
 struct GridSynthOptions {
-    long int prec;
+    long int prec; // Precision in base 10 as a positive integer (10^p)
     int factor_effort = MAX_ATTEMPTS_POLLARD_RHO;
     bool check = false;
     bool details = false;
@@ -59,29 +61,31 @@ struct GridSynthOptions {
 class GridSynthesizer {
   private:
     std::unordered_map<str_t, str_t> rz_approx_cache_;
-    // static constexpr std::unordered_map<size_t, str_t> S3_TABLE2{{1,""}};
-    domega_matrix_table_t S3_TABLE;
+    const domega_matrix_table_t S3_TABLE;
+
     real_t eps_;
     bool check_;
     bool details_;
     bool verbose_;
     bool timer_;
-    long long duration_;
 
+    long long duration_;
+    bool valid_;
+
+    /* Construct GridSynthesizer objects using the make_synthesizer
+     * factory function. 
+     */
     GridSynthesizer(domega_matrix_table_t s3_table, real_t eps, bool check,
                     bool details, bool verbose, bool timer)
         : rz_approx_cache_(), S3_TABLE(std::move(s3_table)),
           eps_(std::move(eps)), check_(check), details_(details),
-          verbose_(verbose), timer_(timer), duration_(0) {}
+          verbose_(verbose), timer_(timer), duration_(0), valid_(true) {}
 
   public:
-    ~GridSynthesizer() {
-        if (timer_) {
-            std::cerr << std::fixed
-                      << "Duration = " << (static_cast<double>(duration_) / 1e6)
-                      << " seconds" << '\n';
-        }
-    }
+    ~GridSynthesizer() {}
+
+    double get_duration() const { return static_cast<double>(duration_) / 1e6; }
+    bool is_valid() const { return valid_; }
 
     /*! \brief Find RZ-approximation for an angle. */
     str_t get_rz_approx(const real_t& angle) {
@@ -145,12 +149,13 @@ class GridSynthesizer {
 
             if (verbose_)
                 std::cerr << "Synthesis complete." << '\n';
-            if (check_) {
-                std::cerr << "Check flag = "
-                          << (rz_approx.matrix() ==
-                              domega_matrix_from_str(full_simplify_str(op_str)))
-                          << '\n';
-            }
+            bool good = (rz_approx.matrix() ==
+                         domega_matrix_from_str(full_simplify_str(op_str)));
+            valid_ = valid_ && good;
+            valid_ = valid_ && (rz_approx.error() < eps_);
+
+            if (check_)
+                std::cerr << "Check flag = " << good << '\n';
             if (details_) {
                 real_t scale = gmpf::pow(SQRT2, rz_approx.matrix().k());
                 std::cerr << "angle = " << std::scientific << angle << '\n';
@@ -183,14 +188,8 @@ class GridSynthesizer {
 };
 
 /*! \brief Initializes a GridSynthesizer object. */
-GridSynthesizer make_synthesizer(const GridSynthOptions& opt) {
-    domega_matrix_table_t s3_table = read_s3_table(DEFAULT_TABLE_FILE);
-    /*
-        for (auto& it : s3_table) {
-            std::cerr << DOmegaMatrixHash()(it.first) << ' ' << it.second <<
-       std::endl;
-        }
-    */
+inline GridSynthesizer make_synthesizer(const GridSynthOptions& opt) {
+    domega_matrix_table_t s3_table = load_s3_table();
 
     real_t eps = gmpf::pow(real_t(10), -opt.prec);
     MP_CONSTS = initialize_constants(opt.prec);

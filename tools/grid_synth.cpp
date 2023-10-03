@@ -87,10 +87,17 @@ int main(int argc, char** argv) {
         random_numbers.seed(rd());
 
         for (const auto& angle : thetas) {
-            str_t op_str = synthesizer.get_rz_approx(real_t(angle));
+            str_t op_str =
+                synthesizer.get_rz_approx(real_t(angle) * gmpf::gmp_pi());
             for (char c : op_str)
                 std::cout << c << ' ';
             std::cout << '\n';
         }
+    }
+
+    if (timer) {
+        std::cerr << std::fixed
+                    << "Duration = " << synthesizer.get_duration()
+                    << " seconds" << '\n';
     }
 }

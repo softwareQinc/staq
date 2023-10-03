@@ -142,7 +142,7 @@ class QASMSynthImpl final : public ast::Replacer {
      * This accounts for all collected w and W gates.
      */
     void print_global_phase() {
-        int a = (w_count_ % 16 + 16) % 16; // Normalize a to the range [0, 16)
+        int a = get_w_count();
         if (a == 0)
             return;
         std::cout << "// global-phase: exp i*pi " << a << " " << 8 << std::endl;
@@ -163,6 +163,9 @@ class QASMSynthImpl final : public ast::Replacer {
         }
 #endif
     }
+
+    // Normalize to the range [0, 16)
+    int get_w_count() const { return (w_count_ % 16 + 16) % 16; }
 
   private:
     GridSynthesizer synthesizer_;
@@ -189,10 +192,11 @@ class QASMSynthImpl final : public ast::Replacer {
 /**
  * Replaces all rx/ry/rz gates in a program with grid_synth approximations.
  */
-void qasm_synth(ast::ASTNode& node, const GridSynthOptions& opt) {
+int qasm_synth(ast::ASTNode& node, const GridSynthOptions& opt) {
     QASMSynthImpl alg(opt);
     alg.run(node);
     alg.print_global_phase();
+    return alg.get_w_count();
 }
 
 } /* namespace transformations */
