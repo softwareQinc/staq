@@ -98,5 +98,9 @@ int main(int argc, char** argv) {
         std::cerr << std::fixed
                     << "Duration = " << synthesizer.get_duration()
                     << " seconds" << '\n';
+    } 
+    else {
+        std::cerr << "No angle provided. Exiting.\n";
+        return 0;
     }
 }
