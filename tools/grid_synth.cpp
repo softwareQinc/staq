@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
         for (const auto& angle : thetas) {
             str_t op_str =
-                synthesizer.get_rz_approx(real_t(angle) * gmpf::gmp_pi());
+                synthesizer.get_op_str(real_t(angle) * gmpf::gmp_pi());
             for (char c : op_str)
                 std::cout << c << ' ';
             std::cout << '\n';

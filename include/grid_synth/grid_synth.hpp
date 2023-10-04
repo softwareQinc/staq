@@ -88,7 +88,7 @@ class GridSynthesizer {
     bool is_valid() const { return valid_; }
 
     /*! \brief Find RZ-approximation for an angle. */
-    str_t get_rz_approx(const real_t& angle) {
+    str_t get_op_str(const real_t& angle) {
         if (verbose_)
             std::cerr << "Checking common cases..."
                       << "\n";

@@ -11,7 +11,7 @@ TEST(GridSynth, ExactSynthesis) {
 
     for (int i = -20; i <= 20; ++i) {
         real_t angle = real_t(i) / real_t(4);
-        str_t op_str = synthesizer.get_rz_approx(angle * gmpf::gmp_pi());
+        str_t op_str = synthesizer.get_op_str(angle * gmpf::gmp_pi());
         real_t eps = gmpf::pow(real_t(10), -100);
         str_t common_case = check_common_cases(angle, eps);
         EXPECT_TRUE(op_str == common_case);
@@ -24,15 +24,15 @@ TEST(GridSynth, InexactSynthesis) {
     GridSynthesizer synthesizer = make_synthesizer(opt);
     EXPECT_TRUE(synthesizer.is_valid());
 
-    synthesizer.get_rz_approx(real_t("0.3"));
+    synthesizer.get_op_str(real_t("0.3"));
     EXPECT_TRUE(synthesizer.is_valid());
 
-    synthesizer.get_rz_approx(real_t("0.3"));
+    synthesizer.get_op_str(real_t("0.3"));
     EXPECT_TRUE(synthesizer.is_valid());
 
-    synthesizer.get_rz_approx(real_t("5.3423"));
+    synthesizer.get_op_str(real_t("5.3423"));
     EXPECT_TRUE(synthesizer.is_valid());
 
-    synthesizer.get_rz_approx(real_t("-5.3123"));
+    synthesizer.get_op_str(real_t("-5.3123"));
     EXPECT_TRUE(synthesizer.is_valid());
 }

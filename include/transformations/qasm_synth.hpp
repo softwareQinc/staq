@@ -93,13 +93,13 @@ class QASMSynthImpl final : public ast::Replacer {
                           << ": finding approximation for angle = " << (angle)
                           << '\n';
             }
-            std::string rz_approx = synthesizer_.get_rz_approx(angle);
+            std::string op_str = synthesizer_.get_op_str(angle);
             if (details_) {
-                std::cerr << gate.pos() << ": found approximation " << rz_approx
+                std::cerr << gate.pos() << ": found approximation " << op_str
                           << '\n';
             }
 
-            for (char c : rz_approx) {
+            for (char c : op_str) {
                 if (c == 'w' || // If the approximation creates w or W gates,
                     c == 'W') { // collect them and output the global phase
                                 // later.
