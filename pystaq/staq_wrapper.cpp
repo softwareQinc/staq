@@ -233,7 +233,7 @@ void grid_synth(const std::vector<std::string>& thetas, long int prec,
     std::random_device rd;
     random_numbers.seed(rd());
     for (const auto& angle : thetas) {
-        str_t op_str = synthesizer.get_rz_approx(real_t(angle));
+        str_t op_str = synthesizer.get_op_str(real_t(angle));
         for (char c : op_str)
             std::cout << c << ' ';
         std::cout << '\n';
