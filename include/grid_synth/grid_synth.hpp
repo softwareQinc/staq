@@ -60,7 +60,7 @@ struct GridSynthOptions {
 
 class GridSynthesizer {
   private:
-    std::unordered_map<str_t, str_t> rz_approx_cache_;
+    std::unordered_map<str_t, str_t> angle_cache_;
     const domega_matrix_table_t S3_TABLE;
 
     real_t eps_;
@@ -77,7 +77,7 @@ class GridSynthesizer {
      */
     GridSynthesizer(domega_matrix_table_t s3_table, real_t eps, bool check,
                     bool details, bool verbose, bool timer)
-        : rz_approx_cache_(), S3_TABLE(std::move(s3_table)),
+        : angle_cache_(), S3_TABLE(std::move(s3_table)),
           eps_(std::move(eps)), check_(check), details_(details),
           verbose_(verbose), timer_(timer), duration_(0), valid_(true) {}
 
@@ -125,10 +125,10 @@ class GridSynthesizer {
             if (details_)
                 std::cerr << "Angle has string representation " << angle_str
                           << '\n';
-            if (rz_approx_cache_.count(angle_str)) {
+            if (angle_cache_.count(angle_str)) {
                 if (verbose_ || details_)
                     std::cerr << "Angle is found in local cache" << '\n';
-                return rz_approx_cache_[angle_str];
+                return angle_cache_[angle_str];
             }
 
             if (verbose_)
@@ -179,7 +179,7 @@ class GridSynthesizer {
                 std::cerr << "T count = " << n << '\n';
                 std::cerr << "----" << '\n' << std::fixed;
             }
-            rz_approx_cache_[angle_str] = op_str;
+            angle_cache_[angle_str] = op_str;
         }
         return op_str;
     }
