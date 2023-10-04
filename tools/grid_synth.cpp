@@ -48,9 +48,8 @@ int main(int argc, char** argv) {
     CLI::App app{"Grid Synthesis"};
 
     CLI::Option* thetas_op =
-        app.add_option("-t, --theta", thetas,
-                       "Z-rotation angle(s) in units of PI")
-            ->required();
+        app.add_option("theta", thetas,
+                       "Z-rotation angle(s) in units of PI");
     CLI::Option* prec_opt =
         app.add_option<long int, int>(
                "-p, --precision", prec,
