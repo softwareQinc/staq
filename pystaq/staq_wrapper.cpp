@@ -29,6 +29,7 @@
 #endif
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <sstream>
 
 #include "qasmtools/parser/parser.hpp"
@@ -38,6 +39,12 @@
 #include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
 #include "transformations/oracle_synthesizer.hpp"
+
+#ifdef GRID_SYNTH
+#include "grid_synth/grid_synth.hpp"
+#include "grid_synth/types.hpp"
+#include "transformations/qasm_synth.hpp"
+#endif
 
 #include "optimization/cnot_resynthesis.hpp"
 #include "optimization/rotation_folding.hpp"
@@ -139,6 +146,14 @@ class Program {
     void synthesize_oracles() {
         staq::transformations::synthesize_oracles(*prog_);
     }
+#ifdef GRID_SYNTH
+    void qasm_synth(long int prec, int factor_effort, bool check, bool details,
+                    bool verbose) {
+        staq::grid_synth::GridSynthOptions opt{prec, factor_effort, check,
+                                               details, verbose};
+        staq::transformations::qasm_synth(*prog_, opt);
+    }
+#endif /* GRID_SYNTH */
     // output (these methods return a string)
     std::string get_resources(bool box_gates = false, bool unbox_qelib = false,
                               bool no_merge_dagger = false) {
@@ -206,7 +221,34 @@ void rotation_fold(Program& prog, bool no_correction) {
 void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
-
+#ifdef GRID_SYNTH
+void grid_synth(const std::vector<std::string>& thetas, long int prec,
+                int factor_effort, bool check, bool details, bool verbose,
+                bool timer) {
+    using namespace staq::grid_synth;
+    if (verbose)
+        std::cerr << thetas.size() << " angle(s) read." << '\n';
+    GridSynthOptions opt{prec, factor_effort, check, details, verbose, timer};
+    GridSynthesizer synthesizer = make_synthesizer(opt);
+    std::random_device rd;
+    random_numbers.seed(rd());
+    for (const auto& angle : thetas) {
+        str_t op_str = synthesizer.get_op_str(real_t(angle));
+        for (char c : op_str)
+            std::cout << c << ' ';
+        std::cout << '\n';
+    }
+}
+void grid_synth(const std::string& theta, long int prec, int factor_effort,
+                bool check, bool details, bool verbose, bool timer) {
+    grid_synth(std::vector<std::string>{theta}, prec, factor_effort, check,
+               details, verbose, timer);
+}
+void qasm_synth(Program& prog, long int prec, int factor_effort, bool check,
+                bool details, bool verbose) {
+    prog.qasm_synth(prec, factor_effort, check, details, verbose);
+}
+#endif /* GRID_SYNTH */
 std::string lattice_surgery(Program& prog) { return prog.lattice_surgery(); }
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
@@ -294,6 +336,30 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("prog"), py::arg("no_fixpoint") = false);
     m.def("synthesize_oracles", &synthesize_oracles,
           "Synthesizes oracles declared by verilog files");
+#ifdef GRID_SYNTH
+    m.def("grid_synth",
+          py::overload_cast<const std::vector<std::string>&, long int, int,
+                            bool, bool, bool, bool>(&grid_synth),
+          "Approximate Z-rotation angle(s) (in units of PI)", py::arg("theta"),
+          py::arg("prec"),
+          py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
+          py::arg("check") = false, py::arg("details") = false,
+          py::arg("verbose") = false, py::arg("timer") = false);
+    m.def("grid_synth",
+          py::overload_cast<const std::string&, long int, int,
+                            bool, bool, bool, bool>(&grid_synth),
+          "Approximate Z-rotation angle(s) (in units of PI)", py::arg("theta"),
+          py::arg("prec"),
+          py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
+          py::arg("check") = false, py::arg("details") = false,
+          py::arg("verbose") = false, py::arg("timer") = false);
+    m.def("qasm_synth", &qasm_synth,
+          "Replaces rx/ry/rz gates with grid_synth approximations",
+          py::arg("prog"), py::arg("prec"),
+          py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
+          py::arg("check") = false, py::arg("details") = false,
+          py::arg("verbose") = false);
+#endif /* GRID_SYNTH */
     m.def("lattice_surgery", &lattice_surgery,
           "Compiles OpenQASM2 to lattice surgery instruction set",
           py::arg("prog"));

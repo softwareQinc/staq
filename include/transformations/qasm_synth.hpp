@@ -34,9 +34,9 @@
 
 #include <cstdlib>
 #include <list>
-#include <variant>
 
 #include "grid_synth/exact_synthesis.hpp"
+#include "grid_synth/grid_synth.hpp"
 #include "grid_synth/rz_approximation.hpp"
 #include "grid_synth/types.hpp"
 #include "qasmtools/ast/replacer.hpp"
@@ -46,16 +46,15 @@ namespace staq {
 namespace transformations {
 
 namespace ast = qasmtools::ast;
-using real_t = staq::grid_synth::real_t;
+using namespace grid_synth;
 
 /* Implementation */
-class ReplaceRotationsImpl final : public ast::Replacer {
+class QASMSynthImpl final : public ast::Replacer {
   public:
-    ReplaceRotationsImpl(grid_synth::domega_matrix_table_t& s3_table,
-                         real_t& eps, bool check, bool details, bool verbose)
-        : s3_table_(s3_table), eps_(eps), check_(check), details_(details),
-          verbose_(verbose), w_count_(0){};
-    ~ReplaceRotationsImpl() = default;
+    QASMSynthImpl(const GridSynthOptions& opt)
+        : synthesizer_(make_synthesizer(opt)), w_count_(0), check_(opt.check),
+          details_(opt.details), verbose_(opt.verbose){};
+    ~QASMSynthImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
 
@@ -94,18 +93,19 @@ class ReplaceRotationsImpl final : public ast::Replacer {
                           << ": finding approximation for angle = " << (angle)
                           << '\n';
             }
-            std::string rz_approx = get_rz_approx(angle);
+            std::string op_str = synthesizer_.get_op_str(angle);
             if (details_) {
-                std::cerr << gate.pos() << ": found approximation " << rz_approx
+                std::cerr << gate.pos() << ": found approximation " << op_str
                           << '\n';
             }
 
-            for (char c : rz_approx) {
+            for (char c : op_str) {
                 if (c == 'w' || // If the approximation creates w or W gates,
                     c == 'W') { // collect them and output the global phase
                                 // later.
                     if (gate.qargs()[0].offset() == std::nullopt) {
-                        std::cerr << "Please inline the qasm code first."
+                        std::cerr << "Please inline the qasm code first and "
+                                     "clear declarations."
                                   << std::endl;
                         exit(EXIT_FAILURE);
                     }
@@ -142,7 +142,7 @@ class ReplaceRotationsImpl final : public ast::Replacer {
      * This accounts for all collected w and W gates.
      */
     void print_global_phase() {
-        int a = (w_count_ % 16 + 16) % 16; // Normalize a to the range [0, 16)
+        int a = get_w_count();
         if (a == 0)
             return;
         std::cout << "// global-phase: exp i*pi " << a << " " << 8 << std::endl;
@@ -164,28 +164,18 @@ class ReplaceRotationsImpl final : public ast::Replacer {
 #endif
     }
 
+    // Normalize to the range [0, 16)
+    int get_w_count() const { return (w_count_ % 16 + 16) % 16; }
+
   private:
-    real_t& eps_;
-    grid_synth::domega_matrix_table_t& s3_table_;
+    GridSynthesizer synthesizer_;
+    int w_count_;
     bool check_;
     bool details_;
     bool verbose_;
-    std::unordered_map<std::string, std::string> rz_approx_cache_;
-    int w_count_;
-
-    /**
-     * Converts a GMP float to a string representation suitable for hashing.
-     */
-    std::string to_string(const mpf_class& x) const {
-        mp_exp_t exp;
-        // Use base 32 to get a shorter string.
-        std::string s =
-            x.get_str(exp, 32).substr(0, mpf_get_default_prec() / 5);
-        return s + std::string(" ") + std::to_string(exp);
-    }
 
     /*!
-     * \brief Makes a new gate with no cargs.
+     * \brief Copies a gate; gives it a new name and no cargs.
      *
      * \param name The name of the new gate.
      * \param gate The gate to make a copy of.
@@ -197,100 +187,16 @@ class ReplaceRotationsImpl final : public ast::Replacer {
         return std::make_unique<ast::DeclaredGate>(ast::DeclaredGate(
             gate.pos(), name, std::move(c_args), std::move(q_args)));
     }
-
-    /*! \brief Find RZ-approximation for an angle using grid_synth. */
-    std::string get_rz_approx(const real_t& angle) {
-        using namespace grid_synth;
-
-        if (verbose_)
-            std::cerr << "Checking common cases..."
-                      << "\n";
-        std::string ret = check_common_cases(angle / gmpf::gmp_pi(), eps_);
-        if (ret != "") {
-            if (details_)
-                std::cerr
-                    << "Angle is multiple of pi/4, answer is known exactly"
-                    << '\n';
-            if (check_)
-                std::cerr << "Check flag = " << 1 << '\n';
-            std::string ret_no_spaces;
-            for (char c : ret) {
-                if (c != ' ')
-                    ret_no_spaces.push_back(c);
-            }
-            return ret_no_spaces;
-        }
-
-        std::string angle_str = to_string(angle);
-        if (verbose_) {
-            std::cerr << "Checking local cache..." << '\n';
-            std::cerr << "Angle has string representation " << angle_str
-                      << '\n';
-        }
-        if (rz_approx_cache_.count(angle_str)) {
-            if (verbose_ || details_)
-                std::cerr << "Angle is found in local cache" << '\n';
-            return rz_approx_cache_[angle_str];
-        }
-
-        if (verbose_)
-            std::cerr << "Running grid_synth to find new rz approximation..."
-                      << '\n';
-        RzApproximation rz_approx =
-            find_fast_rz_approximation(angle / real_t("-2.0"), eps_);
-        if (!rz_approx.solution_found()) {
-            std::cerr << "No approximation found for RzApproximation. "
-                         "Try changing factorization effort."
-                      << '\n';
-            exit(EXIT_FAILURE); // TODO: change this to fail more gracefully?
-        }
-        if (verbose_)
-            std::cerr << "Approximation found. Synthesizing..." << '\n';
-        ret = synthesize(rz_approx.matrix(), s3_table_);
-
-        if (verbose_)
-            std::cerr << "Synthesis complete." << '\n';
-        if (check_) {
-            std::cerr << "Check flag = "
-                      << (rz_approx.matrix() ==
-                          domega_matrix_from_str(full_simplify_str(ret)))
-                      << '\n';
-        }
-        if (details_) {
-            real_t scale = gmpf::pow(SQRT2, rz_approx.matrix().k());
-            std::cerr << "angle = " << std::scientific << angle << '\n';
-            std::cerr << rz_approx.matrix();
-            std::cerr << "u decimal value = "
-                      << "(" << rz_approx.matrix().u().decimal().real() / scale
-                      << "," << rz_approx.matrix().u().decimal().imag() / scale
-                      << ")" << '\n';
-            std::cerr << "t decimal value = "
-                      << "(" << rz_approx.matrix().t().decimal().real() / scale
-                      << "," << rz_approx.matrix().t().decimal().imag() / scale
-                      << ")" << '\n';
-            std::cerr << "error = " << rz_approx.error() << '\n';
-            str_t simplified = full_simplify_str(ret);
-            std::string::difference_type n =
-                count(simplified.begin(), simplified.end(), 'T');
-            std::cerr << "T count = " << n << '\n';
-            std::cerr << "----" << '\n' << std::fixed;
-        }
-
-        rz_approx_cache_[angle_str] = ret;
-        return ret;
-    }
 };
 
 /**
  * Replaces all rx/ry/rz gates in a program with grid_synth approximations.
  */
-void replace_rotations(ast::ASTNode& node,
-                       grid_synth::domega_matrix_table_t& s3_table, real_t& eps,
-                       bool check = false, bool details = false,
-                       bool verbose = false) {
-    ReplaceRotationsImpl alg(s3_table, eps, check, details, verbose);
+int qasm_synth(ast::ASTNode& node, const GridSynthOptions& opt) {
+    QASMSynthImpl alg(opt);
     alg.run(node);
     alg.print_global_phase();
+    return alg.get_w_count();
 }
 
 } /* namespace transformations */

@@ -258,6 +258,10 @@ inline str_t full_simplify_str(str_t str) {
     return curr_str;
 }
 
+// ========================================================================= //
+// Note: These functions are no longer used by grid_synth.
+// ========================================================================= //
+
 // Generate the set of all unitary matrices with SDE less than three
 inline domega_matrix_table_t generate_s3_table() {
     using namespace std;

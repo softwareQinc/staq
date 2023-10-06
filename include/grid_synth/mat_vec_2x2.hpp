@@ -38,7 +38,7 @@ namespace grid_synth {
 using real_t = mpf_class;
 
 template <typename T = real_t>
-struct row_vec2_t;
+class row_vec2_t;
 
 // 2x1 column vector
 template <typename T = real_t>

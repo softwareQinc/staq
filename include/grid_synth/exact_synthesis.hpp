@@ -39,27 +39,38 @@ namespace grid_synth {
 // 1/(sqrt(omega)).
 inline str_t check_common_cases(real_t theta, const real_t& eps) {
 
-    while (theta > real_t("2"))
-        theta = theta - real_t("2");
+    // Normalize theta to the range [0,4)
+    while (theta >= real_t("4"))
+        theta = theta - real_t("4");
     while (theta < 0)
-        theta = theta + real_t("2");
+        theta = theta + real_t("4");
 
-    if (abs(theta - real_t("0.25")) < eps) {
-        return "T w";
+    // Deal with the case where theta is in [2,4)
+    str_t ret = "";
+    if (theta >= real_t("2")) {
+        theta = theta - real_t("2");
+        ret = "WWWW";
+    }
+
+    // Check multiples of 1/4 in [0,2)
+    if (abs(theta) < eps) {
+        if (ret != "")
+            return ret;
+        return "I";
+    } else if (abs(theta - real_t("0.25")) < eps) {
+        return "Tw" + ret;
     } else if (abs(theta - real_t("0.5")) < eps) {
-        return "S W W W W W W W";
+        return "SWWWWWWW" + ret;
     } else if (abs(theta - real_t("0.75")) < eps) {
-        return "S T W W W W W W W w";
+        return "STWWWWWWWw" + ret;
     } else if (abs(theta - real_t("1")) < eps) {
-        return "S S W W W W W W";
+        return "SSWWWWWW" + ret;
     } else if (abs(theta - real_t("1.25")) < eps) {
-        return "S S T W W W W W W w";
+        return "SSTWWWWWWw" + ret;
     } else if (abs(theta - real_t("1.5")) < eps) {
-        return "S S S W W W W W";
+        return "SSSWWWWW" + ret;
     } else if (abs(theta - real_t("1.75")) < eps) {
-        return "S S S T W W W W W w";
-    } else if (abs(theta - real_t("2")) < eps) {
-        return "W W W W";
+        return "SSSTWWWWWw" + ret;
     } else {
         return "";
     }
