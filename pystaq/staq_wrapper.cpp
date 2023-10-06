@@ -346,8 +346,8 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("check") = false, py::arg("details") = false,
           py::arg("verbose") = false, py::arg("timer") = false);
     m.def("grid_synth",
-          py::overload_cast<const std::string&, long int, int,
-                            bool, bool, bool, bool>(&grid_synth),
+          py::overload_cast<const std::string&, long int, int, bool, bool, bool,
+                            bool>(&grid_synth),
           "Approximate Z-rotation angle(s) (in units of PI)", py::arg("theta"),
           py::arg("prec"),
           py::arg("pollard-rho") = staq::grid_synth::MAX_ATTEMPTS_POLLARD_RHO,
@@ -361,7 +361,7 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("verbose") = false);
 #endif /* GRID_SYNTH */
     m.def("lattice_surgery", &lattice_surgery,
-          "Compiles OpenQASM2 to lattice surgery instruction set",
+          "Compiles OpenQASM 2.0 to lattice surgery instruction set",
           py::arg("prog"));
 
     py::class_<Device>(m, "Device")

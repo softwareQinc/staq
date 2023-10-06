@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     int factor_effort;
     domega_matrix_table_t s3_table;
 
-    CLI::App app{"Grid Synthesis rx/ry/rz substitution"};
+    CLI::App app{"Grid Synthesis rx/ry/rz substitution in OpenQASM 2.0 files"};
 
     CLI::Option* prec_opt =
         app.add_option<long int, int>(

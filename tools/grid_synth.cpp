@@ -49,8 +49,9 @@ int main(int argc, char** argv) {
     CLI::App app{"Grid Synthesis"};
 
     CLI::Option* thetas_op =
-        app.add_option("theta", thetas,
-                       "Z-rotation angle(s) in units of PI");
+        app.add_option("theta", thetas, "Z-rotation angle(s) in units of PI")
+            ->required();
+
     CLI::Option* prec_opt =
         app.add_option<long int, int>(
                "-p, --precision", prec,
@@ -76,8 +77,9 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    if (verbose)
+    if (verbose) {
         std::cerr << thetas.size() << " angle(s) read." << '\n';
+    }
 
     GridSynthOptions opt{prec, factor_effort, check, details, verbose, timer};
     GridSynthesizer synthesizer = make_synthesizer(opt);
@@ -89,19 +91,15 @@ int main(int argc, char** argv) {
         for (const auto& angle : thetas) {
             str_t op_str =
                 synthesizer.get_op_str(real_t(angle) * gmpf::gmp_pi());
-            for (char c : op_str)
+            for (char c : op_str) {
                 std::cout << c << ' ';
+            }
             std::cout << '\n';
         }
     }
 
     if (timer) {
-        std::cerr << std::fixed
-                    << "Duration = " << synthesizer.get_duration()
-                    << " seconds" << '\n';
-    } 
-    else {
-        std::cerr << "No angle provided. Exiting.\n";
-        return 0;
+        std::cerr << std::fixed << "Duration = " << synthesizer.get_duration()
+                  << " seconds" << '\n';
     }
 }
