@@ -32,13 +32,10 @@ To build both tool suite and the **staq** executable, execute
 cmake -B build
 ```
 
-If you want to build the grid synth tool `staq_grid_synth`, install the
-[GNU MP library](https://gmplib.org/) and enable building `staq_grid_synth` via
-the `CMake` option `-DBUILD_GRID_SYNTH=ON` (`OFF` by default), i.e.,
-
-```shell
-cmake -B build -DBUILD_GRID_SYNTH=ON
-```
+**Important**: If you want to build the grid synth tools `staq_grid_synth`
+and `staq_qasm_synth`, install the [GNU MP library](https://gmplib.org/);
+`cmake` will take care of the rest. If `cmake` cannot detect GNU MP, then the
+grid synth tools will not be part of the build.
 
 For more details about how to install and configure GNU MP on various platforms,
 see the

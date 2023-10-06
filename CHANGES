@@ -1,7 +1,8 @@
-Pre-release
-    - Added grid synth rotation synthesizer algorithm, requires GNU MP.
-      Disabled by default, to enable, pass `-DBUILD_GRID_SYNTH=ON` to CMake.
-      When enabled, builds `staq_grid_synth` and `staq_qasm_synth`.
+Version 3.3
+    - Implemented the  grid synth rotation synthesizer algorithm
+      https://arxiv.org/abs/1403.2975, enabled only when the GNU MP library is
+      detected. When enabled, the build will include `staq_grid_synth` and
+      `staq_qasm_synth`.
 
 Version 3.2.3 - 14 August 2023
     - Minor bugfix in pystaq setup.py that prevented pip install from remote

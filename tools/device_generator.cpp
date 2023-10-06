@@ -24,8 +24,9 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
 #include <tuple>
+
+#include <CLI/CLI.hpp>
 
 #include "mapping/device.hpp"
 

@@ -24,11 +24,12 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
+#include <CLI/CLI.hpp>
 
 #include "grid_synth/exact_synthesis.hpp"
 #include "grid_synth/grid_synth.hpp"

@@ -62,7 +62,6 @@ doc/
 .DS_Store
 .cmake/
 Testing/
-.s3_table_file.csv
 
 # pystaq
 Makefile

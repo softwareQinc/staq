@@ -24,8 +24,9 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
 #include <iostream>
+
+#include <CLI/CLI.hpp>
 
 #include "grid_synth/gmp_functions.hpp"
 #include "grid_synth/types.hpp"
