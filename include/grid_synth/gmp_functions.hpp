@@ -210,6 +210,7 @@ inline mpf_class reduce_angle(const mpf_class& phi) {
 inline mpf_class sin(const mpf_class& theta) {
     long int initial_prec = theta.get_prec();
     long int tol_exp = std::log10(2) * initial_prec;
+    mpf_class eps(("1e-" + std::to_string(tol_exp)));
     mpf_class phi = reduce_angle(theta);
     mpz_class i(1);
     mpf_class lasts(0);
@@ -217,7 +218,7 @@ inline mpf_class sin(const mpf_class& theta) {
     mpf_class fact(1);
     mpf_class num(phi);
     mpf_class sign(1);
-    while (gmp_abs(s - lasts) > mpf_class("1e-" + std::to_string(tol_exp))) {
+    while (gmp_abs(s - lasts) > eps) {
         lasts = s;
         i += mpf_class("2");
         fact *= i * (i - mpf_class("1"));
@@ -231,6 +232,7 @@ inline mpf_class sin(const mpf_class& theta) {
 inline mpf_class cos(const mpf_class& theta) {
     // long int initial_prec = theta.get_prec();
     long int tol_exp = std::log10(2) * theta.get_prec();
+    mpf_class eps(("1e-" + std::to_string(tol_exp)));
     mpf_class phi = reduce_angle(theta);
     mpz_class i(0);
     mpf_class lasts(0);
@@ -238,7 +240,7 @@ inline mpf_class cos(const mpf_class& theta) {
     mpf_class fact(1);
     mpf_class num(1);
     mpf_class sign(1);
-    while (gmp_abs(s - lasts) > mpf_class("1e-" + std::to_string(tol_exp))) {
+    while (gmp_abs(s - lasts) > eps) {
         lasts = s;
         i += mpf_class("2");
         fact *= i * (i - mpf_class("1"));
@@ -250,12 +252,14 @@ inline mpf_class cos(const mpf_class& theta) {
 }
 
 inline mpf_class exp(const mpf_class& x) {
-    // TODO: fix stability issue when x negative
+    if (x < 0)
+        return 1 / gmpf::exp(-x);
     long int tol_exp = std::log10(2) * x.get_prec();
+    mpf_class eps(("1e-" + std::to_string(tol_exp)));
     mpz_class i = 0;
     mpf_class s = 1;
     mpf_class term = 1;
-    while (gmp_abs(term) > mpf_class("1e-" + std::to_string(tol_exp))) {
+    while (gmp_abs(term) > eps) {
         i += 1;
         term *= x;
         term /= i;
