@@ -19,7 +19,8 @@ as [Windows](https://www.microsoft.com/en-us/windows).
   [clang](https://clang.llvm.org),
   [MSVC](https://visualstudio.microsoft.com/vs/)
 
-- Optional, [GNU MP](https://gmplib.org/) library for building `staq_grid_synth`
+- Optional, [GNU MP](https://gmplib.org/) library for building the grid synth
+  tools `staq_grid_synth` and `staq_qasm_synth`.
 
 ---
 

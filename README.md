@@ -14,16 +14,17 @@ optimization and compilation of quantum circuits.
 It is usable either through the provided binary tools, or as a header-only
 library that can be included to provide direct support for
 parsing & manipulating circuits written in the
-[OpenQASM](https://github.com/openqasm/openqasm) circuit description language.
+[OpenQASM 2.0](https://github.com/openqasm/openqasm/tree/OpenQASM2.x) circuit
+description language.
 
-Inspired by Clang, **staq** is designed to manipulate OpenQASM syntax trees
+Inspired by Clang, **staq** is designed to manipulate OpenQASM 2.0 syntax trees
 directly, rather than through an intermediate representation which makes
-retrieving the original source code impossible. In particular, OpenQASM circuits
-can be inspected and transformed (in most cases) without losing the original
-source structure. This makes **staq** ideally suited for source-to-source
-transformations, where only specific changes are desired. Likewise, this allows
-translations to other common circuit description languages and libraries to
-closely follow the OpenQASM source.
+retrieving the original source code impossible. In particular, OpenQASM 2.0
+circuits can be inspected and transformed (in most cases) without losing the
+original source structure. This makes **staq** ideally suited for
+source-to-source transformations, where only specific changes are desired.
+Likewise, this allows translations to other common circuit description languages
+and libraries to closely follow the OpenQASM 2.0 source.
 
 Check out the [Wiki](https://github.com/softwareQinc/staq/wiki) for more
 information about the library and included tools.
@@ -69,6 +70,5 @@ For more details, please see
 Thanks to the
 excellent [EPFL logic synthesis libraries](https://github.com/lsils/lstools-showcase)
 which are used to perform logic synthesis in **staq**, and in particular Bruno
-Schmitt's
-[tweedledum](https://github.com/boschmitt/tweedledum) library, from which the
-OpenQASM parser was adapted.
+Schmitt's [tweedledum](https://github.com/boschmitt/tweedledum) library, from
+which the OpenQASM 2.0 parser was adapted.
