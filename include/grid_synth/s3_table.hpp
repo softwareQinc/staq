@@ -28,6 +28,7 @@
 #define GRID_SYNTH_S3_TABLE_HPP_
 
 #include <string>
+
 #include "matrix.hpp"
 #include "rings.hpp"
 
@@ -36,6 +37,7 @@ namespace grid_synth {
 
 static const int S3_TABLE_SIZE = 3712;
 
+// clang-format off
 static const int S3_TABLE_KEYS[S3_TABLE_SIZE][10] = 
    {{0,0,-1,0,-1,1,1,0,2,4},
     {0,0,0,-1,0,-1,1,1,2,2},
@@ -7464,6 +7466,8 @@ static const std::string S3_TABLE_VALUES[S3_TABLE_SIZE] =
     "THSHSSSTHSSTWWWWWW",
     "THSHSSSTHSSTWWWWWWW"};
 
+// clang-format on
+
 inline domega_matrix_table_t load_s3_table() {
     using namespace std;
     domega_matrix_table_t s3_table;
@@ -7471,10 +7475,8 @@ inline domega_matrix_table_t load_s3_table() {
     for (int i = 0; i < S3_TABLE_SIZE; ++i) {
         auto k = S3_TABLE_KEYS[i];
         auto v = S3_TABLE_VALUES[i];
-        DOmegaMatrix mat(
-            ZOmega(k[0], k[1], k[2], k[3]),
-            ZOmega(k[4], k[5], k[6], k[7]),
-            k[8], k[9]);
+        DOmegaMatrix mat(ZOmega(k[0], k[1], k[2], k[3]),
+                         ZOmega(k[4], k[5], k[6], k[7]), k[8], k[9]);
         s3_table[mat] = v;
     }
     return s3_table;

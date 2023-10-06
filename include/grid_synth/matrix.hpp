@@ -259,7 +259,7 @@ inline str_t full_simplify_str(str_t str) {
 }
 
 // ========================================================================= //
-// Note: These functions are no longer used by grid_synth. 
+// Note: These functions are no longer used by grid_synth.
 // ========================================================================= //
 
 // Generate the set of all unitary matrices with SDE less than three

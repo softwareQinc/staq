@@ -73,13 +73,13 @@ class GridSynthesizer {
     bool valid_;
 
     /* Construct GridSynthesizer objects using the make_synthesizer
-     * factory function. 
+     * factory function.
      */
     GridSynthesizer(domega_matrix_table_t s3_table, real_t eps, bool check,
                     bool details, bool verbose, bool timer)
-        : angle_cache_(), S3_TABLE(std::move(s3_table)),
-          eps_(std::move(eps)), check_(check), details_(details),
-          verbose_(verbose), timer_(timer), duration_(0), valid_(true) {}
+        : angle_cache_(), S3_TABLE(std::move(s3_table)), eps_(std::move(eps)),
+          check_(check), details_(details), verbose_(verbose), timer_(timer),
+          duration_(0), valid_(true) {}
 
   public:
     ~GridSynthesizer() {}
