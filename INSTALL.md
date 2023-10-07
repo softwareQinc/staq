@@ -20,7 +20,7 @@ as [Windows](https://www.microsoft.com/en-us/windows).
   [MSVC](https://visualstudio.microsoft.com/vs/)
 
 - Optional, [GNU MP](https://gmplib.org/) library for building the grid synth
-  tools `staq_grid_synth` and `staq_qasm_synth`.
+  tools `staq_grid_synth` and `staq_qasm_synth`
 
 ---
 
