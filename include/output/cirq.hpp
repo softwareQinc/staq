@@ -375,7 +375,7 @@ class CirqOutputter final : public ast::Visitor {
     }
 };
 
-/** \brief Writes an AST in Cirq format to a stdout */
+/** \brief Writes an AST in Cirq format to stdout */
 void output_cirq(ast::Program& prog) {
     CirqOutputter outputter(std::cout);
     outputter.run(prog);
