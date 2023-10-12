@@ -24,6 +24,9 @@ output_cirq
 output_projectq
 output_qsharp
 output_quil
+grid_synth
+qasm_synth
+lattice_surgery
 ```
 Each function takes as input a parsed program, followed by any options supported by the corresponding staq tool.
 ***
