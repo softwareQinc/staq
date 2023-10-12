@@ -89,8 +89,15 @@ int main(int argc, char** argv) {
         random_numbers.seed(rd());
 
         for (const auto& angle : thetas) {
+            real_t gmp_angle;
+            try {
+                gmp_angle = real_t(angle);
+            } catch (std::invalid_argument& e) {
+                std::cerr << "Invalid angle provided: " << angle << std::endl;
+                return EXIT_FAILURE;
+            }
             str_t op_str =
-                synthesizer.get_op_str(real_t(angle) * gmpf::gmp_pi());
+                synthesizer.get_op_str(gmp_angle * gmpf::gmp_pi());
             for (char c : op_str) {
                 std::cout << c << ' ';
             }
