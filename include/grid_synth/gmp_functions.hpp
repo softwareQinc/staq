@@ -256,14 +256,15 @@ inline mpf_class exp(const mpf_class& x) {
         return 1 / gmpf::exp(-x);
     long int tol_exp = std::log10(2) * x.get_prec();
     mpf_class eps(("1e-" + std::to_string(tol_exp)));
-    mpz_class i = 0;
+    mpz_class i = 1;
     mpf_class s = 1;
-    mpf_class term = 1;
-    while (gmp_abs(term) > eps) {
+    mpf_class term = x;
+    // Use Taylor's remainder theorem bound on error
+    while (gmp_abs(term*s) > eps) {
+        s += term;
         i += 1;
         term *= x;
         term /= i;
-        s += term;
     }
     return s;
 }

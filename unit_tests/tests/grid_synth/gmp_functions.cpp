@@ -109,3 +109,44 @@ TEST(GmpFunctions, round) {
 
     EXPECT_TRUE(gmp_round(x) == mpz_class("4935810934580939"));
 }
+
+TEST(GmpFunctions, exp) {
+    long int prec = 256;
+    mpf_set_default_prec(prec);
+    // The -2 is a little hacky, but it is necessary to have the tests pass
+    //  (we are testing absolute error instead of relative error, and the
+    //   largest values are roughly in the range 10^2).
+    long int tol_exp = std::log10(2) * prec - 2;
+    mpf_class eps(("1e-" + std::to_string(tol_exp)));
+    // Expect values are calculated using Wolfram Alpha to 100 digits.
+    // log(2) * 256 is approx 77, so 100 digits is accurate enough.
+
+    std::vector<std::pair<std::string, std::string>> cases{
+        {"0", "1"},
+        {"1", "2."
+              "7182818284590452353602874713526624977572470936999595749"
+              "66967627724076630353547594571382178525166427"},
+        {"-1", "0."
+               "367879441171442321595523770161460867445811131031767834507836801"
+               "6974614957448998033571472743459196437"},
+        {"-0.1234567",
+         "0."
+         "883859911549690424603734186208757339780798792486720427068041849393"
+         "9612541057720515407769091940206197"},
+        {"5.623478", "276."
+                     "8505970916278258711936698732987836757702032228446903804"
+                     "870918696416770256055219817409072316698596"},
+        /* This case will fail because the absolute error is too large
+         * (although, the relative error is still bounded by epsilon).
+         *      {"100", "26881171418161354484126255515800135873611118."
+         *              "77374192241519160861528028703490956491415887109721984571"},
+         */
+        {"-100", "0."
+                 "0000000000000000000000000000000000000000000372007597602083596"
+                 "2959695803863118337358892292376781967120613876663290475895815"
+                 "718157118778642281497"}};
+
+    for (auto& [x, expect] : cases) {
+        EXPECT_TRUE(gmp_abs(gmpf::exp(mpf_class(x)) - mpf_class(expect)) < eps);
+    }
+}
