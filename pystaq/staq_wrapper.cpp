@@ -326,7 +326,8 @@ PYBIND11_MODULE(pystaq, m) {
           py::arg("inline_stdlib") = false, py::arg("ancilla_name") = "anc");
     m.def("map", &map,
           "Map circuit to a physical device. The device connectivity "
-          "specification must be loaded from the file 'device_json_file'.",
+          "specification must be loaded from the file 'device_json_file'; if "
+          "absent/None (default), assumes full connectivity.",
           py::arg("prog"), py::arg("layout") = "linear",
           py::arg("mapper") = "swap", py::arg("evaluate_all") = false,
           py::arg("device_json_file") = std::nullopt);
