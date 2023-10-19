@@ -93,15 +93,15 @@ class Program {
     }
     void map(const std::string& layout = "linear",
              const std::string& mapper = "swap", bool evaluate_all = false,
-             const std::string& device_json = "") {
+             std::optional<std::string> device_json_file = std::nullopt) {
         using namespace staq;
         // Inline fully first
         transformations::inline_ast(*prog_, {false, {}, "anc"});
 
         // Physical device
         mapping::Device dev;
-        if (!device_json.empty()) {
-            dev = mapping::parse_json(device_json);
+        if (device_json_file.has_value()) {
+            dev = mapping::parse_json(device_json_file.value());
         } else {
             dev = mapping::fully_connected(tools::estimate_qubits(*prog_));
         }
@@ -212,8 +212,8 @@ void inline_prog(Program& prog, bool clear_decls, bool inline_stdlib,
     prog.inline_prog(clear_decls, inline_stdlib, ancilla_name);
 }
 void map(Program& prog, const std::string& layout, const std::string& mapper,
-         bool evaluate_all, const std::string& device_json) {
-    prog.map(layout, mapper, evaluate_all, device_json);
+         bool evaluate_all, std::optional<std::string> device_json_file) {
+    prog.map(layout, mapper, evaluate_all, device_json_file);
 }
 void rotation_fold(Program& prog, bool no_correction) {
     prog.rotation_fold(no_correction);
@@ -324,9 +324,12 @@ PYBIND11_MODULE(pystaq, m) {
     m.def("inline", &inline_prog, "Inline the OpenQASM source code",
           py::arg("prog"), py::arg("clear_decls") = false,
           py::arg("inline_stdlib") = false, py::arg("ancilla_name") = "anc");
-    m.def("map", &map, "Map circuit to a physical device", py::arg("prog"),
-          py::arg("layout") = "linear", py::arg("mapper") = "swap",
-          py::arg("evaluate_all") = false, py::arg("device_json") = "");
+    m.def("map", &map,
+          "Map circuit to a physical device. The device connectivity "
+          "specification must be loaded from the file 'device_json_file'.",
+          py::arg("prog"), py::arg("layout") = "linear",
+          py::arg("mapper") = "swap", py::arg("evaluate_all") = false,
+          py::arg("device_json_file") = std::nullopt);
     m.def("rotation_fold", &rotation_fold,
           "Reduce the number of small-angle rotation gates in all Pauli bases",
           py::arg("prog"), py::arg("no_correction") = false);
