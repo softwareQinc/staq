@@ -26,9 +26,18 @@
 
 #include <CLI/CLI.hpp>
 
+#include "mapping/device.hpp"
+#include "mapping/layout/basic.hpp"
 #include "output/ionq.hpp"
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
+#include "transformations/expression_simplifier.hpp"
+#include "transformations/inline.hpp"
+#include "transformations/replace_ugate.hpp"
+
+static const std::set<std::string_view> ionq_overrides{
+    "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",
+    "ry", "rz", "cz", "cy", "swap", "cx",  "u1", "ch",  "crz"};
 
 int main(int argc, char** argv) {
     using namespace staq;
@@ -42,11 +51,29 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
     auto program = parse_stdin();
-    // require: format of program
-    // decl
-    // gates
+
     if (program) {
         transformations::desugar(*program);
+
+        // Flatten qregs into one global qreg.
+        // IonQ Simulator has 29 qubits;
+        //  the other IonQ devices have less than 29 qubits.
+        // For now let's set a cap of 11 qubits; change this later.
+        auto device = mapping::fully_connected(11);
+        auto layout = mapping::compute_basic_layout(device, *program);
+        mapping::apply_layout(layout, device, *program);
+
+        // Inline declared gates
+        transformations::Inliner::config params{false, ionq_overrides};
+        transformations::inline_ast(*program, params);
+
+        // Evaluate expressions
+        // TODO: Handle multiples of pi nicely
+        transformations::expr_simplify(*program, true);
+
+        // Replace U gates
+        transformations::replace_ugates(*program);
+
         if (filename.empty())
             output::output_ionq(*program);
         else
