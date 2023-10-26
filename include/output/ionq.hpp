@@ -148,7 +148,7 @@ class IonQOutputter final : public ast::Visitor {
             // TODO: assert that this is a rotation gate
             // TODO: Handle multiples of pi nicely
             os_ << prefix_ << "\"angle\": " << std::fixed
-                << gate.carg(0).constant_eval().value() / M_PI << ",\n";
+                << gate.carg(0).constant_eval().value() / qasmtools::utils::pi << ",\n";
         }
 
         os_ << prefix_ << "\"gate\": \"" << name << "\"\n"; // no comma

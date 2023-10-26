@@ -51,8 +51,8 @@ namespace ast = qasmtools::ast;
  */
 void replace_ugates(ast::ASTNode& node);
 
-static const double pi = M_PI;
-static const double EPS = 1e-9;
+static constexpr double pi = qasmtools::utils::pi;
+static constexpr double EPS = 1e-9;
 
 struct UArgs {
     double theta;
