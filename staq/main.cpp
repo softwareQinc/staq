@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
                 break;
             case Pass::inln:
                 transformations::inline_ast(
-                    *prog, {false, transformations::default_overrides, "anc"});
+                    *prog, {true, transformations::default_overrides, "anc"});
                 break;
             case Pass::synth:
                 transformations::synthesize_oracles(*prog);
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
                 mapped = true;
 
                 /* Inline fully first */
-                transformations::inline_ast(*prog, {false, {}, "anc"});
+                transformations::inline_ast(*prog, {true, {}, "anc"});
 
                 /* Device */
                 if (!(*device_opt)) {
