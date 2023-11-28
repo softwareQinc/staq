@@ -7,12 +7,12 @@ import ctypes as ct  # to call native
 import ctypes.util as ctu
 import platform  # to learn the OS we're on
 
-extra_compile_args = ["-Ilibs", "-Iinclude", "-Iqasmtools/include"]
+extra_compile_args = ["-Ithird_party", "-Iinclude", "-Iqasmtools/include"]
 extra_links_args = []
 
 
 def _load_shared_obj(name):
-    """Attempts to load native OQS library."""
+    """Attempts to load shared library."""
     paths = []
 
     # search typical locations
