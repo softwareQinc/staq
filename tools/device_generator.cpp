@@ -26,7 +26,7 @@
 
 #include <tuple>
 
-#include <CLI/CLI.hpp>
+#include <libs/CLI/CLI.hpp>
 
 #include "mapping/device.hpp"
 

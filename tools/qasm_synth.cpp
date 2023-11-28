@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-#include <CLI/CLI.hpp>
+#include <libs/CLI/CLI.hpp>
 
 #include "grid_synth/gmp_functions.hpp"
 #include "grid_synth/types.hpp"

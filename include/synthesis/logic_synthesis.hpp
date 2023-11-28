@@ -32,17 +32,17 @@
 #ifndef SYNTHESIS_LOGICSYNTHESIS_HPP_
 #define SYNTHESIS_LOGICSYNTHESIS_HPP_
 
-#define FMT_HEADER_ONLY = true
-
-#include <caterpillar/synthesis/lhrs.hpp>
-#include <caterpillar/synthesis/strategies/bennett_mapping_strategy.hpp>
-#include <caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
-#include <lorina/lorina.hpp>
-#include <mockturtle/mockturtle.hpp>
-#include <tweedledum/tweedledum.hpp>
+#define FMT_HEADER_ONLY true
 
 #include <fstream>
 #include <unordered_map>
+
+#include <libs/caterpillar/synthesis/lhrs.hpp>
+#include <libs/caterpillar/synthesis/strategies/bennett_mapping_strategy.hpp>
+#include <libs/caterpillar/synthesis/strategies/eager_mapping_strategy.hpp>
+#include <libs/lorina/lorina.hpp>
+#include <libs/mockturtle/mockturtle.hpp>
+#include <libs/tweedledum/tweedledum.hpp>
 
 #include "qasmtools/ast/stmt.hpp"
 #include "qasmtools/parser/position.hpp"

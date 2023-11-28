@@ -38,12 +38,13 @@
 #include <iostream>
 #include <limits>
 #include <list>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <queue>
 #include <set>
 #include <unordered_map>
 #include <vector>
+
+#include <libs/nlohmann/json.hpp>
 
 #include "qasmtools/ast/var.hpp"
 

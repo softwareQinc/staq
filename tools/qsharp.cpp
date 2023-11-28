@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
+#include <libs/CLI/CLI.hpp>
 
 #include "output/qsharp.hpp"
 #include "qasmtools/parser/parser.hpp"

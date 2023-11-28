@@ -29,7 +29,7 @@
 #include <iostream>
 #include <vector>
 
-#include <CLI/CLI.hpp>
+#include <libs/CLI/CLI.hpp>
 
 #include "grid_synth/exact_synthesis.hpp"
 #include "grid_synth/grid_synth.hpp"

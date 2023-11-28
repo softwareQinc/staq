@@ -19,7 +19,7 @@ add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
 #### Force clang to use libc++
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    add_compile_options("-stdlib=libc++")
 endif ()
 
 #### Windows issues with Microsoft Visual Studio
@@ -38,15 +38,21 @@ if (MINGW OR CYGWIN)
 endif ()
 
 #### Libs
-include_directories(SYSTEM libs)
+include_directories(SYSTEM third_party/libs)
 
 #### staq headers
 add_library(libstaq INTERFACE)
 target_include_directories(libstaq INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+        $<INSTALL_INTERFACE:include/>)
 #### qasmtools library
 target_include_directories(libstaq INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/qasmtools/include/>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/qasmtools/include/>
+        $<INSTALL_INTERFACE:include/staq/>)
+#### 3rd party libs
+target_include_directories(libstaq INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/>
+        $<INSTALL_INTERFACE:include/staq/libs/>)
 
 #### Enable OpenQASM 2.0 Specs
 option(USE_OPENQASM2_SPECS "Use OpenQASM 2.0 standard instead of Qiskit gate specifications" OFF)
@@ -83,8 +89,22 @@ if (NOT CMAKE_BUILD_TYPE)
             FORCE)
 endif ()
 
-#### Installation
+#### Installation (binaries)
 install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+#### Installation (source)
+set(STAQ_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}")
+install(DIRECTORY include/ DESTINATION ${STAQ_INSTALL_DIR})
+install(DIRECTORY qasmtools/include/ DESTINATION ${STAQ_INSTALL_DIR})
+install(DIRECTORY third_party/libs/ DESTINATION ${STAQ_INSTALL_DIR}/libs)
+install(TARGETS libstaq EXPORT staq_targets)
+install(EXPORT staq_targets DESTINATION "lib/cmake/${PROJECT_NAME}")
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+        "cmake/staqConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake"
+        INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
 
 #### Uninstall
 #### https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
@@ -98,6 +118,8 @@ if (NOT TARGET uninstall)
     if (NOT MSVC)
         add_custom_target(uninstall
                 COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory "${STAQ_INSTALL_DIR}"
         )
     else ()
         add_custom_target(uninstall
