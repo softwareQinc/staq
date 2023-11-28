@@ -4,11 +4,11 @@ add_custom_target(tools COMMENT "Build all binary tools.")
 
 set(BUILD_GRID_SYNTH OFF)
 if (MSVC)
-    # gmp, gmpxx
     find_package(PkgConfig)
     if (PkgConfig_FOUND)
-        pkg_search_module(gmp)
-        pkg_search_module(gmpxx)
+        # gmp, gmpxx
+        pkg_search_module(GMP gmp)
+        pkg_search_module(GMPXX gmpxx)
         if (GMP_FOUND)
             set(BUILD_GRID_SYNTH ON)
             add_compile_options("-DEXPR_GMP")
