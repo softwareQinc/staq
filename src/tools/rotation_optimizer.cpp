@@ -24,42 +24,28 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
+#include "optimization/rotation_folding.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "tools/resource_estimator.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
-    using namespace qasmtools;
+    using qasmtools::parser::parse_stdin;
 
-    bool unbox_qelib = false;
-    bool box_gates = false;
-    bool no_merge_dagger = false;
+    bool no_correction = false;
 
-    CLI::App app{"QASM resource estimator"};
+    CLI::App app{"QASM rotation optimizer"};
 
-    app.add_flag("--box-gates", box_gates,
-                 "Treat gate declarations as atomic gates");
-    app.add_flag("--unbox-qelib", unbox_qelib,
-                 "Unboxes standard library gates");
-    app.add_flag("--no-merge-dagger", no_merge_dagger,
-                 "Counts gates and their inverses separately");
+    app.add_flag("--no-phase-correction", no_correction,
+                 "Turns off global phase corrections");
 
     CLI11_PARSE(app, argc, argv);
 
-    auto program = parser::parse_stdin();
+    auto program = parse_stdin();
     if (program) {
-
-        std::set<std::string_view> overrides =
-            unbox_qelib ? std::set<std::string_view>() : ast::qelib_defs;
-        auto count = tools::estimate_resources(
-            *program, {!box_gates, !no_merge_dagger, overrides});
-
-        std::cout << "Resources used:\n";
-        for (auto& [name, num] : count) {
-            std::cout << "  " << name << ": " << num << "\n";
-        }
+        optimization::fold_rotations(*program, {!no_correction});
+        std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
     }

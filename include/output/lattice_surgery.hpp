@@ -35,9 +35,10 @@
 #include <algorithm>
 #include <complex>
 #include <map>
-#include <nlohmann/json.hpp>
 #include <set>
 #include <typeinfo>
+
+#include <nlohmann/json.hpp>
 
 #include "qasmtools/ast/ast.hpp"
 #include "qasmtools/utils/angle.hpp"

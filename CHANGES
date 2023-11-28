@@ -1,3 +1,11 @@
+Pre-release
+    - `cmake --build build --target install` now installs staq's source code in
+      addition to the binaries
+    - Renamed the "examples" directory to "misc"
+    - Moved "qpu_specs" and "scripts" directories to "misc"
+    - Added standalone source code example (requires staq installation) in the
+      "examples/standalone" directory
+
 Version 3.3
     - Implemented the  grid synth rotation synthesizer algorithm
       https://arxiv.org/abs/1403.2975, enabled only when the GNU MP library is
@@ -6,7 +14,7 @@ Version 3.3
 
 Version 3.2.3 - 14 August 2023
     - Minor bugfix in pystaq setup.py that prevented pip install from remote
-    - Docker update, see the ["docker/"] directory
+    - Docker update, see the ["docker"] directory
 
 Version 3.2.2 - 12 June 2023
     - This is a maintenance release

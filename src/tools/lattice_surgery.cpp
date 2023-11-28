@@ -24,30 +24,39 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/projectq.hpp"
+#include "output/lattice_surgery.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    std::string filename = "";
+    std::string output{};
+    bool skip_clifford = false;
+    bool skip_litinski = false;
+    bool skip_reduce = false;
 
-    CLI::App app{"QASM to projectQ transpiler"};
+    CLI::App app{"QASM to lattice surgery instruction compiler"};
 
-    app.add_option("-o,--output", filename, "Output to a file");
+    app.add_option("-o,--output", output, "Output to a file");
+    app.add_flag("-C,--skip-clifford", skip_clifford,
+                 "Skip Clifford operations");
+    app.add_flag("-L,--skip-litinski", skip_litinski,
+                 "Skip Litinski's transform");
+    app.add_flag("-R,--skip-reduce", skip_reduce, "Skip reducing transform");
 
     CLI11_PARSE(app, argc, argv);
     auto program = parse_stdin();
     if (program) {
-        transformations::desugar(*program);
-        if (filename.empty())
-            output::output_projectq(*program);
-        else
-            output::write_projectq(*program, filename);
+        if (output.empty()) {
+            output::output_lattice_surgery(*program, skip_clifford,
+                                           skip_litinski, skip_reduce);
+        } else {
+            output::write_lattice_surgery(*program, output, skip_clifford,
+                                          skip_litinski, skip_reduce);
+        }
     } else {
         std::cerr << "Parsing failed\n";
     }

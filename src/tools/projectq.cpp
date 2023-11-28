@@ -24,9 +24,9 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/quil.hpp"
+#include "output/projectq.hpp"
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 
     std::string filename = "";
 
-    CLI::App app{"QASM to QUIL transpiler"};
+    CLI::App app{"QASM to projectQ transpiler"};
 
     app.add_option("-o,--output", filename, "Output to a file");
 
@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
     if (program) {
         transformations::desugar(*program);
         if (filename.empty())
-            output::output_quil(*program);
+            output::output_projectq(*program);
         else
-            output::write_quil(*program, filename);
+            output::write_projectq(*program, filename);
     } else {
         std::cerr << "Parsing failed\n";
     }

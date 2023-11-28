@@ -24,9 +24,9 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/qsharp.hpp"
+#include "output/cirq.hpp"
 #include "qasmtools/parser/parser.hpp"
 #include "transformations/desugar.hpp"
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 
     std::string filename = "";
 
-    CLI::App app{"QASM to Q# transpiler"};
+    CLI::App app{"QASM to cirq transpiler"};
 
     app.add_option("-o,--output", filename, "Output to a file");
 
@@ -44,10 +44,10 @@ int main(int argc, char** argv) {
     auto program = parse_stdin();
     if (program) {
         transformations::desugar(*program);
-        if (filename.empty())
-            output::output_qsharp(*program);
+        if (filename == "")
+            output::output_cirq(*program);
         else
-            output::write_qsharp(*program, filename);
+            output::write_cirq(*program, filename);
     } else {
         std::cerr << "Parsing failed\n";
     }

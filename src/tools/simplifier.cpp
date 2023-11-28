@@ -24,39 +24,30 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/lattice_surgery.hpp"
+#include "optimization/simplify.hpp"
 #include "qasmtools/parser/parser.hpp"
+#include "transformations/expression_simplifier.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    std::string output{};
-    bool skip_clifford = false;
-    bool skip_litinski = false;
-    bool skip_reduce = false;
+    bool no_fixpoint = false;
 
-    CLI::App app{"QASM to lattice surgery instruction compiler"};
+    CLI::App app{"QASM simplifier"};
 
-    app.add_option("-o,--output", output, "Output to a file");
-    app.add_flag("-C,--skip-clifford", skip_clifford,
-                 "Skip Clifford operations");
-    app.add_flag("-L,--skip-litinski", skip_litinski,
-                 "Skip Litinski's transform");
-    app.add_flag("-R,--skip-reduce", skip_reduce, "Skip reducing transform");
+    app.add_flag("--no-fixpoint", no_fixpoint,
+                 "Stops the simplifier after one iteration");
 
     CLI11_PARSE(app, argc, argv);
+
     auto program = parse_stdin();
     if (program) {
-        if (output.empty()) {
-            output::output_lattice_surgery(*program, skip_clifford,
-                                           skip_litinski, skip_reduce);
-        } else {
-            output::write_lattice_surgery(*program, output, skip_clifford,
-                                          skip_litinski, skip_reduce);
-        }
+        transformations::expr_simplify(*program);
+        optimization::simplify(*program, {!no_fixpoint});
+        std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
     }

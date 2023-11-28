@@ -70,7 +70,7 @@ TEST(Device, Shortest_Path) {
 /******************************************************************************/
 TEST(Device, Shortest_Path_tokyo) {
     mapping::Device test =
-        mapping::parse_json(PROJECT_ROOT_DIR "/qpus/ibm_tokyo.json");
+        mapping::parse_json(PROJECT_ROOT_DIR "/misc/qpu_specs/ibm_tokyo.json");
 
     EXPECT_TRUE(test.coupled(8, 7));
     EXPECT_TRUE(test.coupled(7, 6));
