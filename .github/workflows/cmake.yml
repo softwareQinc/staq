@@ -77,9 +77,9 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            ./examples/standalone/build/${{env.BUILD_TYPE}}/standalone.exe
+            ./examples/standalone/build/${{env.BUILD_TYPE}}/standalone.exe --version
           else
-            ./examples/standalone/build/standalone
+            ./examples/standalone/build/standalone --version
           fi
 
       - name: Build unit tests
