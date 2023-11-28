@@ -26,7 +26,7 @@
 
 #include <sstream>
 
-#include <CLI/CLI.hpp>
+#include <libs/CLI/CLI.hpp>
 
 #include "qasmtools/parser/parser.hpp"
 
