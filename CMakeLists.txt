@@ -24,7 +24,7 @@ endif ()
 
 #### Windows issues with Microsoft Visual Studio
 if (MSVC)
-    include_directories(SYSTEM libs/pthreadwin32)
+    include_directories(SYSTEM third_party/libs/pthreadwin32)
     add_compile_options(-bigobj)
     add_compile_definitions(NOMINMAX)
     if (MSVC_VERSION GREATER_EQUAL 1914)
