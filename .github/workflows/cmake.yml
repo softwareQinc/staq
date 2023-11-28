@@ -20,12 +20,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install vcpkg (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install pkgconf:x64-windows
+
       - name: Install gmp
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            git clone https://github.com/microsoft/vcpkg
-            ./vcpkg/bootstrap-vcpkg.bat
             ./vcpkg/vcpkg install pkgconf:x64-windows
           elif [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get install -y libgmp-dev
