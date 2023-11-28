@@ -431,7 +431,7 @@ class ProjectQOutputter final : public ast::Visitor {
     }
 };
 
-/** \brief Writes an AST in ProjectQ format to a stdout */
+/** \brief Writes an AST in ProjectQ format to stdout */
 void output_projectq(ast::Program& prog) {
     ProjectQOutputter outputter(std::cout);
     outputter.run(prog);

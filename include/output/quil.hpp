@@ -340,7 +340,7 @@ class QuilOutputter final : public ast::Visitor {
     std::unordered_map<ast::symbol, std::pair<int, int>> globals_{};
 };
 
-/** \brief Writes an AST in Quil format to a stdout */
+/** \brief Writes an AST in Quil format to stdout */
 void output_quil(ast::Program& prog) {
     QuilOutputter outputter(std::cout);
     outputter.run(prog);
