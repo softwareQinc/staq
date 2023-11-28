@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
 #include "qasmtools/parser/parser.hpp"
 #include "tools/qubit_estimator.hpp"

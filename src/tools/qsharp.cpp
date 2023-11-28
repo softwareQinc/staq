@@ -24,30 +24,30 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "optimization/simplify.hpp"
+#include "output/qsharp.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/expression_simplifier.hpp"
+#include "transformations/desugar.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    bool no_fixpoint = false;
+    std::string filename = "";
 
-    CLI::App app{"QASM simplifier"};
+    CLI::App app{"QASM to Q# transpiler"};
 
-    app.add_flag("--no-fixpoint", no_fixpoint,
-                 "Stops the simplifier after one iteration");
+    app.add_option("-o,--output", filename, "Output to a file");
 
     CLI11_PARSE(app, argc, argv);
-
     auto program = parse_stdin();
     if (program) {
-        transformations::expr_simplify(*program);
-        optimization::simplify(*program, {!no_fixpoint});
-        std::cout << *program;
+        transformations::desugar(*program);
+        if (filename.empty())
+            output::output_qsharp(*program);
+        else
+            output::write_qsharp(*program, filename);
     } else {
         std::cerr << "Parsing failed\n";
     }

@@ -38,10 +38,12 @@ if (MINGW OR CYGWIN)
 endif ()
 
 #### Libs
-include_directories(SYSTEM third_party/libs)
+include_directories(SYSTEM libs/third_party)
 
 #### staq headers
 add_library(libstaq INTERFACE)
+target_compile_definitions(libstaq INTERFACE -DSTAQ_VERSION_NUM=${STAQ_VERSION_NUM})
+target_compile_definitions(libstaq INTERFACE -DSTAQ_VERSION_STR="${STAQ_VERSION_STR}")
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
         $<INSTALL_INTERFACE:include/>)
@@ -51,8 +53,8 @@ target_include_directories(libstaq INTERFACE
         $<INSTALL_INTERFACE:include/staq/>)
 #### 3rd party libs
 target_include_directories(libstaq INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/>
-        $<INSTALL_INTERFACE:include/staq/libs/>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>
+        $<INSTALL_INTERFACE:include/staq/third_party>)
 
 #### Enable OpenQASM 2.0 Specs
 option(USE_OPENQASM2_SPECS "Use OpenQASM 2.0 standard instead of Qiskit gate specifications" OFF)
@@ -66,11 +68,11 @@ endif ()
 
 #### Compiler
 set(COMPILER "staq")
-add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/staq/main.cpp)
+add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/src/staq/main.cpp)
 target_link_libraries(${COMPILER} PUBLIC libstaq)
 
 #### Additional command line tools
-add_subdirectory(tools)
+add_subdirectory(src/tools)
 
 #### Unit testing
 include(cmake/staq_unit_tests.cmake)
@@ -96,7 +98,7 @@ install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
 set(STAQ_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}")
 install(DIRECTORY include/ DESTINATION ${STAQ_INSTALL_DIR})
 install(DIRECTORY qasmtools/include/ DESTINATION ${STAQ_INSTALL_DIR})
-install(DIRECTORY third_party/libs/ DESTINATION ${STAQ_INSTALL_DIR}/libs)
+install(DIRECTORY libs/third_party DESTINATION ${STAQ_INSTALL_DIR})
 install(TARGETS libstaq EXPORT staq_targets)
 install(EXPORT staq_targets DESTINATION "lib/cmake/${PROJECT_NAME}")
 include(CMakePackageConfigHelpers)

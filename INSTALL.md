@@ -87,6 +87,26 @@ or in an Administrator Command Prompt (Windows)
 cmake --build build --target (un)install
 ```
 
+staq's source code will be installed in `/usr/local/include/staq`
+(UNIX/UNIX-like systems), or in `C:\Program Files (x86)\staq` on Windows
+systems. The paths may differ on your system. To use staq's sources, precede all
+include paths by `staq`, i.e.,
+
+```c++
+#include <staq/qasmtools/parser/parser.hpp>
+```
+
+Third party header-only libraries will need to be preceded by `third_party` when
+including their corresponding header file, i.e.,
+
+```c++
+#include <staq/third_party/CLI/CLI.hpp>
+```
+
+See the
+[standalone example](https://github.com/softwareQinc/staq/tree/main/examples/standalone)
+for more details.
+
 ---
 
 ## macOS/Linux

@@ -24,30 +24,37 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/projectq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+#include "transformations/inline.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    std::string filename = "";
+    bool clear_decls = false;
+    bool inline_stdlib = false;
+    std::string ancilla_name = "anc";
 
-    CLI::App app{"QASM to projectQ transpiler"};
+    CLI::App app{"QASM inliner"};
 
-    app.add_option("-o,--output", filename, "Output to a file");
+    app.add_flag("--clear-decls", clear_decls, "Remove gate declarations");
+    app.add_flag("--inline-stdlib", inline_stdlib,
+                 "Inline qelib1.inc declarations as well");
+    app.add_option("--ancilla-name", ancilla_name,
+                   "Name of the global ancilla register, if applicable");
 
     CLI11_PARSE(app, argc, argv);
+
     auto program = parse_stdin();
     if (program) {
-        transformations::desugar(*program);
-        if (filename.empty())
-            output::output_projectq(*program);
-        else
-            output::write_projectq(*program, filename);
+        std::set<std::string_view> overrides =
+            inline_stdlib ? std::set<std::string_view>()
+                          : transformations::default_overrides;
+        transformations::inline_ast(*program,
+                                    {!clear_decls, overrides, ancilla_name});
+        std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
     }

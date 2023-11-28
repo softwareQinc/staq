@@ -24,30 +24,30 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/cirq.hpp"
+#include "optimization/simplify.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+#include "transformations/expression_simplifier.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    std::string filename = "";
+    bool no_fixpoint = false;
 
-    CLI::App app{"QASM to cirq transpiler"};
+    CLI::App app{"QASM simplifier"};
 
-    app.add_option("-o,--output", filename, "Output to a file");
+    app.add_flag("--no-fixpoint", no_fixpoint,
+                 "Stops the simplifier after one iteration");
 
     CLI11_PARSE(app, argc, argv);
+
     auto program = parse_stdin();
     if (program) {
-        transformations::desugar(*program);
-        if (filename == "")
-            output::output_cirq(*program);
-        else
-            output::write_cirq(*program, filename);
+        transformations::expr_simplify(*program);
+        optimization::simplify(*program, {!no_fixpoint});
+        std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
     }

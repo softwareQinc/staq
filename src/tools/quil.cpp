@@ -24,28 +24,30 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "optimization/rotation_folding.hpp"
+#include "output/quil.hpp"
 #include "qasmtools/parser/parser.hpp"
+#include "transformations/desugar.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    bool no_correction = false;
+    std::string filename = "";
 
-    CLI::App app{"QASM rotation optimizer"};
+    CLI::App app{"QASM to QUIL transpiler"};
 
-    app.add_flag("--no-phase-correction", no_correction,
-                 "Turns off global phase corrections");
+    app.add_option("-o,--output", filename, "Output to a file");
 
     CLI11_PARSE(app, argc, argv);
-
     auto program = parse_stdin();
     if (program) {
-        optimization::fold_rotations(*program, {!no_correction});
-        std::cout << *program;
+        transformations::desugar(*program);
+        if (filename.empty())
+            output::output_quil(*program);
+        else
+            output::write_quil(*program, filename);
     } else {
         std::cerr << "Parsing failed\n";
     }

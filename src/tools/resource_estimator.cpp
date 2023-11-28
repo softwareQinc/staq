@@ -24,30 +24,42 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "output/qsharp.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+#include "tools/resource_estimator.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
-    using qasmtools::parser::parse_stdin;
+    using namespace qasmtools;
 
-    std::string filename = "";
+    bool unbox_qelib = false;
+    bool box_gates = false;
+    bool no_merge_dagger = false;
 
-    CLI::App app{"QASM to Q# transpiler"};
+    CLI::App app{"QASM resource estimator"};
 
-    app.add_option("-o,--output", filename, "Output to a file");
+    app.add_flag("--box-gates", box_gates,
+                 "Treat gate declarations as atomic gates");
+    app.add_flag("--unbox-qelib", unbox_qelib,
+                 "Unboxes standard library gates");
+    app.add_flag("--no-merge-dagger", no_merge_dagger,
+                 "Counts gates and their inverses separately");
 
     CLI11_PARSE(app, argc, argv);
-    auto program = parse_stdin();
+
+    auto program = parser::parse_stdin();
     if (program) {
-        transformations::desugar(*program);
-        if (filename.empty())
-            output::output_qsharp(*program);
-        else
-            output::write_qsharp(*program, filename);
+
+        std::set<std::string_view> overrides =
+            unbox_qelib ? std::set<std::string_view>() : ast::qelib_defs;
+        auto count = tools::estimate_resources(
+            *program, {!box_gates, !no_merge_dagger, overrides});
+
+        std::cout << "Resources used:\n";
+        for (auto& [name, num] : count) {
+            std::cout << "  " << name << ": " << num << "\n";
+        }
     } else {
         std::cerr << "Parsing failed\n";
     }

@@ -24,33 +24,26 @@
  * SOFTWARE.
  */
 
-#include <chrono>
-#include <cstdlib>
 #include <iostream>
-#include <vector>
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
-#include "grid_synth/exact_synthesis.hpp"
-#include "grid_synth/grid_synth.hpp"
-#include "grid_synth/regions.hpp"
-#include "grid_synth/rz_approximation.hpp"
+#include "grid_synth/gmp_functions.hpp"
 #include "grid_synth/types.hpp"
+#include "qasmtools/parser/parser.hpp"
+#include "transformations/qasm_synth.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using namespace grid_synth;
+    using qasmtools::parser::parse_stdin;
 
-    bool check = false, details = false, verbose = false, timer = false;
-    std::vector<std::string> thetas;
+    bool check = false, details = false, verbose = false;
     long int prec;
     int factor_effort;
+    domega_matrix_table_t s3_table;
 
-    CLI::App app{"Grid Synthesis"};
-
-    CLI::Option* thetas_op =
-        app.add_option("theta", thetas, "Z-rotation angle(s) in units of PI")
-            ->required();
+    CLI::App app{"Grid Synthesis rx/ry/rz substitution in OpenQASM 2.0 files"};
 
     CLI::Option* prec_opt =
         app.add_option<long int, int>(
@@ -73,33 +66,19 @@ int main(int argc, char** argv) {
     app.add_flag("-v, --verbose", verbose,
                  "Include additional output during runtime such as runtime "
                  "parameters and update on each step.");
-    app.add_flag("--time", timer, "Time program");
 
     CLI11_PARSE(app, argc, argv);
 
-    if (verbose) {
-        std::cerr << thetas.size() << " angle(s) read." << '\n';
-    }
+    GridSynthOptions opt{prec, factor_effort, check, details, verbose};
 
-    GridSynthOptions opt{prec, factor_effort, check, details, verbose, timer};
-    GridSynthesizer synthesizer = make_synthesizer(opt);
-
-    if (*prec_opt && *thetas_op) {
-        std::random_device rd;
-        random_numbers.seed(rd());
-
-        for (const auto& angle : thetas) {
-            str_t op_str =
-                synthesizer.get_op_str(real_t(angle) * gmpf::gmp_pi());
-            for (char c : op_str) {
-                std::cout << c << ' ';
-            }
-            std::cout << '\n';
-        }
-    }
-
-    if (timer) {
-        std::cerr << std::fixed << "Duration = " << synthesizer.get_duration()
-                  << " seconds" << '\n';
+    // Must initialize constants before parsing stdin using GMP
+    MP_CONSTS = initialize_constants(opt.prec);
+    auto program = parse_stdin("", true);
+    if (program) {
+        transformations::qasm_synth(*program, opt);
+        std::cout << *program;
+    } else {
+        std::cerr << "Parsing failed\n";
+        return EXIT_FAILURE;
     }
 }

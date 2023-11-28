@@ -38,7 +38,7 @@
 #include <set>
 #include <typeinfo>
 
-#include <libs/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "qasmtools/ast/ast.hpp"
 #include "qasmtools/utils/angle.hpp"

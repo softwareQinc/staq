@@ -24,37 +24,30 @@
  * SOFTWARE.
  */
 
-#include <libs/CLI/CLI.hpp>
+#include <third_party/CLI/CLI.hpp>
 
+#include "output/cirq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/inline.hpp"
+#include "transformations/desugar.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    bool clear_decls = false;
-    bool inline_stdlib = false;
-    std::string ancilla_name = "anc";
+    std::string filename = "";
 
-    CLI::App app{"QASM inliner"};
+    CLI::App app{"QASM to cirq transpiler"};
 
-    app.add_flag("--clear-decls", clear_decls, "Remove gate declarations");
-    app.add_flag("--inline-stdlib", inline_stdlib,
-                 "Inline qelib1.inc declarations as well");
-    app.add_option("--ancilla-name", ancilla_name,
-                   "Name of the global ancilla register, if applicable");
+    app.add_option("-o,--output", filename, "Output to a file");
 
     CLI11_PARSE(app, argc, argv);
-
     auto program = parse_stdin();
     if (program) {
-        std::set<std::string_view> overrides =
-            inline_stdlib ? std::set<std::string_view>()
-                          : transformations::default_overrides;
-        transformations::inline_ast(*program,
-                                    {!clear_decls, overrides, ancilla_name});
-        std::cout << *program;
+        transformations::desugar(*program);
+        if (filename == "")
+            output::output_cirq(*program);
+        else
+            output::write_cirq(*program, filename);
     } else {
         std::cerr << "Parsing failed\n";
     }

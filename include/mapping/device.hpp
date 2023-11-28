@@ -44,7 +44,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <libs/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include "qasmtools/ast/var.hpp"
 
