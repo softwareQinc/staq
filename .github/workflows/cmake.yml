@@ -41,11 +41,9 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-              -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
-              -DBUILD_GRID_SYNTH=ON
+              -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
           else
-            cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-              -DBUILD_GRID_SYNTH=ON
+            cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           fi
 
       - name: Build staq
