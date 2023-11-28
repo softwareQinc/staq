@@ -1,5 +1,6 @@
 Pre-release
-    - Source code is now installing when `cmake --build build --target install`
+    - `cmake --build build --target install` now installs staq's source code in
+      addition to the binaries
     - Renamed the "examples" directory to "misc"
     - Moved "qpu_specs" and "scripts" directories to "misc"
     - Added standalone source code example (requires staq installation) in the
