@@ -20,21 +20,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-#      - name: Install gmp
-#        shell: bash
-#        run: |
-#          if [ "$RUNNER_OS" == "Windows" ]; then
-#            git clone https://github.com/microsoft/vcpkg
-#            ./vcpkg/bootstrap-vcpkg.bat
+      - name: Install gmp
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            git clone https://github.com/microsoft/vcpkg
+            ./vcpkg/bootstrap-vcpkg.bat
 #            ./vcpkg/vcpkg install pkgconf:x64-windows gmp:x64-windows
-#          elif [ "$RUNNER_OS" == "Linux" ]; then
-#            sudo apt-get install -y libgmp-dev
-#          elif [ "$RUNNER_OS" == "macOS" ]; then
-#            brew install gmp
-#          else
-#            echo "$RUNNER_OS not supported"
-#            exit 1
-#          fi
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get install -y libgmp-dev
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install gmp
+          else
+            echo "$RUNNER_OS not supported"
+            exit 1
+          fi
 
       - name: Configure staq
         shell: bash
