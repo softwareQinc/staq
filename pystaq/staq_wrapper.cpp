@@ -28,10 +28,10 @@
 #define NOMINMAX
 #endif
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
 #include <sstream>
+
+#include <libs/pybind11/pybind11.h>
+#include <libs/pybind11/stl.h>
 
 #include "qasmtools/parser/parser.hpp"
 
