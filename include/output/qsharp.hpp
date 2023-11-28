@@ -372,7 +372,7 @@ class QSharpOutputter final : public ast::Visitor {
     bool ambiguous_ = false;
 };
 
-/** \brief Writes an AST in Q# format to a stdout */
+/** \brief Writes an AST in Q# format to stdout */
 void output_qsharp(ast::Program& prog) {
     QSharpOutputter outputter(std::cout);
     outputter.run(prog);
