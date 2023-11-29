@@ -1,5 +1,6 @@
 #### Windows issues with Microsoft Visual Studio
 if (MSVC)
+    message(STATUS "MSVC -- including the cmake")
     include_directories(SYSTEM third_party/pthreadwin32)
     add_compile_options(-bigobj)
     add_compile_definitions(NOMINMAX)

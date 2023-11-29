@@ -107,7 +107,7 @@ configure_package_config_file(
         INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
 )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
-install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_windows.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
 
 #### Uninstall
 #### https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
