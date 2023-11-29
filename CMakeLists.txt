@@ -22,6 +22,16 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options("-stdlib=libc++")
 endif ()
 
+#### Windows issues with Microsoft Visual Studio
+if (MSVC)
+    include_directories(SYSTEM libs/third_party/pthreadwin32)
+    add_compile_options(-bigobj)
+    add_compile_definitions(NOMINMAX)
+    if (MSVC_VERSION GREATER_EQUAL 1914)
+        add_compile_options("/Zc:__cplusplus")
+    endif ()
+endif ()
+
 #### MinGW or Cygwin have issues with object files that are too large
 if (MINGW OR CYGWIN)
     add_compile_options("-Wa,-mbig-obj")
@@ -45,17 +55,6 @@ target_include_directories(libstaq INTERFACE
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>
         $<INSTALL_INTERFACE:include/staq/third_party>)
-#### Windows issues with Microsoft Visual Studio
-if (MSVC)
-    target_include_directories(libstaq INTERFACE
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/third_party/pthread32>
-            $<INSTALL_INTERFACE:include/staq/third_party/>)
-    add_compile_options(-bigobj)
-    add_compile_definitions(NOMINMAX)
-    if (MSVC_VERSION GREATER_EQUAL 1914)
-        add_compile_options("/Zc:__cplusplus")
-    endif ()
-endif ()
 
 #### Enable OpenQASM 2.0 Specs
 option(USE_OPENQASM2_SPECS "Use OpenQASM 2.0 standard instead of Qiskit gate specifications" OFF)
