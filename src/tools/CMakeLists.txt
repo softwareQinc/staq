@@ -9,7 +9,7 @@ if (MSVC)
         # gmp, gmpxx
         pkg_search_module(GMP gmp)
         pkg_search_module(GMPXX gmpxx)
-        if (GMP_FOUND AND GMMXX_FOUND)
+        if (GMP_FOUND AND GMPXX_FOUND)
             set(BUILD_GRID_SYNTH ON)
             add_compile_options("-DEXPR_GMP")
         endif ()

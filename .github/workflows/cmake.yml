@@ -101,3 +101,6 @@ jobs:
 
       - name: Install pystaq
         run: pip3 install --user .
+
+      - name: Uninstall
+        run: cmake --build build --target uninstall

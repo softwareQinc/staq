@@ -94,10 +94,10 @@ endif ()
 #### Installation (binaries)
 install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-option(STAQ_INSTALL_SOURCES "Install staq's source code" OFF)
+option(STAQ_INSTALL_SOURCES "Enable staq's source code installation" OFF)
 
+#### Installation (source)
 if (STAQ_INSTALL_SOURCES)
-    #### Installation (source)
     set(STAQ_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}")
     install(DIRECTORY include/ DESTINATION ${STAQ_INSTALL_DIR})
     install(DIRECTORY qasmtools/include/ DESTINATION ${STAQ_INSTALL_DIR})
