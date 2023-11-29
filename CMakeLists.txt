@@ -75,7 +75,7 @@ target_link_libraries(${COMPILER} PUBLIC libstaq)
 add_subdirectory(src/tools)
 
 #### Unit testing
-include(cmake/staq_unit_tests.cmake)
+add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/)
 
 #### Enable all warnings for GNU gcc and Clang/AppleClang
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
