@@ -1,3 +1,7 @@
+IF(POLICY CMP0012)
+    CMAKE_POLICY(SET CMP0012 NEW)
+ENDIF()
+
 if(NOT EXISTS "@CMAKE_BINARY_DIR@/install_manifest.txt")
   message(FATAL_ERROR "Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt")
 endif()
@@ -22,7 +26,9 @@ endforeach()
 
 if(NOT "@MSVC@")
     message(STATUS "Removing @CMAKE_INSTALL_PREFIX@/lib/cmake/@PROJECT_NAME@")
-    message(STATUS "Removing @STAQ_INSTALL_DIR@")
+    if("@STAQ_INSTALL_SOURCES@")
+        message(STATUS "Removing @STAQ_INSTALL_DIR@")
+    endif()
 else()
     message(STATUS "Removing @CMAKE_INSTALL_PREFIX@")
 endif()
