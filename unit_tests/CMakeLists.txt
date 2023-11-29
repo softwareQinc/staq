@@ -11,7 +11,7 @@ endif ()
 
 set(BUILD_GRID_SYNTH OFF)
 if (MSVC)
-    find_package(PkgConfig REQUIRED)
+    find_package(PkgConfig)
     if (PkgConfig_FOUND)
         # gmp, gmpxx
         pkg_check_modules(gmp IMPORTED_TARGET gmp)
@@ -39,6 +39,8 @@ aux_source_directory(tests/optimization TEST_FILES)
 aux_source_directory(tests/transformations TEST_FILES)
 aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
+
+message(WARNING "Build grid synth: ${BUILD_GRID_SYNTH}")
 
 if (${BUILD_GRID_SYNTH})
     aux_source_directory(tests/grid_synth TEST_FILES)
