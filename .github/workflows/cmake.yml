@@ -100,7 +100,13 @@ jobs:
         run: ctest --test-dir build
 
       - name: Uninstall
-        run: cmake --build build --target uninstall
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake --build build --target uninstall
+          else
+            sudo cmake --build build --target --uninstall
+          fi
 
       - name: Install pystaq
         run: pip3 install --user .
