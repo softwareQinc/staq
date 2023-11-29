@@ -33,6 +33,13 @@ To build both tool suite and the **staq** executable, execute
 cmake -B build
 ```
 
+To be able to install staq's source code in addition to the binaries, configure
+the system with
+
+```shell
+cmake -B build -DSTAQ_INSTALL_SOURCES=ON
+```
+
 **Important**: If you want to build the grid synth tools `staq_grid_synth`
 and `staq_qasm_synth`, install the [GNU MP library](https://gmplib.org/);
 `cmake` will take care of the rest. If `cmake` cannot detect GNU MP, then the
@@ -87,16 +94,17 @@ or in an Administrator Command Prompt (Windows)
 cmake --build build --target (un)install
 ```
 
-staq's source code will be installed in `/usr/local/include/staq`
-(UNIX/UNIX-like systems), or in `C:\Program Files (x86)\staq` on Windows
-systems. The paths may differ on your system. To use staq's source code, precede
-all include paths by `staq` in your own code, i.e.,
+If you configured the system with `-DSTAQ_INSTALL_SOURCES=ON`, staq's source
+code will be installed in `/usr/local/include/staq` (UNIX/UNIX-like systems), or
+in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
+your system. To use staq's source code, precede all include paths by `staq` in
+your own code, i.e.,
 
 ```c++
 #include <staq/qasmtools/parser/parser.hpp>
 ```
 
-Third party header-only libraries need to be preceded by `third_party` when 
+Third party header-only libraries need to be preceded by `third_party` when
 including their corresponding header file(s), i.e.,
 
 ```c++
