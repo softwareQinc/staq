@@ -1,6 +1,8 @@
 @PACKAGE_INIT@
 
 set(STAQ_INSTALL_DIR "@STAQ_INSTALL_DIR@")
-include("${CMAKE_CURRENT_LIST_DIR}/staq_targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/FindGMP.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/staq_grid_synth.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/staq_msvc.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/staq_targets.cmake")
 message(STATUS "Found staq's source code in @STAQ_INSTALL_DIR@")
