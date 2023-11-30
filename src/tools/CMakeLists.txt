@@ -3,7 +3,7 @@ file(GLOB FILENAMES *.cpp)
 add_custom_target(tools COMMENT "Build all binary tools.")
 
 message(WARNING "tools")
-include(${CMAKE_SOURCE_DIR}/cmake/staq_grid_synth.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/grid_synth.cmake)
 
 foreach (filename ${FILENAMES})
     get_filename_component(basename ${filename} NAME_WE)

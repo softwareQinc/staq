@@ -1,5 +1,7 @@
 set(GMP_PREFIX "" CACHE PATH "path ")
 
+list(APPEND CMAKE_MODULE_PATH "/usr/local/lib/cmake/staq")
+
 find_path(GMP_INCLUDE_DIR gmp.h gmpxx.h 
     PATHS ${GMP_PREFIX}/include /usr/include /usr/local/include
     /opt/homebrew/include)

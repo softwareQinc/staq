@@ -109,10 +109,8 @@ if (STAQ_INSTALL_SOURCES)
             "cmake/staqConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake"
             INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
     )
-    install(FILES "${CMAKE_SOURCE_DIR}/cmake/FindGMP.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
-    install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_grid_synth.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
-    install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+    install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc_pthread.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
 endif ()
 
 #### Uninstall
