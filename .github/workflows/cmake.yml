@@ -109,4 +109,4 @@ jobs:
           fi
 
       - name: Install pystaq
-        run: pip3 install .
+        run: pip3 install --user .
