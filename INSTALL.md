@@ -33,7 +33,7 @@ To build both tool suite and the **staq** executable, execute
 cmake -B build
 ```
 
-To be able to install staq's source code in addition to the binaries, configure
+To be able to install **staq**'s source code in addition to the binaries, configure
 the system with
 
 ```shell
@@ -94,18 +94,19 @@ or in an Administrator Command Prompt (Windows)
 cmake --build build --target (un)install
 ```
 
-If you configured the system with `-DINSTALL_SOURCES=ON`, staq's source
+If you configured the system with `-DINSTALL_SOURCES=ON`, **staq**'s source
 code will be installed in `/usr/local/include/staq` (UNIX/UNIX-like systems), or
 in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
-your system. To use staq's source code, precede all include paths by `staq` in
+your system. To use **staq**'s source code, precede all include paths by `staq` in
 your own code, i.e.,
 
 ```c++
 #include <staq/qasmtools/parser/parser.hpp>
 ```
 
-Third party header-only libraries need to be preceded by `third_party` when
-including their corresponding header file(s), i.e.,
+Third party header-only libraries used internally by **staq** need to be 
+preceded by `third_party` when including their corresponding header file(s), 
+i.e.,
 
 ```c++
 #include <staq/third_party/CLI/CLI.hpp>
