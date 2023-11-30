@@ -24,10 +24,6 @@
  * SOFTWARE.
  */
 
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#define NOMINMAX
-#endif
-
 #include <sstream>
 
 #include <pybind11/pybind11.h>
