@@ -37,7 +37,7 @@ To be able to install staq's source code in addition to the binaries, configure
 the system with
 
 ```shell
-cmake -B build -DSTAQ_INSTALL_SOURCES=ON
+cmake -B build -DINSTALL_SOURCES=ON
 ```
 
 **Important**: If you want to build the grid synth tools `staq_grid_synth`
@@ -94,7 +94,7 @@ or in an Administrator Command Prompt (Windows)
 cmake --build build --target (un)install
 ```
 
-If you configured the system with `-DSTAQ_INSTALL_SOURCES=ON`, staq's source
+If you configured the system with `-DINSTALL_SOURCES=ON`, staq's source
 code will be installed in `/usr/local/include/staq` (UNIX/UNIX-like systems), or
 in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
 your system. To use staq's source code, precede all include paths by `staq` in

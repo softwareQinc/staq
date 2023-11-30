@@ -26,7 +26,7 @@ endforeach()
 
 if(NOT "@MSVC@")
     message(STATUS "Removing @CMAKE_INSTALL_PREFIX@/lib/cmake/@PROJECT_NAME@")
-    if("@STAQ_INSTALL_SOURCES@")
+    if("@INSTALL_SOURCES@")
         message(STATUS "Removing @STAQ_INSTALL_DIR@")
     endif()
 else()

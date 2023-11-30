@@ -93,10 +93,10 @@ endif ()
 #### Installation (binaries)
 install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-option(STAQ_INSTALL_SOURCES "Enable staq's source code installation" OFF)
+option(INSTALL_SOURCES "Enable staq's source code installation" OFF)
 
 #### Installation (source)
-if (STAQ_INSTALL_SOURCES)
+if (INSTALL_SOURCES)
     set(STAQ_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}")
     install(DIRECTORY include/ DESTINATION ${STAQ_INSTALL_DIR})
     install(DIRECTORY qasmtools/include/ DESTINATION ${STAQ_INSTALL_DIR})
@@ -122,7 +122,7 @@ if (NOT TARGET uninstall)
             "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
             IMMEDIATE @ONLY)
     if (NOT MSVC)
-        if (STAQ_INSTALL_SOURCES)
+        if (INSTALL_SOURCES)
             add_custom_target(uninstall
                     COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
                     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}"

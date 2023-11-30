@@ -46,10 +46,10 @@ jobs:
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
               -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
-              -DSTAQ_INSTALL_SOURCES=ON
+              -DINSTALL_SOURCES=ON
           else
             cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-              -DSTAQ_INSTALL_SOURCES=ON
+              -DINSTALL_SOURCES=ON
           fi
 
       - name: Build staq
