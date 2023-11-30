@@ -26,7 +26,6 @@ endif ()
 if (MSVC)
     include_directories(SYSTEM libs/third_party/pthreadwin32)
     add_compile_options(-bigobj)
-    add_compile_definitions(NOMINMAX)
     if (MSVC_VERSION GREATER_EQUAL 1914)
         add_compile_options("/Zc:__cplusplus")
     endif ()
@@ -75,7 +74,7 @@ target_link_libraries(${COMPILER} PUBLIC libstaq)
 add_subdirectory(src/tools)
 
 #### Unit testing
-include(cmake/staq_unit_tests.cmake)
+add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/)
 
 #### Enable all warnings for GNU gcc and Clang/AppleClang
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
@@ -94,19 +93,24 @@ endif ()
 #### Installation (binaries)
 install(TARGETS ${COMPILER} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+option(INSTALL_SOURCES "Enable staq's source code installation" OFF)
+
 #### Installation (source)
-set(STAQ_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}")
-install(DIRECTORY include/ DESTINATION ${STAQ_INSTALL_DIR})
-install(DIRECTORY qasmtools/include/ DESTINATION ${STAQ_INSTALL_DIR})
-install(DIRECTORY libs/third_party DESTINATION ${STAQ_INSTALL_DIR})
-install(TARGETS libstaq EXPORT staq_targets)
-install(EXPORT staq_targets DESTINATION "lib/cmake/${PROJECT_NAME}")
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-        "cmake/staqConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake"
-        INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
-)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+if (INSTALL_SOURCES)
+    set(STAQ_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}")
+    install(DIRECTORY include/ DESTINATION ${STAQ_INSTALL_DIR})
+    install(DIRECTORY qasmtools/include/ DESTINATION ${STAQ_INSTALL_DIR})
+    install(DIRECTORY libs/third_party DESTINATION ${STAQ_INSTALL_DIR})
+    install(TARGETS libstaq EXPORT staq_targets)
+    install(EXPORT staq_targets DESTINATION "lib/cmake/${PROJECT_NAME}")
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+            "cmake/staqConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake"
+            INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
+    )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+    install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+endif ()
 
 #### Uninstall
 #### https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
@@ -118,11 +122,17 @@ if (NOT TARGET uninstall)
             "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
             IMMEDIATE @ONLY)
     if (NOT MSVC)
-        add_custom_target(uninstall
-                COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-                COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}"
-                COMMAND ${CMAKE_COMMAND} -E remove_directory "${STAQ_INSTALL_DIR}"
-        )
+        if (INSTALL_SOURCES)
+            add_custom_target(uninstall
+                    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+                    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}"
+                    COMMAND ${CMAKE_COMMAND} -E remove_directory "${STAQ_INSTALL_DIR}"
+            )
+        else ()
+            add_custom_target(uninstall
+                    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+            )
+        endif ()
     else ()
         add_custom_target(uninstall
                 COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"

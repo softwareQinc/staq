@@ -19,13 +19,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install vcpkg (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install pkgconf:x64-windows
+
       - name: Install gmp
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            git clone https://github.com/microsoft/vcpkg
-            ./vcpkg/bootstrap-vcpkg.bat
-            ./vcpkg/vcpkg install pkgconf:x64-windows gmp:x64-windows
+            ./vcpkg/vcpkg install gmp:x64-windows
           elif [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get install -y libgmp-dev
           elif [ "$RUNNER_OS" == "macOS" ]; then
@@ -41,10 +46,10 @@ jobs:
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
               -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
-              -DBUILD_GRID_SYNTH=ON
+              -DINSTALL_SOURCES=ON
           else
             cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-              -DBUILD_GRID_SYNTH=ON
+              -DINSTALL_SOURCES=ON
           fi
 
       - name: Build staq
@@ -93,6 +98,15 @@ jobs:
 
       - name: Run unit tests
         run: ctest --test-dir build
+
+      - name: Uninstall
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake --build build --target uninstall
+          else
+            sudo cmake --build build --target uninstall
+          fi
 
       - name: Install pystaq
         run: pip3 install --user .
