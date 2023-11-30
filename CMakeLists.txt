@@ -110,7 +110,7 @@ if (STAQ_INSTALL_SOURCES)
             INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
     )
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
-    install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc_pthread.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
+    install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
 endif ()
 
 #### Uninstall
