@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD 17)
 # set(CMAKE_PREFIX_PATH "/path/to/installed/staq")
 
 find_package(staq REQUIRED)
-#find_package(GMP REQUIRED)
 
 add_executable(standalone src/main.cpp)
 target_link_libraries(standalone PUBLIC libstaq)
