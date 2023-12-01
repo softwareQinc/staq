@@ -147,7 +147,7 @@ git clone https://github.com/Microsoft/vcpkg.git
 Next, install pkgconf and GNU MP by executing
 
 ```shell
-vcpkg install pkgconf:x64-windows gmp:x64-windows
+.\vcpkg\vcpkg install pkgconf:x64-windows gmp:x64-windows
 ```
 
 Finally, configure the system with the additional flag
