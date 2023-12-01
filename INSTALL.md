@@ -33,7 +33,8 @@ To build both tool suite and the **staq** executable, execute
 cmake -B build
 ```
 
-To be able to install **staq**'s source code in addition to the binaries, configure
+To be able to install **staq**'s source code in addition to the binaries,
+configure
 the system with
 
 ```shell
@@ -43,7 +44,8 @@ cmake -B build -DINSTALL_SOURCES=ON
 **Important**: If you want to build the grid synth tools `staq_grid_synth`
 and `staq_qasm_synth`, install the [GNU MP library](https://gmplib.org/);
 `cmake` will take care of the rest. If `cmake` cannot detect GNU MP, then the
-grid synth tools will not be part of the build.
+grid synth tools will not be part of the build. To install GNU MP on Windows
+systems, please follow the [platform-specific instructions below](#windows).
 
 For more details about how to install and configure GNU MP on various platforms,
 see the
@@ -97,15 +99,16 @@ cmake --build build --target (un)install
 If you configured the system with `-DINSTALL_SOURCES=ON`, **staq**'s source
 code will be installed in `/usr/local/include/staq` (UNIX/UNIX-like systems), or
 in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
-your system. To use **staq**'s source code, precede all include paths by `staq` in
+your system. To use **staq**'s source code, precede all include paths by `staq`
+in
 your own code, i.e.,
 
 ```c++
 #include <staq/qasmtools/parser/parser.hpp>
 ```
 
-Third party header-only libraries used internally by **staq** need to be 
-preceded by `third_party` when including their corresponding header file(s), 
+Third party header-only libraries used internally by **staq** need to be
+preceded by `third_party` when including their corresponding header file(s),
 i.e.,
 
 ```c++
@@ -126,6 +129,35 @@ If you are running macOS or Linux, you can install **staq** via
 ```shell
 brew install staq
 ```
+
+---
+
+## Windows
+
+On Windows, we recommend to install GNU MP via
+[vcpkg](https://vcpkg.io/en/index.html) and pkgconf. Install vcpkg according to
+the instructions from https://vcpkg.io/en/getting-started by executing in a
+Command Prompt
+
+```shell
+git clone https://github.com/Microsoft/vcpkg.git
+.\vcpkg\bootstrap-vcpkg.bat
+```
+
+Next install pkgconf and GNU MP via
+
+```shell
+vcpkg install pkgconf:x64-windows gmp:x64-windows
+```
+
+After executing the steps above, configure the system with the additional flag
+`-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake`, e.g.,
+
+```shell
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=./vckpg/scripts/buildsystems/vcpkg.cmake -DINSTALL_SOURCES=ON 
+```
+
+followed by building the system as usual.
 
 ---
 
