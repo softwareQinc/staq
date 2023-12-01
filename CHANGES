@@ -1,10 +1,11 @@
 Pre-release
-    - `cmake --build build --target install` now installs staq's source code in
+    - When configuring staq with `cmake -B build -DINSTALL_SOURCES=ON`,
+      `cmake --build build --target install` now installs staq's source code in
       addition to the binaries
-    - Renamed the "examples" directory to "misc"
-    - Moved "qpu_specs" and "scripts" directories to "misc"
-    - Added standalone source code example (requires staq installation) in the
-      "examples/standalone" directory
+    - Renamed the ["examples"] directory to ["misc"]
+    - Moved ["qpu_specs"] and ["scripts"] directories to ["misc"]
+    - Added standalone source code example (requires staq's source installation)
+      in the ["examples/standalone"] directory
 
 Version 3.3
     - Implemented the  grid synth rotation synthesizer algorithm
