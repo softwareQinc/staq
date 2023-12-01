@@ -1,4 +1,4 @@
-Pre-release
+Version 3.4 - 1 December 2023
     - When configuring staq with `cmake -B build -DINSTALL_SOURCES=ON`,
       `cmake --build build --target install` now installs staq's source code in
       addition to the binaries
@@ -7,7 +7,7 @@ Pre-release
     - Added standalone source code example (requires staq's source installation)
       in the ["examples/standalone"] directory
 
-Version 3.3
+Version 3.3 - 6 October 2023
     - Implemented the  grid synth rotation synthesizer algorithm
       https://arxiv.org/abs/1403.2975, enabled only when the GNU MP library is
       detected. When enabled, the build will include `staq_grid_synth` and
