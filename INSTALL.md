@@ -144,13 +144,13 @@ git clone https://github.com/Microsoft/vcpkg.git
 .\vcpkg\bootstrap-vcpkg.bat
 ```
 
-Next install pkgconf and GNU MP via
+Next, install pkgconf and GNU MP by executing
 
 ```shell
 vcpkg install pkgconf:x64-windows gmp:x64-windows
 ```
 
-After executing the steps above, configure the system with the additional flag
+Finally, configure the system with the additional flag
 `-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake`, e.g.,
 
 ```shell
