@@ -149,6 +149,7 @@ Next, install pkgconf and GNU MP by executing
 ```shell
 .\vcpkg\vcpkg install pkgconf:x64-windows gmp:x64-windows
 ```
+
 This may take a while...
 
 Finally, configure the system with the additional flag
