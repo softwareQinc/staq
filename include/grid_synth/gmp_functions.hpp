@@ -260,7 +260,7 @@ inline mpf_class exp(const mpf_class& x) {
     mpf_class s = 1;
     mpf_class term = x;
     // Use Taylor's remainder theorem bound on error
-    while (gmp_abs(term*s) > eps) {
+    while (gmp_abs(term * s) > eps) {
         s += term;
         i += 1;
         term *= x;

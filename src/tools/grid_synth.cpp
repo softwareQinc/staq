@@ -96,8 +96,7 @@ int main(int argc, char** argv) {
                 std::cerr << "Invalid angle provided: " << angle << std::endl;
                 return EXIT_FAILURE;
             }
-            str_t op_str =
-                synthesizer.get_op_str(gmp_angle * gmpf::gmp_pi());
+            str_t op_str = synthesizer.get_op_str(gmp_angle * gmpf::gmp_pi());
             for (char c : op_str) {
                 std::cout << c << ' ';
             }
