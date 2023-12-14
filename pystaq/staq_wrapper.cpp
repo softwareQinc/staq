@@ -58,6 +58,7 @@
 #include "staq/tools/resource_estimator.hpp"
 
 #include "staq/output/cirq.hpp"
+#include "staq/output/ionq.hpp"
 #include "staq/output/lattice_surgery.hpp"
 #include "staq/output/projectq.hpp"
 #include "staq/output/qsharp.hpp"
@@ -191,6 +192,12 @@ class Program {
         outputter.run(*prog_);
         return oss.str();
     }
+    std::string to_ionq() {
+        std::ostringstream oss;
+        staq::output::IonQOutputter outputter(oss);
+        outputter.run(*prog_);
+        return oss.str();
+    }
     std::string lattice_surgery() {
         return staq::output::lattice_surgery(*prog_);
     }
@@ -309,6 +316,7 @@ PYBIND11_MODULE(pystaq, m) {
              "Get the ProjectQ representation")
         .def("to_qsharp", &Program::to_qsharp, "Get the Q# representation")
         .def("to_quil", &Program::to_quil, "Get the Quil representation")
+        .def("to_quil", &Program::to_ionq, "Get the IonQ representation")
         .def("__repr__", [](const Program& p) {
             std::ostringstream oss;
             oss << p;
