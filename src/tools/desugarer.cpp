@@ -25,7 +25,8 @@
  */
 
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+
+#include "staq/transformations/desugar.hpp"
 
 int main() {
     using namespace staq;

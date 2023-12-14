@@ -26,14 +26,15 @@
 
 #include <CLI/CLI.hpp>
 
-#include "mapping/device.hpp"
-#include "mapping/layout/basic.hpp"
-#include "output/ionq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
-#include "transformations/expression_simplifier.hpp"
-#include "transformations/inline.hpp"
-#include "transformations/replace_ugate.hpp"
+
+#include "staq/mapping/device.hpp"
+#include "staq/mapping/layout/basic.hpp"
+#include "staq/output/ionq.hpp"
+#include "staq/transformations/desugar.hpp"
+#include "staq/transformations/expression_simplifier.hpp"
+#include "staq/transformations/inline.hpp"
+#include "staq/transformations/replace_ugate.hpp"
 
 static const std::set<std::string_view> ionq_overrides{
     "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",

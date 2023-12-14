@@ -40,7 +40,7 @@
 #include "preprocessor.hpp"
 
 #ifdef EXPR_GMP
-#include "grid_synth/types.hpp"
+#include "staq/grid_synth/types.hpp"
 #endif /* EXPR_GMP */
 
 namespace qasmtools {

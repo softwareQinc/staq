@@ -26,7 +26,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "transformations/oracle_synthesizer.hpp"
+#include "staq/transformations/oracle_synthesizer.hpp"
 
 int main() {
     using namespace staq;

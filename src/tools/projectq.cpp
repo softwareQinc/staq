@@ -26,9 +26,10 @@
 
 #include <third_party/CLI/CLI.hpp>
 
-#include "output/projectq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+
+#include "staq/output/projectq.hpp"
+#include "staq/transformations/desugar.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

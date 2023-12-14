@@ -27,7 +27,8 @@
 #include <third_party/CLI/CLI.hpp>
 
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/inline.hpp"
+
+#include "staq/transformations/inline.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

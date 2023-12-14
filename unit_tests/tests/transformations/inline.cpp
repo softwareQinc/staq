@@ -2,7 +2,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "transformations/inline.hpp"
+#include "staq/transformations/inline.hpp"
 
 using namespace staq;
 using namespace qasmtools;

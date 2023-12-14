@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/grid_solvers.hpp"
+#include "staq/grid_synth/grid_solvers.hpp"
 
 using namespace staq;
 using namespace grid_synth;

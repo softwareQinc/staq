@@ -39,9 +39,10 @@
 #include "base.hpp"
 
 #ifdef EXPR_GMP
-#include "grid_synth/gmp_functions.hpp"
-#include "grid_synth/types.hpp"
 #include <gmpxx.h>
+
+#include "staq/grid_synth/gmp_functions.hpp"
+#include "staq/grid_synth/types.hpp"
 using real_t = mpf_class;
 #endif /* EXPR_GMP */
 

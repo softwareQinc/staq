@@ -45,11 +45,11 @@ target_compile_definitions(libstaq INTERFACE -DSTAQ_VERSION_NUM=${STAQ_VERSION_N
 target_compile_definitions(libstaq INTERFACE -DSTAQ_VERSION_STR="${STAQ_VERSION_STR}")
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-        $<INSTALL_INTERFACE:include/>)
+        $<INSTALL_INTERFACE:include/staq>)
 #### qasmtools library
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/qasmtools/include/>
-        $<INSTALL_INTERFACE:include/staq/>)
+        $<INSTALL_INTERFACE:include/>)
 #### 3rd party libs
 target_include_directories(libstaq INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>

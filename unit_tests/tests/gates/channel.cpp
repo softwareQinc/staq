@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "gates/channel.hpp"
+#include "staq/gates/channel.hpp"
 
 using namespace staq;
 namespace utils = qasmtools::utils;

@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/constants.hpp"
-#include "grid_synth/gmp_functions.hpp"
-#include "grid_synth/regions.hpp"
-#include "grid_synth/rings.hpp"
+#include "staq/grid_synth/constants.hpp"
+#include "staq/grid_synth/gmp_functions.hpp"
+#include "staq/grid_synth/regions.hpp"
+#include "staq/grid_synth/rings.hpp"
 
 using namespace staq;
 using namespace grid_synth;

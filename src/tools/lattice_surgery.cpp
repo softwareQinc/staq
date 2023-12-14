@@ -26,8 +26,9 @@
 
 #include <third_party/CLI/CLI.hpp>
 
-#include "output/lattice_surgery.hpp"
 #include "qasmtools/parser/parser.hpp"
+
+#include "staq/output/lattice_surgery.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

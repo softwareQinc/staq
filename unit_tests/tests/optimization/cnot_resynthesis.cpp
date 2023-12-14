@@ -2,7 +2,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "optimization/cnot_resynthesis.hpp"
+#include "staq/optimization/cnot_resynthesis.hpp"
 
 using namespace staq;
 using namespace qasmtools;

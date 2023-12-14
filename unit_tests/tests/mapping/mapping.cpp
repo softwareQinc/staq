@@ -3,9 +3,9 @@
 #include "qasmtools/parser/parser.hpp"
 
 // clang-format off
-#include "mapping/device.hpp"
-#include "mapping/mapping/swap.hpp"
-#include "mapping/mapping/steiner.hpp"
+#include "staq/mapping/device.hpp"
+#include "staq/mapping/mapping/swap.hpp"
+#include "staq/mapping/mapping/steiner.hpp"
 // clang-format on
 
 using namespace staq;

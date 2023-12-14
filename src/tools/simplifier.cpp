@@ -26,9 +26,10 @@
 
 #include <third_party/CLI/CLI.hpp>
 
-#include "optimization/simplify.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/expression_simplifier.hpp"
+
+#include "staq/optimization/simplify.hpp"
+#include "staq/transformations/expression_simplifier.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

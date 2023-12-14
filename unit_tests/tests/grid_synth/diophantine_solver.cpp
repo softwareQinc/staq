@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/diophantine_solver.hpp"
+#include "staq/grid_synth/diophantine_solver.hpp"
 
 using namespace staq;
 using namespace grid_synth;

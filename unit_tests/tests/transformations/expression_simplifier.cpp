@@ -2,7 +2,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "transformations/expression_simplifier.hpp"
+#include "staq/transformations/expression_simplifier.hpp"
 
 using namespace staq;
 using namespace qasmtools;
