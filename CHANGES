@@ -4,6 +4,7 @@ Pre-release
       for the sake of making the include statements look "uniform" in both
       non-installed (compiling without having staq installed) and installed
       (compiling with staq installed headers) modes.
+    - Integrated the 'staq_ionq' OpenQASM2 -> IonQ transpiler into pystaq
 
 Version 3.4 - 1 December 2023
     - When configuring staq with 'cmake -B build -DINSTALL_SOURCES=ON',
