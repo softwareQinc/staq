@@ -316,7 +316,7 @@ PYBIND11_MODULE(pystaq, m) {
              "Get the ProjectQ representation")
         .def("to_qsharp", &Program::to_qsharp, "Get the Q# representation")
         .def("to_quil", &Program::to_quil, "Get the Quil representation")
-        .def("to_quil", &Program::to_ionq, "Get the IonQ representation")
+        .def("to_ionq", &Program::to_ionq, "Get the IonQ representation")
         .def("__repr__", [](const Program& p) {
             std::ostringstream oss;
             oss << p;
