@@ -83,11 +83,12 @@ class ZSqrt2 {
         int_t b_squared_plus = int_t((a_ + sqrt((*this).norm())) / real_t(4));
         int_t b_squared_minus = int_t((a_ - sqrt((*this).norm())) / real_t(4));
 
-        if (pow(gmp_round(sqrt(b_squared_plus)), 2) == b_squared_plus)
+        if (pow(gmp_round(sqrt(b_squared_plus)), 2) == b_squared_plus) {
             b = sqrt(b_squared_plus);
-        else if (pow(gmp_round(sqrt(b_squared_minus)), 2) == b_squared_minus)
+        } else if (pow(gmp_round(sqrt(b_squared_minus)), 2) ==
+                   b_squared_minus) {
             b = sqrt(b_squared_minus);
-        else {
+        } else {
             std::cout << "(" << a_ << "," << b_ << ")"
                       << " isn't a square." << std::endl;
             exit(EXIT_FAILURE);
@@ -99,8 +100,9 @@ class ZSqrt2 {
                           << " isn't a square." << std::endl;
                 exit(EXIT_FAILURE);
             }
-        } else
+        } else {
             a = b_ / (2 * b);
+        }
 
         return ZSqrt2(gmpf::gmp_round(a), gmpf::gmp_round(b));
     }
@@ -171,8 +173,9 @@ class ZSqrt2 {
 
 inline ZSqrt2 pow(const ZSqrt2& Z, const int_t& k) {
     try {
-        if (k < 0)
+        if (k < 0) {
             throw std::invalid_argument("Operator ^ for ZSqrt2 expects k > 0");
+        }
     } catch (std::invalid_argument const& ex) {
         std::cout << ex.what() << std::endl;
         exit(EXIT_FAILURE);
@@ -319,8 +322,9 @@ class ZOmega {
     }
 
     bool is_reducible() {
-        if (((a_ + c_) % 2 == 0) && ((b_ + d_) % 2 == 0))
+        if (((a_ + c_) % 2 == 0) && ((b_ + d_) % 2 == 0)) {
             return true;
+        }
         return false;
     }
 

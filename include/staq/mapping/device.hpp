@@ -120,10 +120,11 @@ class Device {
      * \return True if the device admits a CNOT between qubits i and j
      */
     bool coupled(int i, int j) {
-        if (0 <= i && i < qubits_ && 0 <= j && j < qubits_)
+        if (0 <= i && i < qubits_ && 0 <= j && j < qubits_) {
             return couplings_[i][j];
-        else
+        } else {
             throw std::out_of_range("Qubit(s) not in range");
+        }
     }
 
     /**
@@ -132,10 +133,11 @@ class Device {
      * \return The fidelity as a double precision float
      */
     double sq_fidelity(int i) {
-        if (0 <= i && i < qubits_)
+        if (0 <= i && i < qubits_) {
             return single_qubit_fidelities_[i];
-        else
+        } else {
             throw std::out_of_range("Qubit not in range");
+        }
     }
     /**
      * \brief Get the two-qubit gate fidelity at a coupling
@@ -144,10 +146,11 @@ class Device {
      * \return The fidelity as a double precision float
      */
     double tq_fidelity(int i, int j) {
-        if (coupled(i, j))
+        if (coupled(i, j)) {
             return coupling_fidelities_[i][j];
-        else
+        } else {
             throw std::logic_error("Qubit not coupled");
+        }
     }
 
     /**
@@ -206,10 +209,11 @@ class Device {
         // Sort in order of decreasing coupling fidelity
         cmp_couplings cmp = [](std::pair<coupling, double> a,
                                std::pair<coupling, double> b) {
-            if (a.second == b.second)
+            if (a.second == b.second) {
                 return a.first < b.first;
-            else
+            } else {
                 return a.second > b.second;
+            }
         };
 
         std::set<std::pair<coupling, double>, cmp_couplings> ret(cmp);
@@ -312,8 +316,9 @@ class Device {
             for (int i = 0; i < qubits_; i++) {
                 os << pref << "\tq[" << i << "] --> ";
                 auto it = invmap.find(invperm[i]);
-                if (it != invmap.end())
+                if (it != invmap.end()) {
                     os << it->second;
+                }
                 os << "\n";
             }
             os << "\n";
@@ -321,8 +326,9 @@ class Device {
             for (int i = 0; i < qubits_; i++) {
                 os << pref << "\tq[" << i << "] --> ";
                 auto it = invmap.find(i);
-                if (it != invmap.end())
+                if (it != invmap.end()) {
                     os << it->second;
+                }
                 os << "\n";
             }
         }
@@ -444,8 +450,9 @@ class Device {
             ret.insert(*it);
 
             // If the current node is already in the tree, we're done
-            if (in_tree.find(*it) != in_tree.end())
+            if (in_tree.find(*it) != in_tree.end()) {
                 break;
+            }
         }
 
         return ret;
@@ -479,10 +486,11 @@ inline Device parse_json(std::string fname) {
             throw std::logic_error("Duplicate qubit id");
         }
         auto it = qubit.find("fidelity");
-        if (it != qubit.end())
+        if (it != qubit.end()) {
             sq_fi[id] = *it;
-        else
+        } else {
             sq_fi[id] = FIDELITY_1;
+        }
     }
     for (json& coupling : j["couplings"]) {
         int x = coupling["control"];
@@ -498,10 +506,11 @@ inline Device parse_json(std::string fname) {
         }
         dag[x][y] = true;
         auto it = coupling.find("fidelity");
-        if (it != coupling.end())
+        if (it != coupling.end()) {
             tq_fi[x][y] = *it;
-        else
+        } else {
             tq_fi[x][y] = FIDELITY_1;
+        }
     }
     return Device(name, n, dag, sq_fi, tq_fi);
 }

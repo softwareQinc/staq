@@ -40,10 +40,12 @@ namespace grid_synth {
 inline str_t check_common_cases(real_t theta, const real_t& eps) {
 
     // Normalize theta to the range [0,4)
-    while (theta >= real_t("4"))
+    while (theta >= real_t("4")) {
         theta = theta - real_t("4");
-    while (theta < 0)
+    }
+    while (theta < 0) {
         theta = theta + real_t("4");
+    }
 
     // Deal with the case where theta is in [2,4)
     str_t ret = "";
@@ -54,8 +56,9 @@ inline str_t check_common_cases(real_t theta, const real_t& eps) {
 
     // Check multiples of 1/4 in [0,2)
     if (abs(theta) < eps) {
-        if (ret != "")
+        if (ret != "") {
             return ret;
+        }
         return "I";
     } else if (abs(theta - real_t("0.25")) < eps) {
         return "Tw" + ret;

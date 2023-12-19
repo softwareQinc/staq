@@ -70,8 +70,9 @@ class DesugarImpl final : public ast::Replacer {
     }
     void visit(ast::GateDecl& decl) override {
         push_scope();
-        for (auto& param : decl.q_params())
+        for (auto& param : decl.q_params()) {
             set_var(param, {});
+        }
 
         ast::Replacer::visit(decl);
 
@@ -269,10 +270,11 @@ class DesugarImpl final : public ast::Replacer {
     ast::VarAccess expand(const ast::VarAccess& arg, int offset) {
         auto ty = lookup(arg.var());
 
-        if (std::holds_alternative<int>(*ty) && !arg.offset())
+        if (std::holds_alternative<int>(*ty) && !arg.offset()) {
             return ast::VarAccess(arg.pos(), arg.var(), offset);
-        else
+        } else {
             return ast::VarAccess(arg);
+        }
     }
 
     // Debugging

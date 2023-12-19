@@ -93,10 +93,11 @@ class LayoutTransformer final : public ast::Replacer {
 
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::RegisterDecl& decl) override {
-        if (decl.is_quantum())
+        if (decl.is_quantum()) {
             return std::list<ast::ptr<ast::Stmt>>();
-        else
+        } else {
             return std::nullopt;
+        }
     }
 
   private:

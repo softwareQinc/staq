@@ -184,14 +184,16 @@ class CNOTOptimizer final : public ast::Replacer {
         std::swap(phases_, local_phases);
         std::swap(permutation_, local_permutation);
 
-        for (auto& var : decl.q_params())
+        for (auto& var : decl.q_params()) {
             get_index(ast::VarAccess(decl.pos(), var));
+        }
 
         Replacer::visit(decl);
 
         // Flush remaining state
-        for (auto& gate : flush<ast::Gate>())
+        for (auto& gate : flush<ast::Gate>()) {
             decl.body().emplace_back(std::move(gate));
+        }
 
         // Reset the state
         std::swap(qubit_map_, local_map);
@@ -203,13 +205,15 @@ class CNOTOptimizer final : public ast::Replacer {
     void visit(ast::OracleDecl&) override {}
     void visit(ast::RegisterDecl& decl) override {
         if (decl.is_quantum()) {
-            for (int i = 0; i < decl.size(); i++)
+            for (int i = 0; i < decl.size(); i++) {
                 get_index(ast::VarAccess(decl.pos(), decl.id(), i));
+            }
         }
     }
     void visit(ast::AncillaDecl& decl) override {
-        for (int i = 0; i < decl.size(); i++)
+        for (int i = 0; i < decl.size(); i++) {
             get_index(ast::VarAccess(decl.pos(), decl.id(), i));
+        }
 
         // TODO: make use of zero-valued ancillas
     }
@@ -219,8 +223,9 @@ class CNOTOptimizer final : public ast::Replacer {
         Replacer::visit(prog);
 
         // Synthesize the last leg
-        for (auto& stmt : flush<ast::Stmt>())
+        for (auto& stmt : flush<ast::Stmt>()) {
             prog.body().emplace_back(std::move(stmt));
+        }
     }
 
   private:
@@ -291,9 +296,9 @@ class CNOTOptimizer final : public ast::Replacer {
     }
 
     int get_index(const ast::VarAccess& va) {
-        if (qubit_map_.find(va) != qubit_map_.end())
+        if (qubit_map_.find(va) != qubit_map_.end()) {
             return qubit_map_[va];
-        else {
+        } else {
             auto n = qubit_map_.size();
             qubit_map_[va] = static_cast<int>(n);
             map_qubit_.emplace(static_cast<int>(n), va);
@@ -306,8 +311,9 @@ class CNOTOptimizer final : public ast::Replacer {
             permutation_[n][n] = true;
 
             // Extend all other vectors
-            for (auto& [vec, angle] : phases_)
+            for (auto& [vec, angle] : phases_) {
                 vec.emplace_back(false);
+            }
 
             return static_cast<int>(n);
         }

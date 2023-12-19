@@ -58,18 +58,20 @@ inline int_t determine_shift(const state_t state) {
 }
 
 inline mat_t sigma(int_t k) {
-    if (k < 0)
+    if (k < 0) {
         return gmpf::pow(SQRT_LAMBDA_INV, -k) *
                mat_t{1, 0, 0, gmpf::pow(LAMBDA.decimal(), -k)};
+    }
 
     return gmpf::pow(SQRT_LAMBDA_INV, k) *
            mat_t{gmpf::pow(LAMBDA.decimal(), k), 0, 0, 1};
 }
 
 inline mat_t tau(int_t k) {
-    if (k < 0)
+    if (k < 0) {
         return gmpf::pow(SQRT_LAMBDA_INV, -k) *
                mat_t{gmpf::pow(LAMBDA.decimal(), -k), 0, 0, gmpf::pow(-1, -k)};
+    }
 
     return gmpf::pow(SQRT_LAMBDA_INV, k) *
            mat_t{1, 0, 0, gmpf::pow(-LAMBDA.decimal(), k)};
@@ -88,8 +90,9 @@ inline state_t shift(const state_t& state, const int_t& k) {
  */
 inline SpecialGridOperator reduce_skew(state_t& state) {
     real_t initial_skew = skew(state);
-    if (initial_skew < 15)
+    if (initial_skew < 15) {
         return ID;
+    }
 
     int_t k = 0;
     if (abs(bias(state)) > real_t("1")) {

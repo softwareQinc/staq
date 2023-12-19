@@ -233,17 +233,19 @@ class Inliner final : public ast::Replacer {
         std::optional<std::list<ast::ptr<ast::Stmt>>>
         replace(ast::GateDecl& decl) override {
             if (!conf_->keep_declarations &&
-                conf_->overrides.find(decl.id()) == conf_->overrides.end())
+                conf_->overrides.find(decl.id()) == conf_->overrides.end()) {
                 return std::list<ast::ptr<ast::Stmt>>();
-            else
+            } else {
                 return std::nullopt;
+            }
         }
         std::optional<std::list<ast::ptr<ast::Gate>>>
         replace(ast::AncillaDecl&) override {
-            if (!in_decl_)
+            if (!in_decl_) {
                 return std::list<ast::ptr<ast::Gate>>();
-            else
+            } else {
                 return std::nullopt;
+            }
         }
     };
 

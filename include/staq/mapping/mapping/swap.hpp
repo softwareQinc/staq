@@ -79,11 +79,12 @@ class SwapMapper final : public ast::Replacer {
     void visit(ast::OracleDecl&) override {}
 
     std::optional<ast::VarAccess> replace(ast::VarAccess& va) override {
-        if (va.var() == config_.register_name)
+        if (va.var() == config_.register_name) {
             return ast::VarAccess(va.pos(), va.var(),
                                   permutation_[*va.offset()]);
-        else
+        } else {
             return std::nullopt;
+        }
     }
 
     // Where the magic happens
@@ -149,10 +150,11 @@ class SwapMapper final : public ast::Replacer {
 
                     // Adjust permutation
                     for (auto& [q_init, q] : permutation_) {
-                        if (q == i)
+                        if (q == i) {
                             q = j;
-                        else if (q == j)
+                        } else if (q == j) {
                             q = i;
+                        }
                     }
                 }
                 i = j;

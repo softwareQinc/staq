@@ -66,10 +66,12 @@ class ScopedReplacer : public ast::Replacer {
     void visit(ast::GateDecl& decl) override {
         push_scope();
 
-        for (auto& param : decl.c_params())
+        for (auto& param : decl.c_params()) {
             add_to_scope(param);
-        for (auto& param : decl.q_params())
+        }
+        for (auto& param : decl.q_params()) {
             add_to_scope(param);
+        }
         ast::Replacer::visit(decl);
 
         pop_scope();
@@ -161,13 +163,14 @@ class SubstAP final : public ScopedReplacer {
                        it != subst_.end()) {
                 auto vp = it->second;
 
-                if (offset && vp.offset())
+                if (offset && vp.offset()) {
                     return ast::VarAccess(va.pos(), vp.var(),
                                           *offset + *(vp.offset()));
-                else if (vp.offset())
+                } else if (vp.offset()) {
                     return ast::VarAccess(va.pos(), vp.var(), *(vp.offset()));
-                else
+                } else {
                     return ast::VarAccess(va.pos(), vp.var(), *offset);
+                }
             }
         }
 

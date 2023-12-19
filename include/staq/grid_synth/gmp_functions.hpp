@@ -109,8 +109,9 @@ inline mpf_class pow(const mpf_class& base, mpz_class exponent) {
     mpf_class output;
 
     mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), exponent.get_ui());
-    if (exponent < 0)
+    if (exponent < 0) {
         return mpf_class(1) / output;
+    }
 
     return output;
 }
@@ -119,8 +120,9 @@ inline mpf_class pow(const mpf_class& base, signed long int exponent) {
     mpf_class output;
     mpf_pow_ui(output.get_mpf_t(), base.get_mpf_t(), std::abs(exponent));
 
-    if (exponent < 0)
+    if (exponent < 0) {
         return mpf_class(1) / output;
+    }
 
     return output;
 }
@@ -198,10 +200,12 @@ inline mpf_class log2(const mpf_class& x) {
 inline mpf_class reduce_angle(const mpf_class& phi) {
     mpf_class result = phi;
     mpf_class pi = gmp_pi();
-    while (result > pi)
+    while (result > pi) {
         result -= mpf_class("2") * pi;
-    while (result < pi)
+    }
+    while (result < pi) {
         result += mpf_class("2") * pi;
+    }
     return result;
 }
 
@@ -252,8 +256,9 @@ inline mpf_class cos(const mpf_class& theta) {
 }
 
 inline mpf_class exp(const mpf_class& x) {
-    if (x < 0)
+    if (x < 0) {
         return 1 / gmpf::exp(-x);
+    }
     long int tol_exp = std::log10(2) * x.get_prec();
     mpf_class eps(("1e-" + std::to_string(tol_exp)));
     mpz_class i = 1;

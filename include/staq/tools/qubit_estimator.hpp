@@ -74,8 +74,9 @@ class QubitEstimator final : public ast::Visitor {
     void visit(ast::GateDecl& decl) {}
     void visit(ast::OracleDecl&) {}
     void visit(ast::RegisterDecl& decl) {
-        if (decl.is_quantum())
+        if (decl.is_quantum()) {
             qubits_ += decl.size();
+        }
     }
     void visit(ast::AncillaDecl& decl) {
         // count all ancillas as freshly allocated

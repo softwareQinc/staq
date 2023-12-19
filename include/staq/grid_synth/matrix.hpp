@@ -68,8 +68,9 @@ class DOmegaMatrix {
     unsigned int l() const { return l_; }
 
     int_t sde_u_sq() const {
-        if (u_ == ZOmega(0))
+        if (u_ == ZOmega(0)) {
             return 0;
+        }
 
         int_t s = 2 * k_;
         ZOmega u_sq = u_ * u_.conj();
@@ -83,8 +84,9 @@ class DOmegaMatrix {
     }
 
     void reduce() {
-        if (u_ == ZOmega(0) && t_ == ZOmega(0))
+        if (u_ == ZOmega(0) && t_ == ZOmega(0)) {
             return;
+        }
         while (u_.is_reducible() && t_.is_reducible()) {
             u_ = u_.reduce();
             t_ = t_.reduce();
@@ -158,17 +160,17 @@ inline DOmegaMatrix domega_matrix_from_str(str_t str) {
     // reverse(str.begin(),str.end());
     DOmegaMatrix prod = I;
     for (auto& ele : str) {
-        if (ele == 'H')
+        if (ele == 'H') {
             prod = prod * H;
-        else if (ele == 'T')
+        } else if (ele == 'T') {
             prod = prod * T;
-        else if (ele == 'S')
+        } else if (ele == 'S') {
             prod = prod * S;
-        else if (ele == 'W')
+        } else if (ele == 'W') {
             prod = prod.mul_by_w(1);
-        else if (ele == 'I')
+        } else if (ele == 'I') {
             continue;
-        else {
+        } else {
             std::cout << "In domega_matrix_from_str, unrecognized character "
                       << ele << std::endl;
             exit(EXIT_FAILURE);
@@ -182,10 +184,12 @@ inline DOmegaMatrix domega_matrix_from_str(str_t str) {
 inline str_t simplify_str(str_t str) {
     str.erase(std::remove(str.begin(), str.end(), 'I'), str.end());
     std::size_t len = str.size();
-    if (str.empty())
+    if (str.empty()) {
         return "I";
-    if (str.size() == 1)
+    }
+    if (str.size() == 1) {
         return str;
+    }
 
     str_t new_str = "";
     std::size_t first = 0;
@@ -193,8 +197,9 @@ inline str_t simplify_str(str_t str) {
 
     while (first < len) {
         if (second >= len) {
-            if (str[first] == 'I')
+            if (str[first] == 'I') {
                 break;
+            }
             new_str += str[first];
             break;
         }
@@ -244,8 +249,9 @@ inline str_t simplify_str(str_t str) {
  *  Reduce a string containing H, T, and S as far as is possible
  */
 inline str_t full_simplify_str(str_t str) {
-    if (str.size() == 1)
+    if (str.size() == 1) {
         return str;
+    }
     size_t last_len = str.size();
     size_t curr_len = 0;
     str_t curr_str = str;

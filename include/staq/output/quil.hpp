@@ -165,10 +165,11 @@ class QuilOutputter final : public ast::Visitor {
         // and the EQ instruction is not well-documented
         auto tmp = stmt.cond();
         for (auto i = 0; i < length; i++) {
-            if (tmp % 2 == 1)
+            if (tmp % 2 == 1) {
                 os_ << "JUMP-UNLESS";
-            else
+            } else {
                 os_ << "JUMP-WHEN";
+            }
 
             os_ << " @end" << stmt.uid() << " " << stmt.var() << "[" << r
                 << "]\n";
@@ -181,8 +182,9 @@ class QuilOutputter final : public ast::Visitor {
 
     // Gates
     void visit(ast::UGate& gate) {
-        if (circuit_local_)
+        if (circuit_local_) {
             os_ << "    ";
+        }
 
         os_ << "U(";
         gate.theta().accept(*this);
@@ -198,8 +200,9 @@ class QuilOutputter final : public ast::Visitor {
     }
 
     void visit(ast::CNOTGate& gate) {
-        if (circuit_local_)
+        if (circuit_local_) {
             os_ << "    ";
+        }
 
         os_ << "CNOT ";
         gate.ctrl().accept(*this);
@@ -209,28 +212,32 @@ class QuilOutputter final : public ast::Visitor {
     }
 
     void visit(ast::BarrierGate& gate) {
-        if (circuit_local_)
+        if (circuit_local_) {
             os_ << "    ";
+        }
 
         // An approximation to OpenQASM's barrier
         os_ << "PRAGMA parallelization_barrier\n";
     }
 
     void visit(ast::DeclaredGate& gate) {
-        if (circuit_local_)
+        if (circuit_local_) {
             os_ << "    ";
+        }
 
         if (auto it = qasmstd_to_quilstd.find(gate.name());
-            it != qasmstd_to_quilstd.end())
+            it != qasmstd_to_quilstd.end()) {
             os_ << it->second;
-        else
+        } else {
             os_ << gate.name();
+        }
 
         if (gate.num_cargs() > 0) {
             os_ << "(";
             for (int i = 0; i < gate.num_cargs(); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os_ << ", ";
+                }
                 gate.carg(i).accept(*this);
             }
             os_ << ")";
@@ -246,9 +253,10 @@ class QuilOutputter final : public ast::Visitor {
 
     // Declarations
     void visit(ast::GateDecl& decl) {
-        if (decl.is_opaque())
+        if (decl.is_opaque()) {
             throw std::logic_error(
                 "Quil instruction set has no support for opaque declarations");
+        }
 
         if (!config_.std_includes ||
             qasmstd_to_quilstd.find(decl.id()) != qasmstd_to_quilstd.end()) {
@@ -257,8 +265,9 @@ class QuilOutputter final : public ast::Visitor {
             if (decl.c_params().size() > 0) {
                 os_ << "(";
                 for (auto i = 0; i < decl.c_params().size(); i++) {
-                    if (i != 0)
+                    if (i != 0) {
                         os_ << ", ";
+                    }
                     os_ << "%" << decl.c_params()[i];
                 }
                 os_ << ")";

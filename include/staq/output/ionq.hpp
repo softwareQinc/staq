@@ -106,8 +106,9 @@ class IonQOutputter final : public ast::Visitor {
 
         std::string name = gate.name();
         if (auto it = qasmstd_to_ionq.find(gate.name());
-            it != qasmstd_to_ionq.end())
+            it != qasmstd_to_ionq.end()) {
             name = it->second;
+        }
 
         int cur_qarg = 0;
         bool ctrl = false;
@@ -136,8 +137,9 @@ class IonQOutputter final : public ast::Visitor {
             os_ << prefix_ << "\"targets\": [";
             for (int i = cur_qarg; i < gate.num_qargs(); ++i) {
                 os_ << gate.qarg(i).offset().value();
-                if (i + 1 != gate.num_qargs())
+                if (i + 1 != gate.num_qargs()) {
                     os_ << ",";
+                }
             }
 
             os_ << "],\n";
@@ -184,8 +186,9 @@ class IonQOutputter final : public ast::Visitor {
 
         // Print the qubit count line (global register decl)
         prog.foreach_stmt([this](auto& stmt) {
-            if (typeid(stmt) == typeid(ast::RegisterDecl))
+            if (typeid(stmt) == typeid(ast::RegisterDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         os_ << prefix_ << "\"circuit\": [\n";
@@ -196,8 +199,9 @@ class IonQOutputter final : public ast::Visitor {
             // Skip the gate declarations from qelib1.inc
             // and the global register decl
             if ((typeid(stmt) != typeid(ast::GateDecl)) &&
-                (typeid(stmt) != typeid(ast::RegisterDecl)))
+                (typeid(stmt) != typeid(ast::RegisterDecl))) {
                 stmt.accept(*this);
+            }
         });
 
         // Close circuit

@@ -173,8 +173,9 @@ class QSharpOutputter final : public ast::Visitor {
         auto tmp = expr.value();
 
         os_ << tmp;
-        if (tmp - floor(tmp) == 0)
+        if (tmp - floor(tmp) == 0) {
             os_ << ".0";
+        }
     }
 
     void visit(ast::VarExpr& expr) { os_ << expr.var(); }
@@ -229,27 +230,31 @@ class QSharpOutputter final : public ast::Visitor {
         os_ << prefix_;
 
         if (auto it = qasmstd_to_qsharp.find(gate.name());
-            it != qasmstd_to_qsharp.end())
+            it != qasmstd_to_qsharp.end()) {
             os_ << it->second << "(";
-        else
+        } else {
             os_ << gate.name() << "(";
+        }
 
         for (int i = 0; i < (gate.num_cargs() + gate.num_qargs()); i++) {
-            if (i != 0)
+            if (i != 0) {
                 os_ << ", ";
+            }
 
-            if (i < gate.num_cargs())
+            if (i < gate.num_cargs()) {
                 gate.carg(i).accept(*this);
-            else
+            } else {
                 gate.qarg(i - gate.num_cargs()).accept(*this);
+            }
         }
         os_ << ");\n";
     }
 
     // Declarations
     void visit(ast::GateDecl& decl) {
-        if (decl.is_opaque())
+        if (decl.is_opaque()) {
             throw std::logic_error("Opaque declarations not supported");
+        }
 
         if (qasmstd_to_qsharp.find(decl.id()) == qasmstd_to_qsharp.end()) {
 
@@ -257,14 +262,16 @@ class QSharpOutputter final : public ast::Visitor {
             os_ << prefix_ << "operation " << decl.id() << "(";
             for (int i = 0;
                  i < (decl.c_params().size() + decl.q_params().size()); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os_ << ", ";
+                }
 
-                if (i < decl.c_params().size())
+                if (i < decl.c_params().size()) {
                     os_ << decl.c_params()[i] << " : Double";
-                else
+                } else {
                     os_ << decl.q_params()[i - decl.c_params().size()]
                         << " : Qubit";
+                }
             }
             os_ << ") : Unit {\n";
 
@@ -333,16 +340,18 @@ class QSharpOutputter final : public ast::Visitor {
 
         // Gate declarations
         prog.foreach_stmt([this](auto& stmt) {
-            if (typeid(stmt) == typeid(ast::GateDecl))
+            if (typeid(stmt) == typeid(ast::GateDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         // Program body
         os_ << prefix_ << "operation " << config_.opname << "() : Unit {\n";
         prefix_ += "    ";
         prog.foreach_stmt([this](auto& stmt) {
-            if (typeid(stmt) != typeid(ast::GateDecl))
+            if (typeid(stmt) != typeid(ast::GateDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         // Reset all qubits

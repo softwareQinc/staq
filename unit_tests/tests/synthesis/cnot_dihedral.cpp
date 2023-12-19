@@ -35,8 +35,9 @@ synthesis::phase_term phase(std::vector<bool> b, Angle theta) {
 
 // Custom equality to deal with ptr<Expr> in cx_dihedral circuits
 bool eq(const synthesis::cx_dihedral& a, const synthesis::cx_dihedral& b) {
-    if (a.index() != b.index())
+    if (a.index() != b.index()) {
         return false;
+    }
 
     if (std::holds_alternative<std::pair<int, int>>(a)) {
         auto& [c1, t1] = std::get<std::pair<int, int>>(a);
@@ -53,12 +54,14 @@ bool eq(const synthesis::cx_dihedral& a, const synthesis::cx_dihedral& b) {
 
 bool eq(const std::list<synthesis::cx_dihedral>& a,
         const std::list<synthesis::cx_dihedral>& b) {
-    if (a.size() != b.size())
+    if (a.size() != b.size()) {
         return false;
+    }
 
     bool same = true;
-    for (auto i = a.begin(), j = b.begin(); same && i != a.end(); i++, j++)
+    for (auto i = a.begin(), j = b.begin(); same && i != a.end(); i++, j++) {
         same &= eq(*i, *j);
+    }
 
     return same;
 }

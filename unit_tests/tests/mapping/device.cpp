@@ -11,8 +11,9 @@ using steiner_edges = std::set<std::pair<int, int>>;
 
 bool subset(const steiner_edges& A, const steiner_edges& B) {
     for (auto it = A.begin(); it != A.end(); it++) {
-        if (B.find(*it) == B.end())
+        if (B.find(*it) == B.end()) {
             return false;
+        }
     }
 
     return true;

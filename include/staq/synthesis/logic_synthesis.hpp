@@ -118,10 +118,11 @@ mockturtle::mig_network read_network(const std::string& fname) {
  * ours */
 ast::ptr<ast::Expr> angle_to_expr(parser::Position pos,
                                   tweedledum::angle angle) {
-    if (angle.is_numerically_defined())
+    if (angle.is_numerically_defined()) {
         return ast::angle_to_expr(utils::Angle(angle.numeric_value()));
-    else
+    } else {
         return ast::angle_to_expr(utils::Angle(*(angle.symbolic_value())));
+    }
 }
 
 /**
@@ -174,9 +175,10 @@ synthesize_net(parser::Position pos, T& l_net,
     int num_inputs =
         static_cast<int>(stats.i_indexes.size() + stats.o_indexes.size());
 
-    if (num_qubits - num_inputs > 0)
+    if (num_qubits - num_inputs > 0) {
         ret.emplace_back(std::make_unique<ast::AncillaDecl>(
             ast::AncillaDecl(pos, anc, false, num_qubits - num_inputs)));
+    }
 
     // Create a mapping from qubits to variable accesses
     auto inputs = stats.i_indexes;
@@ -196,8 +198,9 @@ synthesize_net(parser::Position pos, T& l_net,
 
     // Map each non-input to an ancilla
     for (int i = 0, cur_anc = 0; i < num_qubits; i++) {
-        if (std::find(inputs.begin(), inputs.end(), i) == inputs.end())
+        if (std::find(inputs.begin(), inputs.end(), i) == inputs.end()) {
             id_refs[i] = ast::VarAccess(pos, anc, cur_anc++);
+        }
     }
 
     // Convert each gate to an ast::Gate

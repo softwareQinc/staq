@@ -120,8 +120,9 @@ class CirqOutputter final : public ast::Visitor {
     void visit(ast::RealExpr& expr) { os_ << expr.value(); }
 
     void visit(ast::VarExpr& expr) {
-        if (prefix_self_)
+        if (prefix_self_) {
             os_ << "self.";
+        }
         os_ << sanitize(expr.var());
     }
 
@@ -173,10 +174,11 @@ class CirqOutputter final : public ast::Visitor {
         os_ << prefix_;
 
         if (auto it = qasmstd_to_cirq.find(gate.name());
-            it != qasmstd_to_cirq.end())
+            it != qasmstd_to_cirq.end()) {
             os_ << it->second;
-        else
+        } else {
             os_ << gate.name();
+        }
 
         // Classical arguments
         bool tmp = prefix_self_;
@@ -184,8 +186,9 @@ class CirqOutputter final : public ast::Visitor {
         if (gate.num_cargs() > 0) {
             os_ << "(";
             for (int i = 0; i < gate.num_cargs(); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os_ << ", ";
+                }
                 gate.carg(i).accept(*this);
             }
             os_ << ")";
@@ -194,8 +197,9 @@ class CirqOutputter final : public ast::Visitor {
 
         os_ << "(";
         for (int i = 0; i < gate.num_qargs(); i++) {
-            if (i > 0)
+            if (i > 0) {
                 os_ << ", ";
+            }
             gate.qarg(i).accept(*this);
         }
         os_ << "),\n";
@@ -203,15 +207,17 @@ class CirqOutputter final : public ast::Visitor {
 
     // Declarations
     void visit(ast::GateDecl& decl) {
-        if (decl.is_opaque())
+        if (decl.is_opaque()) {
             throw std::logic_error("Opaque declarations not supported");
+        }
 
         if (qasmstd_to_cirq.find(decl.id()) == qasmstd_to_cirq.end()) {
 
-            if (decl.c_params().size() == 0)
+            if (decl.c_params().size() == 0) {
                 os_ << "class " << decl.id() << "Init(cirq.Gate):\n";
-            else
+            } else {
                 os_ << "class " << decl.id() << "(cirq.Gate):\n";
+            }
 
             // Class instantiation
             os_ << "    def __init__(self";
@@ -230,8 +236,9 @@ class CirqOutputter final : public ast::Visitor {
             os_ << "    def __str__(self):\n";
             os_ << "        return str(self.__class__.__name__) + \"(\" + ";
             for (auto i = 0; i < decl.c_params().size(); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os_ << " + \",\" + ";
+                }
                 os_ << "str(self." << sanitize(decl.c_params()[i]) << ")";
             }
             os_ << " + \")\"\n\n";
@@ -275,8 +282,9 @@ class CirqOutputter final : public ast::Visitor {
             os_ << "        return " << decl.q_params().size();
             os_ << "\n";
 
-            if (decl.c_params().size() == 0)
+            if (decl.c_params().size() == 0) {
                 os_ << decl.id() << " = " << decl.id() << "Init()\n";
+            }
 
             prefix_ = "";
             os_ << "\n";
@@ -339,8 +347,9 @@ class CirqOutputter final : public ast::Visitor {
         // Gate & qubit declarations
         prog.foreach_stmt([this](auto& stmt) {
             if (typeid(stmt) == typeid(ast::GateDecl) ||
-                typeid(stmt) == typeid(ast::RegisterDecl))
+                typeid(stmt) == typeid(ast::RegisterDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         os_ << config_.circuit_name << " = cirq.Circuit()\n";
@@ -350,8 +359,9 @@ class CirqOutputter final : public ast::Visitor {
         // Program body
         prog.foreach_stmt([this](auto& stmt) {
             if (typeid(stmt) != typeid(ast::GateDecl) &&
-                typeid(stmt) != typeid(ast::RegisterDecl))
+                typeid(stmt) != typeid(ast::RegisterDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         os_ << "])\n";
@@ -368,10 +378,11 @@ class CirqOutputter final : public ast::Visitor {
 
     // Hack because lambda is reserved by python
     std::string sanitize(const std::string& id) {
-        if (id == "lambda")
+        if (id == "lambda") {
             return "lambd";
-        else
+        } else {
             return id;
+        }
     }
 };
 

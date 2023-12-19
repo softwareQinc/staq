@@ -110,8 +110,9 @@ class PauliOpCircuit {
             json layer;
             for (int i = 0; i < qubit_num_; i++) {
                 auto op_name = static_cast<char>(op.first[i]);
-                if (op_name == 'I')
+                if (op_name == 'I') {
                     continue;
+                }
                 layer["q" + std::to_string(i)] = std::string(1, op_name);
             }
             layer["pi*"] = op.second;
@@ -159,8 +160,9 @@ class PauliOpCircuit {
                 swap_adjacent_blocks(index); // TODO optimize this
                 ++index;
             }
-            if (circuit_has_measurements)
+            if (circuit_has_measurements) {
                 ops_.pop_back();
+            }
         }
     }
 
@@ -217,8 +219,9 @@ class PauliOpCircuit {
             }
         }
 
-        if (y_op_indices.empty())
+        if (y_op_indices.empty()) {
             return {std::move(y_free_block)};
+        }
 
         std::list<Op> left_rotations, right_rotations;
         if (y_op_indices.size() % 2 == 0) {
@@ -387,8 +390,9 @@ class LayeredPauliOpCircuit {
                 json op_json;
                 for (int i = 0; i < qubit_num_; i++) {
                     auto op_name = static_cast<char>(op.first[i]);
-                    if (op_name == 'I')
+                    if (op_name == 'I') {
                         continue;
+                    }
                     op_json["q" + std::to_string(i)] = std::string(1, op_name);
                 }
                 op_json["pi*"] = op.second;
@@ -402,8 +406,9 @@ class LayeredPauliOpCircuit {
             json op_json;
             for (int i = 0; i < qubit_num_; i++) {
                 auto op_name = static_cast<char>(op.first[i]);
-                if (op_name == 'I')
+                if (op_name == 'I') {
                     continue;
+                }
                 op_json["q" + std::to_string(i)] = std::string(1, op_name);
             }
             op_json["pi*"] = op.second;
@@ -509,8 +514,9 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
     }
 
     void visit(ast::CNOTGate& gate) override {
-        if (skip_clifford_)
+        if (skip_clifford_) {
             return;
+        }
         std::vector<ast::VarAccess> qargs{gate.ctrl(), gate.tgt()};
         add_layer(qargs, {PauliOperator::Z, PauliOperator::X}, "1/4");
         add_layer(qargs, {PauliOperator::Z, PauliOperator::I}, "-1/4");
@@ -642,15 +648,17 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
         // Gate & qubit declarations
         prog.foreach_stmt([this](auto& stmt) {
             if (typeid(stmt) == typeid(ast::GateDecl) ||
-                typeid(stmt) == typeid(ast::RegisterDecl))
+                typeid(stmt) == typeid(ast::RegisterDecl)) {
                 stmt.accept(*this);
+            }
         });
         circuit_ = PauliOpCircuit(num_qubits_);
         // Program body
         prog.foreach_stmt([this](auto& stmt) {
             if (typeid(stmt) != typeid(ast::GateDecl) &&
-                typeid(stmt) != typeid(ast::RegisterDecl))
+                typeid(stmt) != typeid(ast::RegisterDecl)) {
                 stmt.accept(*this);
+            }
         });
     }
 
@@ -733,8 +741,9 @@ void output_lattice_surgery(ast::Program& prog, bool skip_clifford = false,
         std::string err_msg(err.what());
         if (err_msg.find("Unsupported phase: ") != std::string::npos) {
             std::cerr << "Warning: Circuit is not in Clifford + T\n";
-        } else
+        } else {
             throw;
+        }
     }
     std::cout << out.dump(2) << "\n";
 }

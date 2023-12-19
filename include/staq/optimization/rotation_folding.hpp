@@ -115,22 +115,22 @@ class RotationOptimizer final : public ast::Visitor {
         auto name = gate.name();
 
         if (mergeable_) {
-            if (name == "cx")
+            if (name == "cx") {
                 current_clifford_ *=
                     Gatelib::Clifford::cnot(gate.qarg(0), gate.qarg(1));
-            else if (name == "h")
+            } else if (name == "h") {
                 current_clifford_ *= Gatelib::Clifford::h(gate.qarg(0));
-            else if (name == "x")
+            } else if (name == "x") {
                 current_clifford_ *= Gatelib::Clifford::x(gate.qarg(0));
-            else if (name == "y")
+            } else if (name == "y") {
                 current_clifford_ *= Gatelib::Clifford::y(gate.qarg(0));
-            else if (name == "z")
+            } else if (name == "z") {
                 current_clifford_ *= Gatelib::Clifford::z(gate.qarg(0));
-            else if (name == "s")
+            } else if (name == "s") {
                 current_clifford_ *= Gatelib::Clifford::sdg(gate.qarg(0));
-            else if (name == "sdg")
+            } else if (name == "sdg") {
                 current_clifford_ *= Gatelib::Clifford::s(gate.qarg(0));
-            else if (name == "t") {
+            } else if (name == "t") {
                 auto rot = Gatelib::Rotation::t(gate.qarg(0));
                 rotation_info info{gate.uid(), rotation_info::axis::z,
                                    gate.qarg(0)};
@@ -181,8 +181,9 @@ class RotationOptimizer final : public ast::Visitor {
                 } else {
                     push_uninterp(Gatelib::Uninterp(gate.qargs()));
                 }
-            } else
+            } else {
                 push_uninterp(Gatelib::Uninterp(gate.qargs()));
+            }
         } else {
             push_uninterp(Gatelib::Uninterp(gate.qargs()));
         }
@@ -282,8 +283,9 @@ class RotationOptimizer final : public ast::Visitor {
 
                         auto rot =
                             alloc_rot(tmp->first, new_R.rotation_angle());
-                        if (rot)
+                        if (rot) {
                             subst.emplace_back(rot);
+                        }
                         replacement_list_[tmp->first.uid] = std::move(subst);
 
                         // WARNING: this is a massive hack so that the global
@@ -296,8 +298,9 @@ class RotationOptimizer final : public ast::Visitor {
                         tgt = &(tmp->first.arg);
                         subst_ref = &(replacement_list_[tmp->first.uid]);
                     }
-                } else
+                } else {
                     break;
+                }
             }
         }
 
@@ -390,8 +393,9 @@ class RotationOptimizer final : public ast::Visitor {
                             std::move(std::list<ast::ptr<ast::Gate>>());
 
                         auto it_next = std::next(it);
-                        if (it_next != circuit.rend())
+                        if (it_next != circuit.rend()) {
                             circuit.erase(std::next(it).base());
+                        }
 
                         return false;
                     } else if (R.commutes_with(P.second)) {
@@ -405,10 +409,11 @@ class RotationOptimizer final : public ast::Visitor {
                     return true;
                 },
                 [&R](Gatelib::Uninterp& U) {
-                    if (!R.commutes_with(U))
+                    if (!R.commutes_with(U)) {
                         return false;
-                    else
+                    } else {
                         return true;
+                    }
                 }};
 
             cont = std::visit(visitor, *it);
@@ -428,8 +433,9 @@ class RotationOptimizer final : public ast::Visitor {
     // Assumes basic gates (x, y, z, s, sdg, t, tdg, rx, ry, rz) are defined
     ast::Gate* alloc_rot(const rotation_info& rinfo,
                          const utils::Angle& theta) {
-        if (theta.numeric_value() == 0)
+        if (theta.numeric_value() == 0) {
             return nullptr;
+        }
 
         parser::Position pos;
 

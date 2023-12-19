@@ -69,8 +69,9 @@ static void print_linop(const linear_op<bool>& mat) {
 static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
 
-    if (mat.size() == 0)
+    if (mat.size() == 0) {
         return ret;
+    }
 
     for (std::size_t i = 0; i < mat[0].size(); i++) {
 
@@ -230,8 +231,9 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
                 mat[tgt] ^= mat[ctrl];
                 swap.emplace_back(static_cast<int>(ctrl),
                                   static_cast<int>(tgt));
-                if (ctrl < i)
+                if (ctrl < i) {
                     crossed_diag = true;
+                }
                 above_diagonal_dep[tgt] = above_diagonal_dep[tgt] ||
                                           above_diagonal_dep[ctrl] ||
                                           (ctrl < i);
@@ -276,8 +278,9 @@ static std::list<std::pair<int, int>> steiner_gauss(linear_op<bool> mat,
         // Phase 3: Compute steiner tree covering the 1's in column i
         std::list<int> pivots;
         for (std::size_t j = 0; j < mat.size(); j++) {
-            if (j != i && mat[j][i] == true)
+            if (j != i && mat[j][i] == true) {
                 pivots.push_back(static_cast<int>(j));
+            }
         }
         auto s_tree = d.steiner(pivots, pivot);
 

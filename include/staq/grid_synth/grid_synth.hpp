@@ -42,8 +42,9 @@ static str_t to_string(const mpf_class& x) {
     // Use base 32 to get a shorter string; truncate the string
     // to keep only the significant figures.
     int sig_len = mpf_get_default_prec() / 5;
-    if (x < 0)
+    if (x < 0) {
         ++sig_len; // account for leading minus sign
+    }
     str_t s = x.get_str(exp, 32).substr(0, sig_len);
     return s + str_t(" ") + std::to_string(exp);
 }
@@ -89,21 +90,25 @@ class GridSynthesizer {
 
     /*! \brief Find RZ-approximation for an angle. */
     str_t get_op_str(const real_t& angle) {
-        if (verbose_)
+        if (verbose_) {
             std::cerr << "Checking common cases..."
                       << "\n";
+        }
         str_t common_case = check_common_cases(angle / gmpf::gmp_pi(), eps_);
         if (common_case != "") {
-            if (details_)
+            if (details_) {
                 std::cerr
                     << "Angle is multiple of pi/4, answer is known exactly"
                     << '\n';
-            if (check_)
+            }
+            if (check_) {
                 std::cerr << "Check flag = " << 1 << '\n';
+            }
             return common_case;
         }
-        if (verbose_)
+        if (verbose_) {
             std::cerr << "No common cases found" << '\n';
+        }
 
         RzApproximation rz_approx;
         str_t op_str;
@@ -120,21 +125,25 @@ class GridSynthesizer {
                              .count();
         } else {
             str_t angle_str = to_string(angle);
-            if (verbose_)
+            if (verbose_) {
                 std::cerr << "Checking local cache..." << '\n';
-            if (details_)
+            }
+            if (details_) {
                 std::cerr << "Angle has string representation " << angle_str
                           << '\n';
+            }
             if (angle_cache_.count(angle_str)) {
-                if (verbose_ || details_)
+                if (verbose_ || details_) {
                     std::cerr << "Angle is found in local cache" << '\n';
+                }
                 return angle_cache_[angle_str];
             }
 
-            if (verbose_)
+            if (verbose_) {
                 std::cerr
                     << "Running grid_synth to find new rz approximation..."
                     << '\n';
+            }
             RzApproximation rz_approx =
                 find_fast_rz_approximation(angle / real_t("-2.0"), eps_);
             if (!rz_approx.solution_found()) {
@@ -143,19 +152,22 @@ class GridSynthesizer {
                           << '\n';
                 exit(EXIT_FAILURE);
             }
-            if (verbose_)
+            if (verbose_) {
                 std::cerr << "Approximation found. Synthesizing..." << '\n';
+            }
             op_str = synthesize(rz_approx.matrix(), S3_TABLE);
 
-            if (verbose_)
+            if (verbose_) {
                 std::cerr << "Synthesis complete." << '\n';
+            }
             bool good = (rz_approx.matrix() ==
                          domega_matrix_from_str(full_simplify_str(op_str)));
             valid_ = valid_ && good;
             valid_ = valid_ && (rz_approx.error() < eps_);
 
-            if (check_)
+            if (check_) {
                 std::cerr << "Check flag = " << good << '\n';
+            }
             if (details_) {
                 real_t scale = gmpf::pow(SQRT2, rz_approx.matrix().k());
                 std::cerr << "angle = " << std::scientific << angle << '\n';

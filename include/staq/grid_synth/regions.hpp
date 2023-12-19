@@ -59,9 +59,10 @@ class Interval {
     Interval(const bound_t& lo, const bound_t& hi)
         : lo_(lo), hi_(hi), width_(hi - lo) {
         try {
-            if (lo > hi)
+            if (lo > hi) {
                 throw std::invalid_argument(
                     "Interval constructor expects lo < hi, found lo > hi.");
+            }
         } catch (std::invalid_argument const& ex) {
             std::cout << ex.what() << std::endl;
             exit(EXIT_FAILURE);
@@ -114,14 +115,16 @@ class Interval {
     }
 
     Interval operator*(const bound_t& scale_factor) const {
-        if (scale_factor < 0)
+        if (scale_factor < 0) {
             return Interval<bound_t>(hi_ * scale_factor, lo_ * scale_factor);
+        }
         return Interval<bound_t>(lo_ * scale_factor, hi_ * scale_factor);
     }
 
     Interval operator/(const bound_t& scale_factor) const {
-        if (scale_factor < 0)
+        if (scale_factor < 0) {
             return Interval(hi_ / scale_factor, lo_ / scale_factor);
+        }
         return Interval<bound_t>(lo_ / scale_factor, hi_ / scale_factor);
     }
 
@@ -285,11 +288,13 @@ class Ellipse {
         real_t shift = PI * (real_t("0.25") * (sgn<real_t>(center(0)) -
                                                sgn<real_t>(center(1))) +
                              real_t("1"));
-        if ((sgn<real_t>(center(0)) == 0) && (sgn<real_t>(center(1)) == 0))
+        if ((sgn<real_t>(center(0)) == 0) && (sgn<real_t>(center(1)) == 0)) {
             shift = 0;
+        }
 
-        if ((sgn<real_t>(center(0)) == 1) && (sgn<real_t>(center(1)) == 1))
+        if ((sgn<real_t>(center(0)) == 1) && (sgn<real_t>(center(1)) == 1)) {
             shift = 0;
+        }
 
         // cout << fixed << setprecision(100) << "m = " << m << endl;
         // cout << fixed << setprecision(100) << sqrt(T*T*msq*msq- 4*msq) <<

@@ -92,8 +92,9 @@ class EagerLayout final : public ast::Traverse {
 
     void visit(ast::RegisterDecl& decl) override {
         if (decl.is_quantum()) {
-            for (int i = 0; i < decl.size(); i++)
+            for (int i = 0; i < decl.size(); i++) {
                 access_paths_.insert(ast::VarAccess(decl.pos(), decl.id(), i));
+            }
         }
     }
 
@@ -106,10 +107,11 @@ class EagerLayout final : public ast::Traverse {
         std::size_t tgt_bit;
         for (auto& [coupling, f] : couplings_) {
             if (auto it = layout_.find(ctrl); it != layout_.end()) {
-                if (it->second != coupling.first)
+                if (it->second != coupling.first) {
                     continue;
-                else
+                } else {
                     ctrl_bit = it->second;
+                }
             } else if (!allocated_[coupling.first]) {
                 ctrl_bit = coupling.first;
             } else {
@@ -117,10 +119,11 @@ class EagerLayout final : public ast::Traverse {
             }
 
             if (auto it = layout_.find(tgt); it != layout_.end()) {
-                if (it->second != coupling.second)
+                if (it->second != coupling.second) {
                     continue;
-                else
+                } else {
                     tgt_bit = it->second;
+                }
             } else if (!allocated_[coupling.second]) {
                 tgt_bit = coupling.second;
             } else {

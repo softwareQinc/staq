@@ -230,16 +230,18 @@ void grid_synth(const std::vector<std::string>& thetas, long int prec,
                 int factor_effort, bool check, bool details, bool verbose,
                 bool timer) {
     using namespace staq::grid_synth;
-    if (verbose)
+    if (verbose) {
         std::cerr << thetas.size() << " angle(s) read." << '\n';
+    }
     GridSynthOptions opt{prec, factor_effort, check, details, verbose, timer};
     GridSynthesizer synthesizer = make_synthesizer(opt);
     std::random_device rd;
     random_numbers.seed(rd());
     for (const auto& angle : thetas) {
         str_t op_str = synthesizer.get_op_str(real_t(angle));
-        for (char c : op_str)
+        for (char c : op_str) {
             std::cout << c << ' ';
+        }
         std::cout << '\n';
     }
 }
@@ -267,36 +269,40 @@ class Device {
     Device(int n)
         : n_(n), sq_fi_(n_, FIDELITY_1), adj_(n_, std::vector<bool>(n_)),
           tq_fi_(n_, std::vector<double>(n_, FIDELITY_1)) {
-        if (n_ <= 0)
+        if (n_ <= 0) {
             throw std::logic_error("Invalid device qubit count");
+        }
     }
     void add_edge(int control, int target, bool directed = false,
                   double fidelity = FIDELITY_1) {
-        if (control < 0 || control >= n_ || target < 0 || target >= n_)
+        if (control < 0 || control >= n_ || target < 0 || target >= n_) {
             std::cerr << "Qubit(s) out of range: " << control << "," << target
                       << "\n";
-        else {
+        } else {
             adj_[control][target] = true;
-            if (!directed)
+            if (!directed) {
                 adj_[target][control] = true;
+            }
             if (fidelity != FIDELITY_1) {
-                if (fidelity < 0 || fidelity > 1)
+                if (fidelity < 0 || fidelity > 1) {
                     std::cerr << "Fidelity out of range: " << fidelity << "\n";
-                else {
+                } else {
                     tq_fi_[control][target] = fidelity;
-                    if (!directed)
+                    if (!directed) {
                         tq_fi_[target][control] = fidelity;
+                    }
                 }
             }
         }
     }
     void set_fidelity(int qubit, double fidelity) {
-        if (qubit < 0 || qubit >= n_)
+        if (qubit < 0 || qubit >= n_) {
             std::cerr << "Qubit out of range: " << qubit;
-        else if (fidelity < 0 || fidelity > 1)
+        } else if (fidelity < 0 || fidelity > 1) {
             std::cerr << "Fidelity out of range: " << fidelity;
-        else
+        } else {
             sq_fi_[qubit] = fidelity;
+        }
     }
     std::string to_string() const {
         staq::mapping::Device dev("Custom Device", n_, adj_, sq_fi_, tq_fi_);

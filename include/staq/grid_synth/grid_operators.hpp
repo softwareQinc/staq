@@ -69,16 +69,18 @@ class GridOperator {
                  const int_t& d, const int_t& dp)
         : a_(a), ap_(ap), b_(b), bp_(bp), c_(c), cp_(cp), d_(d), dp_(dp) {
         try {
-            if (((a_ + b_ + c_ + d_) % 2) != 0)
+            if (((a_ + b_ + c_ + d_) % 2) != 0) {
                 throw std::invalid_argument(
                     "GridOperator expects a + b + c + d ~ 0 mod(2)");
+            }
 
             if ((abs(ap_ % 2) != abs(dp_ % 2)) ||
                 (abs(bp_ % 2) != abs(dp_ % 2)) ||
                 (abs(cp_ % 2) != abs(dp_ % 2)) ||
-                (abs(dp_ % 2) != abs(dp_ % 2)))
+                (abs(dp_ % 2) != abs(dp_ % 2))) {
                 throw std::invalid_argument(
                     "GridOperator expects a' ~ b' ~ c' ~ d' mod(2)");
+            }
         } catch (std::invalid_argument const& ex) {
             std::cout << ex.what() << std::endl;
             exit(EXIT_FAILURE);
@@ -212,16 +214,18 @@ class SpecialGridOperator : public GridOperator {
   public:
     SpecialGridOperator(const GridOperator& G) : GridOperator(G) {
         try {
-            if (((a_ * dp_) + (d_ * ap_) - (c_ * bp_) - (b_ * cp_)) != 0)
+            if (((a_ * dp_) + (d_ * ap_) - (c_ * bp_) - (b_ * cp_)) != 0) {
                 throw std::invalid_argument(
                     "SpecialGridOperator expects ((a_*dp_) + (d_*ap_) - "
                     "(c_*bp_) - (b_*cp_)) == 0");
+            }
 
             if (abs(2 * ((a_ * d_) - (c_ * b_)) + (ap_ * dp_) - (cp_ * bp_)) !=
-                2)
+                2) {
                 throw std::invalid_argument(
                     "SpecialGridOperator expects 2*((a_*d_) - (c_*b_)) + "
                     "(ap_*dp_) - (cp_*bp_) == +/- 2");
+            }
         } catch (std::invalid_argument const& ex) {
             std::cout << ex.what() << std::endl;
             exit(EXIT_FAILURE);
@@ -233,16 +237,18 @@ class SpecialGridOperator : public GridOperator {
                         const int_t& d, const int_t& dp)
         : GridOperator(a, ap, b, bp, c, cp, d, dp) {
         try {
-            if (((a_ * dp_) + (d_ * ap_) - (c_ * bp_) - (b_ * cp_)) != 0)
+            if (((a_ * dp_) + (d_ * ap_) - (c_ * bp_) - (b_ * cp_)) != 0) {
                 throw std::invalid_argument(
                     "SpecialGridOperator expects ((a_*dp_) + (d_*ap_) - "
                     "(c_*bp_) - (b_*cp_)) == 0");
+            }
 
             if (abs(2 * ((a_ * d_) - (c_ * b_)) + (ap_ * dp_) - (cp_ * bp_)) !=
-                2)
+                2) {
                 throw std::invalid_argument(
                     "SpecialGridOperator expects 2*((a_*d_) - (c_*b_)) + "
                     "(ap_*dp_) - (cp_*bp_) == +/- 2");
+            }
         } catch (std::invalid_argument const& ex) {
             std::cout << ex.what() << std::endl;
             exit(EXIT_FAILURE);

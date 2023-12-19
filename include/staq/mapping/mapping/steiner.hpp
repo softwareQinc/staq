@@ -316,11 +316,12 @@ class SteinerMapper final : public ast::Replacer {
     }
 
     int get_index(ast::VarAccess& va) {
-        if (va.offset())
+        if (va.offset()) {
             return *(va.offset());
-        else
+        } else {
             throw std::logic_error(
                 "Gate argument is not a register dereference!");
+        }
     }
 
     // Gate generation

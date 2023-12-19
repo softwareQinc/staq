@@ -57,10 +57,12 @@ inline int_t lower_bound_a(const real_t& xlo, const int_t& b,
     real_t decimal;
     int_t intpart;
     decimal = gmpf::gmp_abs(gmpf::decimal_part(lowera_double, intpart));
-    if ((lowera_double < 0) && ((1 - decimal) < tol))
+    if ((lowera_double < 0) && ((1 - decimal) < tol)) {
         return gmpf::gmp_floor(lowera_double);
-    if ((lowera_double > 0) && (decimal < tol))
+    }
+    if ((lowera_double > 0) && (decimal < tol)) {
         return gmpf::gmp_floor(lowera_double);
+    }
 
     return gmpf::gmp_ceil(lowera_double);
 }
@@ -76,8 +78,9 @@ inline int_t upper_bound_a(const bound_t& xhi, const int_t& b,
     real_t decimal;
     int_t intpart;
     decimal = gmpf::gmp_abs(gmpf::decimal_part(uppera_double, intpart));
-    if ((uppera_double > 0) && ((1 - decimal) < tol))
+    if ((uppera_double > 0) && ((1 - decimal) < tol)) {
         return gmpf::gmp_ceil(uppera_double);
+    }
 
     return gmpf::gmp_floor(uppera_double);
 }
@@ -93,10 +96,12 @@ inline int_t lower_bound_b(const bound_t& xlo, const bound_t& yhi,
     real_t decimal;
     int_t intpart;
     decimal = gmpf::gmp_abs(gmpf::decimal_part(lowerb_double, intpart));
-    if ((lowerb_double) < 0 && ((1 - decimal) < tol))
+    if ((lowerb_double) < 0 && ((1 - decimal) < tol)) {
         return gmpf::gmp_floor(lowerb_double);
-    if ((lowerb_double) > 0 && (decimal < tol))
+    }
+    if ((lowerb_double) > 0 && (decimal < tol)) {
         return gmpf::gmp_floor(lowerb_double);
+    }
 
     return gmpf::gmp_ceil(lowerb_double);
 }
@@ -112,8 +117,9 @@ inline int_t upper_bound_b(const bound_t& xhi, const bound_t& ylo,
     real_t decimal;
     int_t intpart;
     decimal = gmpf::gmp_abs(gmpf::decimal_part(upperb_double, intpart));
-    if ((upperb_double > 0) && (1 - decimal < tol))
+    if ((upperb_double > 0) && (1 - decimal < tol)) {
         return gmpf::gmp_ceil(upperb_double);
+    }
 
     return gmpf::gmp_floor(upperb_double);
 }
@@ -230,10 +236,12 @@ inline zomega_vec_t twoD_grid_solver(const UprightRectangle<bound_t> A,
     using namespace std;
 
     zomega_vec_t solns;
-    if (A.x_interval().width() * B.x_interval().width() < 1)
+    if (A.x_interval().width() * B.x_interval().width() < 1) {
         return solns;
-    if (B.y_interval().width() * A.y_interval().width() < 1)
+    }
+    if (B.y_interval().width() * A.y_interval().width() < 1) {
         return solns;
+    }
 
     zsqrt2_vec_t alpha_solns =
         oneD_optimal_grid_solver(A.x_interval(), B.x_interval(), tol);
@@ -267,8 +275,9 @@ inline zomega_vec_t twoD_grid_solver_ellipse(const Ellipse& A, const Ellipse& B,
     zomega_vec_t solns;
     for (auto candidate : candidates) {
         if (A.contains(candidate.decimal()) &&
-            B.contains(candidate.dot().decimal()))
+            B.contains(candidate.dot().decimal())) {
             solns.push_back(candidate);
+        }
     }
 
     return solns;

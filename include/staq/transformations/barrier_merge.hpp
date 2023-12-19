@@ -78,8 +78,9 @@ class BarrierMerger final : public ast::Traverse {
     void visit(ast::BarrierGate& gate) {
         uids_.push_back(gate.uid());
         for (auto it = gate.args().begin(); it != gate.args().end(); it++) {
-            if (std::find(args_.begin(), args_.end(), *it) == args_.end())
+            if (std::find(args_.begin(), args_.end(), *it) == args_.end()) {
                 args_.push_back(*it);
+            }
         }
     }
 

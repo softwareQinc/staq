@@ -122,8 +122,9 @@ class ProjectQOutputter final : public ast::Visitor {
     void visit(ast::RealExpr& expr) { os_ << expr.value(); }
 
     void visit(ast::VarExpr& expr) {
-        if (prefix_self_)
+        if (prefix_self_) {
             os_ << "self.";
+        }
         os_ << sanitize(expr.var());
     }
 
@@ -176,8 +177,9 @@ class ProjectQOutputter final : public ast::Visitor {
     void visit(ast::BarrierGate& gate) {
         os_ << prefix_ << "ops.Barrier | (";
         for (int i = 0; i < gate.num_args(); i++) {
-            if (i > 0)
+            if (i > 0) {
                 os_ << ", ";
+            }
             gate.arg(i).accept(*this);
         }
         os_ << ")\n";
@@ -187,17 +189,19 @@ class ProjectQOutputter final : public ast::Visitor {
         os_ << prefix_;
 
         if (auto it = qasmstd_to_projectq.find(gate.name());
-            it != qasmstd_to_projectq.end())
+            it != qasmstd_to_projectq.end()) {
             os_ << it->second << "(";
-        else
+        } else {
             os_ << gate.name() << "(";
+        }
 
         // Classical arguments
         bool tmp = prefix_self_;
         prefix_self_ = true;
         for (int i = 0; i < gate.num_cargs(); i++) {
-            if (i != 0)
+            if (i != 0) {
                 os_ << ", ";
+            }
             gate.carg(i).accept(*this);
         }
         prefix_self_ = tmp;
@@ -205,8 +209,9 @@ class ProjectQOutputter final : public ast::Visitor {
         // Quantum arguments
         os_ << ") | (";
         for (int i = 0; i < gate.num_qargs(); i++) {
-            if (i > 0)
+            if (i > 0) {
                 os_ << ", ";
+            }
             gate.qarg(i).accept(*this);
         }
         os_ << ")\n";
@@ -214,8 +219,9 @@ class ProjectQOutputter final : public ast::Visitor {
 
     // Declarations
     void visit(ast::GateDecl& decl) {
-        if (decl.is_opaque())
+        if (decl.is_opaque()) {
             throw std::logic_error("Opaque declarations not supported");
+        }
 
         if (qasmstd_to_projectq.find(decl.id()) == qasmstd_to_projectq.end()) {
 
@@ -224,8 +230,9 @@ class ProjectQOutputter final : public ast::Visitor {
             // Class instantiation
             os_ << "    def __init__(self, ";
             for (auto i = 0; i < decl.c_params().size(); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os_ << ", ";
+                }
                 os_ << sanitize(decl.c_params()[i]);
             }
             os_ << "):\n";
@@ -240,8 +247,9 @@ class ProjectQOutputter final : public ast::Visitor {
             os_ << "    def __str__(self):\n";
             os_ << "        return str(self.__class__.__name__) + \"(\" + ";
             for (auto i = 0; i < decl.c_params().size(); i++) {
-                if (i != 0)
+                if (i != 0) {
                     os_ << " + \",\" + ";
+                }
                 os_ << "str(self." << sanitize(decl.c_params()[i]) << ")";
             }
             os_ << " + \")\"\n\n";
@@ -390,8 +398,9 @@ class ProjectQOutputter final : public ast::Visitor {
 
         // Gate declarations
         prog.foreach_stmt([this](auto& stmt) {
-            if (typeid(stmt) == typeid(ast::GateDecl))
+            if (typeid(stmt) == typeid(ast::GateDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         if (config_.standalone) { // Standalone simulation
@@ -404,8 +413,9 @@ class ProjectQOutputter final : public ast::Visitor {
 
         // Program body
         prog.foreach_stmt([this](auto& stmt) {
-            if (typeid(stmt) != typeid(ast::GateDecl))
+            if (typeid(stmt) != typeid(ast::GateDecl)) {
                 stmt.accept(*this);
+            }
         });
 
         os_ << "\n";
@@ -424,10 +434,11 @@ class ProjectQOutputter final : public ast::Visitor {
 
     // Hack because lambda is reserved by python
     std::string sanitize(const std::string& id) {
-        if (id == "lambda")
+        if (id == "lambda") {
             return "lambd";
-        else
+        } else {
             return id;
+        }
     }
 };
 

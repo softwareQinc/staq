@@ -46,8 +46,9 @@ namespace ast = qasmtools::ast;
 using resource_count = std::unordered_map<std::string, int>;
 
 void add_counts(resource_count& A, const resource_count& B) {
-    for (auto& [gate, num] : B)
+    for (auto& [gate, num] : B) {
         A[gate] += num;
+    }
 }
 
 class ResourceEstimator final : public ast::Visitor {
@@ -73,8 +74,9 @@ class ResourceEstimator final : public ast::Visitor {
         // Get maximum critical path length
         int depth = 0;
         for (auto& [id, length] : depths) {
-            if (length > depth)
+            if (length > depth) {
                 depth = length;
+            }
         }
 
         // Set depth and return
@@ -126,10 +128,11 @@ class ResourceEstimator final : public ast::Visitor {
         auto phi = gate.phi().constant_eval();
         auto lambda = gate.lambda().constant_eval();
 
-        if (theta && phi && lambda)
+        if (theta && phi && lambda) {
             ss << "U(" << *theta << "," << *phi << "," << *lambda << ")";
-        else
+        } else {
             ss << "U";
+        }
 
         counts[ss.str()] += 1;
 
@@ -167,8 +170,9 @@ class ResourceEstimator final : public ast::Visitor {
 
         // Gate prefix, appropriately stripped of daggers
         auto tmp = gate.name();
-        if (config_.merge_dagger)
+        if (config_.merge_dagger) {
             strip_dagger(tmp);
+        }
 
         // Gate sufix. Only included if the parameters are constants
         std::stringstream ss;
@@ -180,25 +184,28 @@ class ResourceEstimator final : public ast::Visitor {
                 auto val = arg.constant_eval();
 
                 // Correct commas
-                if (flag)
+                if (flag) {
                     flag = false;
-                else
+                } else {
                     ss << ",";
+                }
 
-                if (val)
+                if (val) {
                     ss << *val;
-                else
+                } else {
                     all_constant = false;
+                }
             });
             ss << ")";
         }
 
         // Gate name
         std::string name;
-        if (all_constant)
+        if (all_constant) {
             name = tmp + ss.str();
-        else
+        } else {
             name = tmp;
+        }
 
         // Get the longest critical path into the gate
         int in_depth = -1;
@@ -242,8 +249,9 @@ class ResourceEstimator final : public ast::Visitor {
         auto& [counts, depths] = running_estimate_;
         int depth = 0;
         for (auto& [id, length] : depths) {
-            if (length > depth)
+            if (length > depth) {
                 depth = length;
+            }
         }
 
         // Set depth and return
@@ -264,8 +272,9 @@ class ResourceEstimator final : public ast::Visitor {
     void visit(ast::AncillaDecl& decl) {
         auto& [counts, depths] = running_estimate_;
 
-        if (!decl.is_dirty())
+        if (!decl.is_dirty()) {
             counts["ancillas"] += decl.size();
+        }
     }
 
     /* Program */

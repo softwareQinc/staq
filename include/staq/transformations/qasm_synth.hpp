@@ -144,8 +144,9 @@ class QASMSynthImpl final : public ast::Replacer {
      */
     void print_global_phase() {
         int a = get_w_count();
-        if (a == 0)
+        if (a == 0) {
             return;
+        }
         std::cout << "// global-phase: exp i*pi " << a << " " << 8 << std::endl;
 
 #if 0 /* Unused code for outputting the global phase a/8 in least terms. */

@@ -276,8 +276,9 @@ struct ChannelRepr {
             static_assert(
                 std::is_invocable_r_v<void, Fn,
                                       std::pair<qarg, PauliOp> const&>);
-            for (auto& p : pauli_)
+            for (auto& p : pauli_) {
                 fn(p);
+            }
         }
         /**@}*/
 
@@ -316,23 +317,26 @@ struct ChannelRepr {
 
         /** \brief Equality between Paulis */
         bool operator==(const Pauli& P) const {
-            if (phase_ != P.phase_)
+            if (phase_ != P.phase_) {
                 return false;
+            }
 
             for (auto& [q, p] : P.pauli_) {
                 auto it = pauli_.find(q);
                 auto tmp = it == pauli_.end() ? PauliOp::i : it->second;
 
-                if (tmp != p)
+                if (tmp != p) {
                     return false;
+                }
             }
 
             for (auto& [q, p] : pauli_) {
                 auto it = P.pauli_.find(q);
                 auto tmp = it == P.pauli_.end() ? PauliOp::i : it->second;
 
-                if (tmp != p)
+                if (tmp != p) {
                     return false;
+                }
             }
 
             return true;
@@ -353,8 +357,9 @@ struct ChannelRepr {
 
             for (auto& [q, p] : P.pauli_) {
                 auto it = pauli_.find(q);
-                if (it != pauli_.end() && !paulis_commute(it->second, p))
+                if (it != pauli_.end() && !paulis_commute(it->second, p)) {
                     tot_anti++;
+                }
             }
 
             return (tot_anti % 2) == 0;
@@ -367,8 +372,9 @@ struct ChannelRepr {
          */
         bool trivial_on(const qarg& q) const {
             auto it = pauli_.find(q);
-            if (it == pauli_.end() || it->second == PauliOp::i)
+            if (it == pauli_.end() || it->second == PauliOp::i) {
                 return true;
+            }
             return false;
         }
 
@@ -378,8 +384,9 @@ struct ChannelRepr {
          */
         bool is_z() const {
             for (auto& [q, p] : pauli_) {
-                if ((p != PauliOp::i) && (p != PauliOp::z))
+                if ((p != PauliOp::i) && (p != PauliOp::z)) {
                     return false;
+                }
             }
             return true;
         }
@@ -564,15 +571,17 @@ struct ChannelRepr {
         template <typename Fn>
         void foreach_qubit(Fn&& fn) const {
             static_assert(std::is_invocable_r_v<void, Fn, qarg const&>);
-            for (auto& q : qubits_)
+            for (auto& q : qubits_) {
                 fn(q);
+            }
         }
 
         /** \brief Pretty printer */
         std::ostream& print(std::ostream& os) const {
             os << "U(";
-            for (auto& q : qubits_)
+            for (auto& q : qubits_) {
                 os << q << ",";
+            }
             os << ")";
 
             return os;
