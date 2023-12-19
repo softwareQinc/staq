@@ -80,7 +80,7 @@ class QASMSynthImpl final : public ast::Replacer {
             std::optional<real_t> expr_val = theta_arg.constant_eval_gmp();
             if (!expr_val) {
                 std::cerr << gate.pos() << ": VarExpr found in classical arg0, "
-                          << "please inline the code.\n";
+                          << "please inline the code first.\n";
                 throw qasmtools::parser::ParseError();
             }
             real_t angle = expr_val.value();

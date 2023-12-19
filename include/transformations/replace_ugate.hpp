@@ -101,11 +101,9 @@ class ReplaceUGateImpl final : public ast::Replacer {
             theta = gate.theta().constant_eval().value();
             phi = gate.phi().constant_eval().value();
             lambda = gate.lambda().constant_eval().value();
-        } catch (...) {
-            std::cerr << "found VarExpr in UGate args"
+        } catch (const std::bad_optional_access& e) {
+            std::cerr << "error: VarExpr found in UGate args, please inline the code first."
                       << "\n";
-            // this should never happen; if this is reached then the Replacer
-            // is recurring too far down the AST
             throw;
         }
 
