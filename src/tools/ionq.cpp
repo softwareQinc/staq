@@ -33,7 +33,7 @@
 #include "transformations/desugar.hpp"
 #include "transformations/expression_simplifier.hpp"
 #include "transformations/inline.hpp"
-#include "transformations/replace_ugate.hpp"
+#include "transformations/replace_ugates.hpp"
 
 static const std::set<std::string_view> ionq_overrides{
     "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",

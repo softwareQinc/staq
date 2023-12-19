@@ -25,12 +25,12 @@
  */
 
 /**
- * \file transformations/replace_ugate.hpp
+ * \file transformations/replace_ugates.hpp
  * \brief Replacing common U gates with QE standard gates
  */
 
-#ifndef TRANSFORMATIONS_REPLACE_UGATE_HPP_
-#define TRANSFORMATIONS_REPLACE_UGATE_HPP_
+#ifndef TRANSFORMATIONS_REPLACE_UGATES_HPP_
+#define TRANSFORMATIONS_REPLACE_UGATES_HPP_
 
 #include <list>
 #include <unordered_map>
@@ -44,7 +44,7 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Replacing UGates
+ * \brief Replace UGates
  *
  * Visits an AST and replaces common U gates with QE standard
  * gates if possible. Assumes qelib1.inc is included.
@@ -74,10 +74,10 @@ static const std::vector<std::pair<UArgs,std::string>> standard_gates{
 // clang-format on
 
 /* Implementation */
-class ReplaceUGateImpl final : public ast::Replacer {
+class ReplaceUGatesImpl final : public ast::Replacer {
   public:
-    ReplaceUGateImpl() = default;
-    ~ReplaceUGateImpl() = default;
+    ReplaceUGatesImpl() = default;
+    ~ReplaceUGatesImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
 
@@ -159,11 +159,11 @@ class ReplaceUGateImpl final : public ast::Replacer {
 };
 
 void replace_ugates(ast::ASTNode& node) {
-    ReplaceUGateImpl alg;
+    ReplaceUGatesImpl alg;
     alg.run(node);
 }
 
 } /* namespace transformations */
 } /* namespace staq */
 
-#endif /* TRANSFORMATIONS_REPLACE_UGATE_HPP_ */
+#endif /* TRANSFORMATIONS_REPLACE_UGATES_HPP_ */
