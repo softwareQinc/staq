@@ -37,7 +37,7 @@
 
 static const std::set<std::string_view> ionq_overrides{
     "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",
-    "ry", "rz", "cz", "cy", "swap", "cx",  "u1", "ch",  "crz"};
+    "ry", "rz", "cz", "cy", "swap", "cx",  "ch", "crz"};
 
 int main(int argc, char** argv) {
     using namespace staq;
