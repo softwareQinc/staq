@@ -60,6 +60,9 @@ struct UArgs {
     double lambda;
 };
 
+/**
+ * List of replacements to make, e.g. replace U(pi,0,pi) with x.
+ */
 // clang-format off
 static const std::vector<std::pair<UArgs,std::string>> standard_gates{
     {{pi,   0,    pi},   "x"},
@@ -102,7 +105,8 @@ class ReplaceUGatesImpl final : public ast::Replacer {
             phi = gate.phi().constant_eval().value();
             lambda = gate.lambda().constant_eval().value();
         } catch (const std::bad_optional_access& e) {
-            std::cerr << "error: VarExpr found in UGate args, please inline the code first."
+            std::cerr << "error: VarExpr found in UGate args, please inline "
+                         "the code first."
                       << "\n";
             throw;
         }
@@ -125,18 +129,19 @@ class ReplaceUGatesImpl final : public ast::Replacer {
         // Remaining cases: rz ry rx
         if (name == "") {
             if (std::abs(theta) < EPS && std::abs(phi) < EPS) {
-                name = "rz";
+                name = "rz";    // U(0,0,lambda) = rz(lambda)
+                // assumes rz == u1; ignores the global phase
                 // TODO: Directly copy the exprs from the U gate
                 //  to avoid precision loss
                 c_args.emplace_back(
                     std::make_unique<ast::RealExpr>(gate.pos(), lambda));
             } else if (std::abs(phi) < EPS && std::abs(lambda) < EPS) {
-                name = "ry";
+                name = "ry";    // U(theta,0,0) = ry(theta)
                 c_args.emplace_back(
                     std::make_unique<ast::RealExpr>(gate.pos(), theta));
             } else if (std::abs(phi + pi / 2) < EPS &&
                        std::abs(lambda - pi / 2) < EPS) {
-                name = "rx";
+                name = "rx";    // U(theta,-pi/2,pi/2) = rx(theta)
                 c_args.emplace_back(
                     std::make_unique<ast::RealExpr>(gate.pos(), theta));
             }
