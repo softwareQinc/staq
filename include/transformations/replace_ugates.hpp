@@ -129,21 +129,19 @@ class ReplaceUGatesImpl final : public ast::Replacer {
         // Remaining cases: rz ry rx
         if (name == "") {
             if (std::abs(theta) < EPS && std::abs(phi) < EPS) {
-                name = "rz";    // U(0,0,lambda) = rz(lambda)
+                name = "rz"; // U(0,0,lambda) = rz(lambda)
                 // assumes rz == u1; ignores the global phase
-                // TODO: Directly copy the exprs from the U gate
-                //  to avoid precision loss
-                c_args.emplace_back(
-                    std::make_unique<ast::RealExpr>(gate.pos(), lambda));
+                c_args.emplace_back(std::unique_ptr<ast::Expr>(
+                    ast::object::clone(gate.lambda())));
             } else if (std::abs(phi) < EPS && std::abs(lambda) < EPS) {
-                name = "ry";    // U(theta,0,0) = ry(theta)
-                c_args.emplace_back(
-                    std::make_unique<ast::RealExpr>(gate.pos(), theta));
+                name = "ry"; // U(theta,0,0) = ry(theta)
+                c_args.emplace_back(std::unique_ptr<ast::Expr>(
+                    ast::object::clone(gate.theta())));
             } else if (std::abs(phi + pi / 2) < EPS &&
                        std::abs(lambda - pi / 2) < EPS) {
-                name = "rx";    // U(theta,-pi/2,pi/2) = rx(theta)
-                c_args.emplace_back(
-                    std::make_unique<ast::RealExpr>(gate.pos(), theta));
+                name = "rx"; // U(theta,-pi/2,pi/2) = rx(theta)
+                c_args.emplace_back(std::unique_ptr<ast::Expr>(
+                    ast::object::clone(gate.theta())));
             }
         }
 
