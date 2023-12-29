@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     std::string input_qasm;
 
     const std::string copyright_notice{
-        "(c) 2019 - 2023 softwareQ Inc. All rights reserved."};
+        "(c) 2019 - 2024 softwareQ Inc. All rights reserved."};
     CLI::App app{"staq -- A full-stack quantum processing toolkit\n" +
                  copyright_notice};
     app.get_formatter()->label("OPTIONS", "PASSES/OPTIONS");
