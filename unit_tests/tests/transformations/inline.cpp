@@ -8,7 +8,7 @@ using namespace staq;
 using namespace qasmtools;
 
 // Testing inlining
-/******************************************************************************/
+
 TEST(Inline, Simple) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -33,9 +33,7 @@ TEST(Inline, Simple) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Inline, Multi_Level) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -66,9 +64,7 @@ TEST(Inline, Multi_Level) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Inline, Multi_Ancilla) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -101,9 +97,7 @@ TEST(Inline, Multi_Ancilla) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Inline, Dirty_Ancilla) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -130,9 +124,7 @@ TEST(Inline, Dirty_Ancilla) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Inline, Dirty_Ancilla_No_Free) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -160,9 +152,7 @@ TEST(Inline, Dirty_Ancilla_No_Free) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Inline, Dirty_Ancilla_Split) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -194,9 +184,7 @@ TEST(Inline, Dirty_Ancilla_Split) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Inline, Mixed_Ancilla) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -229,4 +217,3 @@ TEST(Inline, Mixed_Ancilla) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

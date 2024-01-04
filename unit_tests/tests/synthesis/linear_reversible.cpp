@@ -33,7 +33,6 @@ static mapping::Device test_device("Test device", 9,
 
 // Testing linear reversible (cnot) synthesis
 
-/******************************************************************************/
 TEST(Gaussian_Synthesis, Base) {
     synthesis::linear_op<bool> mat{
         {1, 0},
@@ -42,9 +41,7 @@ TEST(Gaussian_Synthesis, Base) {
     EXPECT_EQ(synthesis::gauss_jordan(mat), circuit({{0, 1}}));
     EXPECT_EQ(synthesis::gaussian_elim(mat), circuit({{0, 1}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gaussian_Synthesis, Swap) {
     synthesis::linear_op<bool> mat{
         {0, 1},
@@ -53,9 +50,7 @@ TEST(Gaussian_Synthesis, Swap) {
     EXPECT_EQ(synthesis::gauss_jordan(mat), circuit({{1, 0}, {0, 1}, {1, 0}}));
     EXPECT_EQ(synthesis::gaussian_elim(mat), circuit({{1, 0}, {0, 1}, {1, 0}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gaussian_Synthesis, Back_propagation) {
     synthesis::linear_op<bool> mat{
         {1, 1},
@@ -64,17 +59,13 @@ TEST(Gaussian_Synthesis, Back_propagation) {
     EXPECT_EQ(synthesis::gauss_jordan(mat), circuit({{1, 0}}));
     EXPECT_EQ(synthesis::gaussian_elim(mat), circuit({{1, 0}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gaussian_Synthesis, 3_Qubit) {
     synthesis::linear_op<bool> mat{{1, 0, 0}, {1, 1, 0}, {0, 1, 1}};
     EXPECT_EQ(synthesis::gauss_jordan(mat), circuit({{1, 2}, {0, 1}}));
     EXPECT_EQ(synthesis::gaussian_elim(mat), circuit({{1, 2}, {0, 1}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Gauss, Base) {
     synthesis::linear_op<bool> mat{
         {1, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 0, 0, 0, 0, 0, 0},
@@ -85,9 +76,7 @@ TEST(Steiner_Gauss, Base) {
     EXPECT_EQ(synthesis::steiner_gauss(mat, test_device),
               circuit({{1, 4}, {0, 1}, {1, 4}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Gauss, Base_inv) {
     synthesis::linear_op<bool> mat{
         {1, 1, 0, 0, 0, 0, 0, 0}, {0, 1, 0, 0, 1, 0, 0, 0},
@@ -98,9 +87,7 @@ TEST(Steiner_Gauss, Base_inv) {
     EXPECT_EQ(synthesis::steiner_gauss(mat, test_device),
               circuit({{1, 0}, {4, 1}, {1, 0}, {1, 0}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Gauss, Fill_Flush) {
     synthesis::linear_op<bool> mat{
         {1, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 0, 0, 0, 0, 0, 0, 0},
@@ -124,9 +111,7 @@ TEST(Steiner_Gauss, Fill_Flush) {
                                                                    {1, 4},
                                                                    {0, 1}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Gauss, Swap_Rows) {
     synthesis::linear_op<bool> mat{
         {0, 1, 0, 0, 0, 0, 0, 0}, {1, 0, 0, 0, 0, 0, 0, 0},
@@ -137,9 +122,7 @@ TEST(Steiner_Gauss, Swap_Rows) {
     EXPECT_EQ(synthesis::steiner_gauss(mat, test_device),
               circuit({{1, 0}, {0, 1}, {1, 0}}));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Gauss, Swap_Rows_Nonadjacent) {
     synthesis::linear_op<bool> mat{
         {0, 0, 1, 0, 0, 0, 0, 0}, {0, 1, 0, 0, 0, 0, 0, 0},
@@ -152,4 +135,3 @@ TEST(Steiner_Gauss, Swap_Rows_Nonadjacent) {
         circuit(
             {{2, 1}, {1, 0}, {1, 2}, {2, 1}, {0, 1}, {1, 2}, {1, 0}, {2, 1}}));
 }
-/******************************************************************************/

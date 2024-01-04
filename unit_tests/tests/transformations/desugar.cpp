@@ -9,7 +9,7 @@ using namespace staq;
 using namespace qasmtools;
 
 // Testing desugaring of mapped gates
-/******************************************************************************/
+
 TEST(Desugar, One_Qubit) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -29,9 +29,7 @@ TEST(Desugar, One_Qubit) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Desugar, Two_Qubit) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -53,9 +51,7 @@ TEST(Desugar, Two_Qubit) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Desugar, Multi_Qubit) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -79,9 +75,7 @@ TEST(Desugar, Multi_Qubit) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Desugar, Mixin) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -105,4 +99,3 @@ TEST(Desugar, Mixin) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

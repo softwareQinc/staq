@@ -66,7 +66,6 @@ bool eq(const std::list<synthesis::cx_dihedral>& a,
     return same;
 }
 
-/******************************************************************************/
 TEST(Gray_Synth, Base) {
     std::list<synthesis::phase_term> f;
     f.emplace_back(phase({true, true}, angles::pi_quarter));
@@ -83,9 +82,7 @@ TEST(Gray_Synth, Base) {
 
     EXPECT_TRUE(eq(synthesis::gray_synth(f, mat), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gray_Synth, Toffoli) {
     std::list<synthesis::phase_term> f;
     f.emplace_back(phase({true, false, false}, angles::pi_quarter));
@@ -119,9 +116,7 @@ TEST(Gray_Synth, Toffoli) {
 
     EXPECT_TRUE(eq(synthesis::gray_synth(f, mat), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gray_Synth, Gray_code) {
     std::list<synthesis::phase_term> f;
     f.emplace_back(phase({true, false, false, false}, angles::pi_quarter));
@@ -156,9 +151,7 @@ TEST(Gray_Synth, Gray_code) {
 
     EXPECT_TRUE(eq(synthesis::gray_synth(f, mat), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 // This test should mimic the Steiner_Gauss base case
 TEST(Gray_Steiner, Base) {
     mapping::Device test_device("Test device", 9,
@@ -204,9 +197,7 @@ TEST(Gray_Steiner, Base) {
 
     EXPECT_TRUE(eq(synthesis::gray_steiner(f, mat, test_device), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 // This test should mimic the Steiner_gauss fill_flush case
 TEST(Gray_Steiner, Fill_flush) {
     mapping::Device test_device("Test device", 9,
@@ -259,4 +250,3 @@ TEST(Gray_Steiner, Fill_flush) {
 
     EXPECT_TRUE(eq(synthesis::gray_steiner(f, mat, test_device), output));
 }
-/******************************************************************************/

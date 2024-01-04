@@ -8,7 +8,7 @@ using namespace staq;
 using namespace qasmtools;
 
 // Testing collecting multiples of pi
-/******************************************************************************/
+
 TEST(ExprSimplify, CollectPi) {
     std::string pre =
         "OPENQASM 2.0;\n"
@@ -30,10 +30,9 @@ TEST(ExprSimplify, CollectPi) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
 // Testing simplifying expressions with rational numbers
-/******************************************************************************/
+
 TEST(ExprSimplify, Rationals) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -52,10 +51,9 @@ TEST(ExprSimplify, Rationals) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
 // Testing variable expressions
-/******************************************************************************/
+
 TEST(ExprSimplify, Variables) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -84,10 +82,9 @@ TEST(ExprSimplify, Variables) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
 // Testing complicated expressions
-/******************************************************************************/
+
 TEST(ExprSimplify, Mixed) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -123,4 +120,3 @@ TEST(ExprSimplify, Mixed) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

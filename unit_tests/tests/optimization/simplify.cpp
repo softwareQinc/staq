@@ -8,7 +8,7 @@ using namespace staq;
 using namespace qasmtools;
 
 // Testing basic simplifications
-/******************************************************************************/
+
 TEST(Simplify, H_Cancel) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -29,9 +29,7 @@ TEST(Simplify, H_Cancel) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Simplify, S_Cancel) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -52,9 +50,7 @@ TEST(Simplify, S_Cancel) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Simplify, CX_Cancel) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -75,9 +71,7 @@ TEST(Simplify, CX_Cancel) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Simplify, No_Cancel) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -102,9 +96,7 @@ TEST(Simplify, No_Cancel) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Simplify, Disjoint_Qubits) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -127,9 +119,7 @@ TEST(Simplify, Disjoint_Qubits) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Simplify, Serial_Cancellation) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -152,9 +142,7 @@ TEST(Simplify, Serial_Cancellation) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Simplify, Nested_Cancellation) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -177,4 +165,3 @@ TEST(Simplify, Nested_Cancellation) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

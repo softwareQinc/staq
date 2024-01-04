@@ -8,7 +8,7 @@ using namespace staq;
 using namespace qasmtools;
 
 // Testing cnot resynthesis
-/******************************************************************************/
+
 TEST(CNOT_resynthesis, Base) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -31,9 +31,7 @@ TEST(CNOT_resynthesis, Base) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(CNOT_resynthesis, Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -57,9 +55,7 @@ TEST(CNOT_resynthesis, Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(CNOT_resynthesis, Decl_opt) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -101,4 +97,3 @@ TEST(CNOT_resynthesis, Decl_opt) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
