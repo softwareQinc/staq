@@ -29,7 +29,7 @@ and libraries to closely follow the OpenQASM 2.0 source.
 Check out the [Wiki](https://github.com/softwareQinc/staq/wiki) for more
 information about the library and included tools.
 
-Copyright (c) 2013 - 2023 softwareQ Inc. All rights reserved.
+Copyright (c) 2013 - 2024 softwareQ Inc. All rights reserved.
 
 ---
 
