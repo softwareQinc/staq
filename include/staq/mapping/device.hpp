@@ -39,7 +39,6 @@
 #include <limits>
 #include <list>
 #include <optional>
-#include <queue>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -100,7 +99,8 @@ class Device {
      * \param n The number of qubits
      * \param dag A digraph, given as a Boolean adjacency matrix
      * \param sq_fi A vector of average single-qubit gate fidelities for each
-     * qubit \param tq_fi A matrix of average two-qubit gate fidelities for each
+     * qubit
+     * \param tq_fi A matrix of average two-qubit gate fidelities for each
      * directed pair
      */
     Device(std::string name, int n, const std::vector<std::vector<bool>>& dag,
