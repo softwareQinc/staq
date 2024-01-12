@@ -6,6 +6,7 @@ wrapper for **staq**. pystaq can be installed using `pip`
 ```
 pip install git+https://github.com/softwareQinc/staq
 ```
+
 ## Creating python stubs for IDE autocompletion and static type checking
 
 In case autocompletion (or static type checking via [mypy](https://www.mypy-lang.org/))
@@ -21,13 +22,15 @@ ln -s ~/python_stubs/pystaq ~/venv/lib/python3.11/site-packages
 ```
 
 In the above, we assumed that your platform is UNIX/UNIX-like and that you have
-pystaq installed in a virtual environment under `~/venv`. Please modify 
+pystaq installed in a virtual environment under `~/venv`. Please modify
 accordingly on your system.
 
 ## Overview
+
 To parse a circuit, use the function `pystaq.parse_file`, which takes a file path as input, or `pystaq.parse_str`, which accepts an OpenQASM 2.0 program string.
 
 The library provides the following tools:
+
 ```
 desugar
 inline
@@ -45,9 +48,13 @@ grid_synth
 qasm_synth
 lattice_surgery
 ```
+
 Each function takes as input a parsed program, followed by any options supported by the corresponding staq tool.
-***
+
+---
+
 Example:
+
 ```
 >>> import pystaq
 
@@ -81,9 +88,13 @@ cx q[0],q[1];
 ```
 
 ## Device generator
+
 The `pystaq.Device` class can be used to create custom devices for mapping. It has the methods `add_edge` and `set_fidelity`.
-***
+
+---
+
 Example:
+
 ```python3
 import pystaq
 dev = pystaq.Device(4)           # 4 qubits
@@ -93,7 +104,9 @@ dev.set_fidelity(0, 0.9)         # single qubit fidelity
 with open('device.json', 'w') as f:
     f.write(str(dev))
 ```
+
 This produces the following `device.json` file, which can then be used by `pystaq.map`:
+
 ```js
 {
   "couplings": [
@@ -131,6 +144,7 @@ This produces the following `device.json` file, which can then be used by `pysta
 ```
 
 ## Custom Bindings
+
 pystaq was created using pybind11. See [`pystaq/staq_wrapper.cpp`](https://github.com/softwareQinc/staq/blob/main/pystaq/staq_wrapper.cpp) for many examples of how to wrap a circuit transformation.
 
 For more details, see also our Quantum++ wrapper [pyqpp](https://github.com/softwareQinc/qpp/wiki/8.-pyqpp#custom-bindings).
