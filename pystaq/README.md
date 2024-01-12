@@ -9,7 +9,7 @@ pip install git+https://github.com/softwareQinc/staq
 ## Creating python stubs for IDE autocompletion and static type checking
 
 In case autocompletion (or static type checking via [mypy](https://www.mypy-lang.org/))
-for your editor/IDE does not work properly, you may need to create python stubs
+does not work properly in your editor/IDE, you may need to create python stubs
 for the package. To do this, execute
 
 ```shell
@@ -20,9 +20,9 @@ stubgen -p pystaq -o ~/python_stubs
 ln -s ~/python_stubs/pystaq ~/venv/lib/python3.11/site-packages
 ```
 
-In the above, we assumed that your platform is UNIX/UNIX-like, and that you 
-have pystaq installed in a virtual environment under `~/venv`. Please modify 
-accordingly for your system.
+In the above, we assumed that your platform is UNIX/UNIX-like and that you have
+pystaq installed in a virtual environment under `~/venv`. Please modify 
+accordingly on your system.
 
 ## Overview
 To parse a circuit, use the function `pystaq.parse_file`, which takes a file path as input, or `pystaq.parse_str`, which accepts an OpenQASM 2.0 program string.
