@@ -18,7 +18,7 @@ mkdir ~/python_stubs
 export MYPATH=$MYPATH:~/python_subs # put this in your .profile or .bashrc
 . ~/venv/bin/activate
 stubgen -p pystaq -o ~/python_stubs
-ln -s ~/python_stubs/pystaq ~/venv/lib/python3.11/site-packages
+ln -s ~/python_stubs/pystaq.pyi ~/venv/lib/python3.11/site-packages
 ```
 
 In the above, we assumed that your platform is UNIX/UNIX-like and that you have
