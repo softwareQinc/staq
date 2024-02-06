@@ -35,10 +35,11 @@
 #include "staq/transformations/expression_simplifier.hpp"
 #include "staq/transformations/inline.hpp"
 #include "staq/transformations/replace_ugate.hpp"
+#include "staq/transformations/group_qregs.hpp"
 
 static const std::set<std::string_view> ionq_overrides{
     "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",
-    "ry", "rz", "cz", "cy", "swap", "cx",  "u1", "ch",  "crz"};
+    "ry", "rz", "cz", "cy", "swap", "cx",  "ch", "crz"};
 
 int main(int argc, char** argv) {
     using namespace staq;
@@ -57,12 +58,7 @@ int main(int argc, char** argv) {
         transformations::desugar(*program);
 
         // Flatten qregs into one global qreg.
-        // IonQ Simulator has 29 qubits;
-        //  the other IonQ devices have less than 29 qubits.
-        // For now let's set a cap of 11 qubits; change this later.
-        auto device = mapping::fully_connected(11);
-        auto layout = mapping::compute_basic_layout(device, *program);
-        mapping::apply_layout(layout, device, *program);
+        transformations::group_qregs(*program);
 
         // Inline declared gates
         transformations::Inliner::config params{false, ionq_overrides};

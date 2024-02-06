@@ -44,8 +44,10 @@ namespace output {
 namespace ast = qasmtools::ast;
 
 /** \brief Equivalent IonQ standard gates for qasm standard gates */
-std::unordered_map<std::string, std::string> qasmstd_to_ionq{
-    {"sdg", "si"}, {"tdg", "ti"}, {"u1", "rz"}};
+std::unordered_map<std::string, std::string> qasmstd_to_ionq{{"sdg", "si"},
+                                                             {"tdg", "ti"}};
+// Note: u1 and rz gates are equivalent up to a global phase. This substitution
+// has been left out for now; unsure if global phase matters in IonQ.
 
 /**
  * \class staq::output::IonQOutputter
