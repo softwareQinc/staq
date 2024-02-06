@@ -33,6 +33,7 @@
 #define MAPPING_MAPPING_SWAP_HPP_
 
 #include <map>
+#include <optional>
 
 #include "qasmtools/ast/replacer.hpp"
 

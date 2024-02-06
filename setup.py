@@ -12,6 +12,7 @@ extra_compile_args = [
     "-Ilibs/third_party",
     "-Iinclude",
     "-Iqasmtools/include",
+    "-Ipystaq/include",
 ]
 extra_links_args = []
 
@@ -63,7 +64,7 @@ if (
 ext_modules = [
     Pybind11Extension(
         "pystaq",
-        ["pystaq/staq_wrapper.cpp"],
+        ["pystaq/src/staq_wrapper.cpp"],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_links_args,
         cxx_std=17,

@@ -24,47 +24,7 @@
  * SOFTWARE.
  */
 
-#include <sstream>
-
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-#include "qasmtools/parser/parser.hpp"
-
-#include "staq/transformations/barrier_merge.hpp"
-#include "staq/transformations/desugar.hpp"
-#include "staq/transformations/expression_simplifier.hpp"
-#include "staq/transformations/inline.hpp"
-#include "staq/transformations/oracle_synthesizer.hpp"
-
-#ifdef GRID_SYNTH
-#include "staq/grid_synth/grid_synth.hpp"
-#include "staq/grid_synth/types.hpp"
-#include "staq/transformations/qasm_synth.hpp"
-#endif
-
-#include "staq/optimization/cnot_resynthesis.hpp"
-#include "staq/optimization/rotation_folding.hpp"
-#include "staq/optimization/simplify.hpp"
-
-#include "staq/mapping/device.hpp"
-#include "staq/mapping/layout/basic.hpp"
-#include "staq/mapping/layout/bestfit.hpp"
-#include "staq/mapping/layout/eager.hpp"
-#include "staq/mapping/mapping/steiner.hpp"
-#include "staq/mapping/mapping/swap.hpp"
-
-#include "staq/tools/qubit_estimator.hpp"
-#include "staq/tools/resource_estimator.hpp"
-
-#include "staq/output/cirq.hpp"
-#include "staq/output/ionq.hpp"
-#include "staq/output/lattice_surgery.hpp"
-#include "staq/output/projectq.hpp"
-#include "staq/output/qsharp.hpp"
-#include "staq/output/quil.hpp"
-
-namespace py = pybind11;
+#include "pystaq/pystaq_common.h"
 
 class Program {
     qasmtools::ast::ptr<qasmtools::ast::Program> prog_;
