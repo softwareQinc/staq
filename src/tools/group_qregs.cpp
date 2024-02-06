@@ -24,56 +24,17 @@
  * SOFTWARE.
  */
 
-#include <CLI/CLI.hpp>
-
-#include "mapping/device.hpp"
-#include "mapping/layout/basic.hpp"
-#include "output/ionq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
-#include "transformations/expression_simplifier.hpp"
 #include "transformations/group_qregs.hpp"
-#include "transformations/inline.hpp"
-#include "transformations/replace_ugates.hpp"
 
-static const std::set<std::string_view> ionq_overrides{
-    "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",
-    "ry", "rz", "cz", "cy", "swap", "cx",  "ch", "crz"};
-
-int main(int argc, char** argv) {
+int main() {
     using namespace staq;
     using qasmtools::parser::parse_stdin;
 
-    std::string filename = "";
-
-    CLI::App app{"QASM to IonQ transpiler"};
-
-    app.add_option("-o,--output", filename, "Output to a file");
-
-    CLI11_PARSE(app, argc, argv);
     auto program = parse_stdin();
-
     if (program) {
-        transformations::desugar(*program);
-
-        // Flatten qregs into one global qreg.
         transformations::group_qregs(*program);
-
-        // Inline declared gates
-        transformations::Inliner::config params{false, ionq_overrides};
-        transformations::inline_ast(*program, params);
-
-        // Evaluate expressions
-        // TODO: Handle multiples of pi nicely
-        transformations::expr_simplify(*program, true);
-
-        // Replace U gates
-        transformations::replace_ugates(*program);
-
-        if (filename.empty())
-            output::output_ionq(*program);
-        else
-            output::write_ionq(*program, filename);
+        std::cout << *program;
     } else {
         std::cerr << "Parsing failed\n";
     }

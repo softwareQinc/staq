@@ -25,12 +25,12 @@
  */
 
 /**
- * \file transformations/replace_ugate.hpp
+ * \file transformations/replace_ugates.hpp
  * \brief Replacing common U gates with QE standard gates
  */
 
-#ifndef TRANSFORMATIONS_REPLACE_UGATE_HPP_
-#define TRANSFORMATIONS_REPLACE_UGATE_HPP_
+#ifndef TRANSFORMATIONS_REPLACE_UGATES_HPP_
+#define TRANSFORMATIONS_REPLACE_UGATES_HPP_
 
 #include <list>
 #include <unordered_map>
@@ -44,7 +44,7 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Replacing UGates
+ * \brief Replace UGates
  *
  * Visits an AST and replaces common U gates with QE standard
  * gates if possible. Assumes qelib1.inc is included.
@@ -60,6 +60,9 @@ struct UArgs {
     double lambda;
 };
 
+/**
+ * List of replacements to make, e.g. replace U(pi,0,pi) with x.
+ */
 // clang-format off
 static const std::vector<std::pair<UArgs,std::string>> standard_gates{
     {{pi,   0,    pi},   "x"},
@@ -74,10 +77,10 @@ static const std::vector<std::pair<UArgs,std::string>> standard_gates{
 // clang-format on
 
 /* Implementation */
-class ReplaceUGateImpl final : public ast::Replacer {
+class ReplaceUGatesImpl final : public ast::Replacer {
   public:
-    ReplaceUGateImpl() = default;
-    ~ReplaceUGateImpl() = default;
+    ReplaceUGatesImpl() = default;
+    ~ReplaceUGatesImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
 
@@ -101,11 +104,10 @@ class ReplaceUGateImpl final : public ast::Replacer {
             theta = gate.theta().constant_eval().value();
             phi = gate.phi().constant_eval().value();
             lambda = gate.lambda().constant_eval().value();
-        } catch (...) {
-            std::cerr << "found VarExpr in UGate args"
+        } catch (const std::bad_optional_access& e) {
+            std::cerr << "error: VarExpr found in UGate args, please inline "
+                         "the code first."
                       << "\n";
-            // this should never happen; if this is reached then the Replacer
-            // is recurring too far down the AST
             throw;
         }
 
@@ -127,20 +129,19 @@ class ReplaceUGateImpl final : public ast::Replacer {
         // Remaining cases: rz ry rx
         if (name == "") {
             if (std::abs(theta) < EPS && std::abs(phi) < EPS) {
-                name = "rz";
-                // TODO: Directly copy the exprs from the U gate
-                //  to avoid precision loss
-                c_args.emplace_back(
-                    std::make_unique<ast::RealExpr>(gate.pos(), lambda));
+                name = "rz"; // U(0,0,lambda) = rz(lambda)
+                // assumes rz == u1; ignores the global phase
+                c_args.emplace_back(std::unique_ptr<ast::Expr>(
+                    ast::object::clone(gate.lambda())));
             } else if (std::abs(phi) < EPS && std::abs(lambda) < EPS) {
-                name = "ry";
-                c_args.emplace_back(
-                    std::make_unique<ast::RealExpr>(gate.pos(), theta));
+                name = "ry"; // U(theta,0,0) = ry(theta)
+                c_args.emplace_back(std::unique_ptr<ast::Expr>(
+                    ast::object::clone(gate.theta())));
             } else if (std::abs(phi + pi / 2) < EPS &&
                        std::abs(lambda - pi / 2) < EPS) {
-                name = "rx";
-                c_args.emplace_back(
-                    std::make_unique<ast::RealExpr>(gate.pos(), theta));
+                name = "rx"; // U(theta,-pi/2,pi/2) = rx(theta)
+                c_args.emplace_back(std::unique_ptr<ast::Expr>(
+                    ast::object::clone(gate.theta())));
             }
         }
 
@@ -161,11 +162,11 @@ class ReplaceUGateImpl final : public ast::Replacer {
 };
 
 void replace_ugates(ast::ASTNode& node) {
-    ReplaceUGateImpl alg;
+    ReplaceUGatesImpl alg;
     alg.run(node);
 }
 
 } /* namespace transformations */
 } /* namespace staq */
 
-#endif /* TRANSFORMATIONS_REPLACE_UGATE_HPP_ */
+#endif /* TRANSFORMATIONS_REPLACE_UGATES_HPP_ */
