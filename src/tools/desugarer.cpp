@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -25,7 +25,8 @@
  */
 
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+
+#include "staq/transformations/desugar.hpp"
 
 int main() {
     using namespace staq;

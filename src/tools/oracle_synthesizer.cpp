@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -26,7 +26,7 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "transformations/oracle_synthesizer.hpp"
+#include "staq/transformations/oracle_synthesizer.hpp"
 
 int main() {
     using namespace staq;

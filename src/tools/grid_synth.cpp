@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -29,13 +29,13 @@
 #include <iostream>
 #include <vector>
 
-#include <third_party/CLI/CLI.hpp>
+#include "third_party/CLI/CLI.hpp"
 
-#include "grid_synth/exact_synthesis.hpp"
-#include "grid_synth/grid_synth.hpp"
-#include "grid_synth/regions.hpp"
-#include "grid_synth/rz_approximation.hpp"
-#include "grid_synth/types.hpp"
+#include "staq/grid_synth/exact_synthesis.hpp"
+#include "staq/grid_synth/grid_synth.hpp"
+#include "staq/grid_synth/regions.hpp"
+#include "staq/grid_synth/rz_approximation.hpp"
+#include "staq/grid_synth/types.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

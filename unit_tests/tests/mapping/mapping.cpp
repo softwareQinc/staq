@@ -3,9 +3,9 @@
 #include "qasmtools/parser/parser.hpp"
 
 // clang-format off
-#include "mapping/device.hpp"
-#include "mapping/mapping/swap.hpp"
-#include "mapping/mapping/steiner.hpp"
+#include "staq/mapping/device.hpp"
+#include "staq/mapping/mapping/swap.hpp"
+#include "staq/mapping/mapping/steiner.hpp"
 // clang-format on
 
 using namespace staq;
@@ -37,7 +37,7 @@ static mapping::Device test_device("Test device", 9,
                                    });
 
 // Basic tests for mapping CNOT gates
-/******************************************************************************/
+
 TEST(Swap_Mapper, Base) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -59,9 +59,7 @@ TEST(Swap_Mapper, Base) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Swap_Mapper, Shortest_Path) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -89,9 +87,7 @@ TEST(Swap_Mapper, Shortest_Path) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Mapper, Base) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -124,9 +120,7 @@ TEST(Steiner_Mapper, Base) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Mapper, Swap) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -151,9 +145,7 @@ TEST(Steiner_Mapper, Swap) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Steiner_Mapper, Swap_No_Z) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -194,4 +186,3 @@ TEST(Steiner_Mapper, Swap_No_Z) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

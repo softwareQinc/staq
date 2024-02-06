@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -27,16 +27,16 @@
 #include <third_party/CLI/CLI.hpp>
 
 #include "qasmtools/parser/parser.hpp"
-#include "tools/qubit_estimator.hpp"
-#include "transformations/expression_simplifier.hpp"
-#include "transformations/inline.hpp"
 
-#include "mapping/device.hpp"
-#include "mapping/layout/basic.hpp"
-#include "mapping/layout/bestfit.hpp"
-#include "mapping/layout/eager.hpp"
-#include "mapping/mapping/steiner.hpp"
-#include "mapping/mapping/swap.hpp"
+#include "staq/mapping/device.hpp"
+#include "staq/mapping/layout/basic.hpp"
+#include "staq/mapping/layout/bestfit.hpp"
+#include "staq/mapping/layout/eager.hpp"
+#include "staq/mapping/mapping/steiner.hpp"
+#include "staq/mapping/mapping/swap.hpp"
+#include "staq/tools/qubit_estimator.hpp"
+#include "staq/transformations/expression_simplifier.hpp"
+#include "staq/transformations/inline.hpp"
 
 // TODO: Find or create a format for reading machine definitions
 // and have this tool accept a machine definition as input for mapping

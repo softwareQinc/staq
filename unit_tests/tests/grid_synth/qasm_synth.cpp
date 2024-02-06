@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/qasm_synth.hpp"
+
+#include "staq/transformations/qasm_synth.hpp"
 
 using namespace staq;
 using namespace grid_synth;

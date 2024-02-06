@@ -1,17 +1,26 @@
+Pre-release
+    - All header files are moved into "[include/staq]", so to include staq
+      headers one now must #include "staq/<header>.hpp". This change was made
+      for the sake of making the include statements look "uniform" in both
+      non-installed (compiling without having staq installed) and installed
+      (compiling with staq installed headers) modes.
+    - Integrated the 'staq_ionq' OpenQASM2 -> IonQ transpiler into pystaq
+
 Version 3.4 - 1 December 2023
-    - When configuring staq with `cmake -B build -DINSTALL_SOURCES=ON`,
-      `cmake --build build --target install` now installs staq's source code in
+    - When configuring staq with 'cmake -B build -DINSTALL_SOURCES=ON',
+      'cmake --build build --target install' now installs staq's source code in
       addition to the binaries
     - Renamed the ["examples"] directory to ["misc"]
     - Moved ["qpu_specs"] and ["scripts"] directories to ["misc"]
     - Added standalone source code example (requires staq's source installation)
       in the ["examples/standalone"] directory
+    - Added 'staq_ionq' OpenQASM2 -> IonQ transpiler
 
 Version 3.3 - 6 October 2023
     - Implemented the  grid synth rotation synthesizer algorithm
       https://arxiv.org/abs/1403.2975, enabled only when the GNU MP library is
-      detected. When enabled, the build will include `staq_grid_synth` and
-      `staq_qasm_synth`.
+      detected. When enabled, the build will include 'staq_grid_synth' and
+      'staq_qasm_synth'.
 
 Version 3.2.3 - 14 August 2023
     - Minor bugfix in pystaq setup.py that prevented pip install from remote

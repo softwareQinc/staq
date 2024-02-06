@@ -2,13 +2,13 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "optimization/rotation_folding.hpp"
+#include "staq/optimization/rotation_folding.hpp"
 
 using namespace staq;
 using namespace qasmtools;
 
 // Testing rotation folding optimization
-/******************************************************************************/
+
 TEST(Rotation_folding, T_Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -30,9 +30,7 @@ TEST(Rotation_folding, T_Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, T_Cancel) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -53,9 +51,7 @@ TEST(Rotation_folding, T_Cancel) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, T_No_Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -78,9 +74,7 @@ TEST(Rotation_folding, T_No_Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, T_Conj_Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -105,9 +99,7 @@ TEST(Rotation_folding, T_Conj_Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, Rz_Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -129,9 +121,7 @@ TEST(Rotation_folding, Rz_Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, Rx_Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -153,9 +143,7 @@ TEST(Rotation_folding, Rx_Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, T_CNOT_Merge) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -178,9 +166,7 @@ TEST(Rotation_folding, T_CNOT_Merge) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Rotation_folding, Global_Phase) {
     std::string pre = "OPENQASM 2.0;\n"
                       "include \"qelib1.inc\";\n"
@@ -206,4 +192,3 @@ TEST(Rotation_folding, Global_Phase) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -369,10 +369,11 @@ class GateReplacer final : public Replacer {
     std::optional<std::list<ptr<Gate>>> replace_gate(Gate& gate) {
         auto it = replacements_.find(gate.uid());
 
-        if (it != replacements_.end())
+        if (it != replacements_.end()) {
             return std::move(it->second);
-        else
+        } else {
             return std::nullopt;
+        }
     }
 };
 
@@ -384,7 +385,8 @@ class GateReplacer final : public Replacer {
  * For replacement of other types of nodes, use the Replacer class.
  *
  * \param node Reference to the root of the AST in which replacement will take
- * place \param replacements Hash map from gate UID's to a list of gates which
+ * place
+ * \param replacements Hash map from gate UID's to a list of gates which
  * should replace it
  */
 inline void

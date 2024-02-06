@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/matrix.hpp"
-#include "grid_synth/rz_approximation.hpp"
+#include "staq/grid_synth/matrix.hpp"
+#include "staq/grid_synth/rz_approximation.hpp"
 
 using namespace staq;
 using namespace grid_synth;

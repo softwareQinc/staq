@@ -3,8 +3,8 @@
 #include "qasmtools/ast/expr.hpp"
 #include "qasmtools/utils/templates.hpp"
 
-#include "mapping/device.hpp"
-#include "synthesis/cnot_dihedral.hpp"
+#include "staq/mapping/device.hpp"
+#include "staq/synthesis/cnot_dihedral.hpp"
 
 using namespace staq;
 using namespace qasmtools::utils;
@@ -35,8 +35,9 @@ synthesis::phase_term phase(std::vector<bool> b, Angle theta) {
 
 // Custom equality to deal with ptr<Expr> in cx_dihedral circuits
 bool eq(const synthesis::cx_dihedral& a, const synthesis::cx_dihedral& b) {
-    if (a.index() != b.index())
+    if (a.index() != b.index()) {
         return false;
+    }
 
     if (std::holds_alternative<std::pair<int, int>>(a)) {
         auto& [c1, t1] = std::get<std::pair<int, int>>(a);
@@ -53,17 +54,18 @@ bool eq(const synthesis::cx_dihedral& a, const synthesis::cx_dihedral& b) {
 
 bool eq(const std::list<synthesis::cx_dihedral>& a,
         const std::list<synthesis::cx_dihedral>& b) {
-    if (a.size() != b.size())
+    if (a.size() != b.size()) {
         return false;
+    }
 
     bool same = true;
-    for (auto i = a.begin(), j = b.begin(); same && i != a.end(); i++, j++)
+    for (auto i = a.begin(), j = b.begin(); same && i != a.end(); i++, j++) {
         same &= eq(*i, *j);
+    }
 
     return same;
 }
 
-/******************************************************************************/
 TEST(Gray_Synth, Base) {
     std::list<synthesis::phase_term> f;
     f.emplace_back(phase({true, true}, angles::pi_quarter));
@@ -80,9 +82,7 @@ TEST(Gray_Synth, Base) {
 
     EXPECT_TRUE(eq(synthesis::gray_synth(f, mat), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gray_Synth, Toffoli) {
     std::list<synthesis::phase_term> f;
     f.emplace_back(phase({true, false, false}, angles::pi_quarter));
@@ -116,9 +116,7 @@ TEST(Gray_Synth, Toffoli) {
 
     EXPECT_TRUE(eq(synthesis::gray_synth(f, mat), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Gray_Synth, Gray_code) {
     std::list<synthesis::phase_term> f;
     f.emplace_back(phase({true, false, false, false}, angles::pi_quarter));
@@ -153,9 +151,7 @@ TEST(Gray_Synth, Gray_code) {
 
     EXPECT_TRUE(eq(synthesis::gray_synth(f, mat), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 // This test should mimic the Steiner_Gauss base case
 TEST(Gray_Steiner, Base) {
     mapping::Device test_device("Test device", 9,
@@ -201,9 +197,7 @@ TEST(Gray_Steiner, Base) {
 
     EXPECT_TRUE(eq(synthesis::gray_steiner(f, mat, test_device), output));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 // This test should mimic the Steiner_gauss fill_flush case
 TEST(Gray_Steiner, Fill_flush) {
     mapping::Device test_device("Test device", 9,
@@ -256,4 +250,3 @@ TEST(Gray_Steiner, Fill_flush) {
 
     EXPECT_TRUE(eq(synthesis::gray_steiner(f, mat, test_device), output));
 }
-/******************************************************************************/

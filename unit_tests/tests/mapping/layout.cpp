@@ -2,10 +2,10 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "mapping/device.hpp"
-#include "mapping/layout/basic.hpp"
-#include "mapping/layout/bestfit.hpp"
-#include "mapping/layout/eager.hpp"
+#include "staq/mapping/device.hpp"
+#include "staq/mapping/layout/basic.hpp"
+#include "staq/mapping/layout/bestfit.hpp"
+#include "staq/mapping/layout/eager.hpp"
 
 using namespace staq;
 using namespace qasmtools;
@@ -36,7 +36,7 @@ static mapping::Device test_device("Test device", 9,
                                    });
 
 // Basic tests for layout generation
-/******************************************************************************/
+
 TEST(Layout, Basic) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -64,9 +64,7 @@ TEST(Layout, Basic) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Layout, Eager) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -94,9 +92,7 @@ TEST(Layout, Eager) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Layout, Best_Fit) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -136,4 +132,3 @@ TEST(Layout, Best_Fit) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

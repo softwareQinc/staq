@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "gates/channel.hpp"
+#include "staq/gates/channel.hpp"
 
 using namespace staq;
 namespace utils = qasmtools::utils;
@@ -8,7 +8,6 @@ namespace utils = qasmtools::utils;
 // Testing channel gates
 using Gates = gates::ChannelRepr<std::string>;
 
-/******************************************************************************/
 TEST(Channel_Rep, Pauli_Arithmetic) {
     auto i1 = Gates::Pauli::i("x1");
     auto x1 = Gates::Pauli::x("x1");
@@ -21,9 +20,7 @@ TEST(Channel_Rep, Pauli_Arithmetic) {
     EXPECT_EQ(y1 * y1, i1);
     EXPECT_NE(z1 * z1 * y1, i1);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Channel_Rep, Pauli_Commute) {
     auto x1 = Gates::Pauli::x("x1");
     auto x2 = Gates::Pauli::x("x2");
@@ -35,9 +32,7 @@ TEST(Channel_Rep, Pauli_Commute) {
     EXPECT_TRUE(x1.commutes_with(z2));
     EXPECT_TRUE((x1 * z2).commutes_with(z1 * x2));
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Channel_Rep, Clifford_Arithmetic) {
     auto i1 = Gates::Pauli::i("x1");
     auto x1 = Gates::Pauli::x("x1");
@@ -63,9 +58,7 @@ TEST(Channel_Rep, Clifford_Arithmetic) {
     EXPECT_EQ(cnot12.conjugate(z1), z1);
     EXPECT_EQ(cnot12.conjugate(z2), z1 * z2);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Channel_Rep, Channel_Commute) {
     auto t1 = Gates::Rotation::t("x1");
     auto tdg1 = Gates::Rotation::tdg("x1");
@@ -84,9 +77,7 @@ TEST(Channel_Rep, Channel_Commute) {
     EXPECT_EQ(t1.commute_left(s1), t1);
     EXPECT_NE(t2.commute_left(cnot12), t1);
 }
-/******************************************************************************/
 
-/******************************************************************************/
 TEST(Channel_Rep, Gate_Merge) {
     auto id1 = Gates::Rotation::rz(utils::angles::zero, "x1");
     auto t1 = Gates::Rotation::t("x1");
@@ -111,4 +102,3 @@ TEST(Channel_Rep, Gate_Merge) {
               -utils::angles::pi_quarter);
     EXPECT_EQ(t1.try_merge(tdg1.commute_left(x1))->second, s1);
 }
-/******************************************************************************/

@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -26,9 +26,10 @@
 
 #include <third_party/CLI/CLI.hpp>
 
-#include "output/cirq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
+
+#include "staq/output/cirq.hpp"
+#include "staq/transformations/desugar.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;
@@ -44,10 +45,11 @@ int main(int argc, char** argv) {
     auto program = parse_stdin();
     if (program) {
         transformations::desugar(*program);
-        if (filename == "")
+        if (filename == "") {
             output::output_cirq(*program);
-        else
+        } else {
             output::write_cirq(*program, filename);
+        }
     } else {
         std::cerr << "Parsing failed\n";
     }

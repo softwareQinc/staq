@@ -1,7 +1,7 @@
 /*
  * This file is part of qasmtools.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -40,7 +40,7 @@
 #include "preprocessor.hpp"
 
 #ifdef EXPR_GMP
-#include "grid_synth/types.hpp"
+#include "staq/grid_synth/types.hpp"
 #endif /* EXPR_GMP */
 
 namespace qasmtools {
@@ -97,12 +97,14 @@ class Parser {
     ast::ptr<ast::Program> parse(bool check = true) {
         // Parse the program
         auto result = parse_program();
-        if (error_)
+        if (error_) {
             throw ParseError();
+        }
 
         // Perform semantic analysis before returning
-        if (check)
+        if (check) {
             ast::check_source(*result);
+        }
 
         return result;
     }
@@ -115,8 +117,9 @@ class Parser {
      */
     void consume_token(bool reset = false) {
         current_token_ = pp_lexer_.next_token();
-        if (reset)
+        if (reset) {
             supress_errors_ = false;
+        }
     }
 
     /**

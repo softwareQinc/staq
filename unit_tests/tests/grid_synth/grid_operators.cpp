@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/grid_operators.hpp"
-#include "grid_synth/rings.hpp"
+#include "staq/grid_synth/grid_operators.hpp"
+#include "staq/grid_synth/rings.hpp"
 
 using namespace staq;
 using namespace grid_synth;

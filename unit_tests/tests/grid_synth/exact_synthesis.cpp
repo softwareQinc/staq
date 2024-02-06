@@ -1,9 +1,9 @@
 
 #include "gtest/gtest.h"
 
-#include "grid_synth/exact_synthesis.hpp"
-#include "grid_synth/rz_approximation.hpp"
-#include "grid_synth/types.hpp"
+#include "staq/grid_synth/exact_synthesis.hpp"
+#include "staq/grid_synth/rz_approximation.hpp"
+#include "staq/grid_synth/types.hpp"
 
 using namespace staq;
 using namespace grid_synth;

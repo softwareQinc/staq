@@ -2,13 +2,13 @@
 
 #include "qasmtools/parser/parser.hpp"
 
-#include "transformations/barrier_merge.hpp"
+#include "staq/transformations/barrier_merge.hpp"
 
 using namespace staq;
 using namespace qasmtools;
 
 // Testing merging of adjacent barriers
-/******************************************************************************/
+
 TEST(BarrierMerge, Adjacent) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -28,10 +28,9 @@ TEST(BarrierMerge, Adjacent) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/
 
 // Testing merging of non-adjacent barriers
-/******************************************************************************/
+
 TEST(BarrierMerge, NonAdjacent) {
     std::string pre = "OPENQASM 2.0;\n"
                       "\n"
@@ -54,4 +53,3 @@ TEST(BarrierMerge, NonAdjacent) {
 
     EXPECT_EQ(ss.str(), post);
 }
-/******************************************************************************/

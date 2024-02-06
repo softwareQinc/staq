@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/gmp_functions.hpp"
+#include "staq/grid_synth/gmp_functions.hpp"
 
 using namespace staq;
 using namespace gmpf;

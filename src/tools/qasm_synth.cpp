@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -28,10 +28,11 @@
 
 #include <third_party/CLI/CLI.hpp>
 
-#include "grid_synth/gmp_functions.hpp"
-#include "grid_synth/types.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/qasm_synth.hpp"
+
+#include "staq/grid_synth/gmp_functions.hpp"
+#include "staq/grid_synth/types.hpp"
+#include "staq/transformations/qasm_synth.hpp"
 
 int main(int argc, char** argv) {
     using namespace staq;

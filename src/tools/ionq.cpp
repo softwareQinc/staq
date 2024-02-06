@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2023 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -26,15 +26,16 @@
 
 #include <CLI/CLI.hpp>
 
-#include "mapping/device.hpp"
-#include "mapping/layout/basic.hpp"
-#include "output/ionq.hpp"
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/desugar.hpp"
-#include "transformations/expression_simplifier.hpp"
-#include "transformations/group_qregs.hpp"
-#include "transformations/inline.hpp"
-#include "transformations/replace_ugates.hpp"
+
+#include "staq/mapping/device.hpp"
+#include "staq/mapping/layout/basic.hpp"
+#include "staq/output/ionq.hpp"
+#include "staq/transformations/desugar.hpp"
+#include "staq/transformations/expression_simplifier.hpp"
+#include "staq/transformations/inline.hpp"
+#include "staq/transformations/replace_ugate.hpp"
+#include "staq/transformations/group_qregs.hpp"
 
 static const std::set<std::string_view> ionq_overrides{
     "x",  "y",  "z",  "h",  "s",    "sdg", "t",  "tdg", "rx",
@@ -70,10 +71,11 @@ int main(int argc, char** argv) {
         // Replace U gates
         transformations::replace_ugates(*program);
 
-        if (filename.empty())
+        if (filename.empty()) {
             output::output_ionq(*program);
-        else
+        } else {
             output::write_ionq(*program, filename);
+        }
     } else {
         std::cerr << "Parsing failed\n";
     }

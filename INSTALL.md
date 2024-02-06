@@ -64,7 +64,7 @@ To build only the **staq** tool suite, execute
 
 ```shell
 cmake --build build --target tools --parallel 8
-````
+```
 
 To build only the **staq** executable, execute
 
@@ -156,7 +156,7 @@ Finally, configure the system with the additional flag
 `-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake`, e.g.,
 
 ```shell
-cmake -B build -DCMAKE_TOOLCHAIN_FILE=./vckpg/scripts/buildsystems/vcpkg.cmake -DINSTALL_SOURCES=ON 
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=./vckpg/scripts/buildsystems/vcpkg.cmake -DINSTALL_SOURCES=ON
 ```
 
 followed by building the system as usual.

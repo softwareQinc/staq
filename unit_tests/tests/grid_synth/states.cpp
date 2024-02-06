@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "grid_synth/gmp_functions.hpp"
-#include "grid_synth/states.hpp"
+#include "staq/grid_synth/gmp_functions.hpp"
+#include "staq/grid_synth/states.hpp"
 
 using namespace staq;
 using namespace grid_synth;
