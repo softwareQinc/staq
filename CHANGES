@@ -1,4 +1,4 @@
-Pre-release
+Version 3.5 - xx February 2024
     - All header files are moved into "[include/staq]", so to include staq
       headers one now must #include "staq/<header>.hpp". This change was made
       for the sake of making the include statements look "uniform" in both
