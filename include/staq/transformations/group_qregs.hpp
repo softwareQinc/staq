@@ -41,7 +41,8 @@
 
 #include "qasmtools/ast/replacer.hpp"
 #include "qasmtools/ast/traversal.hpp"
-#include "transformations/substitution.hpp"
+
+#include "staq/transformations/substitution.hpp"
 
 namespace staq {
 namespace transformations {
@@ -97,10 +98,11 @@ class LayoutTransformer final : public ast::Replacer {
 
     std::optional<std::list<ast::ptr<ast::Stmt>>>
     replace(ast::RegisterDecl& decl) override {
-        if (decl.is_quantum())
+        if (decl.is_quantum()) {
             return std::list<ast::ptr<ast::Stmt>>();
-        else
+        } else {
             return std::nullopt;
+        }
     }
 
   private:

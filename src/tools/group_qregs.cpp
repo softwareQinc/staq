@@ -25,7 +25,8 @@
  */
 
 #include "qasmtools/parser/parser.hpp"
-#include "transformations/group_qregs.hpp"
+
+#include "staq/transformations/group_qregs.hpp"
 
 int main() {
     using namespace staq;
