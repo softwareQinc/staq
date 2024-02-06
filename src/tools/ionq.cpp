@@ -75,10 +75,11 @@ int main(int argc, char** argv) {
         // Replace U gates
         transformations::replace_ugates(*program);
 
-        if (filename.empty())
+        if (filename.empty()) {
             output::output_ionq(*program);
-        else
+        } else {
             output::write_ionq(*program, filename);
+        }
     } else {
         std::cerr << "Parsing failed\n";
     }

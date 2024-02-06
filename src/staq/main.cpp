@@ -191,8 +191,9 @@ int main(int argc, char** argv) {
         switch (cli_map[x]) {
             case Option::i:
                 passes.push_back(Pass::inln);
-                if (!no_rewrite_expressions)
+                if (!no_rewrite_expressions) {
                     passes.push_back(Pass::rewrite);
+                }
                 break;
             case Option::S:
                 passes.push_back(Pass::synth);
@@ -252,7 +253,7 @@ int main(int argc, char** argv) {
     }
 
     /* Passes */
-    for (auto pass : passes)
+    for (auto pass : passes) {
         switch (pass) {
             case Pass::desugar:
                 transformations::desugar(*prog);
@@ -298,8 +299,9 @@ int main(int argc, char** argv) {
                 }
 
                 /* (Optional) optimize the layout */
-                if (mapper == "steiner" && do_lo)
+                if (mapper == "steiner" && do_lo) {
                     optimize_steiner_layout(dev, initial_layout, *prog);
+                }
 
                 /* Apply the layout */
                 mapping::apply_layout(initial_layout, dev, *prog);
@@ -316,6 +318,7 @@ int main(int argc, char** argv) {
                 transformations::expr_simplify(*prog, evaluate_all);
                 break;
         }
+    }
 
     /* Evaluating symbolic expressions */
     if (evaluate_all) {
@@ -324,53 +327,61 @@ int main(int argc, char** argv) {
 
     /* Output */
     if (format == "quil") {
-        if (ofile.empty())
+        if (ofile.empty()) {
             output::output_quil(*prog);
-        else
+        } else {
             output::write_quil(*prog, ofile);
+        }
     } else if (format == "projectq") {
-        if (ofile.empty())
+        if (ofile.empty()) {
             output::output_projectq(*prog);
-        else
+        } else {
             output::write_projectq(*prog, ofile);
+        }
     } else if (format == "qsharp") {
-        if (ofile.empty())
+        if (ofile.empty()) {
             output::output_qsharp(*prog);
-        else
+        } else {
             output::write_qsharp(*prog, ofile);
+        }
     } else if (format == "cirq") {
-        if (ofile.empty())
+        if (ofile.empty()) {
             output::output_cirq(*prog);
-        else
+        } else {
             output::write_cirq(*prog, ofile);
+        }
     } else if (format == "resources") {
         auto count = tools::estimate_resources(*prog);
 
         if (ofile.empty()) {
             std::cout << "Resource estimates for " << input_qasm << ":\n";
-            for (auto& [name, num] : count)
+            for (auto& [name, num] : count) {
                 std::cout << "  " << name << ": " << num << "\n";
+            }
         } else {
             std::ofstream os;
             os.open(ofile);
 
             os << "Resource estimates for " << input_qasm << ":\n";
-            for (auto& [name, num] : count)
+            for (auto& [name, num] : count) {
                 os << "  " << name << ": " << num << "\n";
+            }
 
             os.close();
         }
     } else { // qasm format
         if (ofile.empty()) {
-            if (mapped)
+            if (mapped) {
                 dev.print_layout(initial_layout, std::cout, "// ", output_perm);
+            }
             std::cout << *prog << "\n";
         } else {
             std::ofstream os;
             os.open(ofile);
 
-            if (mapped)
+            if (mapped) {
                 dev.print_layout(initial_layout, os, "// ", output_perm);
+            }
             os << *prog;
 
             os.close();

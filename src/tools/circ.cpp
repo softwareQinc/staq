@@ -45,10 +45,11 @@ int main(int argc, char** argv) {
     auto program = parse_stdin();
     if (program) {
         transformations::desugar(*program);
-        if (filename == "")
+        if (filename == "") {
             output::output_cirq(*program);
-        else
+        } else {
             output::write_cirq(*program, filename);
+        }
     } else {
         std::cerr << "Parsing failed\n";
     }

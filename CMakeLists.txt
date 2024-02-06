@@ -39,9 +39,6 @@ if(MINGW OR CYGWIN)
   add_compile_options("-Wa,-mbig-obj")
 endif()
 
-# Libs
-include_directories(SYSTEM libs/third_party)
-
 # staq headers
 add_library(libstaq INTERFACE)
 target_compile_definitions(libstaq
@@ -51,15 +48,24 @@ target_compile_definitions(libstaq
 target_include_directories(
   libstaq INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
                     $<INSTALL_INTERFACE:include/staq>)
+
 # qasmtools library
 target_include_directories(
   libstaq
   INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/qasmtools/include/>
             $<INSTALL_INTERFACE:include/>)
+
 # 3rd party libs
+include_directories(SYSTEM libs/third_party)
 target_include_directories(
   libstaq INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>
                     $<INSTALL_INTERFACE:include/staq/third_party>)
+
+# pystaq (only if Python development kit is detected)
+find_package(Python3 QUIET COMPONENTS Interpreter Development)
+if(${Python3_FOUND})
+  include(cmake/staq_pystaq.cmake)
+endif()
 
 # Enable OpenQASM 2.0 Specs
 option(USE_OPENQASM2_SPECS

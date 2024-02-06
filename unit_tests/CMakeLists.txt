@@ -23,7 +23,7 @@ aux_source_directory(tests/transformations TEST_FILES)
 aux_source_directory(tests/mapping TEST_FILES)
 aux_source_directory(tests/synthesis TEST_FILES)
 
-include(${CMAKE_SOURCE_DIR}/cmake/grid_synth.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/staq_grid_synth.cmake)
 if(${BUILD_GRID_SYNTH})
   aux_source_directory(tests/grid_synth TEST_FILES)
 endif()

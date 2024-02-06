@@ -43,16 +43,17 @@ void add_edge(std::vector<std::vector<bool>>& adj,
               std::vector<std::vector<double>>& tq_fi, int control, int target,
               double fidelity = FIDELITY_1) {
     if (control < 0 || control >= adj.size() || target < 0 ||
-        target >= adj.size())
+        target >= adj.size()) {
         std::cerr << "Qubit(s) out of range: " << control << "," << target
                   << "\n";
-    else {
+    } else {
         adj[control][target] = true;
         if (fidelity != FIDELITY_1) {
-            if (fidelity < 0 || fidelity > 1)
+            if (fidelity < 0 || fidelity > 1) {
                 std::cerr << "Fidelity out of range: " << fidelity << "\n";
-            else
+            } else {
                 tq_fi[control][target] = fidelity;
+            }
         }
     }
 }
@@ -122,18 +123,21 @@ int main(int argc, char** argv) {
                 n, std::vector<double>(n, FIDELITY_1));
 
             for (auto& x : fidels) {
-                if (x.first < 0 || x.first >= n)
+                if (x.first < 0 || x.first >= n) {
                     std::cerr << "Qubit out of range: " << x.first;
-                else if (x.second < 0 || x.second > 1)
+                } else if (x.second < 0 || x.second > 1) {
                     std::cerr << "Fidelity out of range: " << x.second;
-                else
+                } else {
                     sq_fi[x.first] = x.second;
+                }
             }
-            for (auto& x : d_edges)
+            for (auto& x : d_edges) {
                 add_edge(adj, tq_fi, x.first, x.second);
-            for (auto& x : df_edges)
+            }
+            for (auto& x : df_edges) {
                 add_edge(adj, tq_fi, std::get<0>(x), std::get<1>(x),
                          std::get<2>(x));
+            }
             for (auto& x : u_edges) {
                 add_edge(adj, tq_fi, x.first, x.second);
                 add_edge(adj, tq_fi, x.second, x.first);
@@ -171,11 +175,13 @@ int main(int argc, char** argv) {
                 for (int j = 0; j < w; j++) {
                     int id = i + j * l;
                     // connect to the left
-                    if (i > 0)
+                    if (i > 0) {
                         adj[id][id - 1] = adj[id - 1][id] = true;
+                    }
                     // connect up
-                    if (j > 0)
+                    if (j > 0) {
                         adj[id][id - l] = adj[id - l][id] = true;
+                    }
                 }
             }
 
