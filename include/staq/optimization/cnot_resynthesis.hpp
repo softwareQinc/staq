@@ -34,8 +34,9 @@
 
 #include <cstddef>
 #include <list>
-#include <sstream>
+#include <optional>
 #include <unordered_map>
+#include <vector>
 
 #include "qasmtools/ast/replacer.hpp"
 #include "qasmtools/ast/visitor.hpp"
