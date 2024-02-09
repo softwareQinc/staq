@@ -5,6 +5,7 @@ Version 3.5 - xx February 2024
       non-installed (compiling without having staq installed) and installed
       (compiling with staq installed headers) modes.
     - Integrated the 'staq_ionq' OpenQASM2 -> IonQ transpiler into pystaq
+    - Bumped GoogleTest version to 1.14.0
 
 Version 3.4 - 1 December 2023
     - When configuring staq with 'cmake -B build -DINSTALL_SOURCES=ON',
