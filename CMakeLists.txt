@@ -20,6 +20,15 @@ add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 # staq root directory
 add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 
+# Guard against in-source builds (snippet from Eigen's CMakeLists.txt)
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+  message(
+    FATAL_ERROR
+      "In-source builds not allowed. Please instruct CMake to use an out-of-source build, e.g.,
+    cmake --build build [...]
+You may need to remove CMakeCache.txt.")
+endif()
+
 # Force clang to use libc++
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   add_compile_options("-stdlib=libc++")
@@ -83,8 +92,7 @@ set(COMPILER "staq")
 add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/src/staq/main.cpp)
 target_link_libraries(${COMPILER} PUBLIC libstaq)
 
-# Additional command line tools
-add_subdirectory(src/tools)
+# Additional command line tools add_subdirectory(src/tools)
 
 # Unit testing
 add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/)

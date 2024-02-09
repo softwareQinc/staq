@@ -1,4 +1,4 @@
-# LSP and CMake support for pyqpp
+# LSP and CMake support for pystaq
 
 # pybind11
 include_directories(SYSTEM libs/)
