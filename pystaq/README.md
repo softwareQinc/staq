@@ -41,6 +41,7 @@ cnot_resynth
 map
 get_resources
 output_cirq
+output_ionq
 output_projectq
 output_qsharp
 output_quil

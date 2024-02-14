@@ -64,7 +64,7 @@ if (
 ext_modules = [
     Pybind11Extension(
         "pystaq",
-        ["pystaq/src/staq_wrapper.cpp"],
+        ["pystaq/staq_wrapper.cpp"],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_links_args,
         cxx_std=17,

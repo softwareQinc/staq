@@ -1,9 +1,11 @@
-IF(POLICY CMP0012)
-    CMAKE_POLICY(SET CMP0012 NEW)
-ENDIF()
+if(POLICY CMP0012)
+  cmake_policy(SET CMP0012 NEW)
+endif()
 
 if(NOT EXISTS "@CMAKE_BINARY_DIR@/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt")
+  message(
+    FATAL_ERROR
+      "Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt")
 endif()
 
 file(READ "@CMAKE_BINARY_DIR@/install_manifest.txt" files)
@@ -14,8 +16,7 @@ foreach(file ${files})
     execute_process(
       COMMAND @CMAKE_COMMAND@ -E rm $ENV{DESTDIR}${file}
       OUTPUT_VARIABLE rm_out
-      RESULT_VARIABLE rm_retval
-      )
+      RESULT_VARIABLE rm_retval)
     if(NOT "${rm_retval}" STREQUAL 0)
       message(FATAL_ERROR "Problem when removing $ENV{DESTDIR}${file}")
     endif()
@@ -25,10 +26,10 @@ foreach(file ${files})
 endforeach()
 
 if(NOT "@MSVC@")
-    message(STATUS "Removing @CMAKE_INSTALL_PREFIX@/lib/cmake/@PROJECT_NAME@")
-    if("@INSTALL_SOURCES@")
-        message(STATUS "Removing @STAQ_INSTALL_DIR@")
-    endif()
+  message(STATUS "Removing @CMAKE_INSTALL_PREFIX@/lib/cmake/@PROJECT_NAME@")
+  if("@INSTALL_SOURCES@")
+    message(STATUS "Removing @STAQ_INSTALL_DIR@")
+  endif()
 else()
-    message(STATUS "Removing @CMAKE_INSTALL_PREFIX@")
+  message(STATUS "Removing @CMAKE_INSTALL_PREFIX@")
 endif()

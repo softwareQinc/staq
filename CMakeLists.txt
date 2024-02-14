@@ -24,8 +24,9 @@ add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(
     FATAL_ERROR
-      "In-source builds not allowed. Please instruct CMake to use an out-of-source build, e.g.,
-    cmake --build build [...]
+      "In-source builds not allowed. Please instruct CMake to use an\
+      out-of-source build, e.g.,
+      cmake -B build && cmake --build build
 You may need to remove CMakeCache.txt.")
 endif()
 
@@ -70,10 +71,11 @@ target_include_directories(
   libstaq INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>
                     $<INSTALL_INTERFACE:include/staq/third_party>)
 
-# pystaq (only if Python development kit is detected)
+# pystaq and pybind11 (only if the Python development kit is detected)
 find_package(Python3 QUIET COMPONENTS Interpreter Development)
 if(${Python3_FOUND})
-  include(cmake/staq_pystaq.cmake)
+  include(cmake/pybind11.cmake)
+  include(cmake/pystaq.cmake)
 endif()
 
 # Enable OpenQASM 2.0 Specs
@@ -92,10 +94,11 @@ set(COMPILER "staq")
 add_executable(${COMPILER} ${PROJECT_SOURCE_DIR}/src/staq/main.cpp)
 target_link_libraries(${COMPILER} PUBLIC libstaq)
 
-# Additional command line tools add_subdirectory(src/tools)
+# Additional command line tools
+add_subdirectory(src/tools)
 
 # Unit testing
-add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/)
+add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/ EXCLUDE_FROM_ALL SYSTEM)
 
 # Enable all warnings for GNU gcc and Clang/AppleClang
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
