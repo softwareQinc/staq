@@ -94,10 +94,10 @@ jobs:
             export CPATH=$LIBRARY_PATH:/usr/local/include
             export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
           fi
-          cmake --build build --target build/unit_tests
+          cmake --build build/unit_tests --target unit_tests
 
       - name: Run unit tests
-        run: ctest --test-dir build
+        run: ctest --test-dir build/unit_tests
 
       - name: Uninstall
         shell: bash
