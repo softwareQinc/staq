@@ -1,6 +1,6 @@
 Version 3.5 - xx February 2024
     - Removed pybind11 and GoogleTest dependencies; if not detected, they are
-      installed automatically as dependencies by CMake 
+      installed automatically as build dependencies by CMake 
     - Bumped GoogleTest version to HEAD latest (as recommended by Google, 
       https://github.com/google/googletest?tab=readme-ov-file#live-at-head)
     - All header files are moved into "[include/staq]", so to include staq
