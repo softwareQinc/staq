@@ -14,7 +14,7 @@ as [Windows](https://www.microsoft.com/en-us/windows).
 ## Pre-requisites
 
 - [CMake](https://cmake.org/)
-- C++17 compliant compiler, e.g.,
+- pp+17 compliant compiler, e.g.,
   [gcc](https://gcc.gnu.org/),
   [clang](https://clang.llvm.org),
   [MSVC](https://visualstudio.microsoft.com/vs/)
@@ -102,7 +102,7 @@ in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
 your system. To use **staq**'s source code, precede all include paths by `staq`
 in your own code, i.e.,
 
-```c++
+```cpp
 #include <staq/qasmtools/parser/parser.hpp>
 ```
 
@@ -110,7 +110,7 @@ Third party header-only libraries used internally by **staq** need to be
 preceded by `third_party` when including their corresponding header file(s),
 i.e.,
 
-```c++
+```cpp
 #include <staq/third_party/CLI/CLI.hpp>
 ```
 
