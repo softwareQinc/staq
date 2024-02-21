@@ -53,8 +53,8 @@ documentation and detailed examples.
 
 ## Python 3 wrapper
 
-[pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
-wrapper for **staq**. pystaq can be installed using `pip`
+[**pystaq**](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a
+Python 3 wrapper for **staq**. **pystaq** can be installed using `pip`
 
 ```shell
 pip install git+https://github.com/softwareQinc/staq

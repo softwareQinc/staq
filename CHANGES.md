@@ -1,7 +1,7 @@
 # Version 3.5 - xx February 2024
 
 - Replaced ["CHANGES"] by
-  ["CHANGES.md"](https://github.com/softwareQinc/staq/blob/main/CHANGES.md),
+  [CHANGES.md](https://github.com/softwareQinc/staq/blob/main/CHANGES.md),
 - Removed pybind11 and GoogleTest dependencies; if not detected, they are
   installed automatically as build dependencies by CMake
 - Bumped GoogleTest version to HEAD latest, as

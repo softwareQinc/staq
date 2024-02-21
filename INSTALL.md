@@ -100,8 +100,7 @@ If you configured the system with `-DINSTALL_SOURCES=ON`, **staq**'s source
 code will be installed in `/usr/local/include/staq` (UNIX/UNIX-like systems), or
 in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
 your system. To use **staq**'s source code, precede all include paths by `staq`
-in
-your own code, i.e.,
+in your own code, i.e.,
 
 ```c++
 #include <staq/qasmtools/parser/parser.hpp>
@@ -165,8 +164,8 @@ followed by building the system as usual.
 
 ## Python 3 wrapper
 
-[pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
-wrapper for **staq**. pystaq can be installed using `pip`
+[**pystaq**](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a
+Python 3 wrapper for **staq**. **pystaq** can be installed using `pip`
 
 ```shell
 pip install git+https://github.com/softwareQinc/staq
