@@ -57,8 +57,8 @@ Next, build the **staq** system by executing
 cmake --build build --parallel 8
 ```
 
-The `--parallel 8` instructs CMake to build in parallel using 8 threads, modify
-accordingly.
+The `--parallel 8` flag instructs CMake to build in parallel using 8 threads,
+modify accordingly.
 
 To build only the **staq** tool suite, execute
 
@@ -75,7 +75,7 @@ cmake --build build --target staq --parallel 8
 Unit tests can be built with the command
 
 ```shell
-cmake --build build --target unit_tests --parallel 8
+cmake --build build/unit_tests --parallel 8
 ```
 
 and run with
