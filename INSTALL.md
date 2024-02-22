@@ -75,7 +75,7 @@ cmake --build build --target staq --parallel 8
 Unit tests can be built with the command
 
 ```shell
-cmake --build build/unit_tests --parallel 8
+cmake --build build/unit_tests --target unit_tests --parallel 8
 ```
 
 and run with
