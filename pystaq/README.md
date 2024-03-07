@@ -156,5 +156,5 @@ See
 [pystaq/staq_wrapper.cpp](https://github.com/softwareQinc/staq/blob/main/pystaq/staq_wrapper.cpp)
 for many examples of how to wrap a circuit transformation.
 
-For more details, see also our Quantum++ wrapper
-[pyqpp](https://github.com/softwareQinc/qpp/wiki/8.-pyqpp#custom-bindings).
+For more details, see also our **Quantum++** wrapper
+[**pyqpp**](https://github.com/softwareQinc/qpp/wiki/8.-pyqpp#custom-bindings).
