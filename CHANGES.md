@@ -1,4 +1,4 @@
-# Version 3.5 - xx February 2024
+# Version 3.5 - 8 March 2024
 
 - Replaced ["CHANGES"] by ["CHANGES.md"],
   as we now use Markdown format to keep track of changes in new releases
