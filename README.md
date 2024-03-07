@@ -1,6 +1,6 @@
 # staq
 
-## Version 3.5 - xx February 2024
+## Version 3.5 - 8 March 2024
 
 [![GitHub actions](https://github.com/softwareqinc/staq/actions/workflows/cmake.yml/badge.svg)](https://github.com/softwareQinc/staq/actions)
 
@@ -53,8 +53,8 @@ documentation and detailed examples.
 
 ## Python 3 wrapper
 
-[pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
-wrapper for **staq**. pystaq can be installed using `pip`
+[**pystaq**](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a
+Python 3 wrapper for **staq**. **pystaq** can be installed using `pip`
 
 ```shell
 pip install git+https://github.com/softwareQinc/staq

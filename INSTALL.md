@@ -14,7 +14,7 @@ as [Windows](https://www.microsoft.com/en-us/windows).
 ## Pre-requisites
 
 - [CMake](https://cmake.org/)
-- C++17 compliant compiler, e.g.,
+- pp+17 compliant compiler, e.g.,
   [gcc](https://gcc.gnu.org/),
   [clang](https://clang.llvm.org),
   [MSVC](https://visualstudio.microsoft.com/vs/)
@@ -57,8 +57,8 @@ Next, build the **staq** system by executing
 cmake --build build --parallel 8
 ```
 
-The `--parallel 8` instructs CMake to build in parallel using 8 threads, modify
-accordingly.
+The `--parallel 8` flag instructs CMake to build in parallel using 8 threads,
+modify accordingly.
 
 To build only the **staq** tool suite, execute
 
@@ -75,7 +75,7 @@ cmake --build build --target staq --parallel 8
 Unit tests can be built with the command
 
 ```shell
-cmake --build build --target unit_tests --parallel 8
+cmake --build build/unit_tests --target unit_tests --parallel 8
 ```
 
 and run with
@@ -100,10 +100,9 @@ If you configured the system with `-DINSTALL_SOURCES=ON`, **staq**'s source
 code will be installed in `/usr/local/include/staq` (UNIX/UNIX-like systems), or
 in `C:\Program Files (x86)\staq` on Windows systems. The paths may differ on
 your system. To use **staq**'s source code, precede all include paths by `staq`
-in
-your own code, i.e.,
+in your own code, i.e.,
 
-```c++
+```cpp
 #include <staq/qasmtools/parser/parser.hpp>
 ```
 
@@ -111,7 +110,7 @@ Third party header-only libraries used internally by **staq** need to be
 preceded by `third_party` when including their corresponding header file(s),
 i.e.,
 
-```c++
+```cpp
 #include <staq/third_party/CLI/CLI.hpp>
 ```
 
@@ -165,8 +164,8 @@ followed by building the system as usual.
 
 ## Python 3 wrapper
 
-[pystaq](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a Python 3
-wrapper for **staq**. pystaq can be installed using `pip`
+[**pystaq**](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a
+Python 3 wrapper for **staq**. **pystaq** can be installed using `pip`
 
 ```shell
 pip install git+https://github.com/softwareQinc/staq

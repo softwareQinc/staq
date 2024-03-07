@@ -2,9 +2,9 @@ name: GitHub actions
 
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
 
 env:
   BUILD_TYPE: Debug
@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -94,7 +94,7 @@ jobs:
             export CPATH=$LIBRARY_PATH:/usr/local/include
             export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
           fi
-          cmake --build build --target unit_tests
+          cmake --build build/unit_tests --target unit_tests
 
       - name: Run unit tests
         run: ctest --test-dir build
