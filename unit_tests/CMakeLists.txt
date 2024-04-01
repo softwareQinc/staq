@@ -45,7 +45,6 @@ cmake_policy(SET CMP0076 NEW)
 
 # Build all tests in ${TEST_FILES}
 foreach(file ${TEST_FILES})
-  get_filename_component(basename ${file} NAME_WE)
   target_sources(${TARGET_NAME} PUBLIC ${file})
 endforeach()
 
