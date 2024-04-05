@@ -3,11 +3,10 @@
 **staq** is a full-stack quantum processing toolkit that uses
 [CMake](https://cmake.org/) as its build/install system. **staq** is
 platform-independent, supporting
-[UNIX](https://www.opengroup.org/membership/forums/platform/unix)
-(including
-[macOS](https://www.apple.com/macos/)) and UNIX-like operating systems
-(e.g., [Linux](https://www.linux.org)), as well
-as [Windows](https://www.microsoft.com/en-us/windows).
+[UNIX](https://www.opengroup.org/membership/forums/platform/unix) (including
+[macOS](https://www.apple.com/macos/)) and UNIX-like operating systems (e.g.,
+[Linux](https://www.linux.org)), as well as
+[Windows](https://www.microsoft.com/en-us/windows).
 
 ---
 
@@ -26,25 +25,24 @@ as [Windows](https://www.microsoft.com/en-us/windows).
 
 ## UNIX/UNIX-like/Windows
 
-To build both tool suite and the **staq** executable, execute
-(in a terminal/console/command prompt) under the project's root directory
+To build both tool suite and the **staq** executable, execute (in a
+terminal/console/command prompt) under the project's root directory
 
 ```shell
 cmake -B build
 ```
 
 To be able to install **staq**'s source code in addition to the binaries,
-configure
-the system with
+configure the system with
 
 ```shell
 cmake -B build -DINSTALL_SOURCES=ON
 ```
 
-**Important**: If you want to build the grid synth tools `staq_grid_synth`
-and `staq_qasm_synth`, install the [GNU MP library](https://gmplib.org/);
-`cmake` will take care of the rest. If `cmake` cannot detect GNU MP, then the
-grid synth tools will not be part of the build. To install GNU MP on Windows
+**Important**: If you want to build the grid synth tools `staq_grid_synth` and
+`staq_qasm_synth`, install the [GNU MP library](https://gmplib.org/); `cmake`
+will take care of the rest. If `cmake` cannot detect GNU MP, then the grid
+synth tools will not be part of the build. To install GNU MP on Windows
 systems, please follow the [platform-specific instructions below](#windows).
 
 For more details about how to install and configure GNU MP on various platforms,
