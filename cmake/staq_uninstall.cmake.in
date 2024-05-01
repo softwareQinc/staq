@@ -14,13 +14,9 @@ foreach(file ${files})
   message(STATUS "Uninstalling ${file}")
   if(IS_SYMLINK "${file}" OR EXISTS "${file}")
     execute_process(
-      COMMAND "@CMAKE_COMMAND@" -E rm -f "${file}"
+      COMMAND @CMAKE_COMMAND@ -E rm -f "${file}"
       OUTPUT_VARIABLE rm_out
       RESULT_VARIABLE rm_retval)
-    message(STATUS "ENVDESTDIR: $ENV{DESTDIR}")
-    message(STATUS "file: ${file}")
-    message(STATUS "rm_out: ${rm_out}")
-    message(STATUS "rm_retval: ${rm_retval}")
     if(${rm_retval})
       message(FATAL_ERROR "Problem when removing ${file}")
     endif()
