@@ -36,8 +36,8 @@ Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
 ## License
 
 **staq** is distributed under the MIT license. Please see the
-[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for
-more details.
+[`LICENSE.txt`](https://github.com/softwareQinc/staq/blob/main/LICENSE.txt)
+file for more details.
 
 ---
 

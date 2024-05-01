@@ -55,11 +55,8 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export PATH=/opt/homebrew/opt/llvm/bin:$PATH
             export CPATH=$LIBRARY_PATH:/opt/homebrew/include
             export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
-            export CXX=clang++
-            export CC=clang
           fi
           cmake --build build
 
@@ -93,11 +90,8 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export PATH=/opt/homebrew/opt/llvm/bin:$PATH
             export CPATH=$LIBRARY_PATH:/opt/homebrew/include
             export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
-            export CXX=clang++
-            export CC=clang
           fi
           cmake --build build/unit_tests --target unit_tests
 
@@ -117,11 +111,8 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export PATH=/opt/homebrew/opt/llvm/bin:$PATH
             export CPATH=$LIBRARY_PATH:/opt/homebrew/include
             export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
-            export CXX=clang++
-            export CC=clang
           fi
           python3 -m venv venv
           if [ "$RUNNER_OS" == "Windows" ]; then
