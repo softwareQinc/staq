@@ -108,4 +108,12 @@ jobs:
           fi
 
       - name: Install pystaq
-        run: pip3 install --user .
+        shell: bash
+        run: |
+          python3 -m venv venv
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            .\venv\Scripts\activate
+          else
+            . venv/bin/activate
+          fi
+          pip install .
