@@ -17,7 +17,9 @@ foreach(file ${files})
       COMMAND @CMAKE_COMMAND@ -E rm "$ENV{DESTDIR}${file}"
       OUTPUT_VARIABLE rm_out
       RESULT_VARIABLE rm_retval)
-    if(NOT "${rm_retval}" STREQUAL 0)
+    message(STATUS "rm_out: ${rm_out}")
+    message(STATUS "rm_retval: ${rm_retval}")
+    if(${rm_retval})
       message(FATAL_ERROR "Problem when removing $ENV{DESTDIR}${file}")
     endif()
   else()
