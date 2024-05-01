@@ -55,8 +55,8 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export CPATH=$LIBRARY_PATH:/usr/local/include
-            export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
+            export CPATH=$LIBRARY_PATH:/opt/homebrew/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
           fi
           cmake --build build
 
@@ -90,8 +90,8 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export CPATH=$LIBRARY_PATH:/usr/local/include
-            export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
+            export CPATH=$LIBRARY_PATH:/opt/homebrew/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
           fi
           cmake --build build/unit_tests --target unit_tests
 
