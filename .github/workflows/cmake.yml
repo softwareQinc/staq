@@ -100,9 +100,14 @@ jobs:
       - name: Run unit tests
         run: ctest --test-dir build
 
-      - name: Uninstall
+      - name: Uninstall staq
+        shell: bash
         run: |
-          cmake --build build --target uninstall
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake --build build --target uninstall
+          else
+            sudo cmake --build build --target uninstall
+          fi
 
       - name: Install pystaq
         shell: bash
