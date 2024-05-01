@@ -103,7 +103,6 @@ jobs:
       - name: Uninstall
         run: |
           cmake --build build --target uninstall
-          dir 'C:/Program Files (x86)/staq/bin/'
 
       - name: Install pystaq
         shell: bash
