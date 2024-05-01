@@ -110,6 +110,10 @@ jobs:
       - name: Install pystaq
         shell: bash
         run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export CPATH=$LIBRARY_PATH:/opt/homebrew/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
+          fi
           python3 -m venv venv
           if [ "$RUNNER_OS" == "Windows" ]; then
             .\venv\Scripts\activate
