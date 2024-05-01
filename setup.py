@@ -13,6 +13,7 @@ extra_compile_args = [
     "-Iinclude",
     "-Iqasmtools/include",
     "-Ipystaq/include",
+    "-I/opt/homebrew/include",
 ]
 extra_links_args = []
 
