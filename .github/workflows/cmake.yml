@@ -105,6 +105,8 @@ jobs:
         run: |
           dir 'C:/Program Files (x86)/staq/bin/staq_circ.exe'
           cmake --build build --target uninstall
+          dir 'C:/Program Files (x86)/staq/bin/'
+          dir 'C:/Program Files (x86)/staq/bin/staq_circ.exe'
 
       # - name: Install pystaq
       #   shell: bash
