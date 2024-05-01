@@ -46,7 +46,7 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-              -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
+# -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
               -DINSTALL_SOURCES=ON
           else
             cmake -B build -DINSTALL_SOURCES=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
