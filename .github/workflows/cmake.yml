@@ -41,6 +41,7 @@ jobs:
       #       exit 1
       #     fi
 
+      # -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
       - name: Configure staq
         shell: bash
         run: |
@@ -101,14 +102,8 @@ jobs:
       #   run: ctest --test-dir build
 
       - name: Uninstall
-        shell: bash
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            ls 'C:/Program Files (x86)/staq/bin/staq_circ.exe'
-            cmake --build build --target uninstall
-          else
-            sudo cmake --build build --target uninstall
-          fi
+          cmake --build build --target uninstall
 
       # - name: Install pystaq
       #   shell: bash
