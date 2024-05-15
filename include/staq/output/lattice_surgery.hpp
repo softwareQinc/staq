@@ -745,7 +745,7 @@ void output_lattice_surgery(ast::Program& prog, bool skip_clifford = false,
             throw;
         }
     }
-    std::cout << out.dump(2) << "\n";
+    os << out.dump(2) << "\n";
 }
 
 /** \brief Compiles an AST into lattice surgery instructions to a given output
