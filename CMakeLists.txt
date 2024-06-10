@@ -30,10 +30,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 You may need to remove CMakeCache.txt.")
 endif()
 
-# Force clang to use libc++
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  add_compile_options("-stdlib=libc++")
-endif()
+# # Force Clang to use libc++
+
+# if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+# add_compile_options("-stdlib=libc++") endif()
 
 # Windows issues with Microsoft Visual Studio
 if(MSVC)
@@ -100,7 +100,7 @@ add_subdirectory(src/tools)
 # Unit testing
 add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/ EXCLUDE_FROM_ALL SYSTEM)
 
-# Enable all warnings for GNU gcc and Clang/AppleClang
+# Enable all warnings for GCC and Clang/AppleClang
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
                                                STREQUAL "GNU")
   add_compile_options("-pedantic" "-Wall" "-Wextra" "-Weffc++")

@@ -14,8 +14,8 @@ platform-independent, supporting
 
 - [CMake](https://cmake.org/)
 - pp+17 compliant compiler, e.g.,
-  [gcc](https://gcc.gnu.org/),
-  [clang](https://clang.llvm.org),
+  [GCC](https://gcc.gnu.org/),
+  [Clang](https://clang.llvm.org),
   [MSVC](https://visualstudio.microsoft.com/vs/)
 
 - Optional, [GNU MP](https://gmplib.org/) library for building the grid synth
