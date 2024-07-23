@@ -23,21 +23,21 @@ retrieving the original source code impossible. In particular, OpenQASM 2.0
 circuits can be inspected and transformed (in most cases) without losing the
 original source structure. This makes **staq** ideally suited for
 source-to-source transformations, where only specific changes are desired.
-Likewise, this allows translations to other common circuit description languages
-and libraries to closely follow the OpenQASM 2.0 source.
+Likewise, this allows translations to other common circuit description
+languages and libraries to closely follow the OpenQASM 2.0 source.
 
 Check out the [Wiki](https://github.com/softwareQinc/staq/wiki) for more
 information about the library and included tools.
 
-Copyright (c) 2013 - 2024 softwareQ Inc. All rights reserved.
+Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
 
 ---
 
 ## License
 
 **staq** is distributed under the MIT license. Please see the
-[`LICENSE`](https://github.com/softwareQinc/staq/blob/main/LICENSE) file for
-more details.
+[`LICENSE.txt`](https://github.com/softwareQinc/staq/blob/main/LICENSE.txt)
+file for more details.
 
 ---
 
@@ -45,8 +45,7 @@ more details.
 
 Please see the installation guide
 [`INSTALL.md`](https://github.com/softwareQinc/staq/blob/main/INSTALL.md) and
-the
-comprehensive [Wiki](https://github.com/softwareQinc/staq/wiki) for further
+the comprehensive [Wiki](https://github.com/softwareQinc/staq/wiki) for further
 documentation and detailed examples.
 
 ---
@@ -67,8 +66,8 @@ For more details, please see
 
 ## Acknowledgements
 
-Thanks to the
-excellent [EPFL logic synthesis libraries](https://github.com/lsils/lstools-showcase)
+Thanks to the excellent
+[EPFL logic synthesis libraries](https://github.com/lsils/lstools-showcase)
 which are used to perform logic synthesis in **staq**, and in particular Bruno
 Schmitt's [tweedledum](https://github.com/boschmitt/tweedledum) library, from
 which the OpenQASM 2.0 parser was adapted.

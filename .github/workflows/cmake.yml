@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install vcpkg (Windows)
         if: runner.os == 'Windows'
@@ -48,16 +48,16 @@ jobs:
               -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
               -DINSTALL_SOURCES=ON
           else
-            cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-              -DINSTALL_SOURCES=ON
+            cmake -B build -DINSTALL_SOURCES=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           fi
 
       - name: Build staq
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export CPATH=$LIBRARY_PATH:/usr/local/include
-            export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
+            # Required for libgmp headers
+            export CPATH=$LIBRARY_PATH:/opt/homebrew/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
           fi
           cmake --build build
 
@@ -91,15 +91,16 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export CPATH=$LIBRARY_PATH:/usr/local/include
-            export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib
+            # Required for libgmp headers
+            export CPATH=$LIBRARY_PATH:/opt/homebrew/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
           fi
           cmake --build build/unit_tests --target unit_tests
 
       - name: Run unit tests
         run: ctest --test-dir build
 
-      - name: Uninstall
+      - name: Uninstall staq
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
@@ -109,4 +110,17 @@ jobs:
           fi
 
       - name: Install pystaq
-        run: pip3 install --user .
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            # Required for libgmp headers
+            export CPATH=$LIBRARY_PATH:/opt/homebrew/include
+            export LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib
+          fi
+          python3 -m venv venv
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            venv/Scripts/activate
+          else
+            . venv/bin/activate
+          fi
+          pip install .

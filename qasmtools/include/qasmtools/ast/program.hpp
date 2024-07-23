@@ -80,6 +80,13 @@ class Program : public ASTNode {
     std::list<ptr<Stmt>>& body() { return body_; }
 
     /**
+     * \brief Get whether the standard library has been included
+     *
+     * \return Bool for whether the standard library has been included
+     */
+    bool std_include() { return std_include_; }
+
+    /**
      * \brief Get the number of bits
      *
      * \return The number of bits

@@ -54,7 +54,7 @@ class QASMSynthImpl final : public ast::Replacer {
   public:
     QASMSynthImpl(const GridSynthOptions& opt)
         : synthesizer_(make_synthesizer(opt)), w_count_(0), check_(opt.check),
-          details_(opt.details), verbose_(opt.verbose){};
+          details_(opt.details), verbose_(opt.verbose) {};
     ~QASMSynthImpl() = default;
 
     void run(ast::ASTNode& node) { node.accept(*this); }
@@ -115,6 +115,8 @@ class QASMSynthImpl final : public ast::Replacer {
                     } else {
                         w_count_ += 2;
                     }
+                } else if (c == 'I' || c == 'i') { // ignore identity elements
+                    continue;
                 } else {
                     ret.emplace_back(
                         make_gate(std::string(1, tolower(c)), gate));
