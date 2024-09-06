@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-#include "pystaq/pystaq_common.h"
+#include "pystaq/pystaq_common.hpp"
 
 class Program {
     qasmtools::ast::ptr<qasmtools::ast::Program> prog_;
