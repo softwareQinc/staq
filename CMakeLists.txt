@@ -139,8 +139,10 @@ endif()
 
 # Uninstall
 # https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
-# UNIX/Linux: sudo cmake --build build --target uninstall Windows:    cmake
-# --build build --target uninstall
+#
+# UNIX/Linux: sudo cmake --build build --target uninstall
+#
+# Windows: cmake --build build --target uninstall
 if(NOT TARGET uninstall)
   configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/staq_uninstall.cmake.in"
