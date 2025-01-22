@@ -54,7 +54,7 @@ if found_GMP:
     extra_compile_args.append("-DEXPR_GMP")
     extra_links_args = ["-lgmp", "-lgmpxx"]
 
-# If the platform seem to be MSVC
+# Compiler is MSVC
 if (
     sys.platform == "win32"
     and not sys.platform == "cygwin"
