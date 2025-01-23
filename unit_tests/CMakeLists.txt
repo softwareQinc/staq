@@ -15,7 +15,7 @@ FetchContent_Declare(
 # Windows issues with Microsoft Visual Studio
 
 # Prevent overriding the parent project's compiler/linker settings, and add
-# bigobj and utf-8 option
+# /bigobj and /utf-8 option
 if(MSVC)
   add_definitions(-DNOMINMAX)
   add_compile_options(/bigobj)

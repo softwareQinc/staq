@@ -31,9 +31,9 @@ You may need to remove CMakeCache.txt.")
 endif()
 
 # # Force Clang to use libc++
-
 # if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-# add_compile_options("-stdlib=libc++") endif()
+#   add_compile_options("-stdlib=libc++")
+# endif()
 
 # Windows issues with Microsoft Visual Studio
 if(MSVC)

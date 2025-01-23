@@ -22,7 +22,7 @@ def _load_shared_obj(name):
     """Attempts to load shared library."""
     paths = []
 
-    # search typical locations
+    # Search typical locations
     try:
         paths += [ctu.find_library(name)]
     except FileNotFoundError:
