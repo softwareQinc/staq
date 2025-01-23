@@ -2075,6 +2075,7 @@ static inline double Glucose::cpuTime(void) {
 // for that
 // Added by Vlad on Mar. 30, 2020, Windows compatibility
 #if defined(_WIN32) && defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#include <windows.h>
 #define DELTA_EPOCH_IN_MICROSECS 11644473600000000Ui64
 struct timezone {
     int tz_minuteswest; /* minutes W of Greenwich */
@@ -2111,7 +2112,7 @@ int GetTimeOfDay(struct timeval* tv, struct timezone* tz) {
 
     return 0;
 }
-#endif // _WIN32 && MSC_VER
+#endif // _WIN32 && _MSC_VER
 // END added by Vlad on Mar. 30, 2020, Windows compatibility
 
 static inline double Glucose::realTime() {

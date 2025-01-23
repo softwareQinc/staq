@@ -11,10 +11,15 @@ FetchContent_Declare(
   GIT_TAG main
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE)
-# For Windows: Prevent overriding the parent project's compiler/linker settings,
-# and add bigobj option
+
+# Windows issues with Microsoft Visual Studio
+
+# Prevent overriding the parent project's compiler/linker settings, and add
+# bigobj and utf-8 option
 if(MSVC)
-  add_compile_options(-bigobj)
+  add_definitions(-DNOMINMAX)
+  add_compile_options(/bigobj)
+  add_compile_options(/utf-8)
   set(gtest_force_shared_crt
       ON
       CACHE BOOL "" FORCE)

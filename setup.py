@@ -60,7 +60,9 @@ if (
     and not sys.platform == "cygwin"
     and not sys.platform == "msys"
 ):
+    (extra_compile_args.append("-DNOMINMAX"),)
     extra_compile_args.append("-Ilibs/third_party/pthreadwin32")
+    extra_compile_args.append("/utf-8")
 
 ext_modules = [
     Pybind11Extension(
