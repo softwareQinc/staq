@@ -158,6 +158,11 @@ class Program {
         outputter.run(*prog_);
         return oss.str();
     }
+    std::string to_json() {
+        staq::output::JSONOutputter outputter;
+        outputter.run(*prog_);
+        return outputter.json_val().dump();
+    }
     std::string lattice_surgery() {
         return staq::output::lattice_surgery(*prog_);
     }
@@ -283,6 +288,7 @@ PYBIND11_MODULE(pystaq, m) {
         .def("to_qsharp", &Program::to_qsharp, "Get the Q# representation")
         .def("to_quil", &Program::to_quil, "Get the Quil representation")
         .def("to_ionq", &Program::to_ionq, "Get the IonQ representation")
+        .def("to_json", &Program::to_json, "Get the JSON representation")
         .def("__repr__", [](const Program& p) {
             std::ostringstream oss;
             oss << p;
