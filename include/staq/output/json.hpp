@@ -27,10 +27,10 @@
 #ifndef OUTPUT_JSON_HPP_
 #define OUTPUT_JSON_HPP_
 
+#include <CLI/CLI.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <sstream>
-#include <staq/third_party/CLI/CLI.hpp>
 #include "qasmtools/ast/decl.hpp"
 #include "qasmtools/ast/stmt.hpp"
 #include "qasmtools/ast/var.hpp"
@@ -137,7 +137,7 @@ class JSONOutputter final : public Visitor {
         json_.push_back(j);
     }
 
-    void visit(IfStmt& ist) {
+    void visit(IfStmt& ist) override {
         // TODO: Improve this later.
         json j;
         std::stringstream in;
