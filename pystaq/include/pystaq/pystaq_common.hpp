@@ -60,6 +60,7 @@
 
 #include "staq/output/cirq.hpp"
 #include "staq/output/ionq.hpp"
+#include "staq/output/json.hpp"
 #include "staq/output/lattice_surgery.hpp"
 #include "staq/output/projectq.hpp"
 #include "staq/output/qsharp.hpp"
