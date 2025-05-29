@@ -70,6 +70,7 @@ class JSONOutputter final : public Visitor {
         j["cargs"] = {arg1.json_val(), arg2.json_val(), arg3.json_val()};
         json_.push_back(j);
     }
+
     void visit(CNOTGate& gd) override {
         json j;
         j["type"] = "Gate";
@@ -78,7 +79,9 @@ class JSONOutputter final : public Visitor {
         gd.tgt().accept(arg1);
         j["name"] = "CNOTGate";
         j["qargs"] = {arg0.json_val(), arg1.json_val()};
+        json_.push_back(j);
     }
+
     void visit(BarrierGate& gd) override {
         using namespace qasmtools::ast;
         json j;
@@ -90,7 +93,9 @@ class JSONOutputter final : public Visitor {
             va.accept(jva);
             j["qargs"].push_back(jva.json_val());
         });
+        json_.push_back(j);
     }
+
     void visit(DeclaredGate& gd) override {
         using namespace qasmtools::ast;
         json j;
@@ -108,6 +113,7 @@ class JSONOutputter final : public Visitor {
             va.accept(jva);
             j["cargs"].push_back(jva.json_val());
         });
+        json_.push_back(j);
     }
 
     void visit(AncillaDecl& ad) override {
@@ -203,55 +209,6 @@ class JSONOutputter final : public Visitor {
         }
         json_.push_back(j);
     }
-
-    // void visit(qasmtools::ast::Gate& g) override {
-    //     using namespace qasmtools::ast;
-    //     json j;
-    //
-    //     j["type"] = "Gate";
-    //     if (UGate* gd = dynamic_cast<UGate*>(&g)) {
-    //         JSONOutputter arg0, arg1, arg2, arg3;
-    //         gd->arg().accept(arg0);
-    //         gd->arg().accept(arg1);
-    //         gd->arg().accept(arg2);
-    //         gd->arg().accept(arg3);
-    //         j["name"] = "UGate";
-    //         j["qargs"] = {arg0.json_val()};
-    //         j["cargs"] = {arg1.json_val(), arg2.json_val(), arg3.json_val()};
-    //     } else if (CNOTGate* gd = dynamic_cast<CNOTGate*>(&g)) {
-    //         //(typeid(g) == typeid(CNOTGate)) {
-    //         JSONOutputter arg0, arg1;
-    //         gd->ctrl().accept(arg0);
-    //         gd->tgt().accept(arg1);
-    //         j["name"] = "CNOTGate";
-    //         j["qargs"] = {arg0.json_val(), arg1.json_val()};
-    //     } else if (BarrierGate* gd = dynamic_cast<BarrierGate*>(&g)) {
-    //         j["name"] = "BarrierGate";
-    //         j["qargs"] = {};
-    //         gd->foreach_arg([&j](VarAccess& va) {
-    //             JSONOutputter jva;
-    //             va.accept(jva);
-    //             j["qargs"].push_back(jva.json_val());
-    //         });
-    //     } else if (DeclaredGate* gd = dynamic_cast<DeclaredGate*>(&g)) {
-    //         j["name"] = gd->name();
-    //         j["qargs"] = {};
-    //         j["cargs"] = {};
-    //         gd->foreach_qarg([&j](VarAccess& va) {
-    //             JSONOutputter jva;
-    //             va.accept(jva);
-    //             j["qargs"].push_back(jva.json_val());
-    //         });
-    //         gd->foreach_carg([&j](Expr& va) {
-    //             JSONOutputter jva;
-    //             va.accept(jva);
-    //             j["cargs"].push_back(jva.json_val());
-    //         });
-    //     } else {
-    //         throw "";
-    //     }
-    //     json_.push_back(j);
-    // }
 
     void visit(GateDecl& gd) override {
         using namespace qasmtools::ast;
