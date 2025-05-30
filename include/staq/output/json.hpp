@@ -24,21 +24,23 @@
  * SOFTWARE.
  */
 
+/**
+ * \file output/json.hpp
+ * \brief JSON outputter
+ */
+
 #ifndef OUTPUT_JSON_HPP_
 #define OUTPUT_JSON_HPP_
 
-#include <CLI/CLI.hpp>
-#include <iostream>
-#include <nlohmann/json.hpp>
 #include <sstream>
+
+#include <CLI/CLI.hpp>
+#include <nlohmann/json.hpp>
+
 #include "qasmtools/ast/decl.hpp"
+#include "qasmtools/ast/program.hpp"
 #include "qasmtools/ast/stmt.hpp"
 #include "qasmtools/ast/var.hpp"
-#include "qasmtools/parser/parser.hpp"
-
-#include <typeinfo>
-
-#include "qasmtools/ast/ast.hpp"
 
 namespace staq {
 namespace output {

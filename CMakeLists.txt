@@ -47,6 +47,13 @@ if(MSVC)
   endif()
 endif()
 
+# GNU MP warnings for literal operators with whitespace, e.g. 
+# auto operator "" _x (unsigned long long); // deprecated
+# auto operator ""_x (unsigned long long);  // correct
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  add_compile_options(-Wno-deprecated-literal-operator)
+endif()
+
 # MinGW or Cygwin have issues with object files that are too large
 if(MINGW OR CYGWIN)
   add_compile_options("-Wa,-mbig-obj")
