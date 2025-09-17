@@ -1,13 +1,6 @@
-[build-system]
-requires = [
-    "pybind11>=2.10.0",
-    "setuptools>=42",
-    "wheel",
-]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "pystaq"
+requires-python = ">=3.9"
 version = "3.5"
 description = "Python 3 wrapper for staq"
 authors = [
@@ -20,6 +13,14 @@ dependencies = []
 [project.urls]
 homepage = "https://github.com/softwareqinc/staq"
 repository = "https://github.com/softwareqinc/staq.git"
+
+[build-system]
+requires = [
+    "pybind11>=2.10.0",
+    "setuptools>=42",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 py-modules = []

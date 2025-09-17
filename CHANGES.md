@@ -1,3 +1,9 @@
+# Pre-release
+
+- Updated third party library [fmt](https://github.com/fmtlib/fmt) to version
+  11.1.2
+- Fixed MSVC compiling issues on Windows
+
 # Version 3.5 - 8 March 2024
 
 - Replaced ["CHANGES"] by ["CHANGES.md"],

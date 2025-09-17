@@ -14,7 +14,7 @@ docker build -t softwareq-staq .
 Run the Jupyter server in a container by executing
 
 ```shell
-docker run -p8889:8889 -it --workdir=/home/sq/notebooks softwareq-staq sh -c "jupyter notebook --port=8889 --no-browser --ip=0.0.0.0"
+docker run -p8889:8889 -it --workdir=/home/sq/notebooks softwareq-staq sh -c ". ~/venv/bin/activate && jupyter notebook --port=8889 --no-browser --ip=0.0.0.0"
 ```
 
 ---

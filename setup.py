@@ -22,7 +22,7 @@ def _load_shared_obj(name):
     """Attempts to load shared library."""
     paths = []
 
-    # search typical locations
+    # Search typical locations
     try:
         paths += [ctu.find_library(name)]
     except FileNotFoundError:
@@ -54,13 +54,15 @@ if found_GMP:
     extra_compile_args.append("-DEXPR_GMP")
     extra_links_args = ["-lgmp", "-lgmpxx"]
 
-# If the platform seem to be MSVC
+# Compiler is MSVC
 if (
     sys.platform == "win32"
     and not sys.platform == "cygwin"
     and not sys.platform == "msys"
 ):
+    (extra_compile_args.append("-DNOMINMAX"),)
     extra_compile_args.append("-Ilibs/third_party/pthreadwin32")
+    extra_compile_args.append("/utf-8")
 
 ext_modules = [
     Pybind11Extension(

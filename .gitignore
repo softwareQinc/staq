@@ -69,3 +69,4 @@ cmake_install.cmake
 CMakeCache.txt
 CMakeFiles/
 pystaq.egg-info/
+/uv.lock

@@ -121,6 +121,6 @@ jobs:
           if [ "$RUNNER_OS" == "Windows" ]; then
             venv/Scripts/activate
           else
-            . venv/bin/activate
+            source venv/bin/activate
           fi
           pip install .

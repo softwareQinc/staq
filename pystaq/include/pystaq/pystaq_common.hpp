@@ -1,7 +1,7 @@
 /*
  * This file is part of pystaq.
  *
- * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2025 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -60,6 +60,7 @@
 
 #include "staq/output/cirq.hpp"
 #include "staq/output/ionq.hpp"
+#include "staq/output/json.hpp"
 #include "staq/output/lattice_surgery.hpp"
 #include "staq/output/projectq.hpp"
 #include "staq/output/qsharp.hpp"

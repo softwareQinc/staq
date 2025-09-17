@@ -40,7 +40,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <deque>
+#include <vector>
 
 namespace easy::sat2 {
 
@@ -158,8 +160,9 @@ inline void increase_totalizer(std::vector<std::vector<int>>& dest, int& sid,
                                std::shared_ptr<totalizer_tree>& t,
                                uint32_t rhs) {
     uint32_t const kmin = std::min(rhs + 1, t->num_inputs);
-    if (kmin <= t->vars.size())
+    if (kmin <= t->vars.size()) {
         return;
+    }
 
     increase_totalizer(dest, sid, t->left, rhs);
     increase_totalizer(dest, sid, t->right, rhs);

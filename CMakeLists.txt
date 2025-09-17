@@ -30,18 +30,28 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 You may need to remove CMakeCache.txt.")
 endif()
 
-# Force clang to use libc++
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  add_compile_options("-stdlib=libc++")
-endif()
+# # Force Clang to use libc++
+# if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+#   add_compile_options("-stdlib=libc++")
+# endif()
 
 # Windows issues with Microsoft Visual Studio
 if(MSVC)
+  add_definitions(-DNOMINMAX)
+  # MSVC lack of pthread.h
   include_directories(SYSTEM libs/third_party/pthreadwin32)
-  add_compile_options(-bigobj)
+  add_compile_options(/bigobj)
+  add_compile_options(/utf-8)
   if(MSVC_VERSION GREATER_EQUAL 1914)
     add_compile_options("/Zc:__cplusplus")
   endif()
+endif()
+
+# GNU MP warnings for literal operators with whitespace, e.g. 
+# auto operator "" _x (unsigned long long); // deprecated
+# auto operator ""_x (unsigned long long);  // correct
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  add_compile_options(-Wno-deprecated-literal-operator)
 endif()
 
 # MinGW or Cygwin have issues with object files that are too large
@@ -100,7 +110,7 @@ add_subdirectory(src/tools)
 # Unit testing
 add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/ EXCLUDE_FROM_ALL SYSTEM)
 
-# Enable all warnings for GNU gcc and Clang/AppleClang
+# Enable all warnings for GCC and Clang/AppleClang
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
                                                STREQUAL "GNU")
   add_compile_options("-pedantic" "-Wall" "-Wextra" "-Weffc++")
@@ -139,8 +149,10 @@ endif()
 
 # Uninstall
 # https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
-# UNIX/Linux: sudo cmake --build build --target uninstall Windows:    cmake
-# --build build --target uninstall
+#
+# UNIX/Linux: sudo cmake --build build --target uninstall
+#
+# Windows: cmake --build build --target uninstall
 if(NOT TARGET uninstall)
   configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/staq_uninstall.cmake.in"

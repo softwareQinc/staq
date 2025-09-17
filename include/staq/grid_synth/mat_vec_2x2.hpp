@@ -1,7 +1,7 @@
 /*
  * This file is part of staq.
  *
- * Copyright (c) 2019 - 2024 softwareQ Inc. All rights reserved.
+ * Copyright (c) 2019 - 2025 softwareQ Inc. All rights reserved.
  *
  * MIT License
  *
@@ -74,7 +74,9 @@ class col_vec2_t {
         return {col_[0] + rhs.col_[0], col_[1] + rhs.col_[1]};
     }
 
-    bool operator==(const col_vec2_t& other) const { return col_ == other.row; }
+    bool operator==(const col_vec2_t& other) const {
+        return col_ == other.col_;
+    }
 
     bool operator!=(const col_vec2_t& other) const { return !(*this == other); }
 
