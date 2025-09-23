@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
+
+# Check if we're being used via FetchContent
+if(DEFINED FETCHCONTENT_SOURCE_DIR_staq)
+  set(STAQ_IS_FETCHCONTENT TRUE)
+endif()
+
 set(STAQ_VERSION_NUM 3.5)
 set(STAQ_VERSION_STR "${STAQ_VERSION_NUM}")
 project(
@@ -9,8 +15,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 enable_testing()
 
 # staq version
@@ -18,7 +24,7 @@ add_compile_definitions(STAQ_VERSION_NUM=${STAQ_VERSION_NUM})
 add_compile_definitions(STAQ_VERSION_STR="${STAQ_VERSION_STR}")
 
 # staq root directory
-add_compile_definitions(PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}")
+add_compile_definitions(PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Guard against in-source builds (snippet from Eigen's CMakeLists.txt)
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
@@ -108,7 +114,9 @@ target_link_libraries(${COMPILER} PUBLIC libstaq)
 add_subdirectory(src/tools)
 
 # Unit testing
-add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests/ EXCLUDE_FROM_ALL SYSTEM)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests)
+  add_subdirectory(unit_tests ${CMAKE_CURRENT_BINARY_DIR}/unit_tests EXCLUDE_FROM_ALL SYSTEM)
+endif()
 
 # Enable all warnings for GCC and Clang/AppleClang
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID}
@@ -143,7 +151,7 @@ if(INSTALL_SOURCES)
     INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}")
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/staqConfig.cmake"
           DESTINATION "lib/cmake/${PROJECT_NAME}")
-  install(FILES "${CMAKE_SOURCE_DIR}/cmake/staq_msvc.cmake"
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/staq_msvc.cmake"
           DESTINATION "lib/cmake/${PROJECT_NAME}")
 endif()
 
