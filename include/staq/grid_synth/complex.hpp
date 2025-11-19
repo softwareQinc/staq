@@ -45,8 +45,8 @@ class complex {
 
   public:
     // Default constructor sets real and imaginary components to zero
-    complex<T>() : a_(0), b_(0) {}
-    complex<T>(T a, T b) : a_(a), b_(b) {}
+    complex() : a_(0), b_(0) {}
+    complex(T a, T b) : a_(a), b_(b) {}
 
     complex<T> conj() { return complex<T>(a_, -b_); }
 
