@@ -9,6 +9,7 @@
 #include <list>
 #include <stdexcept>
 #include <vector>
+#include <algorithm>
 
 namespace tools_v1::ast {
 
