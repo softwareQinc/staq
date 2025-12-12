@@ -1,37 +1,29 @@
-# Installation instructions
+# pystaq - Python3 bindings for staq
 
-[**pystaq**](https://github.com/softwareQinc/staq/blob/main/pystaq/) is a
-Python 3 wrapper for **staq**. **pystaq** can be installed using `pip`
+[**pystaq**](https://github.com/softwareQinc/staq/blob/main/pystaq) provides a
+modern Python 3 interface to the **staq** C++ library through a clean and
+intuitive API built with [pybind11](https://github.com/pybind/pybind11).
+
+---
+
+## Installation instructions
+
+**pystaq** requires the same dependencies as **staq**,
+and can be installed using `pip`
 
 ```shell
 pip install git+https://github.com/softwareQinc/staq
 ```
 
-## Creating python stubs for IDE autocompletion and static type checking
-
-In case autocompletion (or static type checking via
-[mypy](https://www.mypy-lang.org/)) does not work properly in your editor/IDE,
-you may need to create python stubs for the package. To do this, execute
-
-```shell
-mkdir ~/python_stubs
-export MYPATH=$MYPATH:~/python_subs # put this in your .profile or .bashrc
-. ~/venv/bin/activate
-stubgen -p pystaq -o ~/python_stubs
-ln -s ~/python_stubs/pystaq.pyi ~/venv/lib/python3.11/site-packages
-```
-
-In the above, we assumed that your platform is UNIX/UNIX-like and that you have
-**pystaq** installed in a virtual environment under `~/venv`. Please modify
-accordingly on your system.
+---
 
 ## Overview
 
-To parse a circuit, use the function `pystaq.parse_file`, which takes a file
+To parse a circuit, use the function `pystaq.parse_file()`, which takes a file
 path as input, or `pystaq.parse_str`, which accepts an OpenQASM 2.0 program
 string.
 
-The library provides the following tools:
+The library provides the following tools
 
 ```
 desugar
@@ -53,13 +45,13 @@ lattice_surgery
 ```
 
 Each function takes as input a parsed program, followed by any options
-supported by the corresponding staq tool.
+supported by the corresponding **staq** tool.
 
 ---
 
-Example:
+Example
 
-```
+```python3
 >>> import pystaq
 
 >>> p = pystaq.parse_str('''
@@ -98,7 +90,7 @@ has the methods `add_edge` and `set_fidelity`.
 
 ---
 
-Example:
+Example
 
 ```python3
 import pystaq
@@ -111,7 +103,7 @@ with open('device.json', 'w') as f:
 ```
 
 This produces the following `device.json` file, which can then be used by
-`pystaq.map`:
+`pystaq.map`
 
 ```js
 {
@@ -151,10 +143,9 @@ This produces the following `device.json` file, which can then be used by
 
 ## Custom Bindings
 
-**pystaq** was created using [pybind11](https://github.com/pybind/pybind11).
 See
 [pystaq/staq_wrapper.cpp](https://github.com/softwareQinc/staq/blob/main/pystaq/staq_wrapper.cpp)
 for many examples of how to wrap a circuit transformation.
 
-For more details, see also our **Quantum++** wrapper
+For more details, see also our **Quantum++** Python3 wrapper
 [**pyqpp**](https://github.com/softwareQinc/qpp/wiki/8.-pyqpp#custom-bindings).

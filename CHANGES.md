@@ -3,6 +3,9 @@
 - Updated third party library [fmt](https://github.com/fmtlib/fmt) to version
   11.1.2
 - Fixed MSVC compiling issues on Windows
+- Implemented `staq_json` tool that displays a quantum circuit AST in JSON
+  format
+- Minor updates to **pystaq**
 
 # Version 3.5 - 8 March 2024
 
