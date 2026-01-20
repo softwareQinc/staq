@@ -24,6 +24,10 @@
  * SOFTWARE.
  */
 
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "pystaq/pystaq_common.hpp"
 
 class Program {
@@ -112,9 +116,7 @@ class Program {
         staq::transformations::qasm_synth(*prog_, opt);
     }
 #endif /* GRID_SYNTH */
-    void optimize_level_0() {
-        desugar();
-    }
+    void optimize_level_0() { desugar(); }
     void optimize_level_1(bool no_correction = false,
                           bool no_fixpoint = false) {
         rotation_fold(no_correction);
@@ -217,29 +219,36 @@ void cnot_resynth(Program& prog) { prog.cnot_resynth(); }
 void simplify(Program& prog, bool no_fixpoint) { prog.simplify(no_fixpoint); }
 void synthesize_oracles(Program& prog) { prog.synthesize_oracles(); }
 #ifdef GRID_SYNTH
-void grid_synth(const std::vector<std::string>& thetas, long int prec,
-                int factor_effort, bool check, bool details, bool verbose,
-                bool timer) {
+std::string grid_synth(const std::vector<std::string>& thetas, long int prec,
+                       int factor_effort, bool check, bool details,
+                       bool verbose, bool timer) {
     using namespace staq::grid_synth;
     if (verbose) {
         std::cerr << thetas.size() << " angle(s) read." << '\n';
     }
     GridSynthOptions opt{prec, factor_effort, check, details, verbose, timer};
     GridSynthesizer synthesizer = make_synthesizer(opt);
+
     std::random_device rd;
     random_numbers.seed(rd());
+    std::ostringstream out;
+
     for (const auto& angle : thetas) {
         str_t op_str = synthesizer.get_op_str(real_t(angle));
         for (char c : op_str) {
-            std::cout << c << ' ';
+            out << c << ' ';
         }
-        std::cout << '\n';
+        out << '\n';
     }
+
+    return out.str();
 }
-void grid_synth(const std::string& theta, long int prec, int factor_effort,
-                bool check, bool details, bool verbose, bool timer) {
-    grid_synth(std::vector<std::string>{theta}, prec, factor_effort, check,
-               details, verbose, timer);
+
+std::string grid_synth(const std::string& theta, long int prec,
+                       int factor_effort, bool check, bool details,
+                       bool verbose, bool timer) {
+    return grid_synth(std::vector<std::string>{theta}, prec, factor_effort,
+                      check, details, verbose, timer);
 }
 void qasm_synth(Program& prog, long int prec, int factor_effort, bool check,
                 bool details, bool verbose) {
@@ -248,30 +257,28 @@ void qasm_synth(Program& prog, long int prec, int factor_effort, bool check,
 #endif /* GRID_SYNTH */
 std::string lattice_surgery(Program& prog) { return prog.lattice_surgery(); }
 
-void compile(Program& prog, int optimization_level,
-             bool no_correction,
-             bool no_fixpoint,
-             bool clear_decls, bool inline_stdlib,
+void compile(Program& prog, int optimization_level, bool no_correction,
+             bool no_fixpoint, bool clear_decls, bool inline_stdlib,
              const std::string& ancilla_name) {
-        switch (optimization_level) {
+    switch (optimization_level) {
         case 0:
-                prog.optimize_level_0();
-                break;
+            prog.optimize_level_0();
+            break;
         case 1:
-                prog.optimize_level_1(no_correction, no_fixpoint);
-                break;
+            prog.optimize_level_1(no_correction, no_fixpoint);
+            break;
         case 2:
-                prog.optimize_level_2(no_correction, no_fixpoint, clear_decls,
-                                      inline_stdlib, ancilla_name);
-                break;
+            prog.optimize_level_2(no_correction, no_fixpoint, clear_decls,
+                                  inline_stdlib, ancilla_name);
+            break;
         case 3:
-                prog.optimize_level_3(no_correction, no_fixpoint, clear_decls,
-                                      inline_stdlib, ancilla_name);
-                break;
+            prog.optimize_level_3(no_correction, no_fixpoint, clear_decls,
+                                  inline_stdlib, ancilla_name);
+            break;
         default:
-                throw std::invalid_argument("Invalid optimization level");
-                break;
-        }
+            throw std::invalid_argument("Invalid optimization level");
+            break;
+    }
 }
 
 static double FIDELITY_1 = staq::mapping::FIDELITY_1;
