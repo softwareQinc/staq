@@ -1,4 +1,4 @@
-# pystaq - Python3 bindings for staq
+# pystaq - Python 3 bindings for staq
 
 cmake_minimum_required(VERSION 3.20)
 project(pystaq LANGUAGES CXX)
@@ -36,26 +36,17 @@ target_link_libraries(pystaq PRIVATE pybind11::module libstaq)
 install(TARGETS pystaq LIBRARY DESTINATION pystaq)
 
 # Generate stubs by running pybind11-stubgen after the module is compiled
-set(STUBGEN_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/stubs")
-file(MAKE_DIRECTORY "${STUBGEN_OUTPUT_PATH}")
-
-if(WIN32)
-  set(PYTHONPATH_SEP ";")
-else()
-  set(PYTHONPATH_SEP ":")
-endif()
-
-add_custom_command(
-  TARGET pystaq
-  POST_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E env
-    "PYTHONPATH=$<TARGET_FILE_DIR:pystaq>${PYTHONPATH_SEP}$ENV{PYTHONPATH}"
-    ${Python3_EXECUTABLE} -m pybind11_stubgen pystaq --output-dir
-    "${STUBGEN_OUTPUT_PATH}" --ignore-all-errors
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating Python stubs for pystaq..."
-  VERBATIM)
-
-# Install the generated stub directory alongside the module
-install(DIRECTORY "${STUBGEN_OUTPUT_PATH}/pystaq/" DESTINATION pystaq)
+# set(STUBGEN_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/stubs")
+# file(MAKE_DIRECTORY "${STUBGEN_OUTPUT_PATH}")
+#
+# if(WIN32) set(PYTHONPATH_SEP ";") else() set(PYTHONPATH_SEP ":") endif()
+#
+# add_custom_command( TARGET pystaq POST_BUILD COMMAND ${CMAKE_COMMAND} -E env
+# "PYTHONPATH=$<TARGET_FILE_DIR:pystaq>${PYTHONPATH_SEP}$ENV{PYTHONPATH}"
+# ${Python3_EXECUTABLE} -m pybind11_stubgen pystaq --output-dir
+# "${STUBGEN_OUTPUT_PATH}" --ignore-all-errors WORKING_DIRECTORY
+# ${CMAKE_CURRENT_BINARY_DIR} COMMENT "Generating Python stubs for pystaq..."
+# VERBATIM)
+#
+# # Install the generated stub directory alongside the module install(DIRECTORY
+# "${STUBGEN_OUTPUT_PATH}/pystaq/" DESTINATION pystaq)

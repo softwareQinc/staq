@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/inline.hpp
- * \brief AST inlining
+ * @file transformations/inline.hpp
+ * @brief AST inlining
  */
 
 #ifndef TRANSFORMATIONS_INLINE_HPP_
@@ -45,14 +45,14 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Inlines gate calls
+ * @brief Inlines gate calls
  *
  * Traverses an AST and inlines all gate calls. By default qelib calls are NOT
  * inlined, but optionally can be. Local ancillas are hoisted to the global
  * level and reused
  */
 
-/* \brief Default overrides */
+/* @brief Default overrides */
 static const std::set<std::string_view> default_overrides{
     "x",  "y",  "z",  "h",  "s",  "sdg",  "t",  "tdg",
     "rx", "ry", "rz", "cz", "cy", "swap", "cx", "u1"};

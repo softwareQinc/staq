@@ -25,8 +25,8 @@
  */
 
 /**
- * \file optimization/cnot_resynthesis.hpp
- * \brief CNOT re-synthesis based on Gray-Synth
+ * @file optimization/cnot_resynthesis.hpp
+ * @brief CNOT re-synthesis based on Gray-Synth
  */
 
 #ifndef OPTIMIZATION_CNOT_RESYNTHESIS_HPP_
@@ -49,8 +49,8 @@ namespace optimization {
 using namespace qasmtools;
 
 /**
- * \class staq::optimization::CNOTResynthesizer
- * \brief CNOT optimization algorithm based on arXiv:1712.01859
+ * @class staq::optimization::CNOTResynthesizer
+ * @brief CNOT optimization algorithm based on arXiv:1712.01859
  */
 class CNOTOptimizer final : public ast::Replacer {
   public:
@@ -376,13 +376,13 @@ class CNOTOptimizer final : public ast::Replacer {
     }
 };
 
-/** \brief Performs CNOT optimization */
+/** @brief Performs CNOT optimization */
 static void optimize_CNOT(ast::ASTNode& node) {
     CNOTOptimizer optimizer;
     optimizer.run(node);
 }
 
-/** \brief Performs CNOT optimization with configuration */
+/** @brief Performs CNOT optimization with configuration */
 static void optimize_CNOT(ast::ASTNode& node,
                           const CNOTOptimizer::config& params) {
     CNOTOptimizer optimizer(params);

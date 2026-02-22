@@ -88,7 +88,7 @@ class GridSynthesizer {
     double get_duration() const { return static_cast<double>(duration_) / 1e6; }
     bool is_valid() const { return valid_; }
 
-    /*! \brief Find RZ-approximation for an angle. */
+    /*! @brief Find RZ-approximation for an angle. */
     str_t get_op_str(const real_t& angle) {
         if (verbose_) {
             std::cerr << "Checking common cases..."
@@ -199,7 +199,7 @@ class GridSynthesizer {
     friend GridSynthesizer make_synthesizer(const GridSynthOptions& opt);
 };
 
-/*! \brief Initializes a GridSynthesizer object. */
+/*! @brief Initializes a GridSynthesizer object. */
 inline GridSynthesizer make_synthesizer(const GridSynthOptions& opt) {
     domega_matrix_table_t s3_table = load_s3_table();
 

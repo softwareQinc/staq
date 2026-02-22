@@ -25,8 +25,8 @@
  */
 
 /**
- * \file optimization/simplify.hpp
- * \brief Gate cancellation optimization
+ * @file optimization/simplify.hpp
+ * @brief Gate cancellation optimization
  */
 
 #ifndef OPTIMIZATION_SIMPLIFY_HPP_
@@ -43,7 +43,7 @@ namespace optimization {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Basic adjacent gate cancellation algorithm
+ * @brief Basic adjacent gate cancellation algorithm
  *
  *  Returns a replacement list giving the nodes to the be erased
  */

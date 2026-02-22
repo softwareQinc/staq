@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/ionq.hpp
- * \brief IonQ outputter
+ * @file output/ionq.hpp
+ * @brief IonQ outputter
  */
 
 #ifndef OUTPUT_IONQ_HPP_
@@ -43,15 +43,15 @@ namespace output {
 
 namespace ast = qasmtools::ast;
 
-/** \brief Equivalent IonQ standard gates for qasm standard gates */
+/** @brief Equivalent IonQ standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_ionq{{"sdg", "si"},
                                                              {"tdg", "ti"}};
 // Note: u1 and rz gates are equivalent up to a global phase. This substitution
 // has been left out for now; unsure if global phase matters in IonQ.
 
 /**
- * \class staq::output::IonQOutputter
- * \brief Visitor for converting a QASM AST to IonQ
+ * @class staq::output::IonQOutputter
+ * @brief Visitor for converting a QASM AST to IonQ
  */
 class IonQOutputter final : public ast::Visitor {
   public:
@@ -223,13 +223,13 @@ class IonQOutputter final : public ast::Visitor {
     bool first_gate = true;
 };
 
-/** \brief Writes an AST in IonQ format to stdout */
+/** @brief Writes an AST in IonQ format to stdout */
 void output_ionq(ast::Program& prog) {
     IonQOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
-/** \brief Writes an AST in IonQ format to a given output stream */
+/** @brief Writes an AST in IonQ format to a given output stream */
 void write_ionq(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

@@ -25,8 +25,8 @@
  */
 
 /**
- * \file mapping/mapping/swap.hpp
- * \brief Local swapping hardware mapper
+ * @file mapping/mapping/swap.hpp
+ * @brief Local swapping hardware mapper
  */
 
 #ifndef MAPPING_MAPPING_SWAP_HPP_
@@ -49,9 +49,9 @@ namespace ast = qasmtools::ast;
 namespace parser = qasmtools::parser;
 
 /**
- * \class staq::mapping::SwapMapper
- * \brief Simple swap-inserting mapping algorithm
- * \note Assumes the circuit has a single global register with the configured
+ * @class staq::mapping::SwapMapper
+ * @brief Simple swap-inserting mapping algorithm
+ * @note Assumes the circuit has a single global register with the configured
  * name
  *
  * Maps an AST to a given device by inserting swap gates along a shortest path
@@ -203,7 +203,7 @@ class SwapMapper final : public ast::Replacer {
     }
 };
 
-/** \brief Applies the swap mapper to an AST given a physical device */
+/** @brief Applies the swap mapper to an AST given a physical device */
 std::map<int, int> map_onto_device(Device& device, ast::Program& prog) {
     SwapMapper mapper(device);
     return mapper.run(prog);

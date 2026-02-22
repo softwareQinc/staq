@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/json.hpp
- * \brief JSON outputter
+ * @file output/json.hpp
+ * @brief JSON outputter
  */
 
 #ifndef OUTPUT_JSON_HPP_
@@ -49,8 +49,8 @@ using namespace qasmtools::ast;
 using json = nlohmann::json;
 
 /**
- * \class staq::output::JSONOutputter
- * \brief Visitor for converting a QASM AST to JSON
+ * @class staq::output::JSONOutputter
+ * @brief Visitor for converting a QASM AST to JSON
  */
 class JSONOutputter final : public Visitor {
   public:

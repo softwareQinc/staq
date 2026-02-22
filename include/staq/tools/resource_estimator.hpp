@@ -25,8 +25,8 @@
  */
 
 /**
- * \file tools/resource_estimator.hpp
- * \brief Resource estimation
+ * @file tools/resource_estimator.hpp
+ * @brief Resource estimation
  */
 
 #ifndef TOOLS_RESOURCE_ESTIMATOR_HPP_

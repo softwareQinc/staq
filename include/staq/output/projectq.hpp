@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/projectq.hpp
- * \brief ProjectQ outputter
+ * @file output/projectq.hpp
+ * @brief ProjectQ outputter
  */
 
 #ifndef OUTPUT_PROJECTQ_HPP_
@@ -41,7 +41,7 @@ namespace output {
 
 namespace ast = qasmtools::ast;
 
-/** \brief Equivalent projectQ standard gates for qasm standard gates */
+/** @brief Equivalent projectQ standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_projectq{
     {"id", "ops.Rz(0)"}, {"x", "ops.XGate"}, {"y", "ops.YGate"},
     {"z", "ops.ZGate"},  {"h", "ops.HGate"}, {"s", "ops.SGate"},
@@ -51,8 +51,8 @@ std::unordered_map<std::string, std::string> qasmstd_to_projectq{
     {"u1", "ops.Rz"},    {"crz", "ops.CRz"}, {"cu1", "ops.CRz"}};
 
 /**
- * \class staq::output::ProjectQOutputter
- * \brief Visitor for converting a QASM AST to ProjectQ
+ * @class staq::output::ProjectQOutputter
+ * @brief Visitor for converting a QASM AST to ProjectQ
  */
 class ProjectQOutputter final : public ast::Visitor {
   public:
@@ -442,13 +442,13 @@ class ProjectQOutputter final : public ast::Visitor {
     }
 };
 
-/** \brief Writes an AST in ProjectQ format to stdout */
+/** @brief Writes an AST in ProjectQ format to stdout */
 void output_projectq(ast::Program& prog) {
     ProjectQOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
-/** \brief Writes an AST in ProjectQ format to a given output stream */
+/** @brief Writes an AST in ProjectQ format to a given output stream */
 void write_projectq(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

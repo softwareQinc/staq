@@ -25,8 +25,8 @@
  */
 
 /**
- * \file mapping/mapping/steiner.hpp
- * \brief Steiner tree-based hardware mapping
+ * @file mapping/mapping/steiner.hpp
+ * @brief Steiner tree-based hardware mapping
  */
 
 #ifndef MAPPING_MAPPING_STEINER_HPP_
@@ -47,9 +47,9 @@ namespace mapping {
 using namespace qasmtools;
 
 /**
- * \class staq::mapping::SteinerMapper
- * \brief Steiner tree based re-synthesizing mapper
- * \note Assumes the circuit has a single global register with the configured
+ * @class staq::mapping::SteinerMapper
+ * @brief Steiner tree based re-synthesizing mapper
+ * @note Assumes the circuit has a single global register with the configured
  * name
  *
  * Re-synthesizes an entire circuit by breaking into cnot-dihedral "chunks"
@@ -372,9 +372,9 @@ class SteinerMapper final : public ast::Replacer {
 };
 
 /**
- * \class staq::mapping::SteinerDry
- * \brief Steiner mapper dry run
- * \note Utility class for optimizing over initial layouts
+ * @class staq::mapping::SteinerDry
+ * @brief Steiner mapper dry run
+ * @note Utility class for optimizing over initial layouts
  *
  * Does a dry run of the Steiner mapping algorithm (i.e. doesn't actually
  * change the ast) with a particular layout and collects information about
@@ -595,7 +595,7 @@ class SteinerDry final : public ast::Traverse {
 };
 
 /**
- * \brief Layout optimization for the Steiner mapper via hill climb
+ * @brief Layout optimization for the Steiner mapper via hill climb
  *
  * Repeatedly performs dry-runs, modifying the qubit mapping with a
  * single swap each time.
@@ -618,7 +618,7 @@ outer:
     }
 }
 
-/** \brief Applies the Steiner mapper to an AST given a physical device */
+/** @brief Applies the Steiner mapper to an AST given a physical device */
 void steiner_mapping(Device& device, ast::Program& prog) {
     SteinerMapper mapper(device);
     prog.accept(mapper);

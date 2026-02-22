@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/cirq.hpp
- * \brief Cirq outputter
+ * @file output/cirq.hpp
+ * @brief Cirq outputter
  */
 
 #ifndef OUTPUT_CIRQ_HPP_
@@ -41,7 +41,7 @@ namespace output {
 
 namespace ast = qasmtools::ast;
 
-/** \brief Equivalent cirq standard gates for qasm standard gates */
+/** @brief Equivalent cirq standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_cirq{
     {"id", "cirq.I"},          {"x", "cirq.X"},   {"y", "cirq.Y"},
     {"z", "cirq.Z"},           {"h", "cirq.H"},   {"s", "cirq.S"},
@@ -51,8 +51,8 @@ std::unordered_map<std::string, std::string> qasmstd_to_cirq{
     {"u1", "cirq.Rz"}};
 
 /**
- * \class staq::output::CirqOutputter
- * \brief Visitor for converting a QASM AST to Cirq
+ * @class staq::output::CirqOutputter
+ * @brief Visitor for converting a QASM AST to Cirq
  */
 class CirqOutputter final : public ast::Visitor {
   public:
@@ -386,13 +386,13 @@ class CirqOutputter final : public ast::Visitor {
     }
 };
 
-/** \brief Writes an AST in Cirq format to stdout */
+/** @brief Writes an AST in Cirq format to stdout */
 void output_cirq(ast::Program& prog) {
     CirqOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
-/** \brief Writes an AST in Cirq format to a given output stream */
+/** @brief Writes an AST in Cirq format to a given output stream */
 void write_cirq(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/qsharp.hpp
- * \brief Q# outputter
+ * @file output/qsharp.hpp
+ * @brief Q# outputter
  */
 
 #ifndef OUTPUT_QSHARP_HPP_
@@ -42,7 +42,7 @@ namespace output {
 
 namespace ast = qasmtools::ast;
 
-/** \brief Equivalent Q# standard gates for qasm standard gates */
+/** @brief Equivalent Q# standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_qsharp{
     {"id", "I"},
     {"x", "X"},
@@ -65,8 +65,8 @@ std::unordered_map<std::string, std::string> qasmstd_to_qsharp{
     {"cu1", "(Controlled Rz)"}};
 
 /**
- * \class staq::output::QSharpOutputter
- * \brief Visitor for converting a QASM AST to Q#
+ * @class staq::output::QSharpOutputter
+ * @brief Visitor for converting a QASM AST to Q#
  */
 class QSharpOutputter final : public ast::Visitor {
   public:
@@ -381,13 +381,13 @@ class QSharpOutputter final : public ast::Visitor {
     bool ambiguous_ = false;
 };
 
-/** \brief Writes an AST in Q# format to stdout */
+/** @brief Writes an AST in Q# format to stdout */
 void output_qsharp(ast::Program& prog) {
     QSharpOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
-/** \brief Writes an AST in Q# format to a given output stream */
+/** @brief Writes an AST in Q# format to a given output stream */
 void write_qsharp(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

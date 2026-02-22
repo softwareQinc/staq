@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/quil.hpp
- * \brief Quil outputter
+ * @file output/quil.hpp
+ * @brief Quil outputter
  */
 
 #ifndef OUTPUT_QUIL_HPP_
@@ -39,7 +39,7 @@ namespace output {
 
 namespace ast = qasmtools::ast;
 
-/** \brief Equivalent quil standard gates for qasm standard gates */
+/** @brief Equivalent quil standard gates for qasm standard gates */
 std::unordered_map<std::string, std::string> qasmstd_to_quilstd{
     {"id", "I"},         {"x", "X"},     {"y", "Y"},          {"z", "Z"},
     {"h", "H"},          {"s", "S"},     {"sdg", "DAGGER S"}, {"t", "T"},
@@ -48,8 +48,8 @@ std::unordered_map<std::string, std::string> qasmstd_to_quilstd{
     {"cu1", "CPHASE"}};
 
 /**
- * \class staq::output::QuilOutputter
- * \brief Visitor for converting a QASM AST to Quil
+ * @class staq::output::QuilOutputter
+ * @brief Visitor for converting a QASM AST to Quil
  */
 class QuilOutputter final : public ast::Visitor {
   public:
@@ -349,13 +349,13 @@ class QuilOutputter final : public ast::Visitor {
     std::unordered_map<ast::symbol, std::pair<int, int>> globals_{};
 };
 
-/** \brief Writes an AST in Quil format to stdout */
+/** @brief Writes an AST in Quil format to stdout */
 void output_quil(ast::Program& prog) {
     QuilOutputter outputter(std::cout);
     outputter.run(prog);
 }
 
-/** \brief Writes an AST in Quil format to a given output stream */
+/** @brief Writes an AST in Quil format to a given output stream */
 void write_quil(ast::Program& prog, std::string fname) {
     std::ofstream ofs;
     ofs.open(fname);

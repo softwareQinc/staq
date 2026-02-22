@@ -6,6 +6,8 @@
 - Implemented `staq_json` tool that displays a quantum circuit AST in JSON
   format
 - Minor updates to **pystaq**
+- **pystaq**'s `grid_synth()` now returns a std::string instead of outputting
+  to the standard output
 
 # Version 3.5 - 8 March 2024
 
@@ -13,8 +15,7 @@
   as we now use Markdown format to keep track of changes in new releases
 - Removed pybind11 and GoogleTest dependencies; if not detected, they are
   installed automatically as build dependencies by CMake
-- Bumped GoogleTest version to HEAD latest, as
-  [recommended by Google](https://github.com/google/googletest?tab=readme-ov-file#live-at-head)
+- Updated GoogleTest to the latest HEAD, as recommended by Google
 - All header files are moved into ["include/staq"], so to include **staq**
   headers one now must `#include "staq/<header>.hpp"`. This change was made for
   the sake of making the include statements look uniform in both non-installed

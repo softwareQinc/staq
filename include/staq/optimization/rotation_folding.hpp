@@ -25,8 +25,8 @@
  */
 
 /**
- * \file optimization/rotation_folding.hpp
- * \brief Rotation folding algorithm
+ * @file optimization/rotation_folding.hpp
+ * @brief Rotation folding algorithm
  */
 
 #ifndef OPTIMIZATION_ROTATION_FOLDING_HPP_
@@ -47,8 +47,8 @@ namespace optimization {
 using namespace qasmtools;
 
 /**
- * \class staq::optimization::RotationOptimizer
- * \brief Rotation gate merging algorithm based on arXiv:1903.12456
+ * @class staq::optimization::RotationOptimizer
+ * @brief Rotation gate merging algorithm based on arXiv:1903.12456
  *
  * Returns a replacement list giving the nodes to the be replaced (or erased)
  */
@@ -514,7 +514,7 @@ class RotationOptimizer final : public ast::Visitor {
     }
 };
 
-/** \brief Performs the rotation folding optimization */
+/** @brief Performs the rotation folding optimization */
 inline void fold_rotations(ast::ASTNode& node) {
     RotationOptimizer optimizer;
 
@@ -522,7 +522,7 @@ inline void fold_rotations(ast::ASTNode& node) {
     replace_gates(node, std::move(res));
 }
 
-/** \brief Performs the rotation folding optimization with configuration */
+/** @brief Performs the rotation folding optimization with configuration */
 inline void fold_rotations(ast::ASTNode& node,
                            const RotationOptimizer::config& params) {
     RotationOptimizer optimizer(params);

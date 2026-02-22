@@ -33,7 +33,7 @@ class Program {
     Program(qasmtools::ast::ptr<qasmtools::ast::Program> prog)
         : prog_(std::move(prog)) {}
     /**
-     * \brief Print the formatted QASM source code
+     * @brief Print the formatted QASM source code
      */
     friend std::ostream& operator<<(std::ostream& os, const Program& p) {
         return os << *(p.prog_);

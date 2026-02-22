@@ -25,8 +25,8 @@
  */
 
 /**
- * \file mapping/layout/bestfit.hpp
- * \brief Histogram-optimizing layout generation
+ * @file mapping/layout/bestfit.hpp
+ * @brief Histogram-optimizing layout generation
  */
 
 #ifndef MAPPING_LAYOUT_BESTFIT_HPP_
@@ -44,8 +44,8 @@ namespace mapping {
 namespace ast = qasmtools::ast;
 
 /**
- * \class staq::mapping::BestFit
- * \brief An initial layout based on the histogram of connections in the circuit
+ * @class staq::mapping::BestFit
+ * @brief An initial layout based on the histogram of connections in the circuit
  *
  * Chooses a layout where the most often coupled virtual qubits are assigned to
  * the highest fidelity couplings. Should perform well for devices with a high
@@ -56,7 +56,7 @@ class BestFit final : public ast::Traverse {
     BestFit(Device& device) : Traverse(), device_(device) {}
     ~BestFit() = default;
 
-    /** \brief Main generation method */
+    /** @brief Main generation method */
     layout generate(ast::Program& prog) {
         allocated_ = std::vector<bool>(device_.qubits_, false);
         access_paths_.clear();
@@ -89,7 +89,7 @@ class BestFit final : public ast::Traverse {
     std::map<std::pair<ast::VarAccess, ast::VarAccess>, int> histogram_;
 
     /**
-     * \brief Assigns physical qubits based on the computed histogram of
+     * @brief Assigns physical qubits based on the computed histogram of
      * connections
      */
     layout fit_histogram() {
@@ -165,7 +165,7 @@ class BestFit final : public ast::Traverse {
     }
 };
 
-/** \brief Generates a best-fit layout for a program on a physical device */
+/** @brief Generates a best-fit layout for a program on a physical device */
 layout compute_bestfit_layout(Device& device, ast::Program& prog) {
     BestFit gen(device);
     return gen.generate(prog);

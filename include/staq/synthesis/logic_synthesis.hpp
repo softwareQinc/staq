@@ -25,8 +25,8 @@
  */
 
 /**
- * \file synthesis/logic_synthesis.hpp
- * \brief Synthesis of classical logic
+ * @file synthesis/logic_synthesis.hpp
+ * @brief Synthesis of classical logic
  */
 
 #ifndef SYNTHESIS_LOGICSYNTHESIS_HPP_
@@ -72,7 +72,7 @@ std::unordered_map<std::string, Format> ext_to_format({
 });
 
 /**
- * \brief Read in a classical logic network
+ * @brief Read in a classical logic network
  */
 mockturtle::mig_network read_network(const std::string& fname) {
     mockturtle::mig_network mig;
@@ -114,7 +114,7 @@ mockturtle::mig_network read_network(const std::string& fname) {
     return mig;
 }
 
-/** \brief Wrapper around ast::angle_to_expr to convert tweedledum angles to
+/** @brief Wrapper around ast::angle_to_expr to convert tweedledum angles to
  * ours */
 ast::ptr<ast::Expr> angle_to_expr(parser::Position pos,
                                   tweedledum::angle angle) {
@@ -126,8 +126,8 @@ ast::ptr<ast::Expr> angle_to_expr(parser::Position pos,
 }
 
 /**
- * \brief LUT-based hierarchical logic synthesis (arXiv:1706.02721)
- * \note Based on an example given in the caterpillar synthesis library
+ * @brief LUT-based hierarchical logic synthesis (arXiv:1706.02721)
+ * @note Based on an example given in the caterpillar synthesis library
  */
 template <typename T>
 std::list<ast::ptr<ast::Gate>>

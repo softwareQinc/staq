@@ -1,3 +1,12 @@
+[build-system]
+requires = [
+    "pybind11",
+    "pybind11-stubgen",
+    "scikit-build-core",
+    "wheel",
+]
+build-backend = "scikit_build_core.build"
+
 [project]
 name = "pystaq"
 requires-python = ">=3.9"
@@ -14,13 +23,13 @@ dependencies = []
 homepage = "https://github.com/softwareqinc/staq"
 repository = "https://github.com/softwareqinc/staq.git"
 
-[build-system]
-requires = [
-    "pybind11>=2.10.0",
-    "setuptools>=42",
-    "wheel",
+[tool.scikit-build]
+cmake.source-dir = "pystaq"
+wheel.packages = ["pystaq"]
+wheel.exclude = [
+    "include",
+    "src",
+    "CMakeLists.txt",
+    "README.md",
 ]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-py-modules = []
+wheel.expand-macos-universal-tags = true

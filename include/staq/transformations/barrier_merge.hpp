@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/barrier_merge.hpp
- * \brief Merge adjacent barriers
+ * @file transformations/barrier_merge.hpp
+ * @brief Merge adjacent barriers
  */
 
 #ifndef TRANSFORMATIONS_BARRIER_MERGE_HPP_
@@ -46,7 +46,7 @@ namespace ast = qasmtools::ast;
 namespace parser = qasmtools::parser;
 
 /**
- * \brief Merges adjacent barriers
+ * @brief Merges adjacent barriers
  *
  * Traverses an AST and merges all adjacent barriers.
  */

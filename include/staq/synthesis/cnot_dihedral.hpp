@@ -25,8 +25,8 @@
  */
 
 /**
- * \file synthesis/cnot_dihedral.hpp
- * \brief Synthesis of CNOT-dihedral circuits
+ * @file synthesis/cnot_dihedral.hpp
+ * @brief Synthesis of CNOT-dihedral circuits
  */
 
 #ifndef SYNTHESIS_CNOTDIHEDRAL_HPP_
@@ -84,7 +84,7 @@ static void print_partition(const partition& part) {
 }
 
 /**
- * \brief Adjusts a list of partitions according to a CNOT between ctrl and tgt
+ * @brief Adjusts a list of partitions according to a CNOT between ctrl and tgt
  */
 static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
     for (auto& part : stack) {
@@ -95,7 +95,7 @@ static void adjust_vectors(int ctrl, int tgt, std::list<partition>& stack) {
 }
 
 /**
- * \brief Alternate adjustment to deal with dependencies on non-partitioned
+ * @brief Alternate adjustment to deal with dependencies on non-partitioned
  *        indices, necessary for steiner synthesis
  */
 static void adjust_vectors_and_indices(int ctrl, int tgt,
@@ -113,7 +113,7 @@ static void adjust_vectors_and_indices(int ctrl, int tgt,
 }
 
 /**
- * \brief Finds the best index to split on given a list of phase terms
+ * @brief Finds the best index to split on given a list of phase terms
  */
 static int find_best_split(const std::list<phase_term>& terms,
                            const std::set<int>& indices) {
@@ -141,7 +141,7 @@ static int find_best_split(const std::list<phase_term>& terms,
 }
 
 /**
- * \brief Splits a list of phase terms into those which are 0 and 1 in
+ * @brief Splits a list of phase terms into those which are 0 and 1 in
  * entry i, respectively
  */
 static std::pair<std::list<phase_term>, std::list<phase_term>>
@@ -161,7 +161,7 @@ split(std::list<phase_term>& terms, int i) {
 }
 
 /**
- * \brief The gray-synth algorith of arXiv:1712.01859
+ * @brief The gray-synth algorith of arXiv:1712.01859
  */
 static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
                                          linear_op<bool> A) {
@@ -236,7 +236,7 @@ static std::list<cx_dihedral> gray_synth(std::list<phase_term>& f,
 }
 
 /**
- * \brief Gray-synth with topological constraints
+ * @brief Gray-synth with topological constraints
  */
 static std::list<cx_dihedral> gray_steiner(std::list<phase_term>& f,
                                            linear_op<bool> A, Device& d) {

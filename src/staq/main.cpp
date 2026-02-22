@@ -56,7 +56,7 @@
 #include "staq/output/quil.hpp"
 
 /**
- * \brief Compiler passes
+ * @brief Compiler passes
  */
 enum class Pass {
     desugar,
@@ -70,7 +70,7 @@ enum class Pass {
 };
 
 /**
- * \brief Command-line passes
+ * @brief Command-line passes
  */
 enum class Option { none, i, S, r, c, s, m, O1, O2, O3 };
 std::unordered_map<std::string_view, Option> cli_map{

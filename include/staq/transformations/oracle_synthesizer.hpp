@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/oracle_synthesizer.hpp
- * \brief Elaboration of oracles into regular gates
+ * @file transformations/oracle_synthesizer.hpp
+ * @brief Elaboration of oracles into regular gates
  */
 
 #ifndef TRANSFORMATIONS_ORACLE_SYNTHESIZER_HPP_
@@ -42,7 +42,7 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Synthesizes all declared oracles over standard library gates
+ * @brief Synthesizes all declared oracles over standard library gates
  *
  * Visits an AST and synthesizes any declared oracles,
  * replacing them with regular gate declarations which may

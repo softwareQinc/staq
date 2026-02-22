@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/group_qregs.hpp
- * \brief Group individual qregs into one global register.
+ * @file transformations/group_qregs.hpp
+ * @brief Group individual qregs into one global register.
  */
 
 /**
@@ -53,8 +53,8 @@ namespace parser = qasmtools::parser;
 using layout = std::unordered_map<ast::VarAccess, int>;
 
 /**
- * \class staq::transformations::LayoutTransformer
- * \brief Applies a hardware layout to a circuit
+ * @class staq::transformations::LayoutTransformer
+ * @brief Applies a hardware layout to a circuit
  *
  * Accepts a layout -- that is, a mapping from variable
  * accesses to addresses of physical qubits -- and rewrites
@@ -65,8 +65,8 @@ using layout = std::unordered_map<ast::VarAccess, int>;
 class LayoutTransformer final : public ast::Replacer {
   public:
     /**
-     * \class staq::mapping::LayoutTransformer::config
-     * \brief Holds configuration options
+     * @class staq::mapping::LayoutTransformer::config
+     * @brief Holds configuration options
      */
     struct config {
         std::string register_name = "q";
@@ -76,7 +76,7 @@ class LayoutTransformer final : public ast::Replacer {
     LayoutTransformer(const config& params) : Replacer(), config_(params) {}
     ~LayoutTransformer() = default;
 
-    /** \brief Main transformation method */
+    /** @brief Main transformation method */
     void run(ast::Program& prog, const layout& l) {
         // Visit entire program, removing register declarations, then
         // add the physical register & apply substitutions
@@ -110,8 +110,8 @@ class LayoutTransformer final : public ast::Replacer {
 };
 
 /**
- * \class staq::transformations::BasicLayout
- * \brief A simple layout generation algorithm
+ * @class staq::transformations::BasicLayout
+ * @brief A simple layout generation algorithm
  *
  * Allocates physical qubits on a first-come, first-serve basis
  */
@@ -120,7 +120,7 @@ class BasicLayout final : public ast::Traverse {
     BasicLayout() : Traverse() {}
     ~BasicLayout() = default;
 
-    /** \brief Main generation method */
+    /** @brief Main generation method */
     layout generate(ast::Program& prog) {
         current_ = layout();
         prog.accept(*this);

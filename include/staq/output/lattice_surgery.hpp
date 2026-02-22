@@ -25,8 +25,8 @@
  */
 
 /**
- * \file output/lattice_surgery.hpp
- * \brief Lattice surgery compiler
+ * @file output/lattice_surgery.hpp
+ * @brief Lattice surgery compiler
  */
 
 #ifndef OUTPUT_LATTICE_SURGERY_HPP_
@@ -52,18 +52,18 @@ using json = nlohmann::json;
 using Angle = qasmtools::utils::Angle;
 namespace ast = qasmtools::ast;
 
-/* \brief Inliner overrides for lattice surgery */
+/* @brief Inliner overrides for lattice surgery */
 static const std::set<std::string_view> ls_inline_overrides{
     "u3", "u2",  "u1", "cx",  "id", "u0", "x",  "y",  "z", "h",
     "s",  "sdg", "t",  "tdg", "rx", "ry", "rz", "cz", "cy"};
 
 /**
- * \brief Pauli rotations
+ * @brief Pauli rotations
  */
 enum class PauliOperator : char { I = 'I', X = 'X', Y = 'Y', Z = 'Z' };
 
 /**
- * \brief Anti-commute multiplication table
+ * @brief Anti-commute multiplication table
  */
 static const std::map<std::pair<PauliOperator, PauliOperator>,
                       std::pair<std::complex<double>, PauliOperator>>
@@ -84,8 +84,8 @@ static const std::map<std::pair<PauliOperator, PauliOperator>,
 class LayeredPauliOpCircuit;
 
 /**
- * \class staq::output::PauliOpCircuit
- * \brief Representation of Pauli Op circuits
+ * @class staq::output::PauliOpCircuit
+ * @brief Representation of Pauli Op circuits
  * This class is mostly a translation from here:
  * https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/dev/src/lsqecc/pauli_rotations/circuit.py#L30
  */
@@ -339,8 +339,8 @@ class PauliOpCircuit {
 };
 
 /**
- * \class staq::output::LayeredPauliOpCircuit
- * \brief Representation used for T count/depth and related optimizations
+ * @class staq::output::LayeredPauliOpCircuit
+ * @brief Representation used for T count/depth and related optimizations
  */
 class LayeredPauliOpCircuit {
     using Op = PauliOpCircuit::Op;
@@ -460,8 +460,8 @@ class LayeredPauliOpCircuit {
 };
 
 /**
- * \class staq::output::PauliOpCircuitCompiler
- * \brief Visitor for converting a QASM AST into Pauli Op circuit
+ * @class staq::output::PauliOpCircuitCompiler
+ * @brief Visitor for converting a QASM AST into Pauli Op circuit
  */
 class PauliOpCircuitCompiler final : public ast::Visitor {
     bool skip_clifford_{false};
@@ -706,7 +706,7 @@ class PauliOpCircuitCompiler final : public ast::Visitor {
     }
 };
 
-/** \brief Compiles an AST into lattice surgery instructions to stdout */
+/** @brief Compiles an AST into lattice surgery instructions to stdout */
 void output_lattice_surgery(ast::Program& prog, bool skip_clifford = false,
                             bool skip_litinski = false,
                             bool skip_reduce = false,
@@ -748,7 +748,7 @@ void output_lattice_surgery(ast::Program& prog, bool skip_clifford = false,
     os << out.dump(2) << "\n";
 }
 
-/** \brief Compiles an AST into lattice surgery instructions to a given output
+/** @brief Compiles an AST into lattice surgery instructions to a given output
  * file */
 void write_lattice_surgery(ast::Program& prog, const std::string& fname,
                            bool skip_clifford = false,
@@ -764,7 +764,7 @@ void write_lattice_surgery(ast::Program& prog, const std::string& fname,
                            ofs);
 }
 
-/** \brief Compiles an AST into lattice surgery instructions to a std::string
+/** @brief Compiles an AST into lattice surgery instructions to a std::string
  * representing a json object
  */
 std::string lattice_surgery(ast::Program& prog, bool skip_clifford = false,

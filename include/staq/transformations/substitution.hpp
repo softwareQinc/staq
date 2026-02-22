@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/substitution.hpp
- * \brief Utilities for performing substitutions
+ * @file transformations/substitution.hpp
+ * @brief Utilities for performing substitutions
  */
 
 #ifndef TRANSFORMATIONS_SUBSTITUTION_HPP_
@@ -46,7 +46,7 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Node replacement visitor with symbol tracking
+ * @brief Node replacement visitor with symbol tracking
  *
  * Provides a replacement interface together with information about
  * the bound identifiers. Used to substitute only free variables
@@ -100,7 +100,7 @@ class ScopedReplacer : public ast::Replacer {
 };
 
 /**
- * \brief Substitutes variables within expressions
+ * @brief Substitutes variables within expressions
  */
 class SubstVar final : public ScopedReplacer {
   public:
@@ -129,7 +129,7 @@ subst_var_expr(std::unordered_map<std::string_view, ast::Expr*>& subst,
 }
 
 /**
- * \brief Substitutes variables accesses
+ * @brief Substitutes variables accesses
  *
  * Can be used to substitute a variable or register access
  * with either a variable or register access.

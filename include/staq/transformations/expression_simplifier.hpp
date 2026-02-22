@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/expression_simplifier.hpp
- * \brief Simplify certain constant expressions
+ * @file transformations/expression_simplifier.hpp
+ * @brief Simplify certain constant expressions
  */
 
 #ifndef TRANSFORMATIONS_EXPRESSION_SIMPLIFIER_HPP_

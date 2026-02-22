@@ -25,8 +25,8 @@
  */
 
 /**
- * \file synthesis/linear_reversible.hpp
- * \brief Synthesis of CNOT circuits
+ * @file synthesis/linear_reversible.hpp
+ * @brief Synthesis of CNOT circuits
  */
 
 #ifndef SYNTHESIS_LINEARREVERSIBLE_HPP_
@@ -64,7 +64,7 @@ static void print_linop(const linear_op<bool>& mat) {
 }
 
 /**
- * \brief Linear reversible synthesis from Gauss-Jordan elimination
+ * @brief Linear reversible synthesis from Gauss-Jordan elimination
  */
 static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
@@ -110,7 +110,7 @@ static std::list<std::pair<int, int>> gauss_jordan(linear_op<bool> mat) {
 }
 
 /**
- * \brief Linear reversible synthesis from Gaussian elimination
+ * @brief Linear reversible synthesis from Gaussian elimination
  */
 static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
     std::list<std::pair<int, int>> ret;
@@ -161,7 +161,7 @@ static std::list<std::pair<int, int>> gaussian_elim(linear_op<bool> mat) {
 }
 
 /**
- * \brief Steiner tree based device constrained CNOT synthesis
+ * @brief Steiner tree based device constrained CNOT synthesis
  *
  * Our version of steiner-gauss (see arXiv:1904.01972 and arXiv:1904.00633)
  * works a little differently from either of those. We follow arXiv:1904.00633

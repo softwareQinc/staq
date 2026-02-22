@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/replace_ugates.hpp
- * \brief Replacing common U gates with QE standard gates
+ * @file transformations/replace_ugates.hpp
+ * @brief Replacing common U gates with QE standard gates
  */
 
 #ifndef TRANSFORMATIONS_REPLACE_UGATES_HPP_
@@ -44,7 +44,7 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Replace UGates
+ * @brief Replace UGates
  *
  * Visits an AST and replaces common U gates with QE standard
  * gates if possible. Assumes qelib1.inc is included.

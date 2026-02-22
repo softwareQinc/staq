@@ -25,8 +25,8 @@
  */
 
 /**
- * \file tools/qubit_estimator.hpp
- * \brief Resource estimation
+ * @file tools/qubit_estimator.hpp
+ * @brief Resource estimation
  */
 
 #ifndef TOOLS_QUBIT_ESTIMATOR_HPP_

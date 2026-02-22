@@ -25,8 +25,8 @@
  */
 
 /**
- * \file mapping/layout/eager.hpp
- * \brief Eager hardware layout generation
+ * @file mapping/layout/eager.hpp
+ * @brief Eager hardware layout generation
  */
 
 #ifndef MAPPING_LAYOUT_EAGER_HPP_
@@ -47,8 +47,8 @@ namespace mapping {
 namespace ast = qasmtools::ast;
 
 /**
- * \class staq::mapping::LayoutTransformer
- * \brief Allocates qubits on demand prioritizing coupling fidelity
+ * @class staq::mapping::LayoutTransformer
+ * @brief Allocates qubits on demand prioritizing coupling fidelity
  *
  * Generates a hardware layout by assigning CNOT gates to available
  * high-fidelity couplings in the physical device as they occur
@@ -60,7 +60,7 @@ class EagerLayout final : public ast::Traverse {
         couplings_ = device_.couplings();
     }
 
-    /** \brief Main generation method */
+    /** @brief Main generation method */
     layout generate(ast::Program& prog) {
         layout_ = layout();
         allocated_ = std::vector<bool>(device_.qubits_, false);
@@ -147,7 +147,7 @@ class EagerLayout final : public ast::Traverse {
     std::set<std::pair<coupling, double>, cmp_couplings> couplings_;
 };
 
-/** \brief Generates an eager layout for a program on a physical device */
+/** @brief Generates an eager layout for a program on a physical device */
 layout compute_eager_layout(Device& device, ast::Program& prog) {
     EagerLayout gen(device);
     return gen.generate(prog);

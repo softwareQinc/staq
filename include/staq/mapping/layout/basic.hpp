@@ -25,8 +25,8 @@
  */
 
 /**
- * \file mapping/layout/basic.hpp
- * \brief Simple hardware layout generation
+ * @file mapping/layout/basic.hpp
+ * @brief Simple hardware layout generation
  */
 
 #ifndef MAPPING_LAYOUT_BASIC_HPP_
@@ -48,8 +48,8 @@ namespace ast = qasmtools::ast;
 namespace parser = qasmtools::parser;
 
 /**
- * \class staq::mapping::LayoutTransformer
- * \brief Applies a hardware layout to a circuit
+ * @class staq::mapping::LayoutTransformer
+ * @brief Applies a hardware layout to a circuit
  *
  * Accepts a layout -- that is, a mapping from variable
  * accesses to addresses of physical qubits -- and rewrites
@@ -60,8 +60,8 @@ namespace parser = qasmtools::parser;
 class LayoutTransformer final : public ast::Replacer {
   public:
     /**
-     * \class staq::mapping::LayoutTransformer::config
-     * \brief Holds configuration options
+     * @class staq::mapping::LayoutTransformer::config
+     * @brief Holds configuration options
      */
     struct config {
         std::string register_name = "q";
@@ -71,7 +71,7 @@ class LayoutTransformer final : public ast::Replacer {
     LayoutTransformer(const config& params) : Replacer(), config_(params) {}
     ~LayoutTransformer() = default;
 
-    /** \brief Main transformation method */
+    /** @brief Main transformation method */
     void run(ast::Program& prog, const layout& l, const Device& d) {
         // Visit entire program, removing register declarations, then
         // add the physical register & apply substitutions
@@ -105,8 +105,8 @@ class LayoutTransformer final : public ast::Replacer {
 };
 
 /**
- * \class staq::mapping::BasicLayout
- * \brief A simple layout generation algorithm
+ * @class staq::mapping::BasicLayout
+ * @brief A simple layout generation algorithm
  *
  * Allocates physical qubits on a first-come, first-serve basis
  */
@@ -115,7 +115,7 @@ class BasicLayout final : public ast::Traverse {
     BasicLayout(Device& device) : Traverse(), device_(device) {}
     ~BasicLayout() = default;
 
-    /** \brief Main generation method */
+    /** @brief Main generation method */
     layout generate(ast::Program& prog) {
         current_ = layout();
         n_ = 0;
@@ -145,13 +145,13 @@ class BasicLayout final : public ast::Traverse {
     std::size_t n_;
 };
 
-/** \brief Rewrites an AST according to a physical layout */
+/** @brief Rewrites an AST according to a physical layout */
 inline void apply_layout(const layout& l, const Device& d, ast::Program& prog) {
     LayoutTransformer alg;
     alg.run(prog, l, d);
 }
 
-/** \brief Generates a layout for a program on a physical device */
+/** @brief Generates a layout for a program on a physical device */
 inline layout compute_basic_layout(Device& device, ast::Program& prog) {
     BasicLayout gen(device);
     return gen.generate(prog);

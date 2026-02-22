@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/qasm_synth.hpp
- * \brief Replace rx/ry/rz gates with grid_synth approximations.
+ * @file transformations/qasm_synth.hpp
+ * @brief Replace rx/ry/rz gates with grid_synth approximations.
  */
 
 #ifndef TRANSFORMATIONS_QASM_SYNTH_HPP_
@@ -179,10 +179,10 @@ class QASMSynthImpl final : public ast::Replacer {
     bool verbose_;
 
     /*!
-     * \brief Copies a gate; gives it a new name and no cargs.
+     * @brief Copies a gate; gives it a new name and no cargs.
      *
-     * \param name The name of the new gate.
-     * \param gate The gate to make a copy of.
+     * @param name The name of the new gate.
+     * @param gate The gate to make a copy of.
      */
     inline ast::ptr<ast::Gate> make_gate(std::string name,
                                          ast::DeclaredGate& gate) {

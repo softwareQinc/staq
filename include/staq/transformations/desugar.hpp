@@ -25,8 +25,8 @@
  */
 
 /**
- * \file transformations/desugar.hpp
- * \brief AST desugaring
+ * @file transformations/desugar.hpp
+ * @brief AST desugaring
  */
 
 #ifndef TRANSFORMATIONS_DESUGAR_HPP_
@@ -44,7 +44,7 @@ namespace transformations {
 namespace ast = qasmtools::ast;
 
 /**
- * \brief Desugars a QASM AST
+ * @brief Desugars a QASM AST
  *
  * Visits an AST and replaces all *uniform* gates -- gates
  * applied to a register or registers of qubits at once --

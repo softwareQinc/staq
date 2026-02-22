@@ -25,8 +25,8 @@
  */
 
 /**
- * \file mapping/device.hpp
- * \brief Representation & tools for restricted device topologies
+ * @file mapping/device.hpp
+ * @brief Representation & tools for restricted device topologies
  */
 
 #ifndef MAPPING_DEVICE_HPP_
@@ -63,8 +63,8 @@ using spanning_tree = std::list<std::pair<int, int>>;
 static double FIDELITY_1 = 1 - std::numeric_limits<double>::epsilon();
 
 /**
- * \class staq::mapping::Device
- * \brief Class representing physical devices with restricted topologies & gate
+ * @class staq::mapping::Device
+ * @brief Class representing physical devices with restricted topologies & gate
  * fidelities
  *
  * A device is used to store information about the number and arrangement of
@@ -81,26 +81,26 @@ class Device {
   public:
     /** @name Constructors */
     /**@{*/
-    /** \brief Default constructor */
+    /** @brief Default constructor */
     Device() = default;
     /**
-     * \brief Construct a device from a coupling graph
-     * \param name A name for the device
-     * \param n The number of qubits
-     * \param dag A digraph, given as a Boolean adjacency matrix
+     * @brief Construct a device from a coupling graph
+     * @param name A name for the device
+     * @param n The number of qubits
+     * @param dag A digraph, given as a Boolean adjacency matrix
      */
     Device(std::string name, int n, const std::vector<std::vector<bool>>& dag)
         : name_(name), qubits_(n), couplings_(dag),
           single_qubit_fidelities_(n, FIDELITY_1),
           coupling_fidelities_(n, std::vector<double>(n, FIDELITY_1)) {}
     /**
-     * \brief Construct a device from a coupling graph
-     * \param name A name for the device
-     * \param n The number of qubits
-     * \param dag A digraph, given as a Boolean adjacency matrix
-     * \param sq_fi A vector of average single-qubit gate fidelities for each
+     * @brief Construct a device from a coupling graph
+     * @param name A name for the device
+     * @param n The number of qubits
+     * @param dag A digraph, given as a Boolean adjacency matrix
+     * @param sq_fi A vector of average single-qubit gate fidelities for each
      * qubit
-     * \param tq_fi A matrix of average two-qubit gate fidelities for each
+     * @param tq_fi A matrix of average two-qubit gate fidelities for each
      * directed pair
      */
     Device(std::string name, int n, const std::vector<std::vector<bool>>& dag,
@@ -114,10 +114,10 @@ class Device {
     int qubits_;
 
     /**
-     * \brief Whether the device allows a CNOT between two qubits
-     * \param i The control qubit
-     * \param j The target qubit
-     * \return True if the device admits a CNOT between qubits i and j
+     * @brief Whether the device allows a CNOT between two qubits
+     * @param i The control qubit
+     * @param j The target qubit
+     * @return True if the device admits a CNOT between qubits i and j
      */
     bool coupled(int i, int j) {
         if (0 <= i && i < qubits_ && 0 <= j && j < qubits_) {
@@ -128,9 +128,9 @@ class Device {
     }
 
     /**
-     * \brief Get the single-qubit gate fidelity at a qubit
-     * \param i The qubit
-     * \return The fidelity as a double precision float
+     * @brief Get the single-qubit gate fidelity at a qubit
+     * @param i The qubit
+     * @return The fidelity as a double precision float
      */
     double sq_fidelity(int i) {
         if (0 <= i && i < qubits_) {
@@ -140,10 +140,10 @@ class Device {
         }
     }
     /**
-     * \brief Get the two-qubit gate fidelity at a coupling
-     * \param i The control qubit
-     * \param j The target qubit
-     * \return The fidelity as a double precision float
+     * @brief Get the two-qubit gate fidelity at a coupling
+     * @param i The control qubit
+     * @param j The target qubit
+     * @return The fidelity as a double precision float
      */
     double tq_fidelity(int i, int j) {
         if (coupled(i, j)) {
@@ -154,13 +154,13 @@ class Device {
     }
 
     /**
-     * \brief Get a shortest path between two qubits
+     * @brief Get a shortest path between two qubits
      *
      * Paths are represented as a list of qubits indices
      *
-     * \param i The control qubit
-     * \param j The target qubit
-     * \return A shortest (or highest fidelity) path between qubits i and j
+     * @param i The control qubit
+     * @param j The target qubit
+     * @return A shortest (or highest fidelity) path between qubits i and j
      */
     path shortest_path(int i, int j) {
         compute_shortest_paths();
@@ -179,10 +179,10 @@ class Device {
     }
 
     /**
-     * \brief Get the distance of a shortest path between two qubits
-     * \param i The control qubit
-     * \param j The target qubit
-     * \return The length of a shortest path between qubits i and j
+     * @brief Get the distance of a shortest path between two qubits
+     * @param i The control qubit
+     * @param j The target qubit
+     * @return The length of a shortest path between qubits i and j
      */
     int distance(int i, int j) {
         compute_shortest_paths();
@@ -201,9 +201,9 @@ class Device {
     }
 
     /**
-     * \brief Get a list of all edges in the coupling digraph
-     * \note Couplings are ordered in decreasing fidelity.
-     * \return A set of (coupling, fidelity) pairs
+     * @brief Get a list of all edges in the coupling digraph
+     * @note Couplings are ordered in decreasing fidelity.
+     * @return A set of (coupling, fidelity) pairs
      */
     std::set<std::pair<coupling, double>, cmp_couplings> couplings() {
         // Sort in order of decreasing coupling fidelity
@@ -230,15 +230,15 @@ class Device {
     }
 
     /**
-     * \brief Get an approximation to a minimal Steiner tree
+     * @brief Get an approximation to a minimal Steiner tree
      *
      * Given a set of terminal nodes and a root node in the coupling graph,
      * attempts to find a minimal weight set of edges connecting the root to
      * each terminal.
      *
-     * \param terminals A list of terminal qubits to be connected
-     * \param root A root for the Steiner tree
-     * \return A spanning tree represented as a list of edges
+     * @param terminals A list of terminal qubits to be connected
+     * @param root A root for the Steiner tree
+     * @return A spanning tree represented as a list of edges
      */
     spanning_tree steiner(std::list<int> terminals, int root) {
         compute_shortest_paths();
@@ -288,14 +288,14 @@ class Device {
     }
 
     /**
-     * \brief Print the layout information
+     * @brief Print the layout information
      *
      * Prints the physical layout of a circuit on the device
      *
-     * \param l The physical layout
-     * \param os The output stream
-     * \param pref An optional prefix
-     * \param f An optional permutation
+     * @param l The physical layout
+     * @param os The output stream
+     * @param pref An optional prefix
+     * @param f An optional permutation
      */
     void print_layout(layout& l, std::ostream& os, std::string pref = "",
                       std::optional<std::map<int, int>> f = std::nullopt) {
@@ -335,7 +335,7 @@ class Device {
     }
 
     /**
-     * \brief Serialize to JSON
+     * @brief Serialize to JSON
      */
     std::string to_json() {
         json js;
@@ -377,8 +377,8 @@ class Device {
     /**@}*/
 
     /**
-     * \brief Floyd-Warshall all-pairs-shortest-paths algorithm
-     * \note Assigns result to dist and shortest_paths
+     * @brief Floyd-Warshall all-pairs-shortest-paths algorithm
+     * @note Assigns result to dist and shortest_paths
      */
     void compute_shortest_paths() {
         if (dist.empty() || shortest_paths.empty()) {
@@ -423,16 +423,16 @@ class Device {
     }
 
     /**
-     * \brief Adds a path to a spanning tree
+     * @brief Adds a path to a spanning tree
      *
      * Inserts a path into a spanning tree so that edges are not duplicated, and
      * moreover maintains the spanning tree property & the topological order on
      * the tree
      *
-     * \param s_tree The input spanning tree
-     * \param p Const reference to the path to be inserted
-     * \param in_tree The set of nodes already in the tree
-     * \return The set of nodes in the resulting spanning tree
+     * @param s_tree The input spanning tree
+     * @param p Const reference to the path to be inserted
+     * @param in_tree The set of nodes already in the tree
+     * @return The set of nodes in the resulting spanning tree
      */
     std::set<int> add_to_tree(spanning_tree& s_tree, const path& p,
                               const std::set<int>& in_tree) {
@@ -460,7 +460,7 @@ class Device {
 };
 
 /**
- * \brief JSON deserialization of Device object
+ * @brief JSON deserialization of Device object
  * The JSON object should have:
  * - name: string
  * - qubits: list of {{id: int}, optional {fidelity: double}}
@@ -515,7 +515,7 @@ inline Device parse_json(std::string fname) {
     return Device(name, n, dag, sq_fi, tq_fi);
 }
 
-/** \brief Generates a fully connected device with a given number of qubits */
+/** @brief Generates a fully connected device with a given number of qubits */
 inline Device fully_connected(uint32_t n) {
     auto tmp = std::vector<std::vector<bool>>(n, std::vector<bool>(n, true));
     for (uint32_t i = 0; i < n; i++) {
