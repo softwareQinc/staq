@@ -294,7 +294,13 @@ class Token {
      *
      * \return The value of the token as an integer
      */
-    int as_int() const { return std::get<int>(value_); }
+    int as_int() const {
+        // Total accessor: a kind/value mismatch (e.g. a token returned by a
+        // failed expect_and_consume_token) must not throw std::bad_variant_access
+        // and abort the host; the parser's error_ flag already records the error.
+        auto* p = std::get_if<int>(&value_);
+        return p ? *p : 0;
+    }
 
     /**
      * \brief Get the floating point value
@@ -303,7 +309,10 @@ class Token {
      *
      * \return The value of the token as a floating point number
      */
-    double as_real() const { return std::get<double>(value_); }
+    double as_real() const {
+        auto* p = std::get_if<double>(&value_);
+        return p ? *p : 0.0;
+    }
 
     /**
      * \brief Get the string value
@@ -312,7 +321,10 @@ class Token {
      *
      * \return The value of the token as a string
      */
-    std::string as_string() const { return std::get<std::string>(value_); }
+    std::string as_string() const {
+        auto* p = std::get_if<std::string>(&value_);
+        return p ? *p : std::string();
+    }
 
     /**
      * \brief Return the position of the token
