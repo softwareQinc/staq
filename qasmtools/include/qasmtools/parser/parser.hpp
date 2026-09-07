@@ -70,6 +70,10 @@ class Parser {
     Token current_token_;         ///< current token
     int bits_ = 0;                ///< number of bits
     int qubits_ = 0;              ///< number of qubits
+    int expr_depth_ = 0;          ///< current expression-parsing recursion depth
+    /// Cap on expression nesting; bounds recursion to prevent stack overflow
+    /// on adversarial input (e.g. deeply nested parentheses).
+    static constexpr int MAX_EXPR_DEPTH = 1000;
 #ifdef EXPR_GMP
     bool use_gmp_ = false; ///< whether to use gmp to parse reals
 #endif                     /* EXPR_GMP */
@@ -650,6 +654,20 @@ class Parser {
      * \return Unique pointer to an expression object
      */
     ast::ptr<ast::Expr> parse_exp(int min_precedence = 1) {
+        struct DepthGuard {
+            int& d;
+            explicit DepthGuard(int& d_) : d(d_) { ++d; }
+            ~DepthGuard() { --d; }
+        } depth_guard{expr_depth_};
+        if (expr_depth_ > MAX_EXPR_DEPTH) {
+            error_ = true;
+            if (!supress_errors_) {
+                std::cerr << current_token_.position()
+                          << ": expression nesting exceeds maximum depth\n";
+            }
+            throw ParseError();
+        }
+
         auto pos = current_token_.position();
 
         auto lexp = parse_atom();
