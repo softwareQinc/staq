@@ -165,11 +165,17 @@ class Lexer {
             }
         }
 
-        if (integral) {
-            return Token(tok_start, Token::Kind::nninteger, str,
-                         std::stoi(str));
-        } else {
-            return Token(tok_start, Token::Kind::real, str, std::stof(str));
+        try {
+            if (integral) {
+                return Token(tok_start, Token::Kind::nninteger, str,
+                             std::stoi(str));
+            } else {
+                return Token(tok_start, Token::Kind::real, str, std::stof(str));
+            }
+        } catch (const std::out_of_range&) {
+            std::cerr << "Lexical error at " << tok_start
+                      << ": numeric literal out of range\n";
+            return Token(tok_start, Token::Kind::error, str);
         }
     }
 
@@ -213,7 +219,7 @@ class Lexer {
         str.reserve(64); // Reserve space to avoid reallocation
 
         while (buf_->peek() != '"' && buf_->peek() != '\n' &&
-               buf_->peek() != '\r') {
+               buf_->peek() != '\r' && buf_->peek() != EOF) {
             str.push_back(buf_->peek());
             skip_char();
         }
