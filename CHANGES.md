@@ -3,6 +3,10 @@
 - Updated third party library [fmt](https://github.com/fmtlib/fmt) to version
   11.1.2
 - Fixed MSVC compiling issues on Windows
+- Hardened the OpenQASM 2.0 parser against malformed input: out-of-range
+  numeric literals, deeply nested expressions, unterminated string literals at
+  end of file, and token kind/value mismatches now yield a parse error instead
+  of aborting or hanging the process
 
 # Version 3.5 - 8 March 2024
 
